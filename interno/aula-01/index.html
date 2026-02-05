@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 01 - AIOS Avançado | Avaliação Pedagógica Interna</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #22c55e;
+            --primary-dark: #16a34a;
+            --secondary: #3b82f6;
+            --accent: #8b5cf6;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
+            border-radius: 16px;
+            padding: 48px 32px;
+            margin-bottom: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            font-weight: 800;
+        }
+        
+        .header .subtitle {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+        
+        .confidential-badge {
+            display: inline-block;
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid var(--danger);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-top: 16px;
+        }
+        
+        /* Score Cards */
+        .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+        
+        .score-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 32px;
+            border: 2px solid;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .score-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+        
+        .score-card.excellent {
+            border-color: var(--success);
+        }
+        
+        .score-card.excellent::before {
+            background: var(--success);
+        }
+        
+        .score-card.good {
+            border-color: var(--secondary);
+        }
+        
+        .score-card.good::before {
+            background: var(--secondary);
+        }
+        
+        .score-card.acceptable {
+            border-color: var(--warning);
+        }
+        
+        .score-card.acceptable::before {
+            background: var(--warning);
+        }
+        
+        .score-label {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        
+        .score-value {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        
+        .score-classification {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .score-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+            border: 1px solid var(--border);
+        }
+        
+        .card-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .card-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        
+        .badge-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .badge-warning {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .badge-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .badge-info {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        /* Aspect Cards */
+        .aspect-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        .aspect-card {
+            background: var(--bg-card-hover);
+            border-radius: 12px;
+            padding: 24px;
+            border-left: 4px solid;
+        }
+        
+        .aspect-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .aspect-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .aspect-score {
+            font-size: 1.5rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 8px;
+        }
+        
+        .score-9-10 {
+            background: var(--success);
+            color: white;
+        }
+        
+        .score-7-8 {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .score-5-6 {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .score-0-4 {
+            background: var(--danger);
+            color: white;
+        }
+        
+        /* Lists */
+        .strength-list, .weakness-list {
+            margin-top: 16px;
+        }
+        
+        .strength-item, .weakness-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .strength-item {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 3px solid var(--success);
+        }
+        
+        .weakness-item {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 3px solid var(--danger);
+        }
+        
+        .opportunity-item {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 3px solid var(--warning);
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+        }
+        
+        /* Critique Cards */
+        .critique-card {
+            background: var(--bg-card-hover);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 2px solid;
+        }
+        
+        .critique-card.critical {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.05);
+        }
+        
+        .critique-card.high {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.05);
+        }
+        
+        .critique-card.medium {
+            border-color: var(--secondary);
+            background: rgba(59, 130, 246, 0.05);
+        }
+        
+        .critique-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .severity-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .severity-critical {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .severity-high {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .severity-medium {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        /* Recommendation Box */
+        .recommendation-box {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 32px;
+            margin-top: 32px;
+        }
+        
+        .recommendation-box h3 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+        }
+        
+        /* Tables */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+        }
+        
+        .comparison-table th {
+            background: var(--bg-card-hover);
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .comparison-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .comparison-table tr:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        /* Utilities */
+        .text-success {
+            color: var(--success);
+        }
+        
+        .text-warning {
+            color: var(--warning);
+        }
+        
+        .text-danger {
+            color: var(--danger);
+        }
+        
+        .mt-24 {
+            margin-top: 24px;
+        }
+        
+        .mb-16 {
+            margin-bottom: 16px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px 16px;
+            }
+            
+            .header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .scores-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .aspect-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .score-value {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🎯 Avaliação Pedagógica Interna</h1>
+                <p class="subtitle">Framework GPS + Metodologia Lendária | Aula 01 - AIOS Avançado</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px;">
+                    <div style="background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 8px;">
+                        📅 04 de Fevereiro, 2026
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 8px;">
+                        ⏱️ 3h10min (190 minutos)
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 8px;">
+                        👥 48 participantes
+                    </div>
+                </div>
+                <div class="confidential-badge">
+                    🔒 CONFIDENCIAL - USO INTERNO APENAS
+                </div>
+            </div>
+        </header>
+
+        <!-- Scores Overview -->
+        <div class="scores-grid">
+            <div class="score-card excellent">
+                <div class="score-label">Framework GPS</div>
+                <div class="score-value" style="color: var(--success);">8.48</div>
+                <div class="score-classification" style="color: var(--success);">✅ MUITO BOM</div>
+                <div class="score-description">
+                    Top 20% - Estrutura sólida (G-P-S presente), alta empatia, engajamento excepcional
+                </div>
+            </div>
+            
+            <div class="score-card acceptable">
+                <div class="score-label">Metodologia Lendária</div>
+                <div class="score-value" style="color: var(--warning);">7.36</div>
+                <div class="score-classification" style="color: var(--warning);">🟡 ACEITÁVEL</div>
+                <div class="score-description">
+                    Publicar com edições menores - Forte em 5 Porquês e Semiótica, CRÍTICO em Regra de Ouro
+                </div>
+            </div>
+            
+            <div class="score-card good">
+                <div class="score-label">Média Final Combinada</div>
+                <div class="score-value" style="color: var(--secondary);">7.92</div>
+                <div class="score-classification" style="color: var(--secondary);">✅ BOM</div>
+                <div class="score-description">
+                    APROVADA para cohort avançado | Requer edições para curso geral
+                </div>
+            </div>
+        </div>
+
+        <!-- GPS Detailed Scores -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">📐 Framework GPS - Notas Detalhadas</h2>
+                <span class="badge badge-success">Média: 8.48/10</span>
+            </div>
+            
+            <div class="aspect-grid">
+                <div class="aspect-card" style="border-color: var(--success);">
+                    <div class="aspect-header">
+                        <div class="aspect-title">1. GOAL (Destino)</div>
+                        <div class="aspect-score score-9-10">9.5</div>
+                    </div>
+                    <p style="margin-bottom: 12px;">Promessa clara + resultados específicos + motivação emocional explícita</p>
+                    <div class="strength-list">
+                        <div class="strength-item">
+                            <span>✓</span>
+                            <span>Mentalidade estabelecida ANTES de técnica</span>
+                        </div>
+                        <div class="strength-item">
+                            <span>✓</span>
+                            <span>Números reais (R$1M vs R$500)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="aspect-card" style="border-color: var(--success);">
+                    <div class="aspect-header">
+                        <div class="aspect-title">2. POSITION (Origem)</div>
+                        <div class="aspect-score score-7-8">8.5</div>
+                    </div>
+                    <p style="margin-bottom: 12px;">Reconhece diferentes níveis + valida preocupações + oferece múltiplos caminhos</p>
+                    <div class="strength-list">
+                        <div class="strength-item">
+                            <span>✓</span>
+                            <span>Validação profunda de medos (tokens, complexidade)</span>
+                        </div>
+                        <div class="strength-item">
+                            <span>✓</span>
+                            <span>Pedro como exemplo vivo de empoderamento</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="aspect-card" style="border-color: var(--secondary);">
+                    <div class="aspect-header">
+                        <div class="aspect-title">3. STEPS (Rota)</div>
+                        <div class="aspect-score score-7-8">7.8</div>
+                    </div>
+                    <p style="margin-bottom: 12px;">Sempre explicou "por quê" antes, mas FALTOU exercício prático guiado</p>
+                    <div class="weakness-list">
+                        <div class="weakness-item">
+                            <span>✗</span>
+                            <span>0 exercícios práticos guiados em 3h10min</span>
+                        </div>
+                    </div>
+                    <div class="opportunity-item">
+                        <strong>🔴 CRÍTICO:</strong> Inserir 2-3 pausas de 10min para prática guiada
+                    </div>
+                </div>
+                
+                <div class="aspect-card" style="border-color: var(--success);">
+                    <div class="aspect-header">
+                        <div class="aspect-title">4. SEMIÓTICA (Visual)</div>
+                        <div class="aspect-score score-9-10">9.0</div>
+                    </div>
+                    <p style="margin-bottom: 12px;">5 analogias universais + mapa visual que gerou "entendi 100%"</p>
+                    <div class="strength-list">
+                        <div class="strength-item">
+                            <span>✓</span>
+                            <span>Analogia "tokens = luz" perfeita</span>
+                        </div>
+                        <div class="strength-item">
+                            <span>✓</span>
+                            <span>Mapa Epic → Story → Task foi divisor de águas</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="aspect-card" style="border-color: var(--secondary);">
+                    <div class="aspect-header">
+                        <div class="aspect-title">5. CLAREZA (Linguagem)</div>
+                        <div class="aspect-score score-7-8">8.0</div>
+                    </div>
+                    <p style="margin-bottom: 12px;">85% do jargão explicado. Sistema Alan (traduz) + Pedro (técnico) eficaz</p>
+                </div>
+                
+                <div class="aspect-card" style="border-color: var(--secondary);">
+                    <div class="aspect-header">
+                        <div class="aspect-title">6. RITMO (Tempo)</div>
+                        <div class="aspect-score score-7-8">7.0</div>
+                    </div>
+                    <p style="margin-bottom: 12px;">Rápido mas gerenciável. Problema: FALTA DE PAUSAS, não velocidade</p>
+                    <div class="opportunity-item">
+                        <strong>🔴 CRÍTICO:</strong> Inserir 2-3 pausas formais de 10min para absorção
+                    </div>
+                </div>
+                
+                <div class="aspect-card" style="border-color: var(--success);">
+                    <div class="aspect-header">
+                        <div class="aspect-title">7. ENGAJAMENTO</div>
+                        <div class="aspect-score score-9-10">9.5</div>
+                    </div>
+                    <p style="margin-bottom: 12px;">100% participação (48/48), 1310 mensagens, comunidade se ajudando</p>
+                    <div class="strength-list">
+                        <div class="strength-item">
+                            <span>✓</span>
+                            <span>Taxa de 7 mensagens/minuto - extremamente ativo</span>
+                        </div>
+                        <div class="strength-item">
+                            <span>✓</span>
+                            <span>Energia mantida por 3h10min (impressionante)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="aspect-card" style="border-color: var(--secondary);">
+                    <div class="aspect-header">
+                        <div class="aspect-title">8. ORGANIZAÇÃO</div>
+                        <div class="aspect-score score-7-8">7.5</div>
+                    </div>
+                    <p style="margin-bottom: 12px;">Fluxo lógico bom, transições 70% claras. Recap presente mas informal</p>
+                </div>
+                
+                <div class="aspect-card" style="border-color: var(--success);">
+                    <div class="aspect-header">
+                        <div class="aspect-title">9. DOMÍNIO (Expertise)</div>
+                        <div class="aspect-score score-9-10">9.5</div>
+                    </div>
+                    <p style="margin-bottom: 12px;">Expertise evidente. Pedro (8 meses exp.) impressionou com profundidade</p>
+                    <div class="strength-list">
+                        <div class="strength-item">
+                            <span>✓</span>
+                            <span>Autoridade reconhecida pela turma</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="aspect-card" style="border-color: var(--secondary);">
+                    <div class="aspect-header">
+                        <div class="aspect-title">10. TÉCNICO (Setup)</div>
+                        <div class="aspect-score score-7-8">8.5</div>
+                    </div>
+                    <p style="margin-bottom: 12px;">Poucos problemas técnicos, todos resolvidos rapidamente (<5min total)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ML Detailed Scores -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">🎓 Metodologia Lendária - Notas Detalhadas</h2>
+                <span class="badge badge-warning">Média: 7.36/10</span>
+            </div>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Pilar</th>
+                        <th>Nota</th>
+                        <th>Classificação</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>P1: 5 Porquês (Essência Emocional)</strong></td>
+                        <td><span class="text-success" style="font-size: 1.5rem; font-weight: 700;">9.0</span></td>
+                        <td>Excepcional</td>
+                        <td><span class="badge badge-success">✓ PASS</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>P2: Semiótica (Filme Mental)</strong></td>
+                        <td><span class="text-success" style="font-size: 1.5rem; font-weight: 700;">9.5</span></td>
+                        <td>Excepcional</td>
+                        <td><span class="badge badge-success">✓ PASS</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>P3: Regra de Ouro (2-3 Conceitos)</strong></td>
+                        <td><span class="text-danger" style="font-size: 1.5rem; font-weight: 700;">4.0</span></td>
+                        <td>Fraco - FALHA CRÍTICA</td>
+                        <td><span class="badge badge-danger">✗ FAIL</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>P4: 5 Erros Fatais (Evitar)</strong></td>
+                        <td><span class="text-warning" style="font-size: 1.5rem; font-weight: 700;">7.0</span></td>
+                        <td>Bom</td>
+                        <td><span class="badge badge-success">✓ PASS</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>P5: Hook Estilo Novela</strong></td>
+                        <td><span class="text-warning" style="font-size: 1.5rem; font-weight: 700;">6.5</span></td>
+                        <td>Aceitável</td>
+                        <td><span class="badge badge-warning">⚠ WEAK</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>P6: 7 Elementos Estruturais</strong></td>
+                        <td><span class="text-warning" style="font-size: 1.5rem; font-weight: 700;">7.0</span></td>
+                        <td>Bom (5/7 elementos)</td>
+                        <td><span class="badge badge-success">✓ PASS</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>P7: Adaptação por Arquétipo</strong></td>
+                        <td><span class="text-success" style="font-size: 1.5rem; font-weight: 700;">8.5</span></td>
+                        <td>Muito Bom</td>
+                        <td><span class="badge badge-success">✓ PASS</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Critical Issues -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">🚨 4 Críticas Principais</h2>
+                <span class="badge badge-danger">ATENÇÃO</span>
+            </div>
+            
+            <div class="critique-card critical">
+                <div class="critique-header">
+                    <span class="severity-badge severity-critical">CRÍTICO</span>
+                    <h3 style="flex: 1;">Regra de Ouro: 14 Conceitos (Máx. Deveria Ser 2-3)</h3>
+                </div>
+                <p style="margin-bottom: 16px;">
+                    <strong>Problema:</strong> Aula ensinou 14 CONCEITOS PRINCIPAIS em 3h10min. Sobrecarga cognitiva GARANTIDA para alunos não-técnicos.
+                </p>
+                <p style="margin-bottom: 16px;">
+                    <strong>Evidências:</strong>
+                </p>
+                <ul style="margin-bottom: 16px;">
+                    <li>Helder: "Eu confesso que estou igual surdo em bingo!" (02:39)</li>
+                    <li>Felipe Piedade: "Nunca me senti tão burro. É tudo novo." (02:54)</li>
+                    <li>Reino Educação: "To por fora total" (01:47)</li>
+                </ul>
+                <div style="background: rgba(239, 68, 68, 0.1); padding: 16px; border-radius: 8px; border-left: 4px solid var(--danger);">
+                    <strong>🔧 SOLUÇÃO:</strong> Dividir em 4-5 aulas OU criar trilhas (iniciante vs avançado)
+                </div>
+                <p style="margin-top: 16px; color: var(--text-muted); font-size: 0.875rem;">
+                    <strong>Público OK:</strong> Cohort avançado técnico (auto-selecionado) |
+                    <strong>Público Afetado:</strong> Alunos não-técnicos ou curso geral
+                </p>
+            </div>
+            
+            <div class="critique-card high">
+                <div class="critique-header">
+                    <span class="severity-badge severity-high">ALTA</span>
+                    <h3 style="flex: 1;">Falta de Exercícios Práticos Guiados</h3>
+                </div>
+                <p style="margin-bottom: 16px;">
+                    <strong>Problema:</strong> 0 exercícios guiados em 3h10min. Alunos tentaram aplicar sem guia, gerando confusão.
+                </p>
+                <div style="background: rgba(245, 158, 11, 0.1); padding: 16px; border-radius: 8px; border-left: 4px solid var(--warning);">
+                    <strong>🔧 SOLUÇÃO:</strong> Inserir 2-3 pausas de 10min com "FAÇA AGORA" guiado
+                </div>
+            </div>
+            
+            <div class="critique-card medium">
+                <div class="critique-header">
+                    <span class="severity-badge severity-medium">MÉDIA</span>
+                    <h3 style="flex: 1;">Hook Estilo Novela Fraco</h3>
+                </div>
+                <p style="margin-bottom: 16px;">
+                    <strong>Problema:</strong> Hook foi apenas ANÚNCIO de tópico, sem tensão ou gancho emocional.
+                </p>
+                <p style="margin-bottom: 16px;">
+                    <strong>Atual:</strong> "Próxima aula vamos ver Design System, que vocês pediram muito."
+                </p>
+                <div style="background: rgba(59, 130, 246, 0.1); padding: 16px; border-radius: 8px; border-left: 4px solid var(--secondary);">
+                    <strong>🔧 IDEAL:</strong> "Design System funciona perfeitamente... mas 90% dos devs React fazem ERRADO e acabam com 47 versões do mesmo botão. Você quer ser o 10% que faz certo? Próxima aula: O sistema que empresas como Vercel e Stripe usam."
+                </div>
+            </div>
+            
+            <div class="critique-card medium">
+                <div class="critique-header">
+                    <span class="severity-badge severity-medium">MÉDIA</span>
+                    <h3 style="flex: 1;">Falta de Ação Rápida (2min)</h3>
+                </div>
+                <p style="margin-bottom: 16px;">
+                    <strong>Problema:</strong> Sem "FAÇA AGORA (2min)" ao final para consolidar aprendizado imediato.
+                </p>
+                <div style="background: rgba(59, 130, 246, 0.1); padding: 16px; border-radius: 8px; border-left: 4px solid var(--secondary);">
+                    <strong>🔧 SOLUÇÃO:</strong> Adicionar exercício de 2min com critério de sucesso claro
+                </div>
+            </div>
+        </section>
+
+        <!-- Strengths -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">💪 4 Forças Principais</h2>
+                <span class="badge badge-success">MANTER</span>
+            </div>
+            
+            <div class="strength-list">
+                <div class="strength-item" style="padding: 20px; margin-bottom: 16px;">
+                    <span style="font-size: 1.5rem;">🎯</span>
+                    <div>
+                        <strong style="font-size: 1.125rem; display: block; margin-bottom: 8px;">
+                            5 Porquês - Essência Emocional (9.0)
+                        </strong>
+                        <p>Alan conectou DIRETO ao Nível 5 (liberdade, autonomia). Frame mental poderoso para absorver complexidade.</p>
+                    </div>
+                </div>
+                
+                <div class="strength-item" style="padding: 20px; margin-bottom: 16px;">
+                    <span style="font-size: 1.5rem;">🎨</span>
+                    <div>
+                        <strong style="font-size: 1.125rem; display: block; margin-bottom: 8px;">
+                            Semiótica - Elementos Visuais (9.5)
+                        </strong>
+                        <p>Analogias universais + mapa visual que gerou "entendi 100%". Conceitos complexos tornados tangíveis.</p>
+                    </div>
+                </div>
+                
+                <div class="strength-item" style="padding: 20px; margin-bottom: 16px;">
+                    <span style="font-size: 1.5rem;">🔥</span>
+                    <div>
+                        <strong style="font-size: 1.125rem; display: block; margin-bottom: 8px;">
+                            Engajamento (9.5)
+                        </strong>
+                        <p>100% participação (48/48), chat extremamente ativo (1310 mensagens), comunidade educando comunidade.</p>
+                    </div>
+                </div>
+                
+                <div class="strength-item" style="padding: 20px; margin-bottom: 16px;">
+                    <span style="font-size: 1.5rem;">🧠</span>
+                    <div>
+                        <strong style="font-size: 1.125rem; display: block; margin-bottom: 8px;">
+                            Domínio Técnico (9.5)
+                        </strong>
+                        <p>Pedro (8 meses experiência) impressionou com profundidade. Autoridade reconhecida pela turma.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final Recommendations -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">🎯 Recomendações Finais</h2>
+                <span class="badge badge-info">EXECUTAR</span>
+            </div>
+            
+            <div class="recommendation-box">
+                <h3>✅ PARA COHORT AVANÇADO ATUAL: APROVADA</h3>
+                <p style="margin-bottom: 16px;">Público auto-selecionado (técnico + comprometido). Densidade alta é aceitável e até desejada.</p>
+                <p style="font-weight: 600; margin-bottom: 12px;">Apenas adicionar:</p>
+                <ol>
+                    <li>2-3 pausas de 10min com exercícios guiados</li>
+                    <li>Hook melhor (gancho emocional para próxima aula)</li>
+                    <li>"FAÇA AGORA (2min)" ao final</li>
+                </ol>
+            </div>
+            
+            <div style="background: rgba(239, 68, 68, 0.1); border: 2px solid var(--danger); border-radius: 12px; padding: 32px; margin-top: 24px;">
+                <h3 style="color: var(--danger); margin-bottom: 16px;">🔴 PARA CURSO GERAL VENDIDO: REPROVAR E REGENERAR</h3>
+                <p style="margin-bottom: 16px;">DEVE dividir em 4-5 aulas (regra de ouro). Mudanças necessárias:</p>
+                <ol>
+                    <li><strong>Dividir conteúdo em 5 módulos</strong> (3 conceitos cada)</li>
+                    <li><strong>Criar trilhas</strong> (iniciante: conceitos 1-6, avançado: todos)</li>
+                    <li><strong>Inserir exercícios práticos</strong> em cada módulo</li>
+                    <li><strong>Hooks estilo novela</strong> entre módulos</li>
+                    <li><strong>Ação rápida</strong> ao final de cada módulo</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Insights -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">💡 5 Insights Principais</h2>
+                <span class="badge badge-info">APRENDIZADOS</span>
+            </div>
+            
+            <div style="display: grid; gap: 16px; margin-top: 24px;">
+                <div style="background: var(--bg-card-hover); padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary);">
+                    <h4 style="color: var(--primary); margin-bottom: 12px;">1. Dupla Alan+Pedro é OURO</h4>
+                    <p>Alan (visão + mentalidade) + Pedro (execução + detalhes) criaram complementaridade perfeita. Sistema natural de "ensino em dupla".</p>
+                    <p style="margin-top: 8px; font-weight: 600;">📌 Manter dupla em futuras aulas</p>
+                </div>
+                
+                <div style="background: var(--bg-card-hover); padding: 20px; border-radius: 12px; border-left: 4px solid var(--secondary);">
+                    <h4 style="color: var(--secondary); margin-bottom: 12px;">2. Comunidade como Terceiro Professor</h4>
+                    <p>José Carlos (site ao vivo), João Lozano (bíblia), Renata (frameworks). Comunidade ATIVA como co-educadora.</p>
+                    <p style="margin-top: 8px; font-weight: 600;">📌 Incentivar e reconhecer contribuições</p>
+                </div>
+                
+                <div style="background: var(--bg-card-hover); padding: 20px; border-radius: 12px; border-left: 4px solid var(--accent);">
+                    <h4 style="color: var(--accent); margin-bottom: 12px;">3. Mapa Visual = Momento de Virada</h4>
+                    <p>Diagrama de Epic → Story → Task gerou "entendi 100%" coletivo. VISUAL > TEXTO para conceitos hierárquicos.</p>
+                    <p style="margin-top: 8px; font-weight: 600;">📌 Criar mais mapas visuais para conceitos complexos</p>
+                </div>
+                
+                <div style="background: var(--bg-card-hover); padding: 20px; border-radius: 12px; border-left: 4px solid var(--warning);">
+                    <h4 style="color: var(--warning); margin-bottom: 12px;">4. Sobrecarga Cognitiva Aceitável para Técnicos</h4>
+                    <p>14 conceitos seria INACEITÁVEL para curso geral, MAS funcionou para cohort avançado (público auto-selecionado).</p>
+                    <p style="margin-top: 8px; font-weight: 600;">📌 Manter para cohort avançado, dividir para curso geral</p>
+                </div>
+                
+                <div style="background: var(--bg-card-hover); padding: 20px; border-radius: 12px; border-left: 4px solid var(--danger);">
+                    <h4 style="color: var(--danger); margin-bottom: 12px;">5. Hook Fraco Não Matou Continuidade</h4>
+                    <p>Apesar de hook fraco, alunos já estão comprometidos (cohort pago). Hook importa MAIS para curso assíncrono.</p>
+                    <p style="margin-top: 8px; font-weight: 600;">📌 Melhorar hook para versão gravada/vendida</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer style="text-align: center; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--text-muted);">
+            <p>🎓 Academia Lendária - CreatorOS</p>
+            <p style="margin-top: 8px; font-size: 0.875rem;">
+                Framework GPS 1.0 + Metodologia Lendária 1.0 | Análise gerada por Lesson Analysis Squad
+            </p>
+            <p style="margin-top: 16px; font-size: 0.75rem; color: var(--danger);">
+                🔒 CONFIDENCIAL - Uso interno exclusivo para melhoria pedagógica
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

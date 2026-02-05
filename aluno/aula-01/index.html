@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aula 01 - AIOS Avançado | Análise e Recursos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #22c55e;
+            --primary-dark: #16a34a;
+            --secondary: #3b82f6;
+            --accent: #8b5cf6;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px 16px;
+            }
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+            padding: 48px 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header .subtitle {
+            font-size: 1.25rem;
+            opacity: 0.95;
+            margin-bottom: 24px;
+        }
+        
+        .meta-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.75rem;
+            }
+            .header .subtitle {
+                font-size: 1rem;
+            }
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        
+        .card-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .card-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        
+        .badge-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .badge-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .badge-accent {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .badge-warning {
+            background: var(--warning);
+            color: white;
+        }
+        
+        /* CTA Card */
+        .cta-card {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+        }
+        
+        .cta-card:hover {
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.5);
+        }
+        
+        /* Mind Map */
+        .mindmap {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 24px;
+        }
+        
+        .mindmap-central {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 32px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .mindmap-central h3 {
+            font-size: 1.75rem;
+            margin-bottom: 8px;
+        }
+        
+        .mindmap-central p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+        }
+        
+        .mindmap-branch {
+            background: var(--bg-card-hover);
+            padding: 24px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+        
+        .mindmap-branch h4 {
+            font-size: 1.25rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .mindmap-concept {
+            margin-bottom: 16px;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+        
+        .mindmap-concept strong {
+            color: var(--primary);
+            display: block;
+            margin-bottom: 4px;
+        }
+        
+        /* Lists */
+        ul, ol {
+            padding-left: 24px;
+        }
+        
+        li {
+            margin-bottom: 12px;
+        }
+        
+        /* Takeaways */
+        .takeaway-item {
+            background: var(--bg-card-hover);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .takeaway-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .takeaway-number {
+            background: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .takeaway-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        /* Key Points */
+        .keypoint-item {
+            background: var(--bg-card-hover);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .keypoint-type {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        
+        .type-quote {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .type-insight {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .keypoint-content {
+            font-size: 1.125rem;
+            font-style: italic;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .keypoint-meta {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+        
+        .stat-item {
+            background: var(--bg-card-hover);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        
+        /* Resources */
+        .resource-item {
+            background: var(--bg-card-hover);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            transition: transform 0.2s;
+        }
+        
+        .resource-item:hover {
+            transform: translateX(4px);
+            background: var(--bg-card);
+        }
+        
+        .resource-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .resource-link {
+            color: var(--secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            word-break: break-all;
+        }
+        
+        .resource-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+        
+        /* Utilities */
+        .text-center {
+            text-align: center;
+        }
+        
+        .mt-24 {
+            margin-top: 24px;
+        }
+        
+        .mb-16 {
+            margin-bottom: 16px;
+        }
+        
+        .highlight {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .card {
+                padding: 24px 16px;
+            }
+            
+            .takeaway-item,
+            .keypoint-item,
+            .resource-item {
+                padding: 16px;
+            }
+            
+            .mindmap {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🎓 AIOS Avançado - Aula 01</h1>
+                <p class="subtitle">Arquitetura, Workflows e Mindset Para Desenvolvimento 10x Mais Rápido</p>
+                <div class="meta-info">
+                    <div class="meta-item">
+                        <span>📅</span>
+                        <span>04 de Fevereiro, 2026</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>⏱️</span>
+                        <span>3h10min</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>👥</span>
+                        <span>48 participantes</span>
+                    </div>
+                    <div class="meta-item">
+                        <span>👨‍🏫</span>
+                        <span>Alan Nicolas + Pedro Valerio Lopez</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mapa Mental -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">🧠 Mapa Mental da Aula</h2>
+                <span class="badge badge-primary">Visão Completa</span>
+            </div>
+            
+            <div class="mindmap-central">
+                <h3>AIOS Framework: Arquitetura e Workflows</h3>
+                <p>Do Mindset de Tokens à Estrutura de Epics, Stories e Tasks</p>
+            </div>
+            
+            <div class="mindmap">
+                <div class="mindmap-branch" style="border-color: #3b82f6;">
+                    <h4><span>💡</span> MINDSET & INVESTIMENTO</h4>
+                    <div class="mindmap-concept">
+                        <strong>Tokens como Energia Elétrica</strong>
+                        <p>R$200/mês não é custo, é infraestrutura essencial</p>
+                    </div>
+                    <div class="mindmap-concept">
+                        <strong>Produtividade vs Custo</strong>
+                        <p>1 mês = R$1M em time tradicional</p>
+                    </div>
+                </div>
+                
+                <div class="mindmap-branch" style="border-color: #8b5cf6;">
+                    <h4><span>🏗️</span> ESTRUTURA AIOS</h4>
+                    <div class="mindmap-concept">
+                        <strong>Monorepo</strong>
+                        <p>Tudo na mesma pasta</p>
+                    </div>
+                    <div class="mindmap-concept">
+                        <strong>.aios-core/</strong>
+                        <p>Framework base (READ-ONLY)</p>
+                    </div>
+                </div>
+                
+                <div class="mindmap-branch" style="border-color: #ec4899;">
+                    <h4><span>📋</span> HIERARQUIA DE TRABALHO</h4>
+                    <div class="mindmap-concept">
+                        <strong>Epic → Story → Task</strong>
+                        <p>Decomposição que evita sobrecarga de contexto</p>
+                    </div>
+                </div>
+                
+                <div class="mindmap-branch" style="border-color: #f59e0b;">
+                    <h4><span>🤖</span> AGENTES E COMANDOS</h4>
+                    <div class="mindmap-concept">
+                        <strong>@ vs /</strong>
+                        <p>@ = simula, / = executa DE VERDADE</p>
+                    </div>
+                    <div class="mindmap-concept">
+                        <strong>BOB (Baby On Board)</strong>
+                        <p>Modo com rodinhas para iniciantes</p>
+                    </div>
+                </div>
+                
+                <div class="mindmap-branch" style="border-color: #10b981;">
+                    <h4><span>🛠️</span> FERRAMENTAS ESSENCIAIS</h4>
+                    <div class="mindmap-concept">
+                        <strong>CodeRabbit</strong>
+                        <p>Code review automático</p>
+                    </div>
+                    <div class="mindmap-concept">
+                        <strong>YOLO Mode</strong>
+                        <p>Modo 'foda-se' - vai fundo</p>
+                    </div>
+                </div>
+                
+                <div class="mindmap-branch" style="border-color: #ef4444;">
+                    <h4><span>📝</span> DOCUMENTAÇÃO > CONVERSA</h4>
+                    <div class="mindmap-concept">
+                        <strong>Insight Revolucionário</strong>
+                        <p>DOCs estruturados > Chat conversacional</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-24">
+                <p style="font-size: 1.125rem; color: var(--primary); font-weight: 600;">
+                    💡 "AIOS não é só ferramenta - é uma nova forma de PENSAR desenvolvimento"
+                </p>
+            </div>
+        </section>
+
+        <!-- Principais Takeaways -->
+        <section class="card cta-card">
+            <div class="card-header">
+                <h2 class="card-title">⚡ 7 Ações Para Aplicar AGORA</h2>
+                <span class="badge badge-warning">FAÇA ESTA SEMANA</span>
+            </div>
+            
+            <div class="takeaway-item">
+                <div class="takeaway-header">
+                    <div class="takeaway-number">1</div>
+                    <div class="takeaway-title">Mude sua mentalidade sobre tokens</div>
+                </div>
+                <p>Assine Claude Pro ou API. Trate como conta de luz, não como luxo.</p>
+                <p style="margin-top: 8px; color: var(--text-muted); font-size: 0.875rem;">
+                    ⏰ <strong>Deadline:</strong> Esta semana | 
+                    🎯 <strong>Por quê:</strong> Sem infraestrutura adequada, você não pratica corretamente
+                </p>
+            </div>
+            
+            <div class="takeaway-item">
+                <div class="takeaway-header">
+                    <div class="takeaway-number">2</div>
+                    <div class="takeaway-title">Explore a estrutura do AIOS no seu projeto</div>
+                </div>
+                <ul>
+                    <li>Abra .aios-core e entenda as pastas (agents, tasks, workflows)</li>
+                    <li>Leia claude.md completo do seu projeto</li>
+                    <li>Identifique expansion-packs que você usa</li>
+                </ul>
+                <p style="margin-top: 8px; color: var(--text-muted); font-size: 0.875rem;">
+                    ⏰ <strong>Deadline:</strong> Próximos 3 dias
+                </p>
+            </div>
+            
+            <div class="takeaway-item">
+                <div class="takeaway-header">
+                    <div class="takeaway-number">3</div>
+                    <div class="takeaway-title">Pratique decomposição Epic → Story → Task NO PAPEL</div>
+                </div>
+                <p>Pegue um projeto real seu e quebre em:</p>
+                <ul>
+                    <li>1 Epic (objetivo grande)</li>
+                    <li>3-5 Stories (pedaços entregáveis)</li>
+                    <li>2-3 Tasks por Story (ações específicas)</li>
+                </ul>
+                <p style="margin-top: 8px; color: var(--text-muted); font-size: 0.875rem;">
+                    💡 NÃO execute no AIOS ainda - apenas pratique PENSAR nessa estrutura
+                </p>
+            </div>
+            
+            <div class="takeaway-item">
+                <div class="takeaway-header">
+                    <div class="takeaway-number">4</div>
+                    <div class="takeaway-title">Use BOB para seu próximo projeto pequeno</div>
+                </div>
+                <p>Chame /bob ou agente Baby On Board para criar algo simples. Deixe ele te guiar.</p>
+            </div>
+            
+            <div class="takeaway-item">
+                <div class="takeaway-header">
+                    <div class="takeaway-number">5</div>
+                    <div class="takeaway-title">DOCUMENTE antes de executar</div>
+                </div>
+                <p>Próximo projeto: NÃO abra Claude Code e comece a conversar.</p>
+                <p style="margin-top: 12px;"><strong>FAÇA:</strong></p>
+                <ol>
+                    <li>Crie brief.md ou prd.md com o que quer</li>
+                    <li>Estruture Epic → Stories no documento</li>
+                    <li>SÓ ENTÃO chame AIOS para executar</li>
+                </ol>
+                <p style="margin-top: 8px; color: var(--primary); font-weight: 600;">
+                    💎 Documentação > Conversa = determinismo > ambiguidade
+                </p>
+            </div>
+            
+            <div class="takeaway-item">
+                <div class="takeaway-header">
+                    <div class="takeaway-number">6</div>
+                    <div class="takeaway-title">Instale CodeRabbit e rode /devops</div>
+                </div>
+                <ul>
+                    <li>Crie conta gratuita: <a href="https://app.coderabbit.ai/" target="_blank" class="resource-link">https://app.coderabbit.ai/</a></li>
+                    <li>No seu projeto: /devops</li>
+                    <li>Execute: *environment-bootstrap</li>
+                    <li>Conecte GitHub e rode primeiro code review</li>
+                </ul>
+            </div>
+            
+            <div class="takeaway-item">
+                <div class="takeaway-header">
+                    <div class="takeaway-number">7</div>
+                    <div class="takeaway-title">Contribua com a comunidade</div>
+                </div>
+                <p>Acesse os recursos criados por alunos e documente SUAS descobertas também!</p>
+            </div>
+        </section>
+
+        <!-- Pontos-Chave -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">💎 10 Insights Memoráveis</h2>
+                <span class="badge badge-accent">Guarde Estes</span>
+            </div>
+            
+            <div class="keypoint-item">
+                <span class="keypoint-type type-quote">Quote</span>
+                <div class="keypoint-content">
+                    "Tokens para empresa = energia elétrica. Não é gasto, é operação. Você não fica 3 meses sem luz para economizar."
+                </div>
+                <div class="keypoint-meta">
+                    👤 Alan Nicolas • ⏱️ 00:06:00 • 🎯 Mudança de mindset fundamental
+                </div>
+            </div>
+            
+            <div class="keypoint-item">
+                <span class="keypoint-type type-insight">Insight</span>
+                <div class="keypoint-content">
+                    @ = persona-switching (simula), / = spawn de agente (executa DE VERDADE)
+                </div>
+                <div class="keypoint-meta">
+                    💡 Diferença crítica que determina se AIOS vai FAZER ou só SIMULAR
+                </div>
+            </div>
+            
+            <div class="keypoint-item">
+                <span class="keypoint-type type-quote">Quote</span>
+                <div class="keypoint-content">
+                    "Documentação estruturada > Chat conversacional. Totalmente contra-intuitivo, mas é o que funciona."
+                </div>
+                <div class="keypoint-meta">
+                    👤 Pedro Valerio Lopez • ⏱️ 03:25:00 • 🤯 Momento 'aha!' coletivo
+                </div>
+            </div>
+            
+            <div class="keypoint-item">
+                <span class="keypoint-type type-insight">Insight</span>
+                <div class="keypoint-content">
+                    Epic → Story → Task: decomposição que permite AIOS não perder contexto
+                </div>
+                <div class="keypoint-meta">
+                    💡 Hierarquia modular evita estouro de janela de contexto
+                </div>
+            </div>
+            
+            <div class="keypoint-item">
+                <span class="keypoint-type type-quote">Quote</span>
+                <div class="keypoint-content">
+                    "1 mês do meu trabalho com AIOS = equivalente a R$1M em time tradicional. Gastei R$500."
+                </div>
+                <div class="keypoint-meta">
+                    👤 Alan Nicolas • 💰 Justificativa matemática para investimento
+                </div>
+            </div>
+            
+            <div class="keypoint-item">
+                <span class="keypoint-type type-quote">Quote</span>
+                <div class="keypoint-content">
+                    "Quando tenho dúvida, pergunto para o Claude… quando o Claude tem dúvida, pergunta para o Pedro."
+                </div>
+                <div class="keypoint-meta">
+                    👤 rodrigofaerman • 😄 Reconhecimento da expertise técnica do Pedro
+                </div>
+            </div>
+            
+            <div class="keypoint-item">
+                <span class="keypoint-type type-insight">Insight</span>
+                <div class="keypoint-content">
+                    Monorepo = tudo na mesma pasta. Compartilha configuração, simplifica gerenciamento.
+                </div>
+                <div class="keypoint-meta">
+                    🗂️ Estrutura que permite múltiplos projetos com mesmas regras
+                </div>
+            </div>
+            
+            <div class="keypoint-item">
+                <span class="keypoint-type type-quote">Quote</span>
+                <div class="keypoint-content">
+                    "AIOS é o que tangibiliza da forma mais impressionante que vi o porquê projetam unicórnios de 1 pessoa só em 2026."
+                </div>
+                <div class="keypoint-meta">
+                    👤 Thiago Otto • 🚀 Visão de futuro e escala
+                </div>
+            </div>
+        </section>
+
+        <!-- Estatísticas -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">📊 Números da Aula</h2>
+                <span class="badge badge-secondary">Dados Concretos</span>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">R$ 1M</div>
+                    <div class="stat-label">Equivalente em custo de time<br>para 1 mês de trabalho de Alan</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">R$ 500</div>
+                    <div class="stat-label">Gasto real em tokens<br>no mesmo período</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">48</div>
+                    <div class="stat-label">Participantes ativos<br>durante toda aula</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">1.310</div>
+                    <div class="stat-label">Mensagens no chat<br>(~7 por minuto)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">67</div>
+                    <div class="stat-label">Perguntas técnicas<br>de profundidade</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">9.3/10</div>
+                    <div class="stat-label">Satisfação estimada<br>da turma</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">14</div>
+                    <div class="stat-label">Links compartilhados<br>(ferramentas e recursos)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">90%</div>
+                    <div class="stat-label">Economia de tokens<br>com otimizações</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recursos Compartilhados -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">🔗 Recursos Criados Pela Comunidade</h2>
+                <span class="badge badge-primary">Confira!</span>
+            </div>
+            
+            <div class="resource-item">
+                <div class="resource-title">📚 Site Cohort AIOS Avançado</div>
+                <p style="margin-bottom: 8px;">Documentação visual completa - José Carlos mapeou tudo da aula em tempo real!</p>
+                <a href="https://aios-advanced-cohort.vercel.app/" target="_blank" class="resource-link">
+                    https://aios-advanced-cohort.vercel.app/
+                </a>
+                <p style="margin-top: 8px; font-size: 0.875rem; color: var(--text-muted);">
+                    👤 Por: José Carlos Amorim (josecarlosamorim)
+                </p>
+            </div>
+            
+            <div class="resource-item">
+                <div class="resource-title">📖 Bíblia AIOS Interativa</div>
+                <p style="margin-bottom: 8px;">Documentação completa do framework AIOS</p>
+                <a href="https://biblia-aios-interativa.vercel.app/" target="_blank" class="resource-link">
+                    https://biblia-aios-interativa.vercel.app/
+                </a>
+                <p style="margin-top: 8px; font-size: 0.875rem; color: var(--text-muted);">
+                    👤 Por: João Lozano
+                </p>
+            </div>
+            
+            <div class="resource-item">
+                <div class="resource-title">🛠️ CodeRabbit</div>
+                <p style="margin-bottom: 8px;">Code Review com IA - essencial para workflow AIOS</p>
+                <a href="https://app.coderabbit.ai/" target="_blank" class="resource-link">
+                    https://app.coderabbit.ai/
+                </a>
+                <p style="margin-top: 8px; font-size: 0.875rem; color: var(--text-muted);">
+                    💡 Criar conta gratuita e integrar com GitHub
+                </p>
+            </div>
+            
+            <div class="resource-item">
+                <div class="resource-title">💾 AIOS Core (GitHub)</div>
+                <p style="margin-bottom: 8px;">Repositório oficial - use git pull para atualizar AIOS</p>
+                <a href="https://github.com/SynkraAI/aios-core" target="_blank" class="resource-link">
+                    https://github.com/SynkraAI/aios-core
+                </a>
+            </div>
+            
+            <div class="resource-item">
+                <div class="resource-title">🧠 ALMA Memory</div>
+                <p style="margin-bottom: 8px;">Sistema de memória para agentes IA</p>
+                <a href="https://github.com/RBKunnela/ALMA-memory.git" target="_blank" class="resource-link">
+                    https://github.com/RBKunnela/ALMA-memory.git
+                </a>
+                <p style="margin-top: 8px; font-size: 0.875rem; color: var(--text-muted);">
+                    👤 Por: Renata Baldissara-Kunnela
+                </p>
+            </div>
+        </section>
+
+        <!-- Próximas Aulas -->
+        <section class="card cta-card">
+            <div class="card-header">
+                <h2 class="card-title">📅 Próxima Aula</h2>
+                <span class="badge badge-warning">Terça, 18h</span>
+            </div>
+            
+            <p style="font-size: 1.125rem; margin-bottom: 16px;">
+                <strong>Tópicos Esperados:</strong>
+            </p>
+            <ul>
+                <li><strong>Design System</strong> (muito aguardado pela turma)</li>
+                <li>Detalhamento de workflows</li>
+                <li>Memory Layer e embeddings</li>
+                <li>Squads customizados avançados</li>
+            </ul>
+            
+            <p style="margin-top: 24px; font-size: 1.125rem;">
+                <strong>📞 Suporte:</strong> Quintas, 18h (Zoom - link será compartilhado)
+            </p>
+        </section>
+
+        <!-- Footer -->
+        <footer style="text-align: center; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--text-muted);">
+            <p>🎓 Cohort AIOS Avançado • Academia Lendária</p>
+            <p style="margin-top: 8px; font-size: 0.875rem;">
+                Análise gerada automaticamente pelo Lesson Analysis Squad 🤖
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
