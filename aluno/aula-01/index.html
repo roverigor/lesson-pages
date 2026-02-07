@@ -17,15 +17,6 @@
                         'border-hover': 'rgba(255, 255, 255, 0.15)',
                         'glass': 'rgba(255, 255, 255, 0.03)',
                         'glass-hover': 'rgba(255, 255, 255, 0.05)',
-                    },
-                    animation: {
-                        'pulse-soft': 'pulse-soft 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    },
-                    keyframes: {
-                        'pulse-soft': {
-                            '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-                            '50%': { opacity: '0.9', transform: 'scale(1.02)' },
-                        }
                     }
                 }
             }
@@ -36,128 +27,67 @@
             0%, 100% { box-shadow: 0 0 24px rgba(234, 179, 8, 0.15); }
             50% { box-shadow: 0 0 32px rgba(234, 179, 8, 0.25); }
         }
-        .cta-pulse {
-            animation: ctaPulse 3s infinite;
-        }
+        .cta-pulse { animation: ctaPulse 3s infinite; }
     </style>
 </head>
 <body class="bg-dark-bg text-white font-sans antialiased">
     <div class="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
         <div class="max-w-7xl mx-auto">
 
-            <!-- Header -->
+            <!-- 1. HEADER -->
             <header class="text-center mb-16 pt-10">
                 <div class="inline-flex items-center px-4 py-1.5 mb-6 bg-glass border border-border-subtle rounded-full">
                     <span class="text-xs font-medium tracking-widest text-white/60 uppercase">
                         Cohort AIOS Avançado - Aula 01 • 2026-02-04
                     </span>
                 </div>
-
-                <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold mb-4 leading-tight">
-                    AIOS Avançado: Arquitetura, Workflows e Mindset Para Desenvolvimento 10x Mais Rápido
-                </h1>
-
-                <p class="text-3xl sm:text-4xl font-light italic text-white/80 mb-6">
-                    Do Mindset de Tokens à Estrutura de Epics, Stories e Tasks
-                </p>
-
-                <p class="text-lg text-white/60 max-w-3xl mx-auto leading-relaxed">
-                    AIOS não é só ferramenta - é uma nova forma de PENSAR desenvolvimento
-                </p>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 leading-tight">AIOS Avançado: Arquitetura, Workflows e Mindset Para Desenvolvimento 10x Mais Rápido</h1>
+                <p class="text-2xl sm:text-3xl font-light italic text-white/80 mb-6">Do Mindset de Tokens à Estrutura de Epics, Stories e Tasks</p>
+                <p class="text-lg text-white/60 max-w-3xl mx-auto leading-relaxed">AIOS não é só ferramenta - é uma nova forma de PENSAR desenvolvimento</p>
             </header>
 
-            <!-- Stats Grid -->
+            <!-- 2. STATS GRID -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-16">
-                <!-- Duration Card -->
                 <div class="bg-glass border border-border-subtle rounded-xl p-6 hover:bg-glass-hover hover:border-border-hover transition-all duration-300 hover:-translate-y-1">
-                    <div class="text-4xl font-bold text-white mb-2">3h10min (18:00-21:10)</div>
+                    <div class="text-3xl sm:text-4xl font-bold text-white mb-2">3h10min (18:00-21:10)</div>
                     <div class="text-sm text-white/50 uppercase tracking-wide">Duração</div>
                     <div class="text-xs text-white/40 mt-1">Online (Zoom)</div>
                 </div>
-
-                <!-- Participants Card -->
                 <div class="bg-glass border border-border-subtle rounded-xl p-6 hover:bg-glass-hover hover:border-border-hover transition-all duration-300 hover:-translate-y-1">
-                    <div class="text-4xl font-bold text-white mb-2">48</div>
+                    <div class="text-3xl sm:text-4xl font-bold text-white mb-2">48</div>
                     <div class="text-sm text-white/50 uppercase tracking-wide">Participantes</div>
                     <div class="text-xs text-white/40 mt-1">Engajados</div>
                 </div>
-
-                <!-- Sentiment Card -->
                 <div class="bg-glass border border-border-subtle rounded-xl p-6 hover:bg-glass-hover hover:border-border-hover transition-all duration-300 hover:-translate-y-1">
-                    <div class="text-4xl font-bold text-emerald-400 mb-2">93%</div>
+                    <div class="text-3xl sm:text-4xl font-bold text-emerald-400 mb-2">9.3/10</div>
                     <div class="text-sm text-white/50 uppercase tracking-wide">Sentimento</div>
-                    <div class="text-xs text-white/40 mt-1">Positivo</div>
+                    <div class="text-xs text-white/40 mt-1">Altamente positivo e engajado</div>
                 </div>
-
-                <!-- Messages Card -->
                 <div class="bg-glass border border-border-subtle rounded-xl p-6 hover:bg-glass-hover hover:border-border-hover transition-all duration-300 hover:-translate-y-1">
-                    <div class="text-4xl font-bold text-white mb-2">N/A</div>
+                    <div class="text-3xl sm:text-4xl font-bold text-white mb-2">1310</div>
                     <div class="text-sm text-white/50 uppercase tracking-wide">Mensagens</div>
                     <div class="text-xs text-white/40 mt-1">No chat</div>
                 </div>
             </div>
 
-            <!-- Summary Box -->
+            <!-- 3. SUMMARY BOX -->
             <section class="mb-16">
                 <div class="text-center mb-8">
                     <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">Resumo Completo da Aula</h2>
                 </div>
-
-                <div class="bg-glass border-l-4 border-l-blue-500 border-r border-r-border-subtle border-t border-t-border-subtle border-b border-b-border-subtle rounded-r-xl p-8">
+                <div class="bg-glass border-l-4 border-l-blue-500 border border-border-subtle rounded-r-xl p-8">
                     <h3 class="text-2xl font-bold text-blue-400 mb-6">O Que Aconteceu Nesta Aula</h3>
-
-                    <div class="prose prose-invert max-w-none">
-                        <p class="text-white/90">Nesta aula de 3h10min, Alan Nicolas e Pedro Valerio Lopez desmistificaram a arquitetura completa do AIOS Framework e transformaram a forma como você deve pensar desenvolvimento.
-
-**MENTALIDADE PRIMEIRO:** Alan começou com um choque de realidade: tokens NÃO são luxo, são infraestrutura. Assim como sua empresa precisa de energia elétrica e internet, ela precisa de tokens para sobreviver em 2026. Ele mostrou que 1 mês do trabalho dele equivale a R$1M em custos de time tradicional - enquanto gasta R$200-500 em tokens. A lição: pare de economizar cafezinho e foque em CRIAR.
-
-**ARQUITETURA REVELADA:** Pedro desmontou o AIOS peça por peça. .aios-core é o framework base (nunca toque!), expansion-packs são suas customizações, e claude.md é a &quot;Terra&quot; - regras globais. Monorepo significa tudo na mesma pasta, compartilhando configuração. A estrutura parece complexa, mas cada pasta tem propósito claro.
-
-**EPIC → STORY → TASK:** A hierarquia de trabalho foi o ponto de virada. Epic = grande objetivo (ex: &quot;Sistema de Auth&quot;), Story = pedaço entregável (ex: &quot;Login com Google&quot;), Task = ação específica (ex: &quot;Criar botão&quot;). Workflows orquestram Tasks automaticamente. Essa decomposição é o que permite AIOS não se perder em contexto gigante.
-
-**@ vs / - REVELAÇÃO CRÍTICA:** @ simula um agente (persona-switching), / spawna agente DE VERDADE. Diferença enorme! @pm apenas muda tom de voz, /pm executa workflow completo com ferramentas. Essa distinção é crucial para usar AIOS corretamente.
-
-**BOB - SEU PRIMEIRO AGENTE:** Baby On Board é o agente para iniciantes. Modo com &quot;rodinhas&quot; que guia você passo a passo. Alan e Pedro enfatizaram: não tenha vergonha de usar BOB - até experts usam quando estão aprendendo nova área.
-
-**DOCUMENTAÇÃO &gt; CONVERSA:** O momento &quot;mind blowing&quot; da aula. Pedro revelou: criar DOCUMENTOS estruturados funciona MELHOR que chat conversacional. Documentos dão contexto claro e determinismo. Chats levam a ambiguidade e erros. Essa foi a sacada contra-intuitiva que fez a turma explodir em reações.
-
-**FERRAMENTAS DO ECOSSISTEMA:** CodeRabbit (code review IA), GitHub Actions (CI/CD), Environment Bootstrap (instala tudo), YOLO Mode (vai fundo sem perguntar). Cada ferramenta tem papel específico no workflow.
-
-**COMUNIDADE ATIVA:** José Carlos criou site documentando aula em tempo real, João Lozano mantém Bíblia AIOS, Renata compartilhou 3 frameworks próprios. A turma não apenas consome - CRIA.
-</p>
-                    </div>
-
-                    <!-- Demonstrations -->
-                    <div class="mt-6">
-                        <h4 class="text-lg font-semibold mb-4">Demonstrações Práticas:</h4>
-                        <ul class="space-y-3">
-                            <li class="flex items-start gap-2"><span class="text-emerald-400">✓</span><span class="text-white/80">: </span></li><li class="flex items-start gap-2"><span class="text-emerald-400">✓</span><span class="text-white/80">: </span></li><li class="flex items-start gap-2"><span class="text-emerald-400">✓</span><span class="text-white/80">: </span></li><li class="flex items-start gap-2"><span class="text-emerald-400">✓</span><span class="text-white/80">: </span></li>
-                        </ul>
-                    </div>
-
-                    <!-- Insights -->
-                    <div class="mt-6">
-                        <h4 class="text-lg font-semibold mb-4">Insights Profundos:</h4>
-                        <ul class="space-y-3">
-                            <li class="text-white/40">Nenhum insight disponível</li>
-                        </ul>
-                    </div>
-
-                    <!-- Key Message -->
-                    <div class="mt-6 p-4 bg-white/5 rounded-lg border-l-2 border-l-yellow-500">
-                        <p class="text-sm font-semibold text-yellow-400 mb-1">Mensagem Principal:</p>
-                        <p class="text-base italic text-white/90">AIOS não é só ferramenta - é uma nova forma de PENSAR desenvolvimento</p>
+                    <div class="prose prose-invert max-w-none text-white/90 leading-relaxed">
+                        <p class="mb-4">Nesta aula de 3h10min, Alan Nicolas e Pedro Valerio Lopez desmistificaram a arquitetura completa do AIOS Framework e transformaram a forma como você deve pensar desenvolvimento.</p><p class="mb-4">**MENTALIDADE PRIMEIRO:** Alan começou com um choque de realidade: tokens NÃO são luxo, são infraestrutura. Assim como sua empresa precisa de energia elétrica e internet, ela precisa de tokens para sobreviver em 2026. Ele mostrou que 1 mês do trabalho dele equivale a R$1M em custos de time tradicional - enquanto gasta R$200-500 em tokens. A lição: pare de economizar cafezinho e foque em CRIAR.</p><p class="mb-4">**ARQUITETURA REVELADA:** Pedro desmontou o AIOS peça por peça. .aios-core é o framework base (nunca toque!), expansion-packs são suas customizações, e claude.md é a &quot;Terra&quot; - regras globais. Monorepo significa tudo na mesma pasta, compartilhando configuração. A estrutura parece complexa, mas cada pasta tem propósito claro.</p><p class="mb-4">**EPIC → STORY → TASK:** A hierarquia de trabalho foi o ponto de virada. Epic = grande objetivo (ex: &quot;Sistema de Auth&quot;), Story = pedaço entregável (ex: &quot;Login com Google&quot;), Task = ação específica (ex: &quot;Criar botão&quot;). Workflows orquestram Tasks automaticamente. Essa decomposição é o que permite AIOS não se perder em contexto gigante.</p><p class="mb-4">**@ vs / - REVELAÇÃO CRÍTICA:** @ simula um agente (persona-switching), / spawna agente DE VERDADE. Diferença enorme! @pm apenas muda tom de voz, /pm executa workflow completo com ferramentas. Essa distinção é crucial para usar AIOS corretamente.</p><p class="mb-4">**BOB - SEU PRIMEIRO AGENTE:** Baby On Board é o agente para iniciantes. Modo com &quot;rodinhas&quot; que guia você passo a passo. Alan e Pedro enfatizaram: não tenha vergonha de usar BOB - até experts usam quando estão aprendendo nova área.</p><p class="mb-4">**DOCUMENTAÇÃO &gt; CONVERSA:** O momento &quot;mind blowing&quot; da aula. Pedro revelou: criar DOCUMENTOS estruturados funciona MELHOR que chat conversacional. Documentos dão contexto claro e determinismo. Chats levam a ambiguidade e erros. Essa foi a sacada contra-intuitiva que fez a turma explodir em reações.</p><p class="mb-4">**FERRAMENTAS DO ECOSSISTEMA:** CodeRabbit (code review IA), GitHub Actions (CI/CD), Environment Bootstrap (instala tudo), YOLO Mode (vai fundo sem perguntar). Cada ferramenta tem papel específico no workflow.</p><p class="mb-4">**COMUNIDADE ATIVA:** José Carlos criou site documentando aula em tempo real, João Lozano mantém Bíblia AIOS, Renata compartilhou 3 frameworks próprios. A turma não apenas consome - CRIA.</p>
                     </div>
                 </div>
             </section>
 
-            <!-- Mind Map -->
+            <!-- 4. MIND MAP -->
             <section class="mb-16">
                 <div class="text-center mb-8">
                     <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">🧠 Mapa Mental da Aula</h2>
                 </div>
-
-                <!-- Central Node -->
                 <div class="mb-10 flex justify-center">
                     <div class="max-w-2xl w-full bg-gradient-to-br from-emerald-500/10 to-blue-500/10 border-2 border-emerald-500/30 rounded-2xl p-10 shadow-[0_8px_32px_rgba(34,197,94,0.2)]">
                         <h3 class="text-3xl font-bold text-emerald-400 mb-3 text-center">AIOS Framework: Arquitetura e Workflows de Desenvolvimento</h3>
@@ -167,95 +97,165 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Branches Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     
-      <div class="bg-blue-500/10 border-l-4 border-l-blue-500 rounded-r-xl p-6 hover:-translate-y-2 transition-all duration-300">
+      <div class="bg-blue-500/10 border-l-4 border-l-blue-500 border border-border-subtle rounded-r-xl p-6 hover:-translate-y-2 transition-all duration-300">
         <div class="flex items-center gap-3 mb-4">
           <span class="text-3xl">💡</span>
           <h4 class="text-xl font-bold text-blue-400">MINDSET &amp; INVESTIMENTO</h4>
         </div>
         <ul class="space-y-2 text-sm text-white/80">
-          <li class="text-white/40">Nenhum ponto disponível</li>
+          <li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-blue-400">Tokens como Energia Elétrica</strong>: R$200/mês não é custo, é infraestrutura essencial (como luz/internet)</span></li><li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-blue-400">Produtividade vs Custo</strong>: Alan: 1 mês de trabalho = equivalente a R$1M em time tradicional</span></li><li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-blue-400">Foco em Criar, Não Economizar</strong>: Mentalidade de crescimento: invista em velocidade, não em economia</span></li>
         </ul>
       </div>
     
 
-      <div class="bg-purple-500/10 border-l-4 border-l-purple-500 rounded-r-xl p-6 hover:-translate-y-2 transition-all duration-300">
+      <div class="bg-purple-500/10 border-l-4 border-l-purple-500 border border-border-subtle rounded-r-xl p-6 hover:-translate-y-2 transition-all duration-300">
         <div class="flex items-center gap-3 mb-4">
           <span class="text-3xl">🏗️</span>
           <h4 class="text-xl font-bold text-purple-400">ESTRUTURA AIOS</h4>
         </div>
         <ul class="space-y-2 text-sm text-white/80">
-          <li class="text-white/40">Nenhum ponto disponível</li>
+          <li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-purple-400">Monorepo</strong>: Tudo na mesma pasta - projetos compartilham configuração</span></li><li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-purple-400">.aios-core/</strong>: Framework base (READ-ONLY, nunca editar)</span></li><li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-purple-400">expansion-packs/</strong>: Suas customizações e squads personalizados</span></li>
         </ul>
       </div>
     
 
-      <div class="bg-pink-500/10 border-l-4 border-l-pink-500 rounded-r-xl p-6 hover:-translate-y-2 transition-all duration-300">
+      <div class="bg-pink-500/10 border-l-4 border-l-pink-500 border border-border-subtle rounded-r-xl p-6 hover:-translate-y-2 transition-all duration-300">
         <div class="flex items-center gap-3 mb-4">
           <span class="text-3xl">📋</span>
           <h4 class="text-xl font-bold text-pink-400">HIERARQUIA DE TRABALHO</h4>
         </div>
         <ul class="space-y-2 text-sm text-white/80">
-          <li class="text-white/40">Nenhum ponto disponível</li>
+          <li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-pink-400">Epic</strong>: Grande objetivo (ex: &#039;Sistema de Autenticação&#039;)</span></li><li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-pink-400">Story</strong>: Pedaço entregável do Epic (ex: &#039;Login com Google&#039;)</span></li><li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-pink-400">Task</strong>: Ação específica dentro da Story (ex: &#039;Criar botão Google&#039;)</span></li>
         </ul>
       </div>
     
 
-      <div class="bg-yellow-500/10 border-l-4 border-l-yellow-500 rounded-r-xl p-6 hover:-translate-y-2 transition-all duration-300">
+      <div class="bg-yellow-500/10 border-l-4 border-l-yellow-500 border border-border-subtle rounded-r-xl p-6 hover:-translate-y-2 transition-all duration-300">
         <div class="flex items-center gap-3 mb-4">
           <span class="text-3xl">🤖</span>
           <h4 class="text-xl font-bold text-yellow-400">AGENTES E COMANDOS</h4>
         </div>
         <ul class="space-y-2 text-sm text-white/80">
-          <li class="text-white/40">Nenhum ponto disponível</li>
+          <li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-yellow-400">@ vs /</strong>: @ = persona-switching (simula), / = spawn real (executa)</span></li><li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-yellow-400">Slash Commands</strong>: / executa workflows completos (ex: /devops, /init)</span></li><li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-yellow-400">BOB (Baby On Board)</strong>: Agente para iniciantes - modo com &#039;rodinhas&#039;</span></li>
         </ul>
       </div>
     
 
-      <div class="bg-cyan-500/10 border-l-4 border-l-cyan-500 rounded-r-xl p-6 hover:-translate-y-2 transition-all duration-300">
+      <div class="bg-cyan-500/10 border-l-4 border-l-cyan-500 border border-border-subtle rounded-r-xl p-6 hover:-translate-y-2 transition-all duration-300">
         <div class="flex items-center gap-3 mb-4">
           <span class="text-3xl">🛠️</span>
           <h4 class="text-xl font-bold text-cyan-400">FERRAMENTAS ESSENCIAIS</h4>
         </div>
         <ul class="space-y-2 text-sm text-white/80">
-          <li class="text-white/40">Nenhum ponto disponível</li>
+          <li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-cyan-400">CodeRabbit</strong>: Code review automático - integra com GitHub</span></li><li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-cyan-400">GitHub Actions</strong>: CI/CD automatizado (testes + deploy)</span></li><li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-cyan-400">Environment Bootstrap</strong>: /devops *environment-bootstrap - instala tudo</span></li>
         </ul>
       </div>
     
 
-      <div class="bg-orange-500/10 border-l-4 border-l-orange-500 rounded-r-xl p-6 hover:-translate-y-2 transition-all duration-300">
+      <div class="bg-orange-500/10 border-l-4 border-l-orange-500 border border-border-subtle rounded-r-xl p-6 hover:-translate-y-2 transition-all duration-300">
         <div class="flex items-center gap-3 mb-4">
           <span class="text-3xl">📝</span>
           <h4 class="text-xl font-bold text-orange-400">DOCUMENTAÇÃO &gt; CONVERSA</h4>
         </div>
         <ul class="space-y-2 text-sm text-white/80">
-          <li class="text-white/40">Nenhum ponto disponível</li>
+          <li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-orange-400">Insight Revolucionário</strong>: Criar DOCs estruturados &gt; Chat conversacional</span></li><li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-orange-400">Determinismo</strong>: Documentos dão contexto claro, chats causam ambiguidade</span></li><li class="flex items-start gap-2"><span class="text-white/40">→</span><span><strong class="text-orange-400">Brownfield vs Greenfield</strong>: Brown = projeto existente, Green = do zero</span></li>
         </ul>
       </div>
     
                 </div>
             </section>
 
-            <!-- Main Takeaways -->
+            <!-- 5. TOPICS -->
+            <section class="mb-16">
+                <div class="text-center mb-8">
+                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">📚 Tópicos Abordados</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+      <div class="bg-card-bg border border-border-subtle rounded-xl p-6 hover:bg-card-hover hover:border-border-hover transition-all duration-300 relative">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <h4 class="text-lg font-semibold text-white flex-1">Mindset sobre custo de tokens (investimento, não gasto)</h4>
+          <span class="flex-shrink-0 px-2 py-1 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold rounded-lg whitespace-nowrap">Essencial</span>
+        </div>
+        
+      </div>
+    
+      <div class="bg-card-bg border border-border-subtle rounded-xl p-6 hover:bg-card-hover hover:border-border-hover transition-all duration-300 relative">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <h4 class="text-lg font-semibold text-white flex-1">Estrutura completa do AIOS (.aios-core, expansion-packs, claude.md)</h4>
+          <span class="flex-shrink-0 px-2 py-1 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold rounded-lg whitespace-nowrap">Essencial</span>
+        </div>
+        
+      </div>
+    
+      <div class="bg-card-bg border border-border-subtle rounded-xl p-6 hover:bg-card-hover hover:border-border-hover transition-all duration-300 relative">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <h4 class="text-lg font-semibold text-white flex-1">Hierarquia Epic → Story → Task → Workflow</h4>
+          <span class="flex-shrink-0 px-2 py-1 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold rounded-lg whitespace-nowrap">Essencial</span>
+        </div>
+        
+      </div>
+    
+      <div class="bg-card-bg border border-border-subtle rounded-xl p-6 hover:bg-card-hover hover:border-border-hover transition-all duration-300 relative">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <h4 class="text-lg font-semibold text-white flex-1">Diferença entre @ (persona-switching) e / (spawn de agente)</h4>
+          <span class="flex-shrink-0 px-2 py-1 bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 text-xs font-semibold rounded-lg whitespace-nowrap">Intermediário</span>
+        </div>
+        
+      </div>
+    
+      <div class="bg-card-bg border border-border-subtle rounded-xl p-6 hover:bg-card-hover hover:border-border-hover transition-all duration-300 relative">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <h4 class="text-lg font-semibold text-white flex-1">Agente BOB (Baby On Board) para iniciantes</h4>
+          <span class="flex-shrink-0 px-2 py-1 bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 text-xs font-semibold rounded-lg whitespace-nowrap">Intermediário</span>
+        </div>
+        
+      </div>
+    
+      <div class="bg-card-bg border border-border-subtle rounded-xl p-6 hover:bg-card-hover hover:border-border-hover transition-all duration-300 relative">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <h4 class="text-lg font-semibold text-white flex-1">Ferramentas essenciais: CodeRabbit, GitHub Actions, Environment Bootstrap</h4>
+          <span class="flex-shrink-0 px-2 py-1 bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 text-xs font-semibold rounded-lg whitespace-nowrap">Intermediário</span>
+        </div>
+        
+      </div>
+    
+      <div class="bg-card-bg border border-border-subtle rounded-xl p-6 hover:bg-card-hover hover:border-border-hover transition-all duration-300 relative">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <h4 class="text-lg font-semibold text-white flex-1">Revelação: Documentação &gt; Conversa para determinismo</h4>
+          <span class="flex-shrink-0 px-2 py-1 bg-purple-500/15 border border-purple-500/30 text-purple-400 text-xs font-semibold rounded-lg whitespace-nowrap">Avançado</span>
+        </div>
+        
+      </div>
+    
+      <div class="bg-card-bg border border-border-subtle rounded-xl p-6 hover:bg-card-hover hover:border-border-hover transition-all duration-300 relative">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <h4 class="text-lg font-semibold text-white flex-1">Brownfield (projeto existente) vs Greenfield (do zero)</h4>
+          <span class="flex-shrink-0 px-2 py-1 bg-purple-500/15 border border-purple-500/30 text-purple-400 text-xs font-semibold rounded-lg whitespace-nowrap">Avançado</span>
+        </div>
+        
+      </div>
+    
+                </div>
+            </section>
+
+            <!-- 6. TAKEAWAYS -->
             <section class="mb-16">
                 <div class="text-center mb-8">
                     <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">🎯 Principais Takeaways</h2>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     
-      <div class="bg-yellow-500/10 border-l-4 border-l-yellow-500 rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+      <div class="bg-yellow-500/10 border-l-4 border-l-yellow-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
         <div class="text-4xl mb-4">1️⃣</div>
         <h3 class="text-lg font-bold text-yellow-400 mb-3">Mude sua mentalidade sobre tokens AGORA</h3>
         <p class="text-white/70 mb-4 text-sm leading-relaxed">Sem infraestrutura adequada, você não pratica corretamente</p>
         <div class="mt-4 p-3 bg-white/5 rounded-lg"><span class="text-xs font-semibold text-emerald-400">✅ Ação:</span> <span class="text-xs text-white/80">Assine Claude Pro ou API. Trate como conta de luz, não como luxo.</span></div>
       </div>
     
-
-      <div class="bg-red-500/10 border-l-4 border-l-red-500 rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+      <div class="bg-red-500/10 border-l-4 border-l-red-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
         <div class="text-4xl mb-4">2️⃣</div>
         <h3 class="text-lg font-bold text-red-400 mb-3">Explore a estrutura do AIOS no seu projeto</h3>
         <p class="text-white/70 mb-4 text-sm leading-relaxed"></p>
@@ -265,8 +265,7 @@
 </span></div>
       </div>
     
-
-      <div class="bg-blue-500/10 border-l-4 border-l-blue-500 rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+      <div class="bg-blue-500/10 border-l-4 border-l-blue-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
         <div class="text-4xl mb-4">3️⃣</div>
         <h3 class="text-lg font-bold text-blue-400 mb-3">Pratique decomposição Epic → Story → Task NO PAPEL</h3>
         <p class="text-white/70 mb-4 text-sm leading-relaxed"></p>
@@ -279,16 +278,14 @@ NÃO execute no AIOS ainda - apenas pratique PENSAR nessa estrutura.
 </span></div>
       </div>
     
-
-      <div class="bg-purple-500/10 border-l-4 border-l-purple-500 rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+      <div class="bg-purple-500/10 border-l-4 border-l-purple-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
         <div class="text-4xl mb-4">4️⃣</div>
         <h3 class="text-lg font-bold text-purple-400 mb-3">Use BOB para seu próximo projeto pequeno</h3>
         <p class="text-white/70 mb-4 text-sm leading-relaxed"></p>
         <div class="mt-4 p-3 bg-white/5 rounded-lg"><span class="text-xs font-semibold text-emerald-400">✅ Ação:</span> <span class="text-xs text-white/80">Chame /bob ou agente Baby On Board para criar algo simples. Deixe ele te guiar.</span></div>
       </div>
     
-
-      <div class="bg-cyan-500/10 border-l-4 border-l-cyan-500 rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+      <div class="bg-cyan-500/10 border-l-4 border-l-cyan-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
         <div class="text-4xl mb-4">5️⃣</div>
         <h3 class="text-lg font-bold text-cyan-400 mb-3">DOCUMENTE antes de executar</h3>
         <p class="text-white/70 mb-4 text-sm leading-relaxed"></p>
@@ -301,8 +298,7 @@ FAÇA:
 </span></div>
       </div>
     
-
-      <div class="bg-emerald-500/10 border-l-4 border-l-emerald-500 rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+      <div class="bg-emerald-500/10 border-l-4 border-l-emerald-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
         <div class="text-4xl mb-4">6️⃣</div>
         <h3 class="text-lg font-bold text-emerald-400 mb-3">Instale CodeRabbit e rode /devops</h3>
         <p class="text-white/70 mb-4 text-sm leading-relaxed"></p>
@@ -313,8 +309,7 @@ FAÇA:
 </span></div>
       </div>
     
-
-      <div class="bg-yellow-500/10 border-l-4 border-l-yellow-500 rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+      <div class="bg-yellow-500/10 border-l-4 border-l-yellow-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
         <div class="text-4xl mb-4">7️⃣</div>
         <h3 class="text-lg font-bold text-yellow-400 mb-3">Contribua com a comunidade</h3>
         <p class="text-white/70 mb-4 text-sm leading-relaxed">Comunidade cresce quando todos contribuem</p>
@@ -329,49 +324,385 @@ E documente SUAS descobertas também!
                 </div>
             </section>
 
-            <!-- CTA Section: O Que Realmente Importa -->
+            <!-- 7. QUOTES -->
             <section class="mb-16">
-                <div class="bg-card-bg border border-border-subtle rounded-2xl p-10 sm:p-12">
+                <div class="text-center mb-8">
+                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">💬 Citações Memoráveis</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+      <div class="bg-gradient-to-br from-card-bg to-card-hover border-l-4 border-l-blue-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+        <p class="text-lg italic text-white/90 mb-4 leading-relaxed">"Tokens para empresa = energia elétrica. Não é gasto, é operação. Você não fica 3 meses sem luz para economizar."</p>
+        <p class="text-sm font-semibold text-blue-400">— Alan Nicolas</p>
+        <p class="text-xs text-white/50 mt-2">Desmistificando medo de gastar tokens</p>
+      </div>
+    
+      <div class="bg-gradient-to-br from-card-bg to-card-hover border-l-4 border-l-purple-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+        <p class="text-lg italic text-white/90 mb-4 leading-relaxed">"Documentação estruturada &gt; Chat conversacional. Totalmente contra-intuitivo, mas é o que funciona."</p>
+        <p class="text-sm font-semibold text-purple-400">— Pedro Valerio Lopez</p>
+        <p class="text-xs text-white/50 mt-2">Revelação sobre determinismo vs ambiguidade</p>
+      </div>
+    
+      <div class="bg-gradient-to-br from-card-bg to-card-hover border-l-4 border-l-cyan-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+        <p class="text-lg italic text-white/90 mb-4 leading-relaxed">"1 mês do meu trabalho com AIOS = equivalente a R$1M em time tradicional. Gastei R$500."</p>
+        <p class="text-sm font-semibold text-cyan-400">— Alan Nicolas</p>
+        <p class="text-xs text-white/50 mt-2">Demonstrando ROI de tokens</p>
+      </div>
+    
+      <div class="bg-gradient-to-br from-card-bg to-card-hover border-l-4 border-l-pink-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+        <p class="text-lg italic text-white/90 mb-4 leading-relaxed">"Quando tenho dúvida, pergunto para o Claude… quando o Claude tem dúvida, pergunta para o Pedro."</p>
+        <p class="text-sm font-semibold text-pink-400">— rodrigofaerman</p>
+        <p class="text-xs text-white/50 mt-2">Reconhecimento da expertise técnica do Pedro</p>
+      </div>
+    
+      <div class="bg-gradient-to-br from-card-bg to-card-hover border-l-4 border-l-emerald-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+        <p class="text-lg italic text-white/90 mb-4 leading-relaxed">"AIOS é o que tangibiliza da forma mais impressionante que vi o porquê projetam unicórnios de 1 pessoa só em 2026."</p>
+        <p class="text-sm font-semibold text-emerald-400">— Thiago Otto</p>
+        <p class="text-xs text-white/50 mt-2">Compreendendo potencial transformador</p>
+      </div>
+    
+                </div>
+            </section>
+
+            <!-- 8. PRAISE -->
+            <section class="mb-16">
+                <div class="text-center mb-8">
+                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">👏 Elogios dos Alunos</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    
+      <div class="bg-glass border border-border-subtle rounded-lg p-4 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <p class="text-sm italic text-white/80 mb-2">"Criei um app completo"</p>
+        <p class="text-xs font-semibold text-cyan-400">— edgardpacheco</p>
+        <p class="text-xs text-white/40 mt-1">Compartilhando conquista após começar a usar AIOS</p>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-4 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <p class="text-sm italic text-white/80 mb-2">"Explicação perfeita!"</p>
+        <p class="text-xs font-semibold text-cyan-400">— Helder</p>
+        <p class="text-xs text-white/40 mt-1">Sobre a explicação de @ vs / para agentes</p>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-4 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <p class="text-sm italic text-white/80 mb-2">"Estava quebrando a cabeça hoje criando workflows, bora com rodinha e evoluir"</p>
+        <p class="text-xs font-semibold text-cyan-400">— Artur Omori</p>
+        <p class="text-xs text-white/40 mt-1">Aluno reconhecendo valor da abordagem BOB</p>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-4 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <p class="text-sm italic text-white/80 mb-2">"Cara eu entendi 100%"</p>
+        <p class="text-xs font-semibold text-cyan-400">— Paulo de Tarso Chaves</p>
+        <p class="text-xs text-white/40 mt-1">Sobre mapa visual de workflows</p>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-4 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <p class="text-sm italic text-white/80 mb-2">"Mind blowing!!! 🤯 Totalmente contra intuitivo. Grande sacada."</p>
+        <p class="text-xs font-semibold text-cyan-400">— rogeriochinen</p>
+        <p class="text-xs text-white/40 mt-1">Descobrindo que documentação funciona melhor que conversa</p>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-4 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <p class="text-sm italic text-white/80 mb-2">"Isso é muito bom"</p>
+        <p class="text-xs font-semibold text-cyan-400">— Victor Pontes</p>
+        <p class="text-xs text-white/40 mt-1">Reação ao processo de documentação</p>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-4 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <p class="text-sm italic text-white/80 mb-2">"Quando o Pedro nasceu ele que deu um tapa na bunda do médico e o médico começou a chorar"</p>
+        <p class="text-xs font-semibold text-cyan-400">— João Lozano</p>
+        <p class="text-xs text-white/40 mt-1">Elogio humorístico à didática do Pedro</p>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-4 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <p class="text-sm italic text-white/80 mb-2">"Pedro E Alan, conhecem a metodologia SAFe? Muitas empresas corp adotaram isso. Vejo muita coisa pra puxar de lá"</p>
+        <p class="text-xs font-semibold text-cyan-400">— Thiago Otto</p>
+        <p class="text-xs text-white/40 mt-1">Reconhecendo conexões com metodologias enterprise</p>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-4 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <p class="text-sm italic text-white/80 mb-2">"Replying to Quando tenho duvida,... Quando tenho duvida, pergunto para o Claude… quando o Claude tem duvida, pergunta para o Pedro"</p>
+        <p class="text-xs font-semibold text-cyan-400">— rodrigofaerman</p>
+        <p class="text-xs text-white/40 mt-1">Reconhecimento da expertise do Pedro</p>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-4 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <p class="text-sm italic text-white/80 mb-2">"É realmente impressionante"</p>
+        <p class="text-xs font-semibold text-cyan-400">— Renata Baldissara-Kunnela</p>
+        <p class="text-xs text-white/40 mt-1">Sobre a estrutura completa do AIOS</p>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-4 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <p class="text-sm italic text-white/80 mb-2">"O AIOS é o que tangibiliza da forma mais impressionante que vi o pq projetam os unicórnios de uma pessoa só em 2026"</p>
+        <p class="text-xs font-semibold text-cyan-400">— Thiago Otto</p>
+        <p class="text-xs text-white/40 mt-1">Compreensão do potencial transformador</p>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-4 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <p class="text-sm italic text-white/80 mb-2">"entender a estrutura do AIOS dá muita segurança para investir no sistema"</p>
+        <p class="text-xs font-semibold text-cyan-400">— Cristiano Justo</p>
+        <p class="text-xs text-white/40 mt-1">Após ver a arquitetura completa</p>
+      </div>
+    
+                </div>
+            </section>
+
+            <!-- 9. LINKS -->
+            <section class="mb-16">
+                <div class="text-center mb-8">
+                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">🔗 Links Compartilhados</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+      <div class="bg-glass border border-border-subtle rounded-lg p-5 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl flex-shrink-0">🔗</span>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-base font-semibold text-white mb-1 truncate">CodeRabbit - Ferramenta de code review com IA</h4>
+            <a href="https://app.coderabbit.ai/" target="_blank" rel="noopener" class="text-sm text-blue-400 hover:text-blue-300 break-all">https://app.coderabbit.ai/</a>
+            <p class="text-xs text-white/50 mt-2">Por: Alan Nicolas</p>
+            <span class="inline-block mt-2 px-2 py-0.5 bg-white/5 text-white/60 text-xs rounded">ferramenta</span>
+          </div>
+        </div>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-5 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl flex-shrink-0">🔗</span>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-base font-semibold text-white mb-1 truncate">Read.ai - Notas de meeting geradas por IA</h4>
+            <a href="https://www.read.ai/pp" target="_blank" rel="noopener" class="text-sm text-blue-400 hover:text-blue-300 break-all">https://www.read.ai/pp</a>
+            <p class="text-xs text-white/50 mt-2">Por: Sistema (read.ai meeting notes)</p>
+            <span class="inline-block mt-2 px-2 py-0.5 bg-white/5 text-white/60 text-xs rounded">ferramenta</span>
+          </div>
+        </div>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-5 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl flex-shrink-0">🔗</span>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-base font-semibold text-white mb-1 truncate">AIOS Core - Repositório oficial no GitHub</h4>
+            <a href="https://github.com/SynkraAI/aios-core" target="_blank" rel="noopener" class="text-sm text-blue-400 hover:text-blue-300 break-all">https://github.com/SynkraAI/aios-core</a>
+            <p class="text-xs text-white/50 mt-2">Por: josecarlosamorim</p>
+            <span class="inline-block mt-2 px-2 py-0.5 bg-white/5 text-white/60 text-xs rounded">repositório</span>
+          </div>
+        </div>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-5 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl flex-shrink-0">🔗</span>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-base font-semibold text-white mb-1 truncate">Site do Cohort Avançado - Documentação visual</h4>
+            <a href="https://aios-advanced-cohort.vercel.app/" target="_blank" rel="noopener" class="text-sm text-blue-400 hover:text-blue-300 break-all">https://aios-advanced-cohort.vercel.app/</a>
+            <p class="text-xs text-white/50 mt-2">Por: josecarlosamorim</p>
+            <span class="inline-block mt-2 px-2 py-0.5 bg-white/5 text-white/60 text-xs rounded">documentação</span>
+          </div>
+        </div>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-5 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl flex-shrink-0">🔗</span>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-base font-semibold text-white mb-1 truncate">Bíblia AIOS Interativa</h4>
+            <a href="https://biblia-aios-interativa.vercel.app/" target="_blank" rel="noopener" class="text-sm text-blue-400 hover:text-blue-300 break-all">https://biblia-aios-interativa.vercel.app/</a>
+            <p class="text-xs text-white/50 mt-2">Por: João Lozano</p>
+            <span class="inline-block mt-2 px-2 py-0.5 bg-white/5 text-white/60 text-xs rounded">documentação</span>
+          </div>
+        </div>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-5 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl flex-shrink-0">🔗</span>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-base font-semibold text-white mb-1 truncate">ALMA Memory - Sistema de memória para agentes</h4>
+            <a href="https://github.com/RBKunnela/ALMA-memory.git" target="_blank" rel="noopener" class="text-sm text-blue-400 hover:text-blue-300 break-all">https://github.com/RBKunnela/ALMA-memory.git</a>
+            <p class="text-xs text-white/50 mt-2">Por: Renata Baldissara-Kunnela</p>
+            <span class="inline-block mt-2 px-2 py-0.5 bg-white/5 text-white/60 text-xs rounded">repositório</span>
+          </div>
+        </div>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-5 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl flex-shrink-0">🔗</span>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-base font-semibold text-white mb-1 truncate">ALMA Memory - Página de documentação</h4>
+            <a href="https://alma-memory.pages.dev/" target="_blank" rel="noopener" class="text-sm text-blue-400 hover:text-blue-300 break-all">https://alma-memory.pages.dev/</a>
+            <p class="text-xs text-white/50 mt-2">Por: Renata Baldissara-Kunnela</p>
+            <span class="inline-block mt-2 px-2 py-0.5 bg-white/5 text-white/60 text-xs rounded">documentação</span>
+          </div>
+        </div>
+      </div>
+    
+      <div class="bg-glass border border-border-subtle rounded-lg p-5 hover:bg-glass-hover hover:border-border-hover transition-all duration-300">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl flex-shrink-0">🔗</span>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-base font-semibold text-white mb-1 truncate">Veritas Framework - Anti-alucinação para IA</h4>
+            <a href="https://github.com/RBKunnela/veritas-framework" target="_blank" rel="noopener" class="text-sm text-blue-400 hover:text-blue-300 break-all">https://github.com/RBKunnela/veritas-framework</a>
+            <p class="text-xs text-white/50 mt-2">Por: Renata Baldissara-Kunnela</p>
+            <span class="inline-block mt-2 px-2 py-0.5 bg-white/5 text-white/60 text-xs rounded">repositório</span>
+          </div>
+        </div>
+      </div>
+    
+                </div>
+            </section>
+
+            <!-- 10. TOOLS -->
+            <section class="mb-16">
+                <div class="text-center mb-8">
+                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">🛠️ Ferramentas Essenciais</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    
+      <div class="bg-card-bg border border-border-subtle rounded-lg p-5 hover:bg-card-hover hover:border-border-hover transition-all duration-300">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <h4 class="text-lg font-semibold text-white">CodeRabbit</h4>
+          <span class="flex-shrink-0 px-2 py-1 bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 text-xs font-semibold rounded whitespace-nowrap">Alta</span>
+        </div>
+        <p class="text-xs text-white/50 mb-2">Code Review</p>
+        <p class="text-sm text-white/70">Code review automático com IA</p>
+      </div>
+    
+      <div class="bg-card-bg border border-border-subtle rounded-lg p-5 hover:bg-card-hover hover:border-border-hover transition-all duration-300">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <h4 class="text-lg font-semibold text-white">GitHub Actions</h4>
+          <span class="flex-shrink-0 px-2 py-1 bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 text-xs font-semibold rounded whitespace-nowrap">Alta</span>
+        </div>
+        <p class="text-xs text-white/50 mb-2">CI/CD</p>
+        <p class="text-sm text-white/70">Integração e deploy contínuo</p>
+      </div>
+    
+      <div class="bg-card-bg border border-border-subtle rounded-lg p-5 hover:bg-card-hover hover:border-border-hover transition-all duration-300">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <h4 class="text-lg font-semibold text-white">Claude Pro</h4>
+          <span class="flex-shrink-0 px-2 py-1 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold rounded whitespace-nowrap">Essencial</span>
+        </div>
+        <p class="text-xs text-white/50 mb-2">IA</p>
+        <p class="text-sm text-white/70">Assistente de desenvolvimento</p>
+      </div>
+    
+                </div>
+            </section>
+
+            <!-- 11. PROJECTS -->
+            <section class="mb-16">
+                <div class="text-center mb-8">
+                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">🚀 Projetos da Comunidade</h2>
+                </div>
+                <div class="space-y-6">
+                    
+      <div class="bg-card-bg border-2 border-purple-500/30 rounded-xl p-6 hover:border-purple-500/50 transition-all duration-300">
+        <div class="flex items-start gap-4">
+          <span class="text-3xl flex-shrink-0">🚀</span>
+          <div class="flex-1">
+            <h4 class="text-xl font-bold text-purple-400 mb-2">ALMA Memory - Sistema de memória para agentes</h4>
+            <p class="text-sm text-white/70 mb-3">Por: Renata Baldissara-Kunnela</p>
+            <p class="text-sm text-white/60 mb-3">Criado por aluna do cohort</p>
+            <a href="https://github.com/RBKunnela/ALMA-memory.git" target="_blank" rel="noopener" class="inline-block px-4 py-2 bg-purple-500/20 border border-purple-500/40 text-purple-300 text-sm font-semibold rounded-lg hover:bg-purple-500/30 transition-all">Ver Projeto →</a>
+          </div>
+        </div>
+      </div>
+    
+      <div class="bg-card-bg border-2 border-purple-500/30 rounded-xl p-6 hover:border-purple-500/50 transition-all duration-300">
+        <div class="flex items-start gap-4">
+          <span class="text-3xl flex-shrink-0">🚀</span>
+          <div class="flex-1">
+            <h4 class="text-xl font-bold text-purple-400 mb-2">ALMA Memory - Página de documentação</h4>
+            <p class="text-sm text-white/70 mb-3">Por: Renata Baldissara-Kunnela</p>
+            
+            <a href="https://alma-memory.pages.dev/" target="_blank" rel="noopener" class="inline-block px-4 py-2 bg-purple-500/20 border border-purple-500/40 text-purple-300 text-sm font-semibold rounded-lg hover:bg-purple-500/30 transition-all">Ver Projeto →</a>
+          </div>
+        </div>
+      </div>
+    
+      <div class="bg-card-bg border-2 border-purple-500/30 rounded-xl p-6 hover:border-purple-500/50 transition-all duration-300">
+        <div class="flex items-start gap-4">
+          <span class="text-3xl flex-shrink-0">🚀</span>
+          <div class="flex-1">
+            <h4 class="text-xl font-bold text-purple-400 mb-2">Veritas Framework - Anti-alucinação para IA</h4>
+            <p class="text-sm text-white/70 mb-3">Por: Renata Baldissara-Kunnela</p>
+            
+            <a href="https://github.com/RBKunnela/veritas-framework" target="_blank" rel="noopener" class="inline-block px-4 py-2 bg-purple-500/20 border border-purple-500/40 text-purple-300 text-sm font-semibold rounded-lg hover:bg-purple-500/30 transition-all">Ver Projeto →</a>
+          </div>
+        </div>
+      </div>
+    
+                </div>
+            </section>
+
+            <!-- 12. NEXT STEPS -->
+            <section class="mb-16">
+                <div class="text-center mb-8">
+                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">📅 Próximos Passos</h2>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+      <div class="bg-glass border-l-4 border-l-emerald-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+        <div class="text-4xl mb-4">⚡</div>
+        <h3 class="text-xl font-bold text-emerald-400 mb-4">Hoje</h3>
+        <ul class="space-y-2">
+          <li class="flex items-start gap-2 text-sm text-white/80"><span class="text-emerald-400">✓</span><span>Revise esta análise</span></li><li class="flex items-start gap-2 text-sm text-white/80"><span class="text-emerald-400">✓</span><span>Escolha 1 conceito para aplicar</span></li>
+        </ul>
+      </div>
+    
+      <div class="bg-glass border-l-4 border-l-blue-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+        <div class="text-4xl mb-4">🎯</div>
+        <h3 class="text-xl font-bold text-blue-400 mb-4">Esta Semana</h3>
+        <ul class="space-y-2">
+          <li class="flex items-start gap-2 text-sm text-white/80"><span class="text-blue-400">✓</span><span>Pratique decomposição Epic → Story → Task</span></li><li class="flex items-start gap-2 text-sm text-white/80"><span class="text-blue-400">✓</span><span>Use BOB para primeiro projeto</span></li>
+        </ul>
+      </div>
+    
+      <div class="bg-glass border-l-4 border-l-purple-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
+        <div class="text-4xl mb-4">🚀</div>
+        <h3 class="text-xl font-bold text-purple-400 mb-4">Este Mês</h3>
+        <ul class="space-y-2">
+          <li class="flex items-start gap-2 text-sm text-white/80"><span class="text-purple-400">✓</span><span>Domine estrutura AIOS</span></li><li class="flex items-start gap-2 text-sm text-white/80"><span class="text-purple-400">✓</span><span>Contribua com comunidade</span></li>
+        </ul>
+      </div>
+    
+                </div>
+            </section>
+
+            <!-- 13. CTA SECTION -->
+            <section class="mb-16">
+                <div class="bg-card-bg border border-border-subtle rounded-2xl p-8 sm:p-12">
                     <div class="text-center mb-10">
-                        <h2 class="text-4xl font-bold mb-2">💡 O Que Realmente Importa</h2>
+                        <h2 class="text-3xl sm:text-4xl font-bold mb-2">💡 O Que Você Realmente Aprendeu</h2>
                     </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-                        <!-- NÃO É -->
-                        <div class="bg-glass border-l-4 border-l-red-500 rounded-r-xl p-6">
-                            <h3 class="text-xl font-bold text-red-400 mb-4">❌ NÃO É:</h3>
-                            <ul class="space-y-2 text-white/70">
-                                <li class="flex items-start gap-2"><span>•</span><span>Conhecimento técnico profundo</span></li><li class="flex items-start gap-2"><span>•</span><span>Planejar tudo perfeitamente</span></li><li class="flex items-start gap-2"><span>•</span><span>Esperar entender 100%</span></li>
-                            </ul>
-                        </div>
-
-                        <!-- É -->
+                    <div class="space-y-6">
+                        <!-- LEARNED -->
                         <div class="bg-glass border-l-4 border-l-emerald-500 rounded-r-xl p-6">
-                            <h3 class="text-xl font-bold text-emerald-400 mb-4">✅ É:</h3>
-                            <ul class="space-y-2 text-white/70">
-                                <li class="flex items-start gap-2"><span>•</span><span>EXECUTAR rapidamente</span></li><li class="flex items-start gap-2"><span>•</span><span>USAR frameworks comprovados</span></li><li class="flex items-start gap-2"><span>•</span><span>ZERO medo de errar</span></li>
-                            </ul>
+                            <h3 class="text-xl font-bold text-emerald-400 mb-3">✅ O Que Você Aprendeu:</h3>
+                            <div class="text-white/90 leading-relaxed"><p class="mb-4">AIOS não é apenas ferramenta - é uma nova forma de PENSAR desenvolvimento. Você aprendeu a estrutura completa: Epic → Story → Task, a diferença entre @ e /, e a importância de documentação &gt; conversa.</p></div>
                         </div>
-                    </div>
-
-                    <!-- Action Box -->
-                    <div class="cta-pulse bg-gradient-to-r from-yellow-500/10 to-emerald-500/5 border-2 border-yellow-500/30 rounded-xl p-8">
-                        <div class="flex items-start gap-4">
-                            <div class="text-4xl">⚡</div>
-                            <div class="flex-1">
-                                <h4 class="text-xl font-bold text-yellow-400 mb-2">🎯 Ação Transformadora:</h4>
-                                <p class="text-white/90 text-lg">Pegue 1 conceito deste mapa e IMPLEMENTE HOJE (mal feito). Não amanhã. HOJE. Mesmo que fique ruim. Isso separa quem sai transformado de quem apenas estudou.</p>
+                        <!-- SECRET -->
+                        <div class="bg-glass border-l-4 border-l-red-500 rounded-r-xl p-6">
+                            <h3 class="text-xl font-bold text-red-400 mb-3">🔥 O Segredo Revelado:</h3>
+                            <div class="text-white/90 leading-relaxed"><p class="mb-4">O segredo revelado: tokens NÃO são luxo, são infraestrutura. Documentos estruturados funcionam MELHOR que chat conversacional. BOB não é vergonha - é estratégia.</p></div>
+                        </div>
+                        <!-- ACTION -->
+                        <div class="cta-pulse bg-gradient-to-r from-yellow-500/10 to-emerald-500/5 border-2 border-yellow-500/30 rounded-xl p-8">
+                            <div class="flex items-start gap-4">
+                                <div class="text-4xl flex-shrink-0">⚡</div>
+                                <div class="flex-1">
+                                    <h4 class="text-xl font-bold text-yellow-400 mb-3">🎯 Aplique HOJE:</h4>
+                                    <p class="text-white/90 text-lg leading-relaxed">Pegue 1 conceito deste mapa e IMPLEMENTE HOJE (mal feito). Não amanhã. HOJE. Mesmo que fique ruim. Isso separa quem sai transformado de quem apenas estudou.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Footer -->
+            <!-- FOOTER -->
             <footer class="text-center py-12 border-t border-border-subtle">
-                <p class="text-white/40 text-sm">
-                    📚 Cohort AIOS Avançado - Aula 01 • Gerado automaticamente com ❤️ pelo WebCraft
-                </p>
+                <p class="text-white/40 text-sm">📚 Cohort AIOS Avançado - Aula 01 • Gerado automaticamente com ❤️ pelo WebCraft</p>
             </footer>
 
         </div>
