@@ -3,544 +3,542 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>outputs/aula-01/analises/analise-aluno.yaml - Cohort AIOS Avançado</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'dark-bg': '#000000',
-                        'card-bg': '#0a0a0a',
-                        'card-hover': '#0f0f0f',
-                        'border-subtle': 'rgba(255, 255, 255, 0.08)',
-                        'border-hover': 'rgba(255, 255, 255, 0.15)',
-                        'glass': 'rgba(255, 255, 255, 0.03)',
-                        'glass-hover': 'rgba(255, 255, 255, 0.05)',
-                    }
-                }
-            }
-        }
-    </script>
+    <title>outputs/aula-01/analises/analise-aluno.yaml - Análise da Aula</title>
     <style>
-        @keyframes ctaPulse {
-            0%, 100% { box-shadow: 0 0 24px rgba(234, 179, 8, 0.15); }
-            50% { box-shadow: 0 0 32px rgba(234, 179, 8, 0.25); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .cta-pulse { animation: ctaPulse 3s infinite; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: #000;
+            color: #fff;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px 0;
+        }
+
+        .label {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+            color: #3b82f6;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 60px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 8px;
+            color: #3b82f6;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-detail {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 4px;
+        }
+
+        /* Section */
+        .section {
+            margin: 80px 0;
+        }
+
+        .section-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            gap: 24px;
+            margin: 40px 0;
+        }
+
+        .summary-intro {
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto 40px;
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.8;
+        }
+
+        .summary-card {
+            background: #0a0a0a;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.3s ease;
+        }
+
+        .summary-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: #0f0f0f;
+        }
+
+        .summary-card.blue { border-left: 4px solid #3b82f6; }
+        .summary-card.purple { border-left: 4px solid #8b5cf6; }
+        .summary-card.emerald { border-left: 4px solid #10b981; }
+        .summary-card.yellow { border-left: 4px solid #eab308; }
+
+        .summary-card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .summary-card.blue .summary-card-title { color: #3b82f6; }
+        .summary-card.purple .summary-card-title { color: #8b5cf6; }
+        .summary-card.emerald .summary-card-title { color: #10b981; }
+        .summary-card.yellow .summary-card-title { color: #eab308; }
+
+        .summary-card-content {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.8;
+        }
+
+        /* Mind Map */
+        .mindmap-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .mindmap-central {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            border: 2px solid rgba(34, 197, 94, 0.3);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .mindmap-central-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #22c55e;
+            margin-bottom: 12px;
+        }
+
+        .mindmap-central-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .mindmap-branches {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .branch-card {
+            background: #0a0a0a;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .branch-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .branch-card.blue { border-left: 4px solid #3b82f6; }
+        .branch-card.purple { border-left: 4px solid #8b5cf6; }
+        .branch-card.pink { border-left: 4px solid #ec4899; }
+        .branch-card.yellow { border-left: 4px solid #eab308; }
+        .branch-card.cyan { border-left: 4px solid #06b6d4; }
+        .branch-card.orange { border-left: 4px solid #f97316; }
+
+        .branch-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .branch-icon {
+            font-size: 28px;
+        }
+
+        .branch-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .branch-card.blue .branch-title { color: #3b82f6; }
+        .branch-card.purple .branch-title { color: #8b5cf6; }
+        .branch-card.pink .branch-title { color: #ec4899; }
+        .branch-card.yellow .branch-title { color: #eab308; }
+        .branch-card.cyan .branch-title { color: #06b6d4; }
+        .branch-card.orange .branch-title { color: #f97316; }
+
+        .branch-concepts {
+            list-style: none;
+        }
+
+        .branch-concepts li {
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+
+        .branch-concepts li strong {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Topics Grid */
+        .topics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .topic-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .topic-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .topic-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .topic-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .topic-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .topic-badge.basic { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .topic-badge.intermediate { background: rgba(234, 179, 8, 0.2); color: #eab308; }
+        .topic-badge.advanced { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+
+        .topic-description {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .topic-insight {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Takeaways Grid */
+        .takeaways-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .takeaway-card {
+            background: #0a0a0a;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .takeaway-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .takeaway-number {
+            font-size: 40px;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 12px;
+        }
+
+        .takeaway-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .takeaway-action {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.7;
+            white-space: pre-line;
+        }
+
+        /* Quotes */
+        .quotes-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .quote-card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #3b82f6;
+            border-radius: 12px;
+            padding: 32px;
+        }
+
+        .quote-text {
+            font-size: 18px;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+
+        .quote-author {
+            font-size: 14px;
+            font-weight: 600;
+            color: #3b82f6;
+        }
+
+        .quote-context {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 8px;
+        }
+
+        /* Resources */
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .resource-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .resource-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .resource-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #3b82f6;
+        }
+
+        .resource-author {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 8px;
+        }
+
+        .resource-description {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .resource-link {
+            display: inline-block;
+            font-size: 13px;
+            color: #3b82f6;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .resource-link:hover {
+            border-bottom-color: #3b82f6;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 32px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .section { margin: 60px 0; }
+        }
     </style>
 </head>
-<body class="bg-dark-bg text-white font-sans antialiased">
-    <div class="min-h-screen px-4 py-10 sm:px-6 lg:px-8">
-        <div class="max-w-7xl mx-auto">
-
-            <!-- 1. HEADER -->
-            <header class="text-center mb-16 pt-10">
-                <div class="inline-flex items-center px-4 py-1.5 mb-6 bg-glass border border-border-subtle rounded-full">
-                    <span class="text-xs font-medium tracking-widest text-white/60 uppercase">
-                        Cohort AIOS Avançado • 
-                    </span>
-                </div>
-                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 leading-tight">outputs/aula-01/analises/analise-aluno.yaml</h1>
-                <p class="text-xl sm:text-2xl font-light italic text-white/80 mb-6">Aula do Cohort</p>
-                <p class="text-base text-white/60 max-w-3xl mx-auto leading-relaxed"></p>
-            </header>
-
-            <!-- 2. STATS GRID -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-16">
-                <div class="bg-glass border border-border-subtle rounded-xl p-6 hover:bg-glass-hover hover:border-border-hover transition-all duration-300 hover:-translate-y-1">
-                    <div class="text-2xl sm:text-3xl font-bold text-white mb-2">N/A</div>
-                    <div class="text-sm text-white/50 uppercase tracking-wide">Duração</div>
-                    <div class="text-xs text-white/40 mt-1"></div>
-                </div>
-                <div class="bg-glass border border-border-subtle rounded-xl p-6 hover:bg-glass-hover hover:border-border-hover transition-all duration-300 hover:-translate-y-1">
-                    <div class="text-2xl sm:text-3xl font-bold text-white mb-2">N/A</div>
-                    <div class="text-sm text-white/50 uppercase tracking-wide">Participantes</div>
-                    <div class="text-xs text-white/40 mt-1">Engajados</div>
-                </div>
-                <div class="bg-glass border border-border-subtle rounded-xl p-6 hover:bg-glass-hover hover:border-border-hover transition-all duration-300 hover:-translate-y-1">
-                    <div class="text-2xl sm:text-3xl font-bold text-emerald-400 mb-2">9.3/10</div>
-                    <div class="text-sm text-white/50 uppercase tracking-wide">Sentimento</div>
-                    <div class="text-xs text-white/40 mt-1">Positivo</div>
-                </div>
-                <div class="bg-glass border border-border-subtle rounded-xl p-6 hover:bg-glass-hover hover:border-border-hover transition-all duration-300 hover:-translate-y-1">
-                    <div class="text-2xl sm:text-3xl font-bold text-white mb-2">N/A</div>
-                    <div class="text-sm text-white/50 uppercase tracking-wide">Mensagens</div>
-                    <div class="text-xs text-white/40 mt-1">No chat</div>
-                </div>
-            </div>
-
-            <!-- 3. SUMMARY -->
-            <section class="mb-16">
-                <div class="text-center mb-8">
-                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">Resumo</h2>
-                </div>
-                <div class="space-y-6">
-                    <p class="text-white/60">Nenhum conteúdo disponível.</p>
-                </div>
-            </section>
-
-            <!-- 4. MIND MAP -->
-            <section class="mb-16">
-                <div class="text-center mb-8">
-                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">Mapa Mental</h2>
-                </div>
-                <div class="mb-10 flex justify-center">
-                    <div class="max-w-2xl w-full bg-gradient-to-br from-emerald-500/10 to-blue-500/10 border-2 border-emerald-500/30 rounded-2xl p-10 shadow-[0_8px_32px_rgba(34,197,94,0.2)]">
-                        <h3 class="text-3xl font-bold text-emerald-400 mb-3 text-center">Tema Central</h3>
-                        <p class="text-lg text-white/80 mb-4 text-center italic"></p>
-                        <div class="mt-6 p-4 bg-white/5 rounded-lg">
-                            <p class="text-sm font-semibold text-center text-yellow-400"></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <p class="text-white/60 col-span-full text-center">Nenhuma ramificação disponível.</p>
-                </div>
-            </section>
-
-            <!-- 4.5 LEARNING JOURNEY MAP -->
-            <section class="mb-16">
-                <div class="text-center mb-12">
-                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase mb-4">Mapa de Aprendizado</h2>
-                    <p class="text-white/60 text-sm max-w-2xl mx-auto">Explore como os conceitos se conectam e qual caminho seguir</p>
-                </div>
-
-                <!-- Timeline de Aprendizado -->
-                <div class="mb-12">
-                    <h3 class="text-xl font-bold text-white mb-8 text-center">Jornada Progressiva</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        
-      <div class="relative">
-        
-        <div class="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-2 border-emerald-500/30 rounded-xl p-6 hover:border-emerald-500/50 transition-all duration-300">
-          <div class="mb-4">
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="text-lg font-bold text-emerald-400">Fundação</h4>
-              <span class="px-2 py-1 bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-semibold rounded">Nível 1</span>
-            </div>
-          </div>
-          
-          <div class="space-y-3 mb-4">
-            
-      <div class="mb-3">
-        <h5 class="text-sm font-semibold text-white mb-1">Mindset sobre Tokens</h5>
-        <p class="text-xs text-white/60 leading-relaxed">Aceite: tokens são infraestrutura, não luxo</p>
-      </div>
-    
-      <div class="mb-3">
-        <h5 class="text-sm font-semibold text-white mb-1">Foco em ROI</h5>
-        <p class="text-xs text-white/60 leading-relaxed">R$200/mês vs R$1M em time - matemática clara</p>
-      </div>
-    
-          </div>
-          
-          <div class="pt-4 border-t border-white/10">
-            <p class="text-xs font-semibold text-emerald-400 mb-1">Insight:</p>
-            <p class="text-sm text-white/70">Mude sua mentalidade antes de mexer no código</p>
-          </div>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <span class="label"></span>
+            <h1>outputs/aula-01/analises/analise-aluno.yaml</h1>
+            <p class="subtitle"></p>
         </div>
-      </div>
-    
 
-      <div class="relative">
-        <div class="hidden md:block absolute left-1/2 -top-6 w-0.5 h-6 bg-gradient-to-b from-emerald-500/50 to-blue-500/50"></div>
-        <div class="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-2 border-blue-500/30 rounded-xl p-6 hover:border-blue-500/50 transition-all duration-300">
-          <div class="mb-4">
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="text-lg font-bold text-blue-400">Estrutura</h4>
-              <span class="px-2 py-1 bg-blue-500/20 border border-blue-500/40 text-blue-300 text-xs font-semibold rounded">Nível 2</span>
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-value">N/A</span>
+                <span class="stat-label">Duração</span>
+                <span class="stat-detail"></span>
             </div>
-          </div>
-          
-          <div class="space-y-3 mb-4">
-            
-      <div class="mb-3">
-        <h5 class="text-sm font-semibold text-white mb-1">Epic → Story → Task</h5>
-        <p class="text-xs text-white/60 leading-relaxed">Hierarquia modular que evita perder contexto</p>
-      </div>
-    
-      <div class="mb-3">
-        <h5 class="text-sm font-semibold text-white mb-1">Monorepo &amp; .aios-core</h5>
-        <p class="text-xs text-white/60 leading-relaxed">Entenda a estrutura de pastas e propósitos</p>
-      </div>
-    
-          </div>
-          
-          <div class="pt-4 border-t border-white/10">
-            <p class="text-xs font-semibold text-blue-400 mb-1">Insight:</p>
-            <p class="text-sm text-white/70">Decomponha projetos em hierarquia clara</p>
-          </div>
+            <div class="stat-card">
+                <span class="stat-value">N/A</span>
+                <span class="stat-label">Participantes</span>
+                <span class="stat-detail">Ativos</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">N/A</span>
+                <span class="stat-label">Mensagens</span>
+                <span class="stat-detail">No chat</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">2</span>
+                <span class="stat-label">Professores</span>
+                <span class="stat-detail">Ao vivo</span>
+            </div>
         </div>
-      </div>
-    
 
-      <div class="relative">
-        <div class="hidden md:block absolute left-1/2 -top-6 w-0.5 h-6 bg-gradient-to-b from-blue-500/50 to-purple-500/50"></div>
-        <div class="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border-2 border-purple-500/30 rounded-xl p-6 hover:border-purple-500/50 transition-all duration-300">
-          <div class="mb-4">
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="text-lg font-bold text-purple-400">Execução</h4>
-              <span class="px-2 py-1 bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-semibold rounded">Nível 3</span>
-            </div>
-          </div>
-          
-          <div class="space-y-3 mb-4">
-            
-      <div class="mb-3">
-        <h5 class="text-sm font-semibold text-white mb-1">@ vs / (Agentes)</h5>
-        <p class="text-xs text-white/60 leading-relaxed">@ simula, / executa DE VERDADE com ferramentas</p>
-      </div>
-    
-      <div class="mb-3">
-        <h5 class="text-sm font-semibold text-white mb-1">Documentação &gt; Conversa</h5>
-        <p class="text-xs text-white/60 leading-relaxed">Docs estruturados = determinismo, chat = ambiguidade</p>
-      </div>
-    
-          </div>
-          
-          <div class="pt-4 border-t border-white/10">
-            <p class="text-xs font-semibold text-purple-400 mb-1">Insight:</p>
-            <p class="text-sm text-white/70">Execute com agentes, documente antes de conversar</p>
-          </div>
+        <!-- Summary -->
+        <div class="section">
+            <h2 class="section-title">Resumo</h2>
+            <p style="color: rgba(255, 255, 255, 0.6);">Nenhum conteúdo disponível.</p>
         </div>
-      </div>
-    
 
-      <div class="relative">
-        <div class="hidden md:block absolute left-1/2 -top-6 w-0.5 h-6 bg-gradient-to-b from-purple-500/50 to-yellow-500/50"></div>
-        <div class="bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 border-2 border-yellow-500/30 rounded-xl p-6 hover:border-yellow-500/50 transition-all duration-300">
-          <div class="mb-4">
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="text-lg font-bold text-yellow-400">Maestria</h4>
-              <span class="px-2 py-1 bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 text-xs font-semibold rounded">Nível 4</span>
+        <!-- Mind Map -->
+        <div class="section">
+            <h2 class="section-title">Mapa Mental</h2>
+            <div class="mindmap-header">
+                <div class="mindmap-central">
+                    <h3 class="mindmap-central-title">Tema Central</h3>
+                    <p class="mindmap-central-subtitle"></p>
+                </div>
             </div>
-          </div>
-          
-          <div class="space-y-3 mb-4">
-            
-      <div class="mb-3">
-        <h5 class="text-sm font-semibold text-white mb-1">BOB → Workflows</h5>
-        <p class="text-xs text-white/60 leading-relaxed">De modo guiado a workflows customizados</p>
-      </div>
-    
-      <div class="mb-3">
-        <h5 class="text-sm font-semibold text-white mb-1">Memory Layer</h5>
-        <p class="text-xs text-white/60 leading-relaxed">Contexto persistente e otimização de tokens (90%)</p>
-      </div>
-    
-          </div>
-          
-          <div class="pt-4 border-t border-white/10">
-            <p class="text-xs font-semibold text-yellow-400 mb-1">Insight:</p>
-            <p class="text-sm text-white/70">Domine otimizações e contribua com comunidade</p>
-          </div>
+            <div class="mindmap-branches">
+                <p style="color: rgba(255, 255, 255, 0.6); text-align: center;">Nenhuma ramificação disponível.</p>
+            </div>
         </div>
-      </div>
-    
-                    </div>
-                </div>
 
-                <!-- Conexões Críticas -->
-                <div class="bg-gradient-to-br from-card-bg to-card-hover border-2 border-purple-500/30 rounded-xl p-8 sm:p-10">
-                    <h3 class="text-xl font-bold text-purple-400 mb-6 text-center">Conexões Críticas</h3>
-                    <p class="text-white/60 text-center text-sm mb-8 max-w-2xl mx-auto">Entenda como os conceitos se relacionam e por que essa ordem faz diferença</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        
-      <div class="bg-glass border-l-4 border-l-emerald-500 border border-border-subtle rounded-xl p-6 hover:bg-glass-hover hover:border-emerald-500/50 transition-all duration-300">
-        <div class="flex items-start gap-3 mb-4">
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="px-2 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-bold rounded">Mindset sobre Tokens</span>
+        <!-- Topics -->
+        <div class="section">
+            <h2 class="section-title">Tópicos Abordados</h2>
+            <div class="topics-grid">
+                <p class="text-white/60 col-span-full text-center">Nenhum tópico disponível.</p>
             </div>
-            <div class="flex items-center gap-2 my-3">
-              <div class="flex-1 h-0.5 bg-gradient-to-r from-emerald-500/50 to-transparent"></div>
-              <span class="text-emerald-400 text-xl">→</span>
-              <div class="flex-1 h-0.5 bg-gradient-to-l from-emerald-500/50 to-transparent"></div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="px-2 py-1 bg-emerald-500/20 text-emerald-300 text-xs font-bold rounded">Estrutura AIOS</span>
-            </div>
-          </div>
         </div>
-        
-        <div class="space-y-3">
-          <div>
-            <p class="text-xs font-semibold text-white/50 mb-1">Por quê essa ordem?</p>
-            <p class="text-sm text-white/80 leading-relaxed">Sem aceitar tokens como infraestrutura, você não vai investir tempo entendendo a estrutura completa.</p>
-          </div>
-          
-            <div class="pt-3 border-t border-white/10">
-              <p class="text-xs font-semibold text-emerald-400">⚡ Impacto: Mentalidade correta → Disposição para aprender</p>
+
+        <!-- Takeaways -->
+        <div class="section">
+            <h2 class="section-title">Principais Takeaways</h2>
+            <div class="takeaways-grid">
+                <p style="color: rgba(255, 255, 255, 0.6); text-align: center;">Nenhum takeaway disponível.</p>
             </div>
-          
         </div>
-      </div>
-    
 
-      <div class="bg-glass border-l-4 border-l-blue-500 border border-border-subtle rounded-xl p-6 hover:bg-glass-hover hover:border-blue-500/50 transition-all duration-300">
-        <div class="flex items-start gap-3 mb-4">
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs font-bold rounded">Epic → Story → Task</span>
+        <!-- Key Points / Quotes -->
+        <div class="section">
+            <h2 class="section-title">Pontos-Chave</h2>
+            <div class="quotes-grid">
+                <p style="color: rgba(255, 255, 255, 0.6); text-align: center;">Nenhum ponto-chave disponível.</p>
             </div>
-            <div class="flex items-center gap-2 my-3">
-              <div class="flex-1 h-0.5 bg-gradient-to-r from-blue-500/50 to-transparent"></div>
-              <span class="text-blue-400 text-xl">→</span>
-              <div class="flex-1 h-0.5 bg-gradient-to-l from-blue-500/50 to-transparent"></div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs font-bold rounded">Agentes (@/)</span>
-            </div>
-          </div>
         </div>
-        
-        <div class="space-y-3">
-          <div>
-            <p class="text-xs font-semibold text-white/50 mb-1">Por quê essa ordem?</p>
-            <p class="text-sm text-white/80 leading-relaxed">Hierarquia clara permite AIOS não perder contexto ao executar workflows.</p>
-          </div>
-          
-            <div class="pt-3 border-t border-white/10">
-              <p class="text-xs font-semibold text-blue-400">⚡ Impacto: Decomposição modular → Execução eficiente</p>
+
+        <!-- Resources -->
+        <div class="section">
+            <h2 class="section-title">Recursos Compartilhados</h2>
+            <div class="resources-grid">
+                <p style="color: rgba(255, 255, 255, 0.6); text-align: center;">Nenhum recurso disponível.</p>
             </div>
-          
-        </div>
-      </div>
-    
-
-      <div class="bg-glass border-l-4 border-l-purple-500 border border-border-subtle rounded-xl p-6 hover:bg-glass-hover hover:border-purple-500/50 transition-all duration-300">
-        <div class="flex items-start gap-3 mb-4">
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs font-bold rounded">@ vs / (Spawn)</span>
-            </div>
-            <div class="flex items-center gap-2 my-3">
-              <div class="flex-1 h-0.5 bg-gradient-to-r from-purple-500/50 to-transparent"></div>
-              <span class="text-purple-400 text-xl">→</span>
-              <div class="flex-1 h-0.5 bg-gradient-to-l from-purple-500/50 to-transparent"></div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs font-bold rounded">BOB + Workflows</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="space-y-3">
-          <div>
-            <p class="text-xs font-semibold text-white/50 mb-1">Por quê essa ordem?</p>
-            <p class="text-sm text-white/80 leading-relaxed">Entender diferença entre simular (@) e executar (/) é essencial para usar BOB corretamente.</p>
-          </div>
-          
-            <div class="pt-3 border-t border-white/10">
-              <p class="text-xs font-semibold text-purple-400">⚡ Impacto: Compreensão de agentes → Uso efetivo de workflows</p>
-            </div>
-          
-        </div>
-      </div>
-    
-
-      <div class="bg-glass border-l-4 border-l-yellow-500 border border-border-subtle rounded-xl p-6 hover:bg-glass-hover hover:border-yellow-500/50 transition-all duration-300">
-        <div class="flex items-start gap-3 mb-4">
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="px-2 py-1 bg-yellow-500/20 text-yellow-300 text-xs font-bold rounded">Documentação &gt; Conversa</span>
-            </div>
-            <div class="flex items-center gap-2 my-3">
-              <div class="flex-1 h-0.5 bg-gradient-to-r from-yellow-500/50 to-transparent"></div>
-              <span class="text-yellow-400 text-xl">→</span>
-              <div class="flex-1 h-0.5 bg-gradient-to-l from-yellow-500/50 to-transparent"></div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="px-2 py-1 bg-yellow-500/20 text-yellow-300 text-xs font-bold rounded">Todos os Conceitos</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="space-y-3">
-          <div>
-            <p class="text-xs font-semibold text-white/50 mb-1">Por quê essa ordem?</p>
-            <p class="text-sm text-white/80 leading-relaxed">Docs estruturados dão contexto claro para AIOS executar QUALQUER tarefa com determinismo.</p>
-          </div>
-          
-            <div class="pt-3 border-t border-white/10">
-              <p class="text-xs font-semibold text-yellow-400">⚡ Impacto: Fundamental para TUDO no AIOS</p>
-            </div>
-          
-        </div>
-      </div>
-    
-                    </div>
-                </div>
-            </section>
-
-            <!-- 5. TOPICS -->
-            <section class="mb-16">
-                <div class="text-center mb-8">
-                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">Tópicos Abordados</h2>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <p class="text-white/60 col-span-full text-center">Nenhum tópico disponível.</p>
-                </div>
-            </section>
-
-            <!-- 6. TAKEAWAYS -->
-            <section class="mb-16">
-                <div class="text-center mb-8">
-                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">Principais Takeaways</h2>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <p class="text-white/60 col-span-full text-center">Nenhum takeaway disponível.</p>
-                </div>
-            </section>
-
-            <!-- 7. QUOTES -->
-            <section class="mb-16">
-                <div class="text-center mb-8">
-                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">Citações Memoráveis</h2>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <p class="text-white/60 col-span-full text-center">Nenhuma citação disponível.</p>
-                </div>
-            </section>
-
-            <!-- 8. PRAISE -->
-            <section class="mb-16">
-                <div class="text-center mb-8">
-                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">Feedback dos Alunos</h2>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <p class="text-white/60 col-span-full text-center">Nenhum elogio disponível.</p>
-                </div>
-            </section>
-
-            <!-- 9. LINKS -->
-            <section class="mb-16">
-                <div class="text-center mb-8">
-                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">Links Compartilhados</h2>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <p class="text-white/60 col-span-full text-center">Nenhum link disponível.</p>
-                </div>
-            </section>
-
-            <!-- 10. TOOLS -->
-            <section class="mb-16">
-                <div class="text-center mb-8">
-                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">Ferramentas Essenciais</h2>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    
-      <div class="bg-card-bg border border-border-subtle rounded-lg p-5 hover:bg-card-hover hover:border-border-hover transition-all duration-300">
-        <div class="flex items-start justify-between gap-3 mb-3">
-          <h4 class="text-lg font-semibold text-white">CodeRabbit</h4>
-          <span class="flex-shrink-0 px-2 py-1 bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 text-xs font-semibold rounded whitespace-nowrap">Alta</span>
-        </div>
-        <p class="text-xs text-white/50 mb-2">Code Review</p>
-        <p class="text-sm text-white/70">Code review automático com IA</p>
-      </div>
-    
-      <div class="bg-card-bg border border-border-subtle rounded-lg p-5 hover:bg-card-hover hover:border-border-hover transition-all duration-300">
-        <div class="flex items-start justify-between gap-3 mb-3">
-          <h4 class="text-lg font-semibold text-white">GitHub Actions</h4>
-          <span class="flex-shrink-0 px-2 py-1 bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 text-xs font-semibold rounded whitespace-nowrap">Alta</span>
-        </div>
-        <p class="text-xs text-white/50 mb-2">CI/CD</p>
-        <p class="text-sm text-white/70">Integração e deploy contínuo</p>
-      </div>
-    
-      <div class="bg-card-bg border border-border-subtle rounded-lg p-5 hover:bg-card-hover hover:border-border-hover transition-all duration-300">
-        <div class="flex items-start justify-between gap-3 mb-3">
-          <h4 class="text-lg font-semibold text-white">Claude Pro</h4>
-          <span class="flex-shrink-0 px-2 py-1 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold rounded whitespace-nowrap">Essencial</span>
-        </div>
-        <p class="text-xs text-white/50 mb-2">IA</p>
-        <p class="text-sm text-white/70">Assistente de desenvolvimento</p>
-      </div>
-    
-                </div>
-            </section>
-
-            <!-- 11. PROJECTS -->
-            <section class="mb-16">
-                <div class="text-center mb-8">
-                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">Projetos da Comunidade</h2>
-                </div>
-                <div class="space-y-6">
-                    <p class="text-white/60 text-center">Nenhum projeto disponível.</p>
-                </div>
-            </section>
-
-            <!-- 12. NEXT STEPS -->
-            <section class="mb-16">
-                <div class="text-center mb-8">
-                    <h2 class="text-sm font-semibold tracking-widest text-white/40 uppercase">Próximos Passos</h2>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    
-      <div class="bg-glass border-l-4 border-l-emerald-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
-        <div class="text-4xl mb-4">⚡</div>
-        <h3 class="text-xl font-bold text-emerald-400 mb-4">Hoje</h3>
-        <ul class="space-y-2">
-          <li class="flex items-start gap-2 text-sm text-white/80"><span class="text-emerald-400">✓</span><span>Revise esta análise</span></li><li class="flex items-start gap-2 text-sm text-white/80"><span class="text-emerald-400">✓</span><span>Escolha 1 conceito para aplicar</span></li>
-        </ul>
-      </div>
-    
-      <div class="bg-glass border-l-4 border-l-blue-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
-        <div class="text-4xl mb-4">🎯</div>
-        <h3 class="text-xl font-bold text-blue-400 mb-4">Esta Semana</h3>
-        <ul class="space-y-2">
-          <li class="flex items-start gap-2 text-sm text-white/80"><span class="text-blue-400">✓</span><span>Pratique decomposição Epic → Story → Task</span></li><li class="flex items-start gap-2 text-sm text-white/80"><span class="text-blue-400">✓</span><span>Use BOB para primeiro projeto</span></li>
-        </ul>
-      </div>
-    
-      <div class="bg-glass border-l-4 border-l-purple-500 border border-border-subtle rounded-r-xl p-6 hover:scale-105 transition-all duration-300">
-        <div class="text-4xl mb-4">🚀</div>
-        <h3 class="text-xl font-bold text-purple-400 mb-4">Este Mês</h3>
-        <ul class="space-y-2">
-          <li class="flex items-start gap-2 text-sm text-white/80"><span class="text-purple-400">✓</span><span>Domine estrutura AIOS</span></li><li class="flex items-start gap-2 text-sm text-white/80"><span class="text-purple-400">✓</span><span>Contribua com comunidade</span></li>
-        </ul>
-      </div>
-    
-                </div>
-            </section>
-
-            <!-- 13. CTA SECTION -->
-            <section class="mb-16">
-                <div class="bg-card-bg border border-border-subtle rounded-2xl p-8 sm:p-12">
-                    <div class="text-center mb-10">
-                        <h2 class="text-3xl sm:text-4xl font-bold mb-2">💡 O Que Você Realmente Aprendeu</h2>
-                    </div>
-                    <div class="space-y-6">
-                        <!-- LEARNED -->
-                        <div class="bg-glass border-l-4 border-l-emerald-500 rounded-r-xl p-6">
-                            <h3 class="text-xl font-bold text-emerald-400 mb-3">✅ O Que Você Aprendeu:</h3>
-                            <div class="text-white/90 leading-relaxed"><p class="mb-4">AIOS não é apenas ferramenta - é uma nova forma de PENSAR desenvolvimento. Você aprendeu a estrutura completa: Epic → Story → Task, a diferença entre @ e /, e a importância de documentação &gt; conversa.</p></div>
-                        </div>
-                        <!-- SECRET -->
-                        <div class="bg-glass border-l-4 border-l-red-500 rounded-r-xl p-6">
-                            <h3 class="text-xl font-bold text-red-400 mb-3">🔥 O Segredo Revelado:</h3>
-                            <div class="text-white/90 leading-relaxed"><p class="mb-4">O segredo revelado: tokens NÃO são luxo, são infraestrutura. Documentos estruturados funcionam MELHOR que chat conversacional. BOB não é vergonha - é estratégia.</p></div>
-                        </div>
-                        <!-- ACTION -->
-                        <div class="cta-pulse bg-gradient-to-r from-yellow-500/10 to-emerald-500/5 border-2 border-yellow-500/30 rounded-xl p-8">
-                            <div class="flex items-start gap-4">
-                                <div class="text-4xl flex-shrink-0">⚡</div>
-                                <div class="flex-1">
-                                    <h4 class="text-xl font-bold text-yellow-400 mb-3">🎯 Aplique HOJE:</h4>
-                                    <p class="text-white/90 text-lg leading-relaxed">Pegue 1 conceito deste mapa e IMPLEMENTE HOJE (mal feito). Não amanhã. HOJE. Mesmo que fique ruim. Isso separa quem sai transformado de quem apenas estudou.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- FOOTER -->
-            <footer class="text-center py-12 border-t border-border-subtle">
-                <p class="text-white/40 text-sm">📚 Cohort AIOS Avançado • Gerado automaticamente com ❤️ pelo WebCraft</p>
-            </footer>
-
         </div>
     </div>
 </body>
