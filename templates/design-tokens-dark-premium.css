@@ -1,0 +1,400 @@
+/**
+ * Design Tokens - Dark Premium Sales Page
+ * Based on: Dark, premium, data-driven aesthetic
+ * Version: 2.0 (Dark Premium)
+ * Last Updated: 2026-02-09
+ */
+
+:root {
+  /* ========================================
+     PALETA DE CORES - BACKGROUNDS
+     ======================================== */
+  --color-bg-page: #0A0A0A;              /* Fundo da página (preto quase puro) */
+  --color-bg-card: #141414;              /* Cards e containers (cinza ultra-escuro) */
+  --color-bg-card-alt: #1A1A1A;          /* Cards alternativos */
+  --color-bg-card-winner: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.04)); /* Card destaque */
+  --color-bg-total: #0F4A2E;             /* Linha de total (verde escuro) */
+  --color-bg-urgency: linear-gradient(135deg, #FF3366, #F43F5E); /* Card urgência (rosa/magenta) */
+  --color-bg-warning: rgba(245,158,11,0.15); /* Card aviso (âmbar) */
+  --color-bg-glass: rgba(20,20,20,0.7);  /* Glassmorphism */
+
+  /* ========================================
+     PALETA DE CORES - TEXTOS
+     ======================================== */
+  --color-text-headline: #FFFFFF;        /* Títulos e headlines (branco puro) */
+  --color-text-body: #999999;            /* Texto de corpo / descrições */
+  --color-text-body-alt: #AAAAAA;        /* Texto de corpo alternativo */
+  --color-text-label: #EF4444;           /* Labels e categorias (vermelho) */
+  --color-text-tech: #F87171;            /* Subtítulos técnicos (vermelho claro) */
+  --color-text-cost: #EF4444;            /* Valores negativos/custos (vermelho) */
+  --color-text-profit: #22C55E;          /* Valores positivos/economia (verde) */
+  --color-text-agent: #10B981;           /* Nomes de agentes (verde esmeralda) */
+  --color-text-on-urgency: #FFFFFF;      /* Texto sobre fundo rosa */
+  --color-text-source: #666666;          /* Fontes/referências */
+
+  /* ========================================
+     PALETA DE CORES - AÇÕES
+     ======================================== */
+  --color-cta-primary: #F5C518;          /* Botão primário (amarelo/dourado) */
+  --color-cta-primary-hover: #FFD700;    /* Hover do botão primário */
+  --color-cta-primary-text: #000000;     /* Texto do botão primário (preto) */
+  --color-cta-secondary: #25D366;        /* Botão secundário (verde WhatsApp) */
+  --color-cta-secondary-text: #FFFFFF;   /* Texto do botão secundário */
+  --color-checkbox-active: #F43F5E;      /* Checkbox ativo (rosa/vermelho) */
+  --color-icon-arrow: #FFFFFF;           /* Ícone de seta */
+
+  /* ========================================
+     PALETA DE CORES - BORDAS
+     ======================================== */
+  --color-border-card: rgba(255,255,255,0.08);    /* Borda de cards */
+  --color-border-separator: rgba(255,255,255,0.06); /* Separador de linhas */
+  --color-border-hover: rgba(255,255,255,0.15);   /* Borda hover */
+  --color-border-warning: rgba(245,158,11,0.3);   /* Borda de aviso */
+
+  /* ========================================
+     TIPOGRAFIA - FONT FAMILIES
+     ======================================== */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --font-mono: 'Fira Code', 'Courier New', monospace;
+
+  /* ========================================
+     TIPOGRAFIA - FONT SIZES
+     ======================================== */
+  --font-size-xs: 12px;       /* Labels / tags */
+  --font-size-sm: 13px;       /* Fontes de dados */
+  --font-size-base: 14px;     /* Labels secundários */
+  --font-size-md: 16px;       /* Corpo / descrição */
+  --font-size-lg: 18px;       /* Corpo grande */
+  --font-size-xl: 20px;       /* H3 (subtítulo de card) */
+  --font-size-2xl: 24px;      /* H3 grande */
+  --font-size-3xl: 36px;      /* H2 / Valor monetário grande */
+  --font-size-4xl: 48px;      /* H2 grande / H1 pequeno */
+  --font-size-5xl: 56px;      /* H1 (headline principal) */
+  --font-size-6xl: 64px;      /* H1 grande */
+  --font-size-7xl: 72px;      /* Valor monetário extra grande */
+
+  /* ========================================
+     TIPOGRAFIA - FONT WEIGHTS
+     ======================================== */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  /* ========================================
+     TIPOGRAFIA - LINE HEIGHTS
+     ======================================== */
+  --line-height-tight: 1.1;
+  --line-height-snug: 1.3;
+  --line-height-normal: 1.6;
+  --line-height-relaxed: 1.8;
+
+  /* ========================================
+     TIPOGRAFIA - LETTER SPACING
+     ======================================== */
+  --letter-spacing-tight: -0.02em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.1em;
+  --letter-spacing-wider: 0.15em;
+
+  /* ========================================
+     ESPAÇAMENTO
+     ======================================== */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 20px;
+  --spacing-xl: 24px;
+  --spacing-2xl: 32px;
+  --spacing-3xl: 40px;
+  --spacing-4xl: 48px;
+  --spacing-5xl: 60px;
+  --spacing-6xl: 80px;
+  --spacing-7xl: 100px;
+  --spacing-8xl: 120px;
+
+  /* ========================================
+     BORDER RADIUS
+     ======================================== */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-pill: 9999px;      /* Botões pill */
+
+  /* ========================================
+     SHADOWS E GLOWS
+     ======================================== */
+  --shadow-cta: 0 4px 20px rgba(245,197,24,0.2);
+  --glow-cta-hover: 0 0 20px rgba(245,197,24,0.3);
+  --glow-top-right: radial-gradient(ellipse at top right, rgba(239,68,68,0.08) 0%, transparent 60%);
+  --glow-bottom-left: radial-gradient(ellipse at bottom left, rgba(239,68,68,0.04) 0%, transparent 50%);
+
+  /* ========================================
+     TRANSITIONS
+     ======================================== */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
+
+  /* ========================================
+     LAYOUT - WIDTHS
+     ======================================== */
+  --width-container: 1200px;
+  --width-card-icon: 48px;
+  --width-icon-circle: 40px;
+
+  /* ========================================
+     LAYOUT - GAPS
+     ======================================== */
+  --gap-cards: 16px;
+  --gap-cards-lg: 24px;
+  --gap-sections: 80px;
+  --gap-sections-lg: 120px;
+
+  /* ========================================
+     Z-INDEX
+     ======================================== */
+  --z-base: 1;
+  --z-dropdown: 10;
+  --z-sticky: 50;
+  --z-modal: 100;
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Typography */
+.text-headline {
+  color: var(--color-text-headline);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.text-body {
+  color: var(--color-text-body);
+  line-height: var(--line-height-normal);
+}
+
+.text-label {
+  color: var(--color-text-label);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+}
+
+.text-tech {
+  color: var(--color-text-tech);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-semibold);
+}
+
+.text-agent {
+  color: var(--color-text-agent);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-semibold);
+}
+
+.text-cost {
+  color: var(--color-text-cost);
+  font-weight: var(--font-weight-bold);
+}
+
+.text-profit {
+  color: var(--color-text-profit);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Botões */
+.btn-primary {
+  background: var(--color-cta-primary);
+  color: var(--color-cta-primary-text);
+  border-radius: var(--radius-pill);
+  padding: var(--spacing-md) var(--spacing-2xl);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  box-shadow: var(--shadow-cta);
+}
+
+.btn-primary:hover {
+  background: var(--color-cta-primary-hover);
+  box-shadow: var(--glow-cta-hover);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: var(--color-cta-secondary);
+  color: var(--color-cta-secondary-text);
+  border-radius: var(--radius-pill);
+  padding: var(--spacing-md) var(--spacing-2xl);
+  font-weight: var(--font-weight-bold);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.btn-icon-circle {
+  width: var(--width-icon-circle);
+  height: var(--width-icon-circle);
+  background: var(--color-icon-arrow);
+  color: var(--color-cta-primary-text);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+/* Cards */
+.card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-card);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  transition: all var(--transition-normal);
+}
+
+.card:hover {
+  border-color: var(--color-border-hover);
+}
+
+.card-winner {
+  background: var(--color-bg-card-winner);
+  border-color: var(--color-text-label);
+}
+
+.card-urgency {
+  background: var(--color-bg-urgency);
+  color: var(--color-text-on-urgency);
+  text-align: center;
+  padding: var(--spacing-2xl);
+  border-radius: var(--radius-xl);
+}
+
+.card-warning {
+  background: var(--color-bg-warning);
+  border: 1px solid var(--color-border-warning);
+}
+
+/* Layout */
+.container {
+  max-width: var(--width-container);
+  margin: 0 auto;
+  padding: 0 var(--spacing-xl);
+}
+
+.section {
+  margin: var(--gap-sections) 0;
+}
+
+.section-lg {
+  margin: var(--gap-sections-lg) 0;
+}
+
+/* Grid */
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--gap-cards);
+}
+
+.grid-cards-lg {
+  gap: var(--gap-cards-lg);
+}
+
+/* Tables */
+.table-container {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.table-row {
+  border-bottom: 1px solid var(--color-border-separator);
+  padding: var(--spacing-md) var(--spacing-lg);
+}
+
+.table-row-total {
+  background: var(--color-bg-total);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-profit);
+}
+
+.table-header {
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--color-text-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Icon Card */
+.icon-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.icon-circle {
+  width: var(--width-card-icon);
+  height: var(--width-card-icon);
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-body-alt);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Glassmorphism */
+.glass {
+  background: var(--color-bg-glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Ambient Glow */
+.ambient-glow-top-right::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+  height: 50%;
+  background: var(--glow-top-right);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Transitions */
+.transition-normal {
+  transition: all var(--transition-normal);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 var(--spacing-md);
+  }
+
+  .section {
+    margin: var(--spacing-4xl) 0;
+  }
+
+  .grid-cards {
+    grid-template-columns: 1fr;
+  }
+}
