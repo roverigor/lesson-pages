@@ -1,0 +1,213 @@
+links_extraidos:
+  total: 11
+  categorias:
+    ferramentas_ia: 6
+    redes_sociais: 3
+    recursos: 2
+
+  por_categoria:
+    ferramentas_ia:
+      - url: "https://www.read.ai/pp"
+        timestamp: "00:00"
+        contexto: "Read.ai - ferramenta de resumo de reuniões mencionada no início"
+        categoria: "ferramentas_ia"
+        mencionado_por: "read.ai meeting notes (bot)"
+        relevancia: "baixa - bot automático"
+
+      - url: "https://claude.ai/public/artifacts/8cafe7f6-2e7f-400f-bdce-3ba15f5422e0"
+        timestamp: "02:01"
+        contexto: "Modelos mentais - artifact compartilhado na aula"
+        categoria: "recursos"
+        mencionado_por: "julianotorriani"
+        relevancia: "alta - recurso de aprendizado"
+        tipo_recurso: "artifact_claude"
+        titulo: "Modelos Mentais v1.0"
+
+      - url: "https://claude.ai/public/artifacts/f9137638-1991-4c51-9a5f-156dacc4dd14"
+        timestamp: "02:22"
+        contexto: "Modelos mentais v2.0 - versão atualizada"
+        categoria: "recursos"
+        mencionado_por: "julianotorriani"
+        relevancia: "muito_alta - recurso melhorado"
+        tipo_recurso: "artifact_claude"
+        titulo: "Modelos Mentais v2.0"
+
+    redes_sociais:
+      - url: "https://www.instagram.com/reel/DTi2uf-FB1a/?igsh=MWFwYzlsenBpNWE3ZQ=="
+        timestamp: "01:26"
+        contexto: "Reel do Instagram compartilhado por Rodrigo Faerman"
+        categoria: "redes_sociais"
+        mencionado_por: "Rodrigo Faerman"
+        relevancia: "media - conteúdo relacionado"
+        rede: "instagram"
+
+    projetos_pessoais:
+      - url: "https://github.com/RBKunnela/ALMA-memory"
+        timestamp: "02:17"
+        contexto: "Framework ALMA para memória criado por aluna"
+        categoria: "projetos_pessoais"
+        mencionado_por: "Renata Baldissara-Kunnela"
+        relevancia: "muito_alta - projeto de aluno aplicado"
+        tipo: "github_repository"
+
+      - url: "https://alma-memory.pages.dev/"
+        timestamp: "02:17"
+        contexto: "Página explicativa do framework ALMA"
+        categoria: "projetos_pessoais"
+        mencionado_por: "Renata Baldissara-Kunnela"
+        relevancia: "muito_alta - documentação de projeto"
+        tipo: "landing_page"
+
+  links_importantes_contexto:
+    repositorio_aios:
+      descricao: "Repositório oficial do AIOS mencionado múltiplas vezes"
+      contexto: "github.com/SynkraAI/aios-core (instalação via npx)"
+      mencoes: 12
+      relevancia: "crítica - fonte da verdade"
+
+    github_organizacao:
+      descricao: "Organização GitHub e configuração de repos"
+      contexto: "Discussão sobre GITHUB_ORG e estrutura de repositórios"
+      mencoes: 8
+      relevancia: "alta - configuração essencial"
+
+  screenshots_compartilhados:
+    - tipo: "image"
+      descricao: "CleanShot 2026-02-03 at 18.18.14.png"
+      timestamp: "00:18"
+      contexto: "Screenshot do Happy Coder app"
+      autor: "Rafael Costa"
+      reacoes: "👍 de Helder"
+
+    - tipo: "image"
+      descricao: "Screenshot2026_02_03_191657.jpg"
+      timestamp: "01:18"
+      contexto: "Screenshot não especificado"
+      autor: "não identificado"
+      reacoes: "♾️ de Monica Sales"
+
+    - tipo: "image"
+      descricao: "Captura de Tela 2026-02-03 às 21.24.23.png"
+      timestamp: "03:24"
+      contexto: "Screenshot final da aula"
+      autor: "não identificado"
+      reacoes: "♾️ de Monica Sales"
+
+  comandos_compartilhados:
+    - comando: "npx github:SynkraAI/aios-core install"
+      timestamp: "03:11"
+      contexto: "Comando de instalação do AIOS"
+      autor: "Alan Nicolas"
+      relevancia: "crítica"
+      uso: "instalacao_oficial"
+
+    - comando: "ls -la"
+      timestamp: "03:03"
+      contexto: "Listar arquivos incluindo ocultos"
+      autor: "Talles Souza"
+      relevancia: "basica"
+      uso: "navegacao_terminal"
+
+  ferramentas_mencionadas:
+    mcp_servers:
+      - nome: "context7"
+        categoria: "mcp_indispensavel"
+        mencoes: 3
+        timestamp: "02:44"
+        recomendado_por: "Alan Nicolas"
+
+      - nome: "desktop-commander"
+        categoria: "mcp_indispensavel"
+        mencoes: 2
+        timestamp: "02:45"
+        recomendado_por: "Alan Nicolas"
+
+      - nome: "browser (playwright/puppeteer)"
+        categoria: "mcp_indispensavel"
+        mencoes: 4
+        timestamp: "02:46"
+        contexto: "Automação de testes UI"
+        recomendado_por: "Alan Nicolas, Paulo de Tarso"
+
+      - nome: "exa"
+        categoria: "mcp_opcional"
+        mencoes: 2
+        timestamp: "02:46"
+        comparacao: "Similar ao Brave API"
+
+    apps_mencionados:
+      - nome: "Happy Coder"
+        categoria: "mobile_app"
+        mencoes: 2
+        timestamp: "00:14-00:17"
+        contexto: "App para orquestrar Claude Code pelo celular"
+        mencionado_por: "Rafael Costa"
+
+      - nome: "Lovable"
+        categoria: "desenvolvimento"
+        mencoes: 1
+        timestamp: "00:30"
+        contexto: "Usado por Talles para criar solução"
+
+      - nome: "ClawdBot"
+        categoria: "automacao"
+        mencoes: 8
+        timestamp: "02:17-02:27"
+        contexto: "Integração com WhatsApp e automação de processos"
+
+  repositorios_discutidos:
+    estrutura:
+      - tipo: "monorepo"
+        descricao: "Backend + Frontend no mesmo repositório"
+        mencoes: 6
+        timestamp: "02:10-02:15"
+        vantagem: "IA acessa tudo, resolve sem múltiplos repos"
+
+      - tipo: "remotes_multiplos"
+        descricao: "origin + cursos + upstream"
+        mencoes: 4
+        timestamp: "00:12-00:13"
+        contexto: "Estrutura de remotes do monorepo MMOS"
+
+  recursos_educacionais:
+    gravacao_aula:
+      descricao: "Gravação desta aula será disponibilizada"
+      mencoes: 5
+      timestamp: "01:50, 02:08"
+      contexto: "Múltiplos pedidos para rever conteúdo"
+
+    transcricao:
+      descricao: "Transcrição da aula para criar Knowledge Base"
+      mencoes: 3
+      timestamp: "01:54"
+      ideia: "Usar própria transcrição como input para AIOS"
+
+    acesso_fundamentals:
+      descricao: "Alunos avançados ganham acesso a gravações do cohort fundamentals"
+      mencoes: 1
+      timestamp: "00:03"
+      fornecido_por: "Alan Nicolas"
+
+meta:
+  total_urls_validos: 6
+  total_screenshots: 3
+  total_comandos: 2
+  total_ferramentas_mencionadas: 9
+  categoria_mais_mencionada: "ferramentas_ia"
+  link_mais_relevante: "https://claude.ai/public/artifacts/f9137638-1991-4c51-9a5f-156dacc4dd14"
+  projeto_destaque: "ALMA-memory (Renata Baldissara-Kunnela)"
+
+observacoes:
+  - "Poucos links externos - aula focada em demonstrações ao vivo"
+  - "Artifacts do Claude usados para compartilhar recursos interativos"
+  - "Projeto ALMA-memory é exemplo concreto de aluno aplicando conteúdo"
+  - "Happy Coder app permite trabalho mobile - caso de uso interessante"
+  - "Múltiplas menções a MCPs essenciais - padrão emergindo"
+  - "Discussão sobre monorepo vs múltiplos repos - decisão arquitetural importante"
+
+recomendacoes:
+  - "Compilar lista oficial de MCPs recomendados"
+  - "Criar repositório de recursos compartilhados (artifacts, screenshots)"
+  - "Documentar casos de uso mobile (Happy Coder)"
+  - "Destacar projetos de alunos como ALMA-memory em materiais futuros"
+  - "Criar guia sobre estrutura de remotes (origin/upstream/cursos)"

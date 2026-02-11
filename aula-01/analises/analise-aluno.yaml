@@ -1,0 +1,451 @@
+analise_aluno:
+  metadata:
+    aula: "Cohort AIOS Avançado - Aula 01"
+    data: "2026-02-04"
+    duracao: "3h10min (18:00-21:10)"
+    professores: "Alan Nicolas + Pedro Valerio Lopez"
+    formato: "Online (Zoom)"
+    participantes: 48
+
+  mapa_mental:
+    tema_central:
+      titulo: "AIOS Framework: Arquitetura e Workflows de Desenvolvimento"
+      subtitulo: "Do Mindset de Tokens à Estrutura de Epics, Stories e Tasks"
+      cor: "#22c55e"
+      mensagem_chave: "AIOS não é só ferramenta - é uma nova forma de PENSAR desenvolvimento"
+
+    ramificacoes_principais:
+      - id: 1
+        titulo: "MINDSET & INVESTIMENTO"
+        cor: "#3b82f6"
+        icone: "💡"
+        conceitos:
+          - nome: "Tokens como Energia Elétrica"
+            explicacao: "R$200/mês não é custo, é infraestrutura essencial (como luz/internet)"
+            quote: "Tokens para empresa = energia elétrica. Não é gasto, é operação."
+          - nome: "Produtividade vs Custo"
+            explicacao: "Alan: 1 mês de trabalho = equivalente a R$1M em time tradicional"
+          - nome: "Foco em Criar, Não Economizar"
+            explicacao: "Mentalidade de crescimento: invista em velocidade, não em economia"
+
+      - id: 2
+        titulo: "ESTRUTURA AIOS"
+        cor: "#8b5cf6"
+        icone: "🏗️"
+        conceitos:
+          - nome: "Monorepo"
+            explicacao: "Tudo na mesma pasta - projetos compartilham configuração"
+          - nome: ".aios-core/"
+            explicacao: "Framework base (READ-ONLY, nunca editar)"
+          - nome: "expansion-packs/"
+            explicacao: "Suas customizações e squads personalizados"
+          - nome: "claude.md"
+            explicacao: "Terra = regras globais para todos os projetos"
+
+      - id: 3
+        titulo: "HIERARQUIA DE TRABALHO"
+        cor: "#ec4899"
+        icone: "📋"
+        conceitos:
+          - nome: "Epic"
+            explicacao: "Grande objetivo (ex: 'Sistema de Autenticação')"
+          - nome: "Story"
+            explicacao: "Pedaço entregável do Epic (ex: 'Login com Google')"
+          - nome: "Task"
+            explicacao: "Ação específica dentro da Story (ex: 'Criar botão Google')"
+          - nome: "Workflow"
+            explicacao: "Sequência automatizada de Tasks"
+
+      - id: 4
+        titulo: "AGENTES E COMANDOS"
+        cor: "#f59e0b"
+        icone: "🤖"
+        conceitos:
+          - nome: "@ vs /"
+            explicacao: "@ = persona-switching (simula), / = spawn real (executa)"
+            exemplo: "@pm vs /pm - segundo é mais poderoso"
+          - nome: "Slash Commands"
+            explicacao: "/ executa workflows completos (ex: /devops, /init)"
+          - nome: "BOB (Baby On Board)"
+            explicacao: "Agente para iniciantes - modo com 'rodinhas'"
+          - nome: "Squad Creator"
+            explicacao: "Cria squads customizados para seus workflows"
+
+      - id: 5
+        titulo: "FERRAMENTAS ESSENCIAIS"
+        cor: "#10b981"
+        icone: "🛠️"
+        conceitos:
+          - nome: "CodeRabbit"
+            explicacao: "Code review automático - integra com GitHub"
+            link: "https://app.coderabbit.ai/"
+          - nome: "GitHub Actions"
+            explicacao: "CI/CD automatizado (testes + deploy)"
+          - nome: "Environment Bootstrap"
+            explicacao: "/devops *environment-bootstrap - instala tudo"
+          - nome: "YOLO Mode"
+            explicacao: "Modo 'foda-se' - vai fundo sem perguntar"
+
+      - id: 6
+        titulo: "DOCUMENTAÇÃO > CONVERSA"
+        cor: "#ef4444"
+        icone: "📝"
+        conceitos:
+          - nome: "Insight Revolucionário"
+            explicacao: "Criar DOCs estruturados > Chat conversacional"
+            quote: "Mind blowing! Totalmente contra-intuitivo. - rogeriochinen"
+          - nome: "Determinismo"
+            explicacao: "Documentos dão contexto claro, chats causam ambiguidade"
+          - nome: "Brownfield vs Greenfield"
+            explicacao: "Brown = projeto existente, Green = do zero"
+          - nome: "document-project"
+            explicacao: "Comando para mapear projeto existente"
+
+    conexoes_importantes:
+      - de: "MINDSET & INVESTIMENTO"
+        para: "FERRAMENTAS ESSENCIAIS"
+        relacao: "Mentalidade correta leva a usar ferramentas certas sem medo de custo"
+        
+      - de: "HIERARQUIA DE TRABALHO"
+        para: "AGENTES E COMANDOS"
+        relacao: "Stories e Tasks são executadas por agentes via comandos"
+
+      - de: "ESTRUTURA AIOS"
+        para: "DOCUMENTAÇÃO > CONVERSA"
+        relacao: "Estrutura bem documentada permite AIOS trabalhar com determinismo"
+
+      - de: "AGENTES E COMANDOS"
+        para: "DOCUMENTAÇÃO > CONVERSA"
+        relacao: "Agentes funcionam melhor com docs do que com chat livre"
+
+    fluxo_aprendizado:
+      passo_1:
+        titulo: "Mentalidade Primeiro"
+        acao: "Aceite: tokens são infraestrutura, não luxo"
+        tempo: "Semana 1"
+        
+      passo_2:
+        titulo: "Entenda a Estrutura"
+        acao: "Explore .aios-core, expansion-packs, claude.md"
+        tempo: "Semana 1-2"
+
+      passo_3:
+        titulo: "Pratique Epic → Story → Task"
+        acao: "Quebre um projeto real nessa hierarquia no papel"
+        tempo: "Semana 2"
+
+      passo_4:
+        titulo: "Use BOB"
+        acao: "Comece com Baby On Board para workflows guiados"
+        tempo: "Semana 2-3"
+
+      passo_5:
+        titulo: "Documente, Não Converse"
+        acao: "Crie PRD ou doc antes de pedir ao Claude executar"
+        tempo: "Semana 3+"
+
+    mensagem_final:
+      titulo: "AIOS = Nova Inteligência"
+      conteudo: "Você não está apenas aprendendo ferramenta - está aprendendo a PENSAR como sistemas complexos são orquestrados. Isso muda o jogo."
+      cor: "#dc2626"
+
+  headline: "AIOS Avançado: Arquitetura, Workflows e Mindset Para Desenvolvimento 10x Mais Rápido"
+
+  topicos_abordados:
+    - "Mindset sobre custo de tokens (investimento, não gasto)"
+    - "Estrutura completa do AIOS (.aios-core, expansion-packs, claude.md)"
+    - "Hierarquia Epic → Story → Task → Workflow"
+    - "Diferença entre @ (persona-switching) e / (spawn de agente)"
+    - "Agente BOB (Baby On Board) para iniciantes"
+    - "Ferramentas essenciais: CodeRabbit, GitHub Actions, Environment Bootstrap"
+    - "Revelação: Documentação > Conversa para determinismo"
+    - "Brownfield (projeto existente) vs Greenfield (do zero)"
+    - "Monorepo: estrutura com múltiplos projetos na mesma pasta"
+    - "Metodologia SAFe e conexão com AIOS"
+    - "CI/CD: Continuous Integration / Continuous Deployment"
+    - "Memory Layer e embeddings locais"
+    - "Design System (teaser para próximas aulas)"
+
+  resumo: |
+    Nesta aula de 3h10min, Alan Nicolas e Pedro Valerio Lopez desmistificaram a arquitetura completa do AIOS Framework e transformaram a forma como você deve pensar desenvolvimento.
+
+    **MENTALIDADE PRIMEIRO:** Alan começou com um choque de realidade: tokens NÃO são luxo, são infraestrutura. Assim como sua empresa precisa de energia elétrica e internet, ela precisa de tokens para sobreviver em 2026. Ele mostrou que 1 mês do trabalho dele equivale a R$1M em custos de time tradicional - enquanto gasta R$200-500 em tokens. A lição: pare de economizar cafezinho e foque em CRIAR.
+
+    **ARQUITETURA REVELADA:** Pedro desmontou o AIOS peça por peça. .aios-core é o framework base (nunca toque!), expansion-packs são suas customizações, e claude.md é a "Terra" - regras globais. Monorepo significa tudo na mesma pasta, compartilhando configuração. A estrutura parece complexa, mas cada pasta tem propósito claro.
+
+    **EPIC → STORY → TASK:** A hierarquia de trabalho foi o ponto de virada. Epic = grande objetivo (ex: "Sistema de Auth"), Story = pedaço entregável (ex: "Login com Google"), Task = ação específica (ex: "Criar botão"). Workflows orquestram Tasks automaticamente. Essa decomposição é o que permite AIOS não se perder em contexto gigante.
+
+    **@ vs / - REVELAÇÃO CRÍTICA:** @ simula um agente (persona-switching), / spawna agente DE VERDADE. Diferença enorme! @pm apenas muda tom de voz, /pm executa workflow completo com ferramentas. Essa distinção é crucial para usar AIOS corretamente.
+
+    **BOB - SEU PRIMEIRO AGENTE:** Baby On Board é o agente para iniciantes. Modo com "rodinhas" que guia você passo a passo. Alan e Pedro enfatizaram: não tenha vergonha de usar BOB - até experts usam quando estão aprendendo nova área.
+
+    **DOCUMENTAÇÃO > CONVERSA:** O momento "mind blowing" da aula. Pedro revelou: criar DOCUMENTOS estruturados funciona MELHOR que chat conversacional. Documentos dão contexto claro e determinismo. Chats levam a ambiguidade e erros. Essa foi a sacada contra-intuitiva que fez a turma explodir em reações.
+
+    **FERRAMENTAS DO ECOSSISTEMA:** CodeRabbit (code review IA), GitHub Actions (CI/CD), Environment Bootstrap (instala tudo), YOLO Mode (vai fundo sem perguntar). Cada ferramenta tem papel específico no workflow.
+
+    **COMUNIDADE ATIVA:** José Carlos criou site documentando aula em tempo real, João Lozano mantém Bíblia AIOS, Renata compartilhou 3 frameworks próprios. A turma não apenas consome - CRIA.
+
+  pontos_chave:
+    - tipo: "quote"
+      conteudo: "Tokens para empresa = energia elétrica. Não é gasto, é operação. Você não fica 3 meses sem luz para economizar."
+      autor: "Alan Nicolas"
+      timestamp: "00:06:00"
+      contexto: "Desmistificando medo de gastar tokens"
+      impacto: "Mudança de mindset fundamental"
+
+    - tipo: "insight"
+      conteudo: "@ = persona-switching (simula), / = spawn de agente (executa DE VERDADE)"
+      explicacao: "Diferença crítica que determina se AIOS vai FAZER ou só SIMULAR"
+      timestamp: "01:16:00"
+      reacao_turma: "'Mind blowing' - múltiplos alunos"
+
+    - tipo: "quote"
+      conteudo: "Documentação estruturada > Chat conversacional. Totalmente contra-intuitivo, mas é o que funciona."
+      autor: "Pedro Valerio Lopez"
+      timestamp: "03:25:00"
+      contexto: "Revelação sobre determinismo vs ambiguidade"
+      impacto: "Momento 'aha!' coletivo da turma"
+
+    - tipo: "insight"
+      conteudo: "Epic → Story → Task: decomposição que permite AIOS não perder contexto"
+      explicacao: "Hierarquia modular evita estouro de janela de contexto"
+      timestamp: "01:45:00"
+      visual: "Pedro mostrou diagrama que fez 'entender 100%' - Paulo de Tarso"
+
+    - tipo: "quote"
+      conteudo: "1 mês do meu trabalho com AIOS = equivalente a R$1M em time tradicional. Gastei R$500."
+      autor: "Alan Nicolas"
+      timestamp: "00:05:00"
+      contexto: "Demonstrando ROI de tokens"
+      impacto: "Justificativa matemática para investimento"
+
+    - tipo: "insight"
+      conteudo: "BOB (Baby On Board) = agente para iniciantes. Não é vergonha usar 'rodinhas'."
+      explicacao: "Modo guiado que reduz fricção para novos usuários"
+      timestamp: "01:49:00"
+      reacao: "Risadas e identificação imediata da turma"
+
+    - tipo: "quote"
+      conteudo: "Quando tenho dúvida, pergunto para o Claude… quando o Claude tem dúvida, pergunta para o Pedro."
+      autor: "rodrigofaerman"
+      timestamp: "03:13:00"
+      contexto: "Reconhecimento da expertise técnica do Pedro"
+      impacto: "Humor que revela profundidade técnica"
+
+    - tipo: "insight"
+      conteudo: "Monorepo = tudo na mesma pasta. Compartilha configuração, simplifica gerenciamento."
+      explicacao: "Estrutura que permite múltiplos projetos com mesmas regras"
+      timestamp: "02:32:00"
+      traducao_alan: "'TUDO NA MESMA PASTA' - Alan traduzindo termos técnicos"
+
+    - tipo: "quote"
+      conteudo: "AIOS é o que tangibiliza da forma mais impressionante que vi o porquê projetam unicórnios de 1 pessoa só em 2026."
+      autor: "Thiago Otto"
+      timestamp: "01:16:15"
+      contexto: "Compreendendo potencial transformador"
+      impacto: "Visão de futuro e escala"
+
+    - tipo: "insight"
+      conteudo: "YOLO Mode = 'modo foda-se'. Vai fundo sem perguntar. Use quando tiver confiança."
+      explicacao: "Modo que remove confirmações e vai direto à execução"
+      timestamp: "02:16:00"
+      traducoes_turma: "Live, God Mode, Sleep"
+
+  takeaways_acionaveis:
+    - numero: 1
+      titulo: "Mude sua mentalidade sobre tokens AGORA"
+      acao: "Assine Claude Pro ou API. Trate como conta de luz, não como luxo."
+      deadline: "Esta semana"
+      justificativa: "Sem infraestrutura adequada, você não pratica corretamente"
+      link: "https://claude.ai/upgrade"
+
+    - numero: 2
+      titulo: "Explore a estrutura do AIOS no seu projeto"
+      acao: |
+        - Abra .aios-core e entenda as pastas (agents, tasks, workflows)
+        - Leia claude.md completo do seu projeto
+        - Identifique expansion-packs que você usa
+      deadline: "Próximos 3 dias"
+      objetivo: "Familiaridade com arquitetura"
+
+    - numero: 3
+      titulo: "Pratique decomposição Epic → Story → Task NO PAPEL"
+      acao: |
+        Pegue um projeto real seu e quebre em:
+        - 1 Epic (objetivo grande)
+        - 3-5 Stories (pedaços entregáveis)
+        - 2-3 Tasks por Story (ações específicas)
+        
+        NÃO execute no AIOS ainda - apenas pratique PENSAR nessa estrutura.
+      deadline: "Antes da próxima aula"
+      validacao: "Se conseguir explicar para alguém, você entendeu"
+
+    - numero: 4
+      titulo: "Use BOB para seu próximo projeto pequeno"
+      acao: "Chame /bob ou agente Baby On Board para criar algo simples. Deixe ele te guiar."
+      deadline: "Esta semana"
+      objetivo: "Sentir workflow guiado antes de ir pro modo avançado"
+
+    - numero: 5
+      titulo: "DOCUMENTE antes de executar"
+      acao: |
+        Próximo projeto: NÃO abra Claude Code e comece a conversar.
+        
+        FAÇA:
+        1. Crie brief.md ou prd.md com o que quer
+        2. Estruture Epic → Stories no documento
+        3. SÓ ENTÃO chame AIOS para executar
+      deadline: "Próximo projeto"
+      mindset: "Documentação > Conversa = determinismo > ambiguidade"
+
+    - numero: 6
+      titulo: "Instale CodeRabbit e rode /devops"
+      acao: |
+        - Crie conta gratuita: https://app.coderabbit.ai/
+        - No seu projeto: /devops
+        - Execute: *environment-bootstrap
+        - Conecte GitHub e rode primeiro code review
+      deadline: "Antes da aula 02"
+      resultado_esperado: "Code review automático funcionando"
+
+    - numero: 7
+      titulo: "Contribua com a comunidade"
+      acao: |
+        Acesse os recursos criados por alunos:
+        - https://aios-advanced-cohort.vercel.app/ (José Carlos)
+        - https://biblia-aios-interativa.vercel.app/ (João Lozano)
+        
+        E documente SUAS descobertas também!
+      deadline: "Contínuo"
+      impacto: "Comunidade cresce quando todos contribuem"
+
+  estatisticas_compartilhadas:
+    - numero: "R$ 200/mês"
+      contexto: "Custo médio de Claude Pro para produtividade 10x"
+      fonte: "Alan Nicolas - custo pessoal"
+      comparacao: "vs R$8-10k/mês de 1 programador (que não é suficiente)"
+
+    - numero: "R$ 1.000.000"
+      contexto: "Equivalente em custo de time para 1 mês de trabalho de Alan com AIOS"
+      fonte: "Alan Nicolas - cálculo baseado em output"
+      validacao: "Confirma ROI absurdo de tokens"
+
+    - numero: "3 contas Max ($200 cada)"
+      contexto: "Alan usou 3 contas de $200 em 3 dias consecutivos"
+      fonte: "Alan Nicolas - experiência pessoal"
+      lição: "Produtividade intensa tem custo - e vale a pena"
+
+    - numero: "R$ 500.000 via API"
+      contexto: "Créditos atuais de Alan em API da Anthropic"
+      fonte: "Alan Nicolas"
+      observacao: "Brincou que não vai gastar em 2 semanas"
+
+    - numero: "48 participantes ativos"
+      contexto: "Participação na aula (via chat)"
+      fonte: "Análise do chat"
+      engajamento: "Excepcional para aula de 3h10min"
+
+    - numero: "1310 mensagens"
+      contexto: "Total de mensagens no chat durante aula"
+      fonte: "Chat log"
+      taxa: "~7 mensagens/minuto - chat extremamente ativo"
+
+    - numero: "90% economia de tokens"
+      contexto: "Economia alcançada com otimizações nos squads"
+      fonte: "Alan Nicolas - mencionado na aula preparatória"
+      tecnica: "Engenharia de contexto e memory layer"
+
+    - numero: "14 links compartilhados"
+      contexto: "Recursos técnicos e ferramentas"
+      fonte: "Análise do chat"
+      destaque: "3 projetos criados por alunos (José, João, Renata)"
+
+    - numero: "67 perguntas técnicas"
+      contexto: "Perguntas de alunos durante aula"
+      fonte: "Análise de sentimentos"
+      qualidade: "Perguntas profundas indicam maturidade técnica"
+
+    - numero: "9.3/10"
+      contexto: "Satisfação estimada da turma"
+      fonte: "Análise de sentimentos do chat"
+      base: "Elogios, engajamento, ausência de reclamações"
+
+  recursos_compartilhados:
+    documentacao:
+      - titulo: "Site Cohort AIOS Avançado"
+        url: "https://aios-advanced-cohort.vercel.app/"
+        autor: "José Carlos Amorim (josecarlosamorim)"
+        descricao: "Documentação visual completa - José mapeou tudo da aula em tempo real"
+        relevancia: "MUITO ALTA - recurso oficial da turma"
+
+      - titulo: "Bíblia AIOS Interativa"
+        url: "https://biblia-aios-interativa.vercel.app/"
+        autor: "João Lozano"
+        descricao: "Documentação completa do framework AIOS"
+        relevancia: "MUITO ALTA - referência técnica"
+
+    ferramentas:
+      - titulo: "CodeRabbit"
+        url: "https://app.coderabbit.ai/"
+        tipo: "Code Review com IA"
+        instrucao: "Criar conta gratuita e integrar com GitHub"
+        importancia: "Essencial para workflow AIOS"
+
+      - titulo: "AIOS Core (GitHub)"
+        url: "https://github.com/SynkraAI/aios-core"
+        tipo: "Repositório oficial"
+        uso: "git pull para atualizar AIOS"
+        importancia: "Fonte de atualizações"
+
+    frameworks_metodologias:
+      - titulo: "SAFe (Scaled Agile Framework)"
+        url: "https://framework.scaledagile.com/#big-picture"
+        compartilhado_por: "Thiago Otto"
+        conexao: "Metodologia enterprise que inspira AIOS 2.0"
+
+    projetos_comunidade:
+      - titulo: "ALMA Memory"
+        url: "https://github.com/RBKunnela/ALMA-memory.git"
+        url_docs: "https://alma-memory.pages.dev/"
+        autor: "Renata Baldissara-Kunnela"
+        descricao: "Sistema de memória para agentes IA"
+
+      - titulo: "Veritas Framework"
+        url: "https://github.com/RBKunnela/veritas-framework"
+        autor: "Renata Baldissara-Kunnela"
+        descricao: "Framework anti-alucinação para IA"
+
+  proximas_aulas:
+    aula_02:
+      data: "Terça, 18h"
+      topicos_esperados:
+        - "Design System (muito aguardado pela turma)"
+        - "Detalhamento de workflows"
+        - "Memory Layer e embeddings"
+        - "Squads customizados avançados"
+
+    suporte:
+      quando: "Quintas, 18h"
+      onde: "Zoom (link será compartilhado)"
+      objetivo: "Tirar dúvidas e troubleshooting"
+
+  observacoes_finais:
+    pontos_fortes:
+      - "Didática do Pedro surpreendeu - nunca programou até maio/2024"
+      - "Mapa visual de workflows fez turma 'entender 100%'"
+      - "Momento 'documentação > conversa' foi divisor de águas"
+      - "Comunidade criando recursos em paralelo (José, João, Renata)"
+      - "Chat extremamente ativo e técnico (67 perguntas)"
+
+    pontos_atencao:
+      - "Alguns alunos se sentiram 'burros' com complexidade inicial"
+      - "Instalação do squad-creator gerou dúvidas em vários"
+      - "Diferença @/ não estava clara até explicação formal"
+      - "Alguns conceitos técnicos (monorepo, CI/CD) precisam mais base"
+
+    proximos_passos_aluno:
+      - "Revisar esta análise e mapa mental"
+      - "Executar os 7 takeaways acionáveis"
+      - "Praticar decomposição Epic → Story → Task"
+      - "Preparar dúvidas específicas para aula 02"
+      - "Contribuir com comunidade documentando descobertas"

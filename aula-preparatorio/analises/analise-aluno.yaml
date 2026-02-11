@@ -1,0 +1,324 @@
+analise_pedagogica_aluno:
+  metadata:
+    aula: "Cohort AIOS Avançado - Aula Preparatória"
+    data: "2026-02-03"
+    duracao: "~2h20min"
+    professor: "Alan Nicolas + Pedro Valerio Lopez (convidado)"
+    tipo: "Esquenta pré-cohort"
+
+  headline: "Como Criar Squads de IA que Se Atualizam Sozinhos + Tool Discovery + Modelos Mentais para
+
+ Priorização"
+
+  topicos_abordados:
+    - titulo: "Instalação e Atualização do AIOS"
+      descricao: "Como manter AIOS sempre atualizado via Upstream sem perder customizações"
+      timestamp: "00:12-00:25"
+      nivel: "intermediario"
+
+    - titulo: "Estrutura de Projetos (Monorepo vs Múltiplos Repos)"
+      descricao: "Decisões arquiteturais - quando usar cada abordagem"
+      timestamp: "01:04-02:10"
+      nivel: "avancado"
+
+    - titulo: "Tool Discovery Automático"
+      descricao: "Sistema que pesquisa MCPs, Skills, APIs e projetos Github automaticamente"
+      timestamp: "01:03-01:15"
+      nivel: "avancado"
+
+    - titulo: "Matriz RICE para Priorização"
+      descricao: "Framework de priorização: Reach, Impact, Confidence, Effort"
+      timestamp: "01:14-01:22"
+      nivel: "avancado"
+
+    - titulo: "Modelos Mentais"
+      descricao: "Como bilionários usam frameworks mentais para tomar decisões melhores"
+      timestamp: "01:16"
+      nivel: "fundamental"
+
+    - titulo: "Squad Creator em Ação"
+      descricao: "Demonstração ao vivo de criação de squad com Tool Discovery integrado"
+      timestamp: "01:02-01:20"
+      nivel: "avancado"
+
+    - titulo: "MCPs Indispensáveis"
+      descricao: "Lista essencial: context7, desktop-commander, browser (playwright/puppeteer)"
+      timestamp: "02:42-02:46"
+      nivel: "basico"
+
+    - titulo: "Estratégias de Aprendizado Rápido"
+      descricao: "Por que executar rapidamente vale mais que planejar perfeitamente"
+      timestamp: "01:11-01:12 + 01:24-01:25"
+      nivel: "fundamental"
+
+  resumo_completo: |
+    Esta foi uma aula preparatória intensiva para o Cohort AIOS Avançado, onde Alan Nicolas e Pedro Valerio 
+    mostraram técnicas avançadas de automação e arquitetura de sistemas de IA.
+
+    **Tema Central:** Como construir sistemas que se auto-melhoram através de Tool Discovery automático e 
+    priorização inteligente usando frameworks comprovados.
+
+    **Demonstrações Práticas:**
+    - Configuração de Upstream para manter AIOS atualizado automaticamente
+    - Integração completa com Google Gemini CLI (lançado recentemente)
+    - Sistema de Tool Discovery que pesquisa MCPs, Skills, APIs e projetos Github
+    - Aplicação da Matriz RICE para decidir quais tools implementar
+
+    **Insights Profundos:**
+    - Pedro revelou sua estrutura de priorização automática usando Matriz RICE no ClickUp
+    - Alan demonstrou clonagem de mentes (colocou clone do Pedro no Squad Creator)
+    - Discussão sobre monorepo vs múltiplos repositórios
+    - Como usar Google App Script para automação em planilhas (caso real do Pedro)
+
+    **Mensagem Principal:**
+    "A diferença entre quem tem resultado não é conhecimento, mas executar rapidamente. 
+    Mesmo se não entender tudo, vá fazendo - seu aprendizado vem da ação, não da teoria."
+
+  principais_takeaways:
+    - takeaway: "MCPs Essenciais: context7, desktop-commander, browser"
+      categoria: "ferramentas"
+      impacto: "Reduzir custo de tokens e aumentar capacidades"
+      acao: "Instalar os 3 MCPs no seu projeto hoje"
+
+    - takeaway: "Upstream mantém AIOS atualizado sem perder customizações"
+      categoria: "configuracao"
+      impacto: "Nunca mais ficar com versão desatualizada"
+      acao: "Configurar upstream do repositório oficial"
+
+    - takeaway: "Tool Discovery automatiza pesquisa de soluções prontas"
+      categoria: "automacao"
+      impacto: "Economizar 80% do tempo pesquisando manualmente"
+      acao: "Integrar Tool Discovery no seu Squad Creator"
+
+    - takeaway: "Matriz RICE prioriza features por ROI real"
+      categoria: "metodologia"
+      impacto: "Focar apenas no que traz retorno mensurável"
+      acao: "Aplicar RICE nas próximas decisões de feature"
+
+    - takeaway: "Executar 5000x mal feito > Planejar 1x perfeitamente"
+      categoria: "mindset"
+      impacto: "Aprender 10x mais rápido pela experimentação"
+      acao: "Criar 3 squads ruins esta semana ao invés de planejar 1 perfeito"
+
+    - takeaway: "Monorepo: IA acessa tudo sem fragmentação"
+      categoria: "arquitetura"
+      impacto: "Resolver bugs cross-stack sem trocar de contexto"
+      acao: "Migrar projetos relacionados para monorepo"
+
+    - takeaway: "Modelos mentais = Como bilionários pensam"
+      categoria: "frameworks"
+      impacto: "Decisões 100x melhores usando mental models"
+      acao: "Estudar 1 modelo mental por semana (RICE, WSJF, etc)"
+
+    - takeaway: "Clone mentes reais no Squad (Alan + Pedro estão no Squad Creator)"
+      categoria: "avancado"
+      impacto: "Ter mentoria 24/7 dos melhores"
+      acao: "Identificar mente para clonar no seu domínio"
+
+  citacoes_memoraveis:
+    - citacao: "O problema não vai ser técnico - vai ser falta de repertório"
+      autor: "Alan Nicolas"
+      timestamp: "00:04"
+      contexto: "Sobre o que realmente impede progresso no cohort"
+      categoria: "mindset"
+
+    - citacao: "Fonte da verdade: o repositório Github. Não um zip, não uma mensagem - o repositório."
+      autor: "Alan Nicolas"
+      timestamp: "00:08"
+      contexto: "Estabelecendo padrão de onde buscar informação oficial"
+      categoria: "organizacao"
+
+    - citacao: "A maior parte do meu tempo era fazendo pergunta pra IA. Hoje ainda é 20%. Nunca pare de perguntar."
+      autor: "Alan Nicolas"
+      timestamp: "00:18"
+      contexto: "Como ele ainda aprende constantemente"
+      categoria: "aprendizado"
+
+    - citacao: "Eu literalmente pergunto pro Devops: 'O que é melhor, merge ou rebase?' Não tenho medo de perguntar pra IA."
+      autor: "Alan Nicolas"
+      timestamp: "00:18"
+      contexto: "Eliminando vergonha de não saber"
+      categoria: "mindset"
+
+    - citacao: "A diferença não é conhecimento - é executar rapidamente o que aprendeu"
+      autor: "Alan Nicolas"
+      timestamp: "01:11"
+      contexto: "Explicando por que alguns alunos se destacam"
+      categoria: "execucao"
+
+    - citacao: "Minha irmã cria coisas incríveis sem saber o básico. Como? Ela executa."
+      autor: "Alan Nicolas"
+      timestamp: "01:12"
+      contexto: "Caso real de não-programadora criando sistemas complexos"
+      categoria: "inspiracao"
+
+    - citacao: "Se você ficar 5 anos fazendo 1 copo perfeito, vai entregar pior que quem fez 5.000 copos ruins no ano"
+      autor: "Pedro Valerio Lopez"
+      timestamp: "01:25"
+      contexto: "Metáfora sobre volume vs perfeição"
+      categoria: "execucao"
+
+    - citacao: "Eu tenho mais de mil modelos mentais extraídos das maiores mentes do mundo. Se você quer ficar rico, trabalhe com modelos mentais."
+      autor: "Alan Nicolas"
+      timestamp: "01:16"
+      contexto: "Revelando seu sistema de frameworks"
+      categoria: "frameworks"
+
+    - citacao: "Eu clonei o Pedro e botei dentro do Squad Creator para essas coisas acontecerem"
+      autor: "Alan Nicolas"
+      timestamp: "01:22"
+      contexto: "Explicando como integrou mente do Pedro no sistema"
+      categoria: "clonagem_mentes"
+
+    - citacao: "Não economize token achando que vai fazer certo da primeira vez. Vai fazendo, vai testando."
+      autor: "Pedro Valerio Lopez"
+      timestamp: "01:24"
+      contexto: "Incentivando experimentação"
+      categoria: "mindset"
+
+  estatisticas_compartilhadas:
+    - stat: "5-7 horas atrás"
+      descricao: "Última atualização do AIOS antes da aula"
+      contexto: "Sistema sendo atualizado constantemente"
+
+    - stat: "19 releases do AIOS até agora"
+      descricao: "Número de versões oficiais lançadas"
+      contexto: "Evolução rápida do framework"
+
+    - stat: "~1.000 modelos mentais"
+      descricao: "Quantidade de frameworks mentais que Alan extraiu de elite minds"
+      contexto: "Biblioteca pessoal de decisões"
+
+    - stat: "3 MCPs indispensáveis"
+      descricao: "context7, desktop-commander, browser"
+      contexto: "Lista mínima recomendada pelo Alan"
+
+    - stat: "6-7 meses trabalhando com AIOS"
+      descricao: "Tempo de experiência do Alan com o sistema"
+      contexto: "Ainda aprendendo (processo contínuo)"
+
+    - stat: "5.000 copos vs 1 copo"
+      descricao: "Metáfora do Pedro sobre volume vs perfeição"
+      contexto: "Lei da quantidade versus qualidade"
+
+  ferramentas_mencionadas:
+    principais:
+      - nome: "Context7"
+        categoria: "MCP"
+        uso: "Documentação atualizada de qualquer biblioteca"
+        prioridade: "essencial"
+
+      - nome: "Desktop Commander"
+        categoria: "MCP"
+        uso: "Acesso ao sistema de arquivos e processos"
+        prioridade: "essencial"
+
+      - nome: "Browser (Playwright/Puppeteer)"
+        categoria: "MCP"
+        uso: "Automação de testes UI e web scraping"
+        prioridade: "essencial"
+
+      - nome: "Exa"
+        categoria: "MCP"
+        uso: "Busca avançada (similar ao Brave API)"
+        prioridade: "opcional"
+
+      - nome: "Google App Script"
+        categoria: "Ferramenta"
+        uso: "Automação em Google Sheets e Drive"
+        exemplo_real: "Pedro usa para planilhas complexas do Mercado Livre"
+        prioridade: "especializado"
+
+    emergentes:
+      - nome: "ClawdBot"
+        categoria: "Automação WhatsApp"
+        mencoes: 8
+        contexto: "Integração com Claude via WhatsApp"
+
+      - nome: "Happy Coder"
+        categoria: "App Mobile"
+        uso: "Orquestrar Claude Code pelo celular"
+        compartilhado_por: "Rafael Costa"
+
+      - nome: "Lovable"
+        categoria: "Desenvolvimento"
+        usado_por: "Talles Souza"
+
+  projetos_destaque_alunos:
+    - nome: "ALMA Memory Framework"
+      autor: "Renata Baldissara-Kunnela"
+      descricao: "Framework próprio para memória em IA"
+      links:
+        github: "https://github.com/RBKunnela/ALMA-memory"
+        docs: "https://alma-memory.pages.dev/"
+      relevancia: "Exemplo concreto de aluno aplicando conteúdo e criando algo original"
+
+    - nome: "Modelos Mentais Interativos v2.0"
+      autor: "julianotorriani"
+      descricao: "Artifact Claude com visualização de frameworks mentais"
+      link: "https://claude.ai/public/artifacts/f9137638-1991-4c51-9a5f-156dacc4dd14"
+      relevancia: "Compartilhado durante aula e usado por múltiplos alunos"
+
+  recursos_compartilhados:
+    - tipo: "Comando de Instalação"
+      conteudo: "npx github:SynkraAI/aios-core install"
+      timestamp: "03:11"
+      uso: "Instalar AIOS oficial"
+
+    - tipo: "Script de Configuração"
+      autor: "Felipe Brandão"
+      descricao: "Script pessoal que sincroniza configs customizadas para novos projetos"
+      workflow: "1) npx instala AIOS oficial, 2) script sync.sh copia configs pessoais"
+      timestamp: "01:36"
+
+    - tipo: "Matriz RICE"
+      definicao: "Reach (alcance) × Impact (impacto) × Confidence (confiança) / Effort (esforço)"
+      uso: "Priorizar épicos e features por ROI"
+      demonstrado_por: "Pedro Valerio Lopez"
+
+    - tipo: "Matriz WSJF"
+      definicao: "Weighted Shortest Job First"
+      uso: "Alternativa ao RICE para priorização"
+      mencionado_por: "Pedro Valerio Lopez"
+
+  proximos_passos_sugeridos:
+    imediatos:
+      - "Instalar os 3 MCPs essenciais (context7, desktop-commander, browser)"
+      - "Configurar Upstream do AIOS para receber atualizações"
+      - "Rever gravação e anotar comandos demonstrados"
+
+    semana_1:
+      - "Criar 3 squads simples (não se preocupe com perfeição)"
+      - "Implementar Tool Discovery em algum squad"
+      - "Experimentar Matriz RICE em 1 decisão real"
+
+    mes_1:
+      - "Estudar 4 modelos mentais novos (1 por semana)"
+      - "Construir biblioteca pessoal de frameworks"
+      - "Clonar primeira mente do seu domínio"
+      - "Contribuir com 1 pull request para AIOS"
+
+  nivel_complexidade_geral: "Avançado (requer fundamentos sólidos)"
+  recomendacao_revisao: "Assistir 2-3x - muitos conceitos densos em pouco tempo"
+
+  valor_principal_entregue: |
+    Esta aula entregou muito mais que técnicas - entregou MENTALIDADE.
+
+    **Você aprendeu:**
+    ✅ Que não saber tudo não te impede de criar (veja a irmã do Alan)
+    ✅ Que executar mal 5000x > planejar perfeitamente 1x
+    ✅ Que modelos mentais dos bilionários são replicáveis
+    ✅ Que perguntar pra IA não tem vergonha - é estratégia
+    ✅ Que squads podem ter clones de mentes reais (inclusive Alan + Pedro)
+
+    **O Segredo Revelado:**
+    Não é o AIOS que muda vidas - é COMO você usa. E o "como" vem de:
+    1) Velocidade de execução
+    2) Frameworks mentais certos
+    3) Zero medo de errar
+
+    **Aplique HOJE:**
+    Pegue 1 conceito desta aula e implemente HOJE (mal feito). 
+    Não amanhã. HOJE. Mesmo que fique ruim.
+
+    Isso é o que separa quem sai daqui transformado de quem apenas assistiu mais uma aula.

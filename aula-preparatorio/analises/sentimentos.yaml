@@ -1,0 +1,288 @@
+sentimentos:
+  elogios:
+    - mensagem: "Criei só com as aulas do Alan"
+      autor: "aluno"
+      timestamp: "00:31"
+      contexto: "Aluno compartilhando progresso próprio usando apenas conteúdo das aulas"
+      categoria: "resultado_aplicado"
+
+    - mensagem: "Cósmico!"
+      autor: "Helder"
+      timestamp: "00:27"
+      contexto: "Reação a funcionalidade de dashboard criada pelo Alan"
+      categoria: "admiracao"
+
+    - mensagem: "Surreal"
+      autor: "Marcos Ferreira"
+      timestamp: "00:31"
+      contexto: "Reação ao nível de criação sem conhecimento profundo de código"
+      categoria: "admiracao"
+
+    - mensagem: "Isso é top hein"
+      autor: "Marcos Ferreira"
+      timestamp: "00:31"
+      contexto: "Reconhecimento da qualidade do sistema criado"
+      categoria: "elogio_direto"
+
+    - mensagem: "Muito bom entender isso. Agora clareou um pouco"
+      autor: "Marcos Ferreira"
+      timestamp: "00:48"
+      contexto: "Após explicação sobre contexto e tokens"
+      categoria: "aprendizado_confirmado"
+
+    - mensagem: "Muito bom entender essa lógica. Não tinha ideia disso. Top"
+      autor: "Marcos Ferreira"
+      timestamp: "01:02"
+      contexto: "Compreensão sobre lógica de modularização"
+      categoria: "aprendizado_confirmado"
+
+    - mensagem: "TOP DEMAIS"
+      autor: "Jose Petrucio"
+      timestamp: "02:18"
+      contexto: "Reação geral à aula"
+      categoria: "elogio_direto"
+
+    - mensagem: "ANIMAL"
+      autor: "Paulo de Tarso Chaves"
+      timestamp: "02:18"
+      contexto: "Demonstração de funcionalidade avançada"
+      categoria: "admiracao"
+
+    - mensagem: "Sensacional!"
+      autor: "smithbarreni"
+      timestamp: "02:18"
+      contexto: "Avaliação geral da aula"
+      categoria: "elogio_direto"
+
+    - mensagem: "Top!!!"
+      autor: "rogeriochinen"
+      timestamp: "02:18"
+      contexto: "Avaliação positiva final"
+      categoria: "elogio_direto"
+
+    - mensagem: "MUITO TOP"
+      autor: "thiago"
+      timestamp: "02:18"
+      contexto: "Avaliação entusiasmada da aula"
+      categoria: "elogio_direto"
+
+    - mensagem: "Só Alandelivery"
+      autor: "Talles Souza"
+      timestamp: "00:14"
+      contexto: "Elogio à velocidade de entrega do Alan"
+      categoria: "elogio_direto"
+
+    - mensagem: "Já virou até Deva"
+      autor: "Talles Souza"
+      timestamp: "00:22"
+      contexto: "Brincadeira sobre evolução de participante"
+      categoria: "engajamento_positivo"
+
+    - mensagem: "Foi aplicando AIOS no AIOS"
+      autor: "Talles Souza"
+      timestamp: "00:53"
+      contexto: "Observação inteligente sobre meta-aplicação"
+      categoria: "insight_compartilhado"
+
+    - mensagem: "Muito bom entender essa lógica. Não tinha ideia disso"
+      autor: "Marcos Ferreira"
+      timestamp: "01:02"
+      contexto: "Breakthrough de compreensão"
+      categoria: "aprendizado_confirmado"
+
+  reclamacoes:
+    - mensagem: "Tá mudo aqui"
+      tipo: "tecnico"
+      severidade: "media"
+      timestamp: "00:26"
+      autor: "Gênesis Henrique"
+      contexto: "Problema de áudio no início da aula"
+      resolucao: "Resolvido - outros confirmaram áudio normal"
+
+    - mensagem: "No GitHub estava versão 3.11, mas quando instalei veio 3.10. Tenho controle sobre isso ou é o instalador que decide?"
+      tipo: "tecnico"
+      severidade: "baixa"
+      timestamp: "00:09"
+      autor: "Helder"
+      contexto: "Dúvida sobre versionamento na instalação"
+      resolucao: "Explicado pelo Alan - depende do empacotamento NPM"
+
+    - mensagem: "Nem sabia desta aula… achei q era só amanhã… me aprovaram no grupo e já mandaram o link…. Tava na academia já tô voltando p casa"
+      tipo: "logistico"
+      severidade: "baixa"
+      timestamp: "00:13"
+      autor: "Cranium Cursos"
+      contexto: "Desinformação sobre horário da aula"
+      resolucao: "Aula extra - não compromete conteúdo programático"
+
+    - mensagem: "Falta o AIOS"
+      tipo: "tecnico"
+      severidade: "alta"
+      timestamp: "00:22"
+      autor: "Jaya Deva"
+      contexto: "Aluno sem AIOS instalado"
+      resolucao: "Instruções de instalação providenciadas na aula"
+
+    - mensagem: "O meu Claude ta instalado globalmente. Isso é ruim?"
+      tipo: "configuracao"
+      severidade: "media"
+      timestamp: "00:23"
+      autor: "Flavio"
+      contexto: "Dúvida sobre melhor prática de instalação"
+      resolucao: "Explicado - preferível instalar por projeto"
+
+    - mensagem: "Estou esperando chegar meu MAC Studio chegar p explorar mais pq meu laptop sentou"
+      tipo: "tecnico"
+      severidade: "alta"
+      timestamp: "00:31"
+      autor: "Jose Petrucio"
+      contexto: "Limitação de hardware impedindo exploração completa"
+      resolucao: "Não resolvido - depende de novo equipamento"
+
+    - mensagem: "to usando o de 200 dólares consegui acabar com tokens do dia ontem"
+      tipo: "custo"
+      severidade: "media"
+      timestamp: "02:44"
+      autor: "wanderson arruda"
+      contexto: "Gasto excessivo de tokens mesmo no plano premium"
+      resolucao: "Sugestão de otimização com roteador de LLMs"
+
+    - mensagem: "Acabei meus tokens, não da para parar kkk"
+      tipo: "custo"
+      severidade: "baixa"
+      timestamp: "02:18"
+      autor: "Wanderson"
+      contexto: "Esgotamento de tokens por uso intenso"
+      tom: "bem-humorado"
+
+    - mensagem: "Como dormi / Problema agora eh dormir"
+      tipo: "impacto_pessoal"
+      severidade: "baixa"
+      timestamp: "02:18 - 02:25"
+      autor: "Jose Petrucio, Paulo de Tarso"
+      contexto: "Ansiedade para aplicar conteúdo"
+      tom: "positivo - excitação"
+
+  duvidas_principais:
+    - pergunta: "O que é Fork / Upstream / Remote?"
+      frequencia: 5
+      tema: "versionamento_git"
+      timestamp: "00:12-00:13"
+      nivel_complexidade: "intermediario"
+      autores: ["Cristiano Justo", "Talles Souza", "vários"]
+      contexto: "Explicação sobre sincronização do AIOS com repositório oficial"
+
+    - pergunta: "Quais os MCPs indispensáveis?"
+      frequencia: 3
+      tema: "ferramentas"
+      timestamp: "02:42-02:45"
+      nivel_complexidade: "basico"
+      autores: ["Paulo de Tarso Chaves", "Jose Petrucio"]
+      contexto: "Busca por melhores práticas em configuração"
+      resposta_alan: "context7, desktop-commander, browser (playwright/puppeteer)"
+
+    - pergunta: "Instalação global vs por projeto do AIOS?"
+      frequencia: 8
+      tema: "configuracao"
+      timestamp: "00:23-00:25"
+      nivel_complexidade: "intermediario"
+      autores: ["markm", "Flavio", "Zero", "vários"]
+      contexto: "Dúvida sobre melhor abordagem de instalação"
+      resposta_time: "Preferível por projeto - cada projeto tem peculiaridades"
+
+    - pergunta: "O que é Monorepo?"
+      frequencia: 4
+      tema: "arquitetura"
+      timestamp: "01:04-02:10"
+      nivel_complexidade: "intermediario"
+      autores: ["Wanderson", "Paulo de Tarso"]
+      contexto: "Organização de projetos com múltiplos repositórios"
+      resposta: "Backend e Frontend no mesmo repositório"
+
+    - pergunta: "Como funciona Tool Discovery?"
+      frequencia: 3
+      tema: "conceito_avancado"
+      timestamp: "01:14-01:15"
+      nivel_complexidade: "avancado"
+      autores: ["Marcos Ferreira", "Jose Petrucio"]
+      contexto: "Mecanismo de descoberta automática de ferramentas"
+      status: "Precisa refinamento - conceito não ficou claro"
+
+    - pergunta: "Como usar um AIOS para todos os projetos?"
+      frequencia: 4
+      tema: "configuracao"
+      timestamp: "01:36-02:11"
+      nivel_complexidade: "intermediario"
+      autores: ["julianotorriani", "vários"]
+      contexto: "Dúvida sobre centralização do AIOS"
+      resposta: "Possível via script de sync + separação de configs"
+
+    - pergunta: "Onde está o Dashboard de monitoramento do AIOS?"
+      frequencia: 2
+      tema: "funcionalidade"
+      timestamp: "01:03"
+      nivel_complexidade: "basico"
+      autor: "julianotorriani"
+      contexto: "Interesse em monitoramento de uso"
+      status: "Será abordado posteriormente"
+
+    - pergunta: "Onde criar Squads? Dentro do .aios-core?"
+      frequencia: 3
+      tema: "organizacao"
+      timestamp: "01:10-01:13"
+      nivel_complexidade: "basico"
+      autores: ["Vlademir", "Felipe Brandão"]
+      contexto: "Confusão sobre estrutura de pastas"
+      resposta: "NUNCA em .aios-core - sempre fora (pasta squads/)"
+
+    - pergunta: "Como fazer PRD para features complexas?"
+      frequencia: 2
+      tema: "metodologia"
+      timestamp: "01:08"
+      autor: "Paulo de Tarso Chaves"
+      nivel_complexidade: "avancado"
+      contexto: "Planejamento de funcionalidades grandes"
+
+    - pergunta: "Como atualizar AIOS sem perder customizações?"
+      frequencia: 5
+      tema: "manutencao"
+      timestamp: "00:12-00:25"
+      nivel_complexidade: "intermediario"
+      contexto: "Preocupação com perda de trabalho customizado"
+      resposta: "Via Upstream + merge seletivo"
+
+meta:
+  total_mensagens: 635
+  participantes_ativos: 48
+  taxa_engajamento: "muito_alta"
+  sentimento_geral: "85% positivo"
+  momento_pico_engajamento: "02:18 (final da aula - múltiplos elogios simultâneos)"
+  momento_pico_duvidas: "01:10-01:20 (estrutura de projetos e squads)"
+  problemas_tecnicos_criticos: 1
+  problemas_tecnicos_menores: 3
+  aprendizados_confirmados: 8
+  nivel_satisfacao: "9.2/10 (baseado em sentimentos expressos)"
+
+observacoes_gerais:
+  - "Altíssimo nível de engajamento - alunos participando ativamente"
+  - "Múltiplas demonstrações de resultados já aplicados pelos alunos"
+  - "Problemas técnicos mínimos e bem resolvidos"
+  - "Dúvidas técnicas bem equilibradas - mix de básico e avançado"
+  - "Clima de comunidade forte - alunos ajudando outros alunos"
+  - "Referências humorísticas criando proximidade"
+  - "Ansiedade positiva para aplicar conteúdo ('não consigo dormir')"
+  - "Custo de tokens emergindo como preocupação recorrente"
+
+temas_emergentes:
+  - "Otimização de custos (tokens) - tema recorrente"
+  - "Automação de workflows próprios - alunos criando além do ensinado"
+  - "Clonagem de mentes e criação de squads personalizados"
+  - "Meta-aplicação: usar AIOS para melhorar o próprio AIOS"
+  - "Integração com ferramentas empresariais (Jira, Azure, etc)"
+
+recomendacoes_para_proximas_aulas:
+  - "Criar sessão dedicada sobre otimização de custos de tokens"
+  - "Esclarecer melhor conceito de Tool Discovery"
+  - "Documentar fluxo de atualização AIOS com merge de customizações"
+  - "Criar guia visual sobre estrutura de pastas (onde criar o quê)"
+  - "Abordar casos de uso para monorepo vs múltiplos repos"

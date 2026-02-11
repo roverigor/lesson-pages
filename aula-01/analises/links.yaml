@@ -1,0 +1,160 @@
+analise_links:
+  metadata:
+    aula: "Cohort AIOS Avançado - Aula 01"
+    data: "2026-02-04"
+    total_links: 14
+    participantes_compartilhadores: 11
+
+  resumo:
+    - "14 links compartilhados durante a aula"
+    - "Maioria relacionada a recursos AIOS e ferramentas de desenvolvimento"
+    - "Destaque para recursos criados pela comunidade (José Carlos, João Lozano, Renata)"
+    - "Links de referência técnica (Git, SAFe, Andrew Ng)"
+
+  categorias:
+    ferramentas_desenvolvimento:
+      - url: "https://app.coderabbit.ai/"
+        descricao: "CodeRabbit - Ferramenta de code review com IA"
+        compartilhado_por: "Alan Nicolas"
+        timestamp: "01:01:32"
+        contexto: "Instrução para criar conta gratuita e integrar com AIOS"
+        relevancia: "alta"
+        tipo: "ferramenta"
+
+      - url: "https://www.read.ai/pp"
+        descricao: "Read.ai - Notas de meeting geradas por IA"
+        compartilhado_por: "Sistema (read.ai meeting notes)"
+        timestamp: "00:00:14"
+        contexto: "Bot de notas automáticas da reunião"
+        relevancia: "média"
+        tipo: "ferramenta"
+
+    recursos_aios:
+      - url: "https://github.com/SynkraAI/aios-core"
+        descricao: "AIOS Core - Repositório oficial no GitHub"
+        compartilhado_por: "josecarlosamorim"
+        timestamp: "01:05:25"
+        contexto: "Como atualizar AIOS com git pull"
+        relevancia: "muito_alta"
+        tipo: "repositório"
+
+      - url: "https://aios-advanced-cohort.vercel.app/"
+        descricao: "Site do Cohort Avançado - Documentação visual"
+        compartilhado_por: "josecarlosamorim"
+        timestamp: "00:47:29"
+        contexto: "José mapeou tudo da aula em site interativo"
+        relevancia: "muito_alta"
+        tipo: "documentação"
+        nota: "Recurso criado por aluno, muito elogiado pela turma"
+
+      - url: "https://biblia-aios-interativa.vercel.app/"
+        descricao: "Bíblia AIOS Interativa"
+        compartilhado_por: "João Lozano"
+        timestamp: "01:00:41"
+        contexto: "Documentação completa do AIOS"
+        relevancia: "muito_alta"
+        tipo: "documentação"
+        nota: "Recurso criado por aluno"
+
+    recursos_comunidade:
+      - url: "https://github.com/RBKunnela/ALMA-memory.git"
+        descricao: "ALMA Memory - Sistema de memória para agentes"
+        compartilhado_por: "Renata Baldissara-Kunnela"
+        timestamp: "04:42:04"
+        contexto: "Conceitos de memória para agentes IA"
+        relevancia: "alta"
+        tipo: "repositório"
+        nota: "Criado por aluna do cohort"
+
+      - url: "https://alma-memory.pages.dev/"
+        descricao: "ALMA Memory - Página de documentação"
+        compartilhado_por: "Renata Baldissara-Kunnela"
+        timestamp: "04:42:04"
+        contexto: "Explicação de uso do ALMA Memory"
+        relevancia: "alta"
+        tipo: "documentação"
+
+      - url: "https://github.com/RBKunnela/veritas-framework"
+        descricao: "Veritas Framework - Anti-alucinação para IA"
+        compartilhado_por: "Renata Baldissara-Kunnela"
+        timestamp: "04:43:29"
+        contexto: "Framework para evitar alucinação em IA"
+        relevancia: "alta"
+        tipo: "repositório"
+
+    educacao_referencia:
+      - url: "https://www.andrewng.org/"
+        descricao: "Andrew Ng - Site oficial"
+        compartilhado_por: "Betty Bonaparte"
+        timestamp: "00:13:29"
+        contexto: "Referência sobre Andrew Ng mencionado por Alan"
+        relevancia: "média"
+        tipo: "referência"
+
+      - url: "https://www.youtube.com/watch?v=Y1BUaLo67ac"
+        descricao: "WEF - Plenária com Andrew Ng"
+        compartilhado_por: "Bruno Gentil"
+        timestamp: "00:17:55"
+        contexto: "Transmissão oficial do Fórum Econômico Mundial"
+        relevancia: "média"
+        tipo: "vídeo"
+
+      - url: "https://imersao.academialendaria.ai/vale-do-silicio"
+        descricao: "Imersão Vale do Silício - Academia Lendária"
+        compartilhado_por: "Academia de Lendários"
+        timestamp: "00:22:16"
+        contexto: "Para quem quer saber mais sobre Vale do Silício"
+        relevancia: "média"
+        tipo: "curso"
+
+    metodologias_frameworks:
+      - url: "https://framework.scaledagile.com/#big-picture"
+        descricao: "SAFe - Scaled Agile Framework"
+        compartilhado_por: "Thiago Otto"
+        timestamp: "01:56:17"
+        contexto: "Metodologia adotada por empresas corporativas"
+        relevancia: "alta"
+        tipo: "framework"
+        nota: "Thiago sugeriu incorporar conceitos no AIOS 2.0"
+
+    ferramentas_tecnicas:
+      - url: "https://git-scm.com/book/en/v2/Git-Tools-Submodules"
+        descricao: "Git Submodules - Documentação oficial"
+        compartilhado_por: "Adriano Rogowski dos Santos"
+        timestamp: "03:58:27"
+        contexto: "Discussão sobre estrutura de monorepo"
+        relevancia: "média"
+        tipo: "documentação"
+
+    design_prototipagem:
+      - url: "https://www.figma.com/board/lBAoDMkKedPwSq8NQfOUVs/PROJETO--ORIGINAI--com-IA?node-id=0-1&p=f"
+        descricao: "Figma Board - Projeto OriginalAI"
+        compartilhado_por: "Academia de Lendários"
+        timestamp: "00:27:49"
+        contexto: "Mapa visual de projeto com IA"
+        relevancia: "média"
+        tipo: "design"
+
+  links_mais_relevantes:
+    - titulo: "AIOS Core GitHub"
+      url: "https://github.com/SynkraAI/aios-core"
+      razao: "Repositório oficial para atualizações"
+
+    - titulo: "Site Cohort Avançado (José Carlos)"
+      url: "https://aios-advanced-cohort.vercel.app/"
+      razao: "Documentação visual completa da aula"
+
+    - titulo: "Bíblia AIOS Interativa (João Lozano)"
+      url: "https://biblia-aios-interativa.vercel.app/"
+      razao: "Referência completa do framework"
+
+    - titulo: "CodeRabbit"
+      url: "https://app.coderabbit.ai/"
+      razao: "Ferramenta essencial para integração AIOS"
+
+  observacoes:
+    - "Comunidade extremamente ativa criando recursos"
+    - "3 projetos significativos criados por alunos compartilhados"
+    - "Links técnicos focados em estrutura e metodologia"
+    - "Renata compartilhou 3 projetos próprios (ALMA Memory, Veritas)"
+    - "José Carlos criou site documentando aula em tempo real"

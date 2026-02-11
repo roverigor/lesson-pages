@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PS (Pronto Socorro) - 10/02/2026 | Análise Completa</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-bg-page: #0A0A0A;
+            --color-bg-card: #141414;
+            --color-bg-card-alt: #1A1A1A;
+            --color-bg-glass: rgba(20, 20, 20, 0.7);
+            
+            --color-text-headline: #FFFFFF;
+            --color-text-body: #999999;
+            --color-text-body-alt: #AAAAAA;
+            --color-text-label: #EF4444;
+            --color-text-muted: rgba(255, 255, 255, 0.5);
+            
+            --color-success: #22C55E;
+            --color-info: #3B82F6;
+            --color-warning: #F97316;
+            --color-error: #EF4444;
+            --color-purple: #A855F7;
+            --color-cyan: #06B6D4;
+            --color-pink: #EC4899;
+            
+            --color-cta-primary: #F5C518;
+            --color-cta-primary-hover: #FFD700;
+            --color-cta-primary-text: #000000;
+            
+            --color-border-card: rgba(255, 255, 255, 0.08);
+            --color-border-hover: rgba(255, 255, 255, 0.15);
+            --color-border-separator: rgba(255, 255, 255, 0.06);
+            
+            --spacing-xs: 8px;
+            --spacing-sm: 12px;
+            --spacing-md: 16px;
+            --spacing-lg: 20px;
+            --spacing-xl: 24px;
+            --spacing-xxl: 32px;
+            --spacing-xxxl: 40px;
+            --spacing-huge: 48px;
+            --spacing-massive: 60px;
+            
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --radius-pill: 9999px;
+            
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            --font-mono: 'Courier New', monospace;
+            
+            --transition-fast: 150ms ease;
+            --transition-normal: 300ms ease;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--color-bg-page);
+            color: var(--color-text-body);
+            overflow-x: hidden;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(ellipse at top right, rgba(239, 68, 68, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(ellipse at bottom left, rgba(239, 68, 68, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .lucide {
+            display: inline-block;
+            vertical-align: middle;
+            stroke-width: 2;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--spacing-massive);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-massive);
+            margin-bottom: var(--spacing-xxl);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-20px, -20px); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-label {
+            color: var(--color-text-label);
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .hero h1 {
+            font-size: 3.5em;
+            font-weight: 900;
+            color: var(--color-text-headline);
+            margin-bottom: var(--spacing-md);
+            letter-spacing: -0.02em;
+            text-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.2em;
+            color: var(--color-text-body-alt);
+            margin-bottom: var(--spacing-xxxl);
+        }
+
+        .hero-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--spacing-lg);
+            margin-top: var(--spacing-xxxl);
+        }
+
+        .meta-item {
+            background: var(--color-bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--color-border-card);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-normal);
+        }
+
+        .meta-item:hover {
+            border-color: var(--color-border-hover);
+            transform: translateY(-4px);
+        }
+
+        .meta-label {
+            font-size: 0.85em;
+            color: var(--color-text-body);
+            margin-bottom: var(--spacing-xs);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .meta-value {
+            font-size: 2em;
+            font-weight: 800;
+            color: var(--color-text-headline);
+        }
+
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xxxl);
+        }
+
+        .stat-card {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            transition: all var(--transition-normal);
+            border-top: 3px solid;
+        }
+
+        .stat-card:nth-child(1) { border-top-color: var(--color-success); }
+        .stat-card:nth-child(2) { border-top-color: var(--color-info); }
+        .stat-card:nth-child(3) { border-top-color: var(--color-warning); }
+        .stat-card:nth-child(4) { border-top-color: var(--color-purple); }
+
+        .stat-card:hover {
+            border-color: var(--color-border-hover);
+            transform: translateY(-4px);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--color-bg-glass);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 900;
+            color: var(--color-text-headline);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .stat-label {
+            font-size: 1em;
+            color: var(--color-text-body);
+        }
+
+        /* SECTION */
+        .section {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xxxl);
+            margin-bottom: var(--spacing-xxl);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xxxl);
+            padding-bottom: var(--spacing-xl);
+            border-bottom: 2px solid var(--color-border-card);
+        }
+
+        .section-header h2 {
+            font-size: 2em;
+            font-weight: 800;
+            color: var(--color-text-headline);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        /* QA CARD */
+        .qa-card {
+            background: var(--color-bg-glass);
+            border: 1px solid var(--color-border-card);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-lg);
+            transition: all var(--transition-normal);
+            border-left: 4px solid;
+        }
+
+        .qa-card.setup { border-left-color: var(--color-info); }
+        .qa-card.workflow { border-left-color: var(--color-success); }
+        .qa-card.cases { border-left-color: var(--color-warning); }
+        .qa-card.tools { border-left-color: var(--color-purple); }
+        .qa-card.mindset { border-left-color: var(--color-cyan); }
+
+        .qa-card:hover {
+            border-color: var(--color-border-hover);
+            background: var(--color-bg-card-alt);
+        }
+
+        .qa-question {
+            display: flex;
+            align-items: start;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .qa-question-text {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--color-text-headline);
+            line-height: 1.4;
+        }
+
+        .qa-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            font-size: 0.9em;
+            color: var(--color-text-body);
+        }
+
+        .qa-answer {
+            color: var(--color-text-body-alt);
+            line-height: 1.8;
+        }
+
+        .qa-answer strong {
+            color: var(--color-text-headline);
+            font-weight: 700;
+        }
+
+        .qa-answer code {
+            background: var(--color-bg-card-alt);
+            border: 1px solid var(--color-border-card);
+            color: var(--color-success);
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+        }
+
+        /* QUICK LIST */
+        .quick-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .quick-item {
+            background: var(--color-bg-glass);
+            border: 1px solid var(--color-border-card);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-normal);
+        }
+
+        .quick-item:hover {
+            border-color: var(--color-border-hover);
+        }
+
+        .quick-q {
+            font-weight: 700;
+            color: var(--color-text-headline);
+            margin-bottom: var(--spacing-xs);
+            font-size: 0.95em;
+        }
+
+        .quick-r {
+            color: var(--color-text-body);
+            font-size: 0.9em;
+        }
+
+        /* QUOTE */
+        .quote-card {
+            background: linear-gradient(135deg, var(--color-bg-card) 0%, var(--color-bg-card-alt) 100%);
+            border-left: 3px solid var(--color-warning);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .quote-text {
+            font-size: 1.2em;
+            font-style: italic;
+            color: var(--color-text-body-alt);
+            margin-bottom: var(--spacing-md);
+            line-height: 1.8;
+        }
+
+        .quote-author {
+            color: var(--color-warning);
+            font-weight: 700;
+            font-size: 0.95em;
+        }
+
+        /* TOOL CARD */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .tool-card {
+            background: var(--color-bg-glass);
+            border: 1px solid var(--color-border-card);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-normal);
+        }
+
+        .tool-card:hover {
+            border-color: var(--color-border-hover);
+            transform: translateY(-2px);
+        }
+
+        .tool-name {
+            font-weight: 700;
+            color: var(--color-text-headline);
+            margin-bottom: var(--spacing-xs);
+            font-size: 1.1em;
+        }
+
+        .tool-desc {
+            color: var(--color-text-body);
+            font-size: 0.9em;
+        }
+
+        /* LEARNING CARD */
+        .learning-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .learning-card {
+            background: var(--color-bg-card-alt);
+            border: 2px solid;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+        }
+
+        .learning-card.beginner { border-color: var(--color-success); }
+        .learning-card.intermediate { border-color: var(--color-warning); }
+        .learning-card.advanced { border-color: var(--color-error); }
+
+        .learning-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid var(--color-border-card);
+        }
+
+        .learning-title {
+            font-size: 1.3em;
+            font-weight: 800;
+            color: var(--color-text-headline);
+        }
+
+        .learning-list {
+            list-style: none;
+        }
+
+        .learning-list li {
+            display: flex;
+            align-items: start;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text-body-alt);
+            line-height: 1.6;
+        }
+
+        .learning-list li .lucide {
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* BACK TO TOP */
+        .back-to-top {
+            position: fixed;
+            bottom: var(--spacing-xxl);
+            right: var(--spacing-xxl);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.8) 0%, rgba(239, 68, 68, 0.6) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--color-text-headline);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+            transition: all var(--transition-normal);
+            opacity: 0;
+            visibility: hidden;
+            z-index: 999;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 0 24px rgba(239, 68, 68, 0.5);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--spacing-xl) var(--spacing-md);
+            }
+
+            .hero h1 {
+                font-size: 2em;
+            }
+
+            .section {
+                padding: var(--spacing-xl);
+            }
+
+            .learning-section,
+            .quick-list,
+            .tool-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--color-bg-card);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-border-card);
+            border-radius: var(--radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-border-hover);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-label">
+                    <i data-lucide="calendar" width="16" height="16"></i>
+                    10 de Fevereiro de 2026
+                </div>
+                <h1>
+                    <i data-lucide="heart-pulse" width="56" height="56"></i>
+                    PS (Pronto Socorro)
+                </h1>
+                <p class="hero-subtitle">
+                    Sessão de tira-dúvidas do cohort avançado sobre AIOS, desenvolvimento com IA e implementação de projetos reais
+                </p>
+
+                <div class="hero-meta">
+                    <div class="meta-item">
+                        <div class="meta-label">
+                            <i data-lucide="clock" width="16" height="16"></i>
+                            Duração
+                        </div>
+                        <div class="meta-value">2h</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">
+                            <i data-lucide="users" width="16" height="16"></i>
+                            Participantes
+                        </div>
+                        <div class="meta-value">15-20</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">
+                            <i data-lucide="message-circle" width="16" height="16"></i>
+                            Perguntas
+                        </div>
+                        <div class="meta-value">28</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">
+                            <i data-lucide="folder" width="16" height="16"></i>
+                            Temas
+                        </div>
+                        <div class="meta-value">5</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="color: var(--color-success);">
+                    <i data-lucide="settings" width="32" height="32"></i>
+                </div>
+                <div class="stat-value">9</div>
+                <div class="stat-label">AIOS Setup</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: var(--color-info);">
+                    <i data-lucide="workflow" width="32" height="32"></i>
+                </div>
+                <div class="stat-value">8</div>
+                <div class="stat-label">Workflow</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: var(--color-warning);">
+                    <i data-lucide="briefcase" width="32" height="32"></i>
+                </div>
+                <div class="stat-value">6</div>
+                <div class="stat-label">Casos de Uso</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: var(--color-purple);">
+                    <i data-lucide="wrench" width="32" height="32"></i>
+                </div>
+                <div class="stat-value">5</div>
+                <div class="stat-label">Ferramentas</div>
+            </div>
+        </div>
+
+        <!-- SETUP -->
+        <section class="section" id="setup">
+            <div class="section-header">
+                <h2>
+                    <i data-lucide="settings" width="40" height="40" style="color: var(--color-info);"></i>
+                    Setup e Configuração do AIOS
+                </h2>
+            </div>
+
+            <div class="qa-card setup">
+                <div class="qa-question">
+                    <i data-lucide="help-circle" width="24" height="24" style="color: var(--color-info);"></i>
+                    <div class="qa-question-text">Qual a última versão do Squad Creator do Alan? Onde está?</div>
+                </div>
+                <div class="qa-meta">
+                    <i data-lucide="user" width="16" height="16"></i>
+                    <span>Fábio</span>
+                    <i data-lucide="clock" width="16" height="16"></i>
+                    <span>00:29:25</span>
+                </div>
+                <div class="qa-answer">
+                    <strong>Resposta:</strong> Está disponível no <strong>GitHub</strong> (repositório oficial). Alan também envia atualizações no <strong>grupo do WhatsApp</strong>. Versão mencionada: "5-2-26 squad-creator 3h33". Recomendação: Atualizar via <code>git pull</code> do GitHub.
+                </div>
+            </div>
+
+            <div class="qa-card setup">
+                <div class="qa-question">
+                    <i data-lucide="help-circle" width="24" height="24" style="color: var(--color-info);"></i>
+                    <div class="qa-question-text">Para instalar AIOS em projeto novo, copio pasta ou instalo do zero?</div>
+                </div>
+                <div class="qa-meta">
+                    <i data-lucide="user" width="16" height="16"></i>
+                    <span>Alexandre</span>
+                    <i data-lucide="clock" width="16" height="16"></i>
+                    <span>00:20:42</span>
+                </div>
+                <div class="qa-answer">
+                    <strong>Opção 1 - Copiar:</strong><br>
+                    Copiar TODAS as pastas de infraestrutura do AIOS:
+                    <ul style="margin-left: 20px; margin-top: 8px;">
+                        <li><code>.aios-core/</code></li>
+                        <li><code>.aios/</code></li>
+                        <li><code>.claude/commands/</code> (agentes e comandos slash)</li>
+                    </ul>
+                    <strong style="color: var(--color-warning);">IMPORTANTE:</strong> NÃO copiar o <code>CLAUDE.md</code> (é específico do projeto original)
+                    <br><br>
+                    <strong>Opção 2 - Instalar do zero:</strong><br>
+                    Rodar <code>claude init</code> na pasta nova, depois <code>aios install</code> para configurar.
+                    <br><br>
+                    <strong>Regra de ouro:</strong> Cada projeto precisa de seu próprio <code>CLAUDE.md</code> (cérebro do sistema). Se copiar CLAUDE.md de outro projeto → vai quebrar (contexto errado).
+                </div>
+            </div>
+
+            <div class="qa-card setup">
+                <div class="qa-question">
+                    <i data-lucide="help-circle" width="24" height="24" style="color: var(--color-info);"></i>
+                    <div class="qa-question-text">Quando tiver atualização do AIOS, como atualizo em todos os projetos?</div>
+                </div>
+                <div class="qa-meta">
+                    <i data-lucide="user" width="16" height="16"></i>
+                    <span>Fábio</span>
+                    <i data-lucide="clock" width="16" height="16"></i>
+                    <span>00:24:36</span>
+                </div>
+                <div class="qa-answer">
+                    1. Ir em cada repositório/pasta onde AIOS está instalado<br>
+                    2. Rodar <code>aios install</code> ou <code>aios update</code><br>
+                    3. Atualiza automaticamente em cada projeto
+                    <br><br>
+                    <strong>Dica Pro:</strong> Se você tem vários projetos, vale ter um <strong>workspace central</strong>. O workspace opera outras pastas filhas. Assim você concentra atualizações.
+                </div>
+            </div>
+
+            <div class="qa-card setup">
+                <div class="qa-question">
+                    <i data-lucide="help-circle" width="24" height="24" style="color: var(--color-info);"></i>
+                    <div class="qa-question-text">ClaudeMD deve ser por projeto ou pode ser global?</div>
+                </div>
+                <div class="qa-meta">
+                    <i data-lucide="user" width="16" height="16"></i>
+                    <span>João (aluno)</span>
+                    <i data-lucide="clock" width="16" height="16"></i>
+                    <span>00:23:45</span>
+                </div>
+                <div class="qa-answer">
+                    <strong>O ideal é por PROJETO.</strong>
+                    <br><br>
+                    ClaudeMD = cérebro do sistema, primeira coisa carregada. Se você colocar um ClaudeMD "frankenstein" (misturando vários contextos) → vai confundir a LLM.
+                    <br><br>
+                    <strong>Por quê:</strong>
+                    <ul style="margin-left: 20px; margin-top: 8px;">
+                        <li>Cada projeto tem contexto, arquivos, pastas específicas</li>
+                        <li>ClaudeMD global não sabe quais arquivos existem em cada projeto</li>
+                        <li>Seria como colocar cérebro de um projeto em outro corpo</li>
+                    </ul>
+                    <br>
+                    <strong>Exceção:</strong> Você pode ter um ClaudeMD MASTER (na raiz do workspace) que rege todos os projetos. Cada projeto ainda tem seu próprio ClaudeMD específico. O MASTER contém heurísticas transversais (design system comum, etc.)
+                </div>
+            </div>
+        </section>
+
+        <!-- WORKFLOW -->
+        <section class="section" id="workflow">
+            <div class="section-header">
+                <h2>
+                    <i data-lucide="workflow" width="40" height="40" style="color: var(--color-success);"></i>
+                    Workflow de Desenvolvimento
+                </h2>
+            </div>
+
+            <div class="qa-card workflow">
+                <div class="qa-question">
+                    <i data-lucide="help-circle" width="24" height="24" style="color: var(--color-success);"></i>
+                    <div class="qa-question-text">Como você trabalha hoje - faz tudo fora e traz pro AIOS depois?</div>
+                </div>
+                <div class="qa-meta">
+                    <i data-lucide="user" width="16" height="16"></i>
+                    <span>João (aluno)</span>
+                    <i data-lucide="clock" width="16" height="16"></i>
+                    <span>00:27:04</span>
+                </div>
+                <div class="qa-answer">
+                    <strong>Workflow completo do João (instrutor):</strong>
+                    <br><br>
+                    <strong>1️⃣ SESSÃO DE DESCARREGO (Fora do AIOS)</strong><br>
+                    Gravar áudio OU fazer call + transcrição → Vomitar ideias, contexto, dores
+                    <br><br>
+                    <strong>2️⃣ TRANSFORMAR EM BRIEFING</strong><br>
+                    Jogar transcrição pra LLM → Output: Briefing estruturado
+                    <br><br>
+                    <strong>3️⃣ PESQUISAS (Enriquecer + Preencher Lacunas)</strong><br>
+                    Pesquisa de mercado (concorrentes, tendências) + Tech research (bibliotecas, APIs, stack). Pode usar Deep Serve, Perplexity, ou agente de busca
+                    <br><br>
+                    <strong>4️⃣ ENRIQUECER O BRIEFING</strong><br>
+                    Adicionar resultados das pesquisas ao briefing
+                    <br><br>
+                    <strong>5️⃣ PROVA DE FOGO 🔥</strong><br>
+                    "Destrua sua ideia" → Ponto cegos, SWOT, validações → O que NÃO faz sentido? Onde estou viajando?
+                    <br><br>
+                    <strong>6️⃣ ENRIQUECER DE NOVO</strong><br>
+                    Ajustar briefing com insights da prova de fogo
+                    <br><br>
+                    <strong>7️⃣ DOCUMENTAÇÃO MODULARIZADA (Doc Specs)</strong><br>
+                    NÃO fazer PRD gigante de uma vez! Quebrar em mini-specs multidimensionais:
+                    <ul style="margin-left: 20px; margin-top: 8px;">
+                        <li>Doc Spec: UI/UX</li>
+                        <li>Doc Spec: Filosofia/Conceito</li>
+                        <li>Doc Spec: Tech Stack (bibliotecas, APIs, integrações)</li>
+                        <li>Doc Spec: Wireframes + Fluxos de usuário</li>
+                        <li>Doc Spec: Features</li>
+                        <li>Doc Spec: Design System</li>
+                    </ul>
+                    <br>
+                    <strong style="color: var(--color-warning);">POR QUÊ MODULARIZAR?</strong>
+                    <ul style="margin-left: 20px;">
+                        <li>LLM tem 100% capacidade cognitiva num ciclo input→output</li>
+                        <li>PRD gigante = prova de vestibular gigante = LLM cansada no final</li>
+                        <li>Specs modulares = laser focus = 100% capacidade em cada spec</li>
+                    </ul>
+                    <br>
+                    <strong>8️⃣ CONSOLIDAR PRD (Dentro do AIOS)</strong><br>
+                    Jogar todas as specs pro AIOS → AIOS junta tudo e cria PRD final → PRD já vem modularizado por Épicos + Stories (metodologia AIOS)
+                    <br><br>
+                    <strong>9️⃣ DESENVOLVIMENTO (AIOS)</strong><br>
+                    AIOS orquestra agentes (DevOps, QA, etc.) → Épicos = camadas do prédio → Stories = sprints dentro de cada épico → Tasks = ações atômicas
+                </div>
+            </div>
+
+            <div class="qa-card workflow">
+                <div class="qa-question">
+                    <i data-lucide="help-circle" width="24" height="24" style="color: var(--color-success);"></i>
+                    <div class="qa-question-text">PRD precisa ser do projeto inteiro ou pode ser só pra feature?</div>
+                </div>
+                <div class="qa-meta">
+                    <i data-lucide="clock" width="16" height="16"></i>
+                    <span>00:43:20</span>
+                </div>
+                <div class="qa-answer">
+                    <strong>AMBOS! Você pode:</strong>
+                    <br><br>
+                    <strong>Opção A - PRD do Zero:</strong><br>
+                    Do zero até MVP → Grandes épicos, muitas stories
+                    <br><br>
+                    <strong>Opção B - PRD Incremental (Recomendado):</strong><br>
+                    Produto já existe → PRD só pra adicionar 3 novas telas + 3 features → Épicos menores, menos stories
+                    <br><br>
+                    <strong>Vantagens do incremental:</strong>
+                    <ul style="margin-left: 20px; margin-top: 8px;">
+                        <li>Menos pontos de conexão = menos chance de erro probabilístico</li>
+                        <li>LLMs são voláteis - quanto maior o processo, maior risco</li>
+                        <li>Agilidade - você valida e segue pro próximo</li>
+                    </ul>
+                    <br>
+                    <strong>Metáfora:</strong> Melhor fazer vários PRDs pequenos (mini-mansões) do que um PRD gigante ("construir Google novo")
+                </div>
+            </div>
+        </section>
+
+        <!-- CASOS DE USO -->
+        <section class="section" id="cases">
+            <div class="section-header">
+                <h2>
+                    <i data-lucide="briefcase" width="40" height="40" style="color: var(--color-warning);"></i>
+                    Casos de Uso e Negócios
+                </h2>
+            </div>
+
+            <div class="qa-card cases">
+                <div class="qa-question">
+                    <i data-lucide="help-circle" width="24" height="24" style="color: var(--color-warning);"></i>
+                    <div class="qa-question-text">Como você está aplicando AIOS em clientes reais?</div>
+                </div>
+                <div class="qa-meta">
+                    <i data-lucide="user" width="16" height="16"></i>
+                    <span>Cristiano</span>
+                    <i data-lucide="clock" width="16" height="16"></i>
+                    <span>00:07:00+</span>
+                </div>
+                <div class="qa-answer">
+                    <strong>Caso 1 - Consultoria Jurídica Empresarial:</strong>
+                    <br><br>
+                    <strong>Problema:</strong>
+                    <ul style="margin-left: 20px;">
+                        <li>Cliente com 30-50+ clientes (triplicou nos últimos anos)</li>
+                        <li>Não consegue dar qualidade de atendimento</li>
+                        <li>Processos empíricos dependentes dos sócios</li>
+                        <li>Gargalos em várias áreas (financeiro, jurídico, RH, processos)</li>
+                    </ul>
+                    <br>
+                    <strong>Solução proposta:</strong>
+                    <ul style="margin-left: 20px;">
+                        <li>Criar sistemas com AIOS para consistência operacional</li>
+                        <li>Identificar gargalos que impedem escala</li>
+                        <li>Implantar IA nos processos do cliente</li>
+                    </ul>
+                    <br>
+                    <strong style="color: var(--color-error);">Desafio cultural:</strong>
+                    <ul style="margin-left: 20px;">
+                        <li>"Time que tá ganhando não se mexe" (mentalidade do cliente)</li>
+                        <li>Funcionários usando IA errado (delegando decisões em vez de agilizar processos)</li>
+                        <li>Respostas rasas porque estão sendo preguiçosos</li>
+                        <li>Quebrar barreira do ranço com IA criado por mal uso</li>
+                    </ul>
+                    <br><br>
+                    <strong>Caso 2 - Saúde Masculina (Urologia):</strong>
+                    <br><br>
+                    <strong>Problema:</strong>
+                    <ul style="margin-left: 20px;">
+                        <li>Homem historicamente não cuida da saúde</li>
+                        <li>Barreira cultural pra falar sobre saúde masculina/urologia</li>
+                        <li>Atendimento episódico vs. acompanhamento contínuo</li>
+                    </ul>
+                    <br>
+                    <strong>Oportunidades com IA:</strong>
+                    <ul style="margin-left: 20px;">
+                        <li>Agilizar triagem e diagnóstico inicial</li>
+                        <li>IA como primeiro atendimento anônimo (pessoas preferem falar com IA sobre certos assuntos)</li>
+                        <li>Reduz vergonha/embaraço</li>
+                        <li>Acompanhamento contínuo 24/7</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="qa-card cases">
+                <div class="qa-question">
+                    <i data-lucide="help-circle" width="24" height="24" style="color: var(--color-warning);"></i>
+                    <div class="qa-question-text">Disparador de WhatsApp com Evolution API</div>
+                </div>
+                <div class="qa-meta">
+                    <i data-lucide="user" width="16" height="16"></i>
+                    <span>Zé Carlos</span>
+                    <i data-lucide="clock" width="16" height="16"></i>
+                    <span>00:00:57+</span>
+                </div>
+                <div class="qa-answer">
+                    <strong>Contexto:</strong> Criando disparador com Evolution API (WhatsApp não-oficial). Stack: Evolution API + Cloud Code + AIOS
+                    <br><br>
+                    <strong>Processo:</strong>
+                    <ol style="margin-left: 20px;">
+                        <li>Pegou documentação completa da Evolution API</li>
+                        <li>Jogou no Cloud Code pra entender todos os endpoints</li>
+                        <li>Cloud Code construiu tudo</li>
+                        <li>Refatorou com Cloud Code + AIOS (segurança, best practices)</li>
+                    </ol>
+                    <br>
+                    <strong>Features implementadas:</strong>
+                    <ul style="margin-left: 20px;">
+                        <li>Criar instância</li>
+                        <li>Vincular proxy da instância</li>
+                        <li>Vincular webhook</li>
+                        <li>Processar grupos</li>
+                        <li>Gerar QR Code (base64 → imagem)</li>
+                    </ul>
+                    <br>
+                    <strong>Desafio atual:</strong> WhatsApp normal bloqueando muito
+                    <br><br>
+                    <strong style="color: var(--color-success);">Solução:</strong> Co-existência de 5 instâncias por cliente. Sistema alterna entre números automaticamente (5 mensagens do número 1, 5 do número 2, rotação manual). Evita bloqueio.
+                </div>
+            </div>
+        </section>
+
+        <!-- FERRAMENTAS -->
+        <section class="section" id="tools">
+            <div class="section-header">
+                <h2>
+                    <i data-lucide="wrench" width="40" height="40" style="color: var(--color-purple);"></i>
+                    Ferramentas e Configuração
+                </h2>
+            </div>
+
+            <div class="qa-card tools">
+                <div class="qa-question">
+                    <i data-lucide="help-circle" width="24" height="24" style="color: var(--color-purple);"></i>
+                    <div class="qa-question-text">Diferença entre IDE e Cloud Code?</div>
+                </div>
+                <div class="qa-meta">
+                    <i data-lucide="user" width="16" height="16"></i>
+                    <span>Monica</span>
+                    <i data-lucide="clock" width="16" height="16"></i>
+                    <span>00:49:48</span>
+                </div>
+                <div class="qa-answer">
+                    <strong>IDE = Obsidian do código</strong>
+                    <ul style="margin-left: 20px; margin-top: 8px;">
+                        <li>Ambiente visual pra ver arquivos, pastas, código</li>
+                        <li>Exemplos: Cursor, AntiGravity, VSCode, Windsurf</li>
+                        <li>Só muda a plataforma, conceito é o mesmo</li>
+                    </ul>
+                    <br>
+                    <strong>Cloud Code = Motor de IA conectado ao terminal</strong>
+                    <ul style="margin-left: 20px;">
+                        <li>Roda dentro do terminal (pode ser dentro da IDE ou terminal puro)</li>
+                        <li>É o cérebro que conversa com você</li>
+                        <li>Não é uma IDE - é uma ferramenta</li>
+                    </ul>
+                    <br>
+                    <strong>Preferência do João:</strong> Usa IDE (AntiGravity) MAS roda Cloud Code no terminal dentro da IDE. Vantagens: Visualização de pastas, controle de versionamento (git), ver o que tá sendo editado, terminal integrado.
+                    <br><br>
+                    <strong>Quando usar terminal puro?</strong> Quando rodar 4+ terminais simultâneos. IDE começa a sobrecarregar. Terminal puro é infinitamente escalável (20+ tabs sem travar).
+                </div>
+            </div>
+
+            <div class="qa-card tools">
+                <div class="qa-question">
+                    <i data-lucide="help-circle" width="24" height="24" style="color: var(--color-purple);"></i>
+                    <div class="qa-question-text">Como trabalhar com múltiplas janelas Cloud Code?</div>
+                </div>
+                <div class="qa-meta">
+                    <i data-lucide="user" width="16" height="16"></i>
+                    <span>Torriani</span>
+                    <i data-lucide="clock" width="16" height="16"></i>
+                    <span>01:04:19</span>
+                </div>
+                <div class="qa-answer">
+                    <strong>Setup recomendado:</strong>
+                    <br><br>
+                    <strong>Janela 1 - AIOS Master (Perguntas):</strong>
+                    <ul style="margin-left: 20px;">
+                        <li>Terminal aberto só com <code>@aios-master</code></li>
+                        <li>Usar pra fazer TODAS as perguntas</li>
+                        <li>"Como faço X?", "O que é Y?", "Qual próximo passo?"</li>
+                        <li>Ele ensina tudo</li>
+                    </ul>
+                    <br>
+                    <strong>Janela 2 - Desenvolvimento:</strong>
+                    <ul style="margin-left: 20px;">
+                        <li>Terminal do projeto</li>
+                        <li>Onde você roda agentes (@dev, @po, @sm, etc.)</li>
+                        <li>Onde acontece o trabalho</li>
+                    </ul>
+                    <br>
+                    <strong>Vantagens:</strong> Contextos separados, histórico de perguntas não polui histórico de dev, AIOS Master vira seu mentor pessoal.
+                </div>
+            </div>
+        </section>
+
+        <!-- FERRAMENTAS GRID -->
+        <section class="section">
+            <div class="section-header">
+                <h2>
+                    <i data-lucide="package" width="40" height="40" style="color: var(--color-cyan);"></i>
+                    Ferramentas Citadas
+                </h2>
+            </div>
+
+            <div class="tool-grid">
+                <div class="tool-card">
+                    <div class="tool-name">Evolution API</div>
+                    <div class="tool-desc">WhatsApp não-oficial (Zé Carlos)</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">Cloud Code</div>
+                    <div class="tool-desc">Motor IA no terminal</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">AIOS</div>
+                    <div class="tool-desc">Framework orquestração de agentes</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">Google AI Studio</div>
+                    <div class="tool-desc">Pesquisa de mercado + agente Architect</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">Deep Serve</div>
+                    <div class="tool-desc">Pesquisa de mercado profunda</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">Perplexity</div>
+                    <div class="tool-desc">Pesquisa na web</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">Cursor / AntiGravity / VSCode</div>
+                    <div class="tool-desc">IDEs para desenvolvimento</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">Meta Business API</div>
+                    <div class="tool-desc">WhatsApp/Instagram oficial</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- APRENDIZADOS -->
+        <section class="section">
+            <div class="section-header">
+                <h2>
+                    <i data-lucide="graduation-cap" width="40" height="40" style="color: var(--color-success);"></i>
+                    Principais Aprendizados
+                </h2>
+            </div>
+
+            <div class="learning-section">
+                <div class="learning-card beginner">
+                    <div class="learning-header">
+                        <i data-lucide="user" width="28" height="28" style="color: var(--color-success);"></i>
+                        <div class="learning-title">Para Iniciantes</div>
+                    </div>
+                    <ul class="learning-list">
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i>
+                            Use IDE com terminal integrado (não comece direto no terminal puro)
+                        </li>
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i>
+                            ClaudeMD por projeto (não tente fazer global/frankenstein)
+                        </li>
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i>
+                            Comece com projeto simples (lista de tarefas, organizador)
+                        </li>
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i>
+                            Duas janelas: Master (perguntas) + Dev (trabalho)
+                        </li>
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i>
+                            Não espere próxima versão - comece com o que tem
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="learning-card intermediate">
+                    <div class="learning-header">
+                        <i data-lucide="users" width="28" height="28" style="color: var(--color-warning);"></i>
+                        <div class="learning-title">Para Intermediários</div>
+                    </div>
+                    <ul class="learning-list">
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-warning);"></i>
+                            Modularize PRD em specs (UI, tech, features separados)
+                        </li>
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-warning);"></i>
+                            PRDs incrementais (feature por feature) > PRD gigante
+                        </li>
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-warning);"></i>
+                            Sessão de descarrego + pesquisas antes de entrar no AIOS
+                        </li>
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-warning);"></i>
+                            Prova de fogo sempre (destrua sua ideia)
+                        </li>
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-warning);"></i>
+                            Workspace + projetos (estrutura organizada)
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="learning-card advanced">
+                    <div class="learning-header">
+                        <i data-lucide="crown" width="28" height="28" style="color: var(--color-error);"></i>
+                        <div class="learning-title">Para Avançados</div>
+                    </div>
+                    <ul class="learning-list">
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-error);"></i>
+                            Terminal puro quando rodar 4+ agentes simultâneos
+                        </li>
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-error);"></i>
+                            Agents customizados em pastas separadas (marketing/, mentes-clonadas/)
+                        </li>
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-error);"></i>
+                            Architect agent (Google AI) pra wireframes antes de codar
+                        </li>
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-error);"></i>
+                            Copiar AIOS infra entre projetos (exceto CLAUDE.md)
+                        </li>
+                        <li>
+                            <i data-lucide="check" width="18" height="18" style="color: var(--color-error);"></i>
+                            Rotação de instâncias (WhatsApp - evitar bloqueio)
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- CITAÇÕES -->
+        <section class="section">
+            <div class="section-header">
+                <h2>
+                    <i data-lucide="quote" width="40" height="40" style="color: var(--color-pink);"></i>
+                    Citações Memoráveis
+                </h2>
+            </div>
+
+            <div class="quote-card">
+                <div class="quote-text">
+                    "Se você ficar esperando a próxima versão do Alan, vai ficar pra sempre na sombra dele e nunca vai materializar nada."
+                </div>
+                <div class="quote-author">— João</div>
+            </div>
+
+            <div class="quote-card">
+                <div class="quote-text">
+                    "LLM fazendo PRD inteiro é igual você no final da prova de vestibular - não consegue nem ler a pergunta direito."
+                </div>
+                <div class="quote-author">— João</div>
+            </div>
+
+            <div class="quote-card">
+                <div class="quote-text">
+                    "80/20 não é dominar ferramenta, é dominar o PROCESSO. A ferramenta vai evoluir, o processo fica."
+                </div>
+                <div class="quote-author">— João</div>
+            </div>
+
+            <div class="quote-card">
+                <div class="quote-text">
+                    "Não existe conhecimento mais valioso que o conhecimento empírico - campo de batalha, skin in the game."
+                </div>
+                <div class="quote-author">— João</div>
+            </div>
+
+            <div class="quote-card">
+                <div class="quote-text">
+                    "Fiz tudo no Claude, achei que nunca ia conseguir no Claude Code. Hoje não quero nem olhar pro Claude."
+                </div>
+                <div class="quote-author">— Torriani</div>
+            </div>
+
+            <div class="quote-card">
+                <div class="quote-text">
+                    "ClaudeMD é o cérebro do sistema. Se você colocar cérebro frankenstein que não tem aqueles arquivos, aquelas pastas - vai quebrar."
+                </div>
+                <div class="quote-author">— João</div>
+            </div>
+        </section>
+
+        <!-- LISTA RÁPIDA -->
+        <section class="section">
+            <div class="section-header">
+                <h2>
+                    <i data-lucide="list" width="40" height="40" style="color: var(--color-info);"></i>
+                    Referência Rápida
+                </h2>
+            </div>
+
+            <div class="quick-list">
+                <div class="quick-item">
+                    <div class="quick-q">P: Última versão Squad Creator?</div>
+                    <div class="quick-r">R: GitHub oficial + WhatsApp. Versão: 5-2-26.</div>
+                </div>
+                <div class="quick-item">
+                    <div class="quick-q">P: Copiar AIOS ou instalar?</div>
+                    <div class="quick-r">R: Ambos. Copiar: infra EXCETO CLAUDE.md. Instalar: claude init + aios install.</div>
+                </div>
+                <div class="quick-item">
+                    <div class="quick-q">P: ClaudeMD por projeto ou global?</div>
+                    <div class="quick-r">R: Por projeto. Global = frankenstein (quebra contexto).</div>
+                </div>
+                <div class="quick-item">
+                    <div class="quick-q">P: PRD inteiro ou feature?</div>
+                    <div class="quick-r">R: Ambos. Incremental é melhor que gigante.</div>
+                </div>
+                <div class="quick-item">
+                    <div class="quick-q">P: Por que modularizar specs?</div>
+                    <div class="quick-r">R: LLM tem 100% capacidade num ciclo. Specs modulares = laser focus.</div>
+                </div>
+                <div class="quick-item">
+                    <div class="quick-q">P: IDE ou terminal puro?</div>
+                    <div class="quick-r">R: Iniciantes: IDE + terminal integrado. Avançados 4+ terminais: puro.</div>
+                </div>
+                <div class="quick-item">
+                    <div class="quick-q">P: Como não ficar preso em atualizações?</div>
+                    <div class="quick-r">R: 80/20 = dominar PROCESSO, não ferramenta. Atualiza só se bloquear.</div>
+                </div>
+                <div class="quick-item">
+                    <div class="quick-q">P: E se não sair perfeito?</div>
+                    <div class="quick-r">R: Faz de novo. Conhecimento empírico > teórico.</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- BACK TO TOP -->
+    <div class="back-to-top" id="backToTop" onclick="scrollToTop()">
+        <i data-lucide="arrow-up" width="24" height="24"></i>
+    </div>
+
+    <script>
+        // Back to top visibility
+        window.addEventListener('scroll', () => {
+            const backToTop = document.getElementById('backToTop');
+            if (window.scrollY > 500) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Entrada animada
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.qa-card, .stat-card, .learning-card, .quote-card, .tool-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease';
+            observer.observe(el);
+        });
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

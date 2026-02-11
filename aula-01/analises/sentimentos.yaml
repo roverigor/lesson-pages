@@ -1,0 +1,268 @@
+analise_sentimentos:
+  metadata:
+    aula: "Cohort AIOS Avançado - Aula 01"
+    data: "2026-02-04"
+    duracao: "~3h10min"
+    participantes: 48
+    mensagens_chat: 1310
+    professor: "Alan Nicolas + Pedro Valerio Lopez"
+
+  resumo_geral:
+    sentimento_predominante: "Altamente positivo e engajado"
+    energia: "Muito alta - participantes empolgados e ativos"
+    satisfacao_estimada: "9.3/10"
+    engajamento: "Excepcional - chat muito ativo com perguntas técnicas"
+
+  estatisticas:
+    total_mensagens: 1310
+    participantes_ativos: 48
+    perguntas_tecnicas: 67
+    elogios_diretos: 15
+    reclamacoes: 3
+    compartilhamentos: 8
+    momento_pico: "02h30min-03h00min (explicação workflows)"
+
+  elogios:
+    - texto: "Criei um app completo"
+      autor: "edgardpacheco"
+      timestamp: "00:30"
+      contexto: "Compartilhando conquista após começar a usar AIOS"
+      categoria: "conquista"
+
+    - texto: "Explicação perfeita!"
+      autor: "Helder"
+      timestamp: "03:25"
+      contexto: "Sobre a explicação de @ vs / para agentes"
+      categoria: "didatica"
+
+    - texto: "Estava quebrando a cabeça hoje criando workflows, bora com rodinha e evoluir"
+      autor: "Artur Omori"
+      timestamp: "01:39"
+      contexto: "Aluno reconhecendo valor da abordagem BOB"
+      categoria: "aprendizado"
+
+    - texto: "Cara eu entendi 100%"
+      autor: "Paulo de Tarso Chaves"
+      timestamp: "01:47"
+      contexto: "Sobre mapa visual de workflows"
+      categoria: "clareza"
+
+    - texto: "Mind blowing!!! 🤯 Totalmente contra intuitivo. Grande sacada."
+      autor: "rogeriochinen"
+      timestamp: "03:25"
+      contexto: "Descobrindo que documentação funciona melhor que conversa"
+      categoria: "insight"
+
+    - texto: "Isso é muito bom"
+      autor: "Victor Pontes"
+      timestamp: "01:25"
+      contexto: "Reação ao processo de documentação"
+      categoria: "metodologia"
+
+    - texto: "Quando o Pedro nasceu ele que deu um tapa na bunda do médico e o médico começou a chorar"
+      autor: "João Lozano"
+      timestamp: "03:28"
+      contexto: "Elogio humorístico à didática do Pedro"
+      categoria: "humor_elogio"
+
+    - texto: "Pedro E Alan, conhecem a metodologia SAFe? Muitas empresas corp adotaram isso. Vejo muita coisa pra puxar de lá"
+      autor: "Thiago Otto"
+      timestamp: "01:55"
+      contexto: "Reconhecendo conexões com metodologias enterprise"
+      categoria: "profundidade"
+
+    - texto: "Replying to Quando tenho duvida,... Quando tenho duvida, pergunto para o Claude… quando o Claude tem duvida, pergunta para o Pedro"
+      autor: "rodrigofaerman"
+      timestamp: "03:13"
+      contexto: "Reconhecimento da expertise do Pedro"
+      categoria: "autoridade"
+
+    - texto: "É realmente impressionante"
+      autor: "Renata Baldissara-Kunnela"
+      timestamp: "01:02"
+      contexto: "Sobre a estrutura completa do AIOS"
+      categoria: "impressao"
+
+    - texto: "O AIOS é o que tangibiliza da forma mais impressionante que vi o pq projetam os unicórnios de uma pessoa só em 2026"
+      autor: "Thiago Otto"
+      timestamp: "01:16"
+      contexto: "Compreensão do potencial transformador"
+      categoria: "visao"
+
+    - texto: "entender a estrutura do AIOS dá muita segurança para investir no sistema"
+      autor: "Cristiano Justo"
+      timestamp: "01:01"
+      contexto: "Após ver a arquitetura completa"
+      categoria: "confianca"
+
+    - texto: "Esse mindset é o que muda o jogo"
+      autor: "Marcos Ferreira"
+      timestamp: "00:10"
+      contexto: "Sobre mentalidade de investir em tokens vs economizar"
+      categoria: "mindset"
+
+    - texto: "Esse resumo foi top"
+      autor: "Artur Omori"
+      timestamp: "03:04"
+      contexto: "Pedro resumindo estrutura de development"
+      categoria: "sintese"
+
+    - texto: "isso tá sendo uma universidade condensada de como desenvolver"
+      autor: "Renata Baldissara-Kunnela"
+      timestamp: "03:06"
+      contexto: "Reconhecendo profundidade do conteúdo"
+      categoria: "valor"
+
+  reclamacoes:
+    - texto: "nunca me senti tão burro. é tudo novo. mas vai entrar."
+      autor: "Felipe Piedade"
+      timestamp: "02:54"
+      severidade: "media"
+      contexto: "Dificuldade inicial com conceitos técnicos"
+      resposta: "Pedro respondeu: 'pensei que tava só'"
+      resolucao: "Empatia e validação"
+
+    - texto: "Eu confesso que estou igual surdo em bingo!"
+      autor: "Helder"
+      timestamp: "02:39"
+      severidade: "media"
+      contexto: "Perdido em parte técnica sobre stories"
+      resposta: "Continuou explicando com analogias"
+      resolucao: "Esclarecimento posterior"
+
+    - texto: "To por fora total, preciso saber mais dos fundamentos"
+      autor: "Reino Educação"
+      timestamp: "01:47"
+      severidade: "baixa"
+      contexto: "Sentindo falta de base técnica"
+      resposta: "Comunidade ajudou com links e explicações"
+      resolucao: "Apoio da comunidade"
+
+  duvidas_principais:
+    - pergunta: "Qual agente eu chamo pra orquestr
+
+ar o squad que criamos?"
+      autor: "José Carlos Amorim (usuário no chat)"
+      timestamp: "00:05"
+      respondida: true
+      resposta: "Use @agents/lesson-analyzer.md ou o agente coordenador"
+
+    - pergunta: "O devops faz isso com base no brief-prd-etc?"
+      autor: "Felipe Piedade"
+      timestamp: "00:49"
+      respondida: true
+      resposta: "Sim, mas vem depois do /init"
+
+    - pergunta: "e ele usa o Docker sem a gente nem saber?"
+      autor: "Wanderson"
+      timestamp: "02:46"
+      respondida: true
+      resposta: "Sim, Docker é abstraído pelo AIOS"
+
+    - pergunta: "Quando você cria o documento Pedro você chama um agente no meio do processo?"
+      autor: "Marcus Vinicius Coelho"
+      timestamp: "03:09"
+      respondida: true
+      resposta: "Não, cria documento primeiro e usa como contexto"
+
+    - pergunta: "qual a diferenca de mono e multi"
+      autor: "Renata Baldissara-Kunnela"
+      timestamp: "02:41"
+      respondida: true
+      resposta: "Monorepo = tudo na mesma pasta, multi = repos separados"
+
+    - pergunta: "Rodando este workflow imenso nao acaba estourando a janela de contexto?"
+      autor: "rogeriochinen"
+      timestamp: "01:57"
+      respondida: true
+      resposta: "Não, AIOS tem engenharia de contexto embutida"
+
+    - pergunta: "Como vocês fazem para corrigir bugs? Nao mandam prints?"
+      autor: "WVX"
+      timestamp: "03:25"
+      respondida: false
+      resposta: "Não respondida durante aula"
+
+    - pergunta: "o coderabbit free é suficiente ou tem que ser o pago?"
+      autor: "Renata Baldissara-Kunnela"
+      timestamp: "02:26"
+      respondida: false
+      resposta: "Não claramente respondida"
+
+    - pergunta: "E qnd eu devo chamar por / ou @"
+      autor: "WVX"
+      timestamp: "01:16"
+      respondida: true
+      resposta: "/ = spawn agente real, @ = persona switching"
+
+    - pergunta: "quando esse aios privado somente para nosso cohort será liberado?"
+      autor: "Renata Baldissara-Kunnela"
+      timestamp: "03:18"
+      respondida: false
+      resposta: "Não respondida durante aula"
+
+  momentos_marcantes:
+    - momento: "Discussão sobre mentalidade de tokens"
+      timestamp: "00:00-00:15"
+      impacto: "Muito alto"
+      descricao: "Alan desmistificou medo de gastar tokens, comparando com energia elétrica"
+      reacoes: "Múltiplos emojis de fogo e aprovação"
+
+    - momento: "Explicação @ vs / para agentes"
+      timestamp: "01:15-01:25"
+      impacto: "Alto"
+      descricao: "Esclareceu diferença entre persona-switching e spawn de agentes"
+      reacoes: "Mind blowing para muitos alunos"
+
+    - momento: "Mapa visual de workflows"
+      timestamp: "01:45-02:00"
+      impacto: "Muito alto"
+      descricao: "Pedro mostrou diagrama visual completo de Epic → Story → Tasks"
+      reacoes: "Pedido para compartilhar documento, múltiplos 'entendi 100%'"
+
+    - momento: "Documentação > Conversa"
+      timestamp: "03:20-03:30"
+      impacto: "Muito alto"
+      descricao: "Revelação: criar docs estruturados funciona melhor que chat"
+      reacoes: "'Mind blowing', 'contra-intuitivo', 'grande sacada'"
+
+    - momento: "BOB (Baby On Board) conceito"
+      timestamp: "01:49"
+      impacto: "Alto"
+      descricao: "Introdução do agente BOB para iniciantes"
+      reacoes: "Risadas e identificação imediata"
+
+  temas_recorrentes:
+    - tema: "Mentalidade sobre custos"
+      mencoes: 18
+      sentimento: "Transformador"
+      insight: "Alunos repensando relação com investimento em tokens"
+
+    - tema: "Estrutura técnica (workflows, stories, tasks)"
+      mencoes: 45
+      sentimento: "Curioso e engajado"
+      insight: "Alta demanda por entender fundamentos"
+
+    - tema: "Comparação com outras ferramentas"
+      mencoes: 12
+      sentimento: "Positivo para AIOS"
+      insight: "Reconhecimento da superioridade do AIOS"
+
+    - tema: "Aplicação prática imediata"
+      mencoes: 23
+      sentimento: "Ansioso para executar"
+      insight: "Alunos querendo implementar aprendizado"
+
+  indicadores_sucesso:
+    retencao_atencao: "Muito alta - chat ativo até o final"
+    participacao: "Excepcional - 48 participantes ativos"
+    perguntas_qualidade: "Alta - perguntas técnicas profundas"
+    aplicacao_imediata: "Alta - vários relatos de implementação durante aula"
+    satisfacao_geral: "9.3/10"
+
+  observacoes_finais:
+    - "Chat mais ativo que aula preparatória"
+    - "Mais perguntas técnicas e menos elogios genéricos (maturidade)"
+    - "Comunidade se ajudando mutuamente (José Carlos respondendo dúvidas)"
+    - "Pedro ganhou autoridade técnica reconhecida pela turma"
+    - "Revelação sobre documentação vs conversa foi momento 'aha!' coletivo"

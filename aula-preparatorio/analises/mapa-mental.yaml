@@ -1,0 +1,284 @@
+mapa_mental_aula:
+  metadata:
+    aula: "Aula Preparatória AIOS Avançado"
+    data: "2026-02-03"
+    professores: "Alan Nicolas + Pedro Valerio Lopez"
+    tipo: "Mapa Mental Hierárquico"
+
+  tema_central:
+    titulo: "Como Criar Sistemas de IA que Se Auto-Melhoram"
+    subtitulo: "Automação + Priorização Inteligente + Mindset de Execução"
+    cor: "#22c55e"
+
+  ramificacoes_principais:
+    
+    - id: 1
+      titulo: "ATUALIZAÇÃO & SETUP"
+      cor: "#3b82f6"
+      icone: "⚙️"
+      descricao: "Manter sistema sempre atualizado sem perder customizações"
+      conceitos:
+        - nome: "Upstream Git"
+          explicacao: "Configurar remote upstream para receber atualizações oficiais"
+          comando: "git remote add upstream <repo-oficial>"
+          impacto: "Nunca ficar com versão desatualizada"
+        
+        - nome: "MCPs Essenciais"
+          explicacao: "Três MCPs indispensáveis para qualquer projeto"
+          lista:
+            - "context7: Documentação atualizada de bibliotecas"
+            - "desktop-commander: Acesso a arquivos e processos"
+            - "browser: Automação UI e scraping"
+          impacto: "Reduzir custos de tokens e aumentar capacidades"
+        
+        - nome: "Instalação AIOS"
+          comando: "npx github:SynkraAI/aios-core install"
+          workflow: "1) Install oficial, 2) Script sync customizações"
+
+    - id: 2
+      titulo: "ARQUITETURA DE PROJETOS"
+      cor: "#8b5cf6"
+      icone: "🏗️"
+      descricao: "Decisões estruturais que afetam produtividade da IA"
+      conceitos:
+        - nome: "Monorepo"
+          explicacao: "Backend + Frontend no mesmo repositório"
+          vantagem: "IA acessa tudo, resolve bugs cross-stack sem trocar contexto"
+          quando_usar: "Projetos onde frontend e backend são interdependentes"
+        
+        - nome: "Múltiplos Repos"
+          explicacao: "Projetos separados com deploys independentes"
+          desvantagem: "IA precisa alternar entre contextos, perde visão holística"
+          quando_usar: "Projetos totalmente independentes"
+        
+        - nome: "Estrutura de Remotes"
+          explicacao: "Gerenciar múltiplos remotes Git"
+          estrutura:
+            - "origin: Seu repositório principal"
+            - "upstream: Repositório oficial (updates)"
+            - "cursos: Subtree para material educacional"
+
+    - id: 3
+      titulo: "AUTOMAÇÃO INTELIGENTE"
+      cor: "#ec4899"
+      icone: "🤖"
+      descricao: "Sistemas que pesquisam e integram soluções automaticamente"
+      conceitos:
+        - nome: "Tool Discovery"
+          explicacao: "Sistema que pesquisa MCPs, Skills, APIs e projetos Github"
+          funcionamento:
+            - "1. Identifica necessidade (ex: 'preciso ler PDFs')"
+            - "2. Busca MCPs/APIs disponíveis"
+            - "3. Avalia com Matriz RICE"
+            - "4. Integra automaticamente"
+          impacto: "Economizar 80% do tempo pesquisando manualmente"
+        
+        - nome: "Squad Creator"
+          explicacao: "Sistema para criar squads de IA especializados"
+          demonstracao: "Alan criou squad ao vivo com Tool Discovery integrado"
+          resultado: "Squad que se atualiza sozinho conforme surgem novos MCPs"
+        
+        - nome: "Google App Script"
+          explicacao: "Automação em planilhas Google"
+          caso_real: "Pedro automatiza planilhas do Mercado Livre"
+          aplicacao: "Integrar IA com dados corporativos em Sheets"
+
+    - id: 4
+      titulo: "PRIORIZAÇÃO ESTRATÉGICA"
+      cor: "#f59e0b"
+      icone: "🎯"
+      descricao: "Frameworks para decidir o que implementar primeiro"
+      conceitos:
+        - nome: "Matriz RICE"
+          explicacao: "Reach × Impact × Confidence / Effort"
+          componentes:
+            reach: "Quantas pessoas/processos afeta"
+            impact: "Qual ganho mensurável traz"
+            confidence: "Nível de certeza do resultado"
+            effort: "Tempo/complexidade para implementar"
+          formula: "(R × I × C) / E = Score RICE"
+          aplicacao: "Priorizar épicos e features por ROI real"
+          exemplo: "Pedro usa RICE automatizado no ClickUp"
+        
+        - nome: "Matriz WSJF"
+          explicacao: "Weighted Shortest Job First"
+          quando_usar: "Alternativa ao RICE para contextos ágeis"
+          foco: "Jobs menores com alto valor primeiro"
+        
+        - nome: "Priorização Automática"
+          explicacao: "Sistema que calcula RICE para cada task automaticamente"
+          resultado: "Foco apenas no que traz retorno mensurável"
+
+    - id: 5
+      titulo: "MINDSET DE EXECUÇÃO"
+      cor: "#ef4444"
+      icone: "⚡"
+      descricao: "Mentalidade que separa quem executa de quem planeja eternamente"
+      conceitos:
+        - nome: "Executar > Planejar"
+          principio: "A diferença não é conhecimento - é executar rapidamente"
+          citacao: "Executar 5000x mal feito > Planejar 1x perfeitamente"
+          autor: "Pedro Valerio Lopez"
+          aplicacao: "Criar 3 squads ruins esta semana ao invés de planejar 1 perfeito"
+        
+        - nome: "Aprender Fazendo"
+          principio: "Seu aprendizado vem da ação, não da teoria"
+          exemplo: "Irmã do Alan cria sistemas complexos sem saber o básico"
+          como: "Ela executa, erra, corrige, aprende"
+          resultado: "Coisas incríveis sem conhecimento tradicional"
+        
+        - nome: "Zero Vergonha de Perguntar"
+          principio: "20% do tempo do Alan ainda é fazendo perguntas pra IA"
+          citacao: "Eu literalmente pergunto: 'O que é melhor, merge ou rebase?'"
+          mensagem: "Não tenha medo de não saber - pergunte"
+        
+        - nome: "Não Economize Tokens"
+          principio: "Vai fazendo, vai testando - não tente acertar na primeira"
+          citacao: "Não economize token achando que vai fazer certo da primeira vez"
+          autor: "Pedro Valerio Lopez"
+          aplicacao: "Experimente, teste, itere rapidamente"
+
+    - id: 6
+      titulo: "MODELOS MENTAIS"
+      cor: "#06b6d4"
+      icone: "🧠"
+      descricao: "Frameworks que bilionários usam para tomar decisões"
+      conceitos:
+        - nome: "Biblioteca de Frameworks"
+          explicacao: "Mais de 1.000 modelos mentais extraídos de elite minds"
+          citacao: "Se você quer ficar rico, trabalhe com modelos mentais"
+          autor: "Alan Nicolas"
+          fonte: "Mentes dos maiores empreendedores e investidores do mundo"
+        
+        - nome: "Como Usar"
+          explicacao: "Aplicar frameworks às suas decisões diárias"
+          exemplos:
+            - "RICE: Priorizar features"
+            - "First Principles: Resolver problemas complexos"
+            - "Inversion: Evitar fracassos"
+            - "Compounding: Decisões de longo prazo"
+          acao: "Estudar 1 modelo mental por semana"
+        
+        - nome: "Decisões 100x Melhores"
+          explicacao: "Usar frameworks comprovados ao invés de intuição"
+          resultado: "Decisões baseadas em padrões de sucesso replicáveis"
+          recurso: "Artifact Claude com modelos mentais interativos (v2.0)"
+
+    - id: 7
+      titulo: "CLONAGEM DE MENTES"
+      cor: "#a855f7"
+      icone: "👥"
+      descricao: "Replicar expertise de pessoas reais em IA"
+      conceitos:
+        - nome: "Clone no Squad Creator"
+          explicacao: "Alan clonou mente do Pedro e integrou no sistema"
+          citacao: "Eu clonei o Pedro e botei dentro do Squad Creator"
+          resultado: "Sistema prioriza usando lógica do Pedro automaticamente"
+          aplicacao: "Ter mentoria 24/7 dos melhores"
+        
+        - nome: "Como Clonar Mentes"
+          processo:
+            - "1. Identificar especialista no domínio"
+            - "2. Extrair frameworks mentais (entrevistas, conteúdo)"
+            - "3. Modelar sistema de decisão"
+            - "4. Integrar no Squad como agente especializado"
+          exemplo: "Alan + Pedro estão no Squad Creator"
+        
+        - nome: "Aplicação Prática"
+          explicacao: "Identificar mente para clonar no seu domínio"
+          criterios:
+            - "Expertise comprovada"
+            - "Frameworks claros e replicáveis"
+            - "Disponibilidade de conteúdo (livros, palestras, código)"
+          resultado: "Expertise replicada sem necessidade da pessoa presente"
+
+  conexoes_importantes:
+    - de: "ATUALIZAÇÃO & SETUP"
+      para: "AUTOMAÇÃO INTELIGENTE"
+      relacao: "MCPs essenciais alimentam Tool Discovery"
+    
+    - de: "AUTOMAÇÃO INTELIGENTE"
+      para: "PRIORIZAÇÃO ESTRATÉGICA"
+      relacao: "Tool Discovery usa RICE para decidir quais tools integrar"
+    
+    - de: "PRIORIZAÇÃO ESTRATÉGICA"
+      para: "MODELOS MENTAIS"
+      relacao: "RICE é um modelo mental aplicado"
+    
+    - de: "MODELOS MENTAIS"
+      para: "CLONAGEM DE MENTES"
+      relacao: "Modelos mentais são extraídos de mentes para clonar"
+    
+    - de: "MINDSET DE EXECUÇÃO"
+      para: "TODAS"
+      relacao: "Mindset permeia todas as outras áreas"
+
+  fluxo_aprendizado:
+    passo_1:
+      titulo: "Setup Básico"
+      acao: "Instalar AIOS + 3 MCPs essenciais + Configurar Upstream"
+      tempo: "Hoje (imediato)"
+    
+    passo_2:
+      titulo: "Primeira Execução"
+      acao: "Criar 3 squads simples (mal feitos)"
+      tempo: "Semana 1"
+      mindset: "Não buscar perfeição - apenas executar"
+    
+    passo_3:
+      titulo: "Automação"
+      acao: "Integrar Tool Discovery em 1 squad"
+      tempo: "Semana 1-2"
+      resultado: "Squad que se atualiza sozinho"
+    
+    passo_4:
+      titulo: "Priorização"
+      acao: "Aplicar RICE em 3 decisões reais"
+      tempo: "Semana 2-3"
+      resultado: "Focar apenas no que traz ROI"
+    
+    passo_5:
+      titulo: "Frameworks"
+      acao: "Estudar 4 modelos mentais (1 por semana)"
+      tempo: "Mês 1"
+      resultado: "Biblioteca pessoal de decisões"
+    
+    passo_6:
+      titulo: "Clonagem"
+      acao: "Identificar e clonar primeira mente do seu domínio"
+      tempo: "Mês 1-2"
+      resultado: "Expertise 24/7 disponível"
+
+  mensagem_final:
+    titulo: "O Que Realmente Importa"
+    conteudo: |
+      Esta aula revelou o segredo que separa quem transforma sua vida com IA de quem apenas assiste:
+      
+      ❌ NÃO É: Conhecimento técnico profundo
+      ❌ NÃO É: Planejar tudo perfeitamente
+      ❌ NÃO É: Esperar entender 100% antes de começar
+      
+      ✅ É: EXECUTAR RAPIDAMENTE o que aprende
+      ✅ É: USAR FRAMEWORKS comprovados (RICE, modelos mentais)
+      ✅ É: ZERO MEDO de errar, perguntar, fazer mal feito
+      
+      💡 Ação Transformadora:
+      Pegue 1 conceito deste mapa e IMPLEMENTE HOJE (mal feito).
+      Não amanhã. HOJE. Mesmo que fique ruim.
+      
+      Isso é o que separa quem sai daqui transformado de quem apenas estudou mais uma aula.
+
+  recursos_visuais:
+    cor_fundo: "#000000"
+    cor_texto: "#ffffff"
+    estilo_nodes: "cards com bordas arredondadas"
+    animacoes: "hover effects suaves"
+    layout: "radial ou hierárquico top-down"
+    responsivo: true
+
+  ferramentas_sugeridas_visualizacao:
+    - "Mermaid.js (diagramas em markdown)"
+    - "D3.js (interativo e customizável)"
+    - "Cytoscape.js (grafos complexos)"
+    - "Vis.js (network visualization)"
+    - "HTML/CSS puro (cards hierárquicos)"

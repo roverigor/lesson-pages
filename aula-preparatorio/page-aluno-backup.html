@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aula 01 AIOS Avançado - Arquitetura, Workflows e Mindset</title>
+  <link rel="stylesheet" href="../../templates/design-tokens-dark-premium.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-bg-page);
+      color: var(--color-text-primary);
+      line-height: var(--line-height-normal);
+      padding: var(--spacing-3xl) var(--spacing-xl);
+      position: relative;
+    }
+
+    /* Ambient Glow */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 50%;
+      height: 50%;
+      background: var(--glow-top-right);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: var(--width-container);
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: var(--spacing-6xl);
+      padding: var(--spacing-3xl) 0;
+    }
+
+    .label {
+      display: inline-block;
+      padding: var(--spacing-xs) var(--spacing-md);
+      background: rgba(245,197,24,0.15);
+      border: 1px solid rgba(245,197,24,0.3);
+      border-radius: var(--radius-pill);
+      font-size: var(--font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wide);
+      margin-bottom: var(--spacing-xl);
+      color: var(--color-cta-primary);
+      font-weight: var(--font-weight-bold);
+    }
+
+    h1 {
+      font-size: var(--font-size-5xl);
+      font-weight: var(--font-weight-black);
+      margin-bottom: var(--spacing-md);
+      line-height: var(--line-height-tight);
+      color: var(--color-text-headline);
+    }
+
+    h1 .italic {
+      font-style: italic;
+      font-weight: var(--font-weight-regular);
+      display: block;
+      margin-top: var(--spacing-sm);
+      color: var(--color-text-body);
+    }
+
+    .subtitle {
+      font-size: var(--font-size-lg);
+      color: var(--color-text-body);
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: var(--line-height-relaxed);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--gap-cards);
+      margin: var(--spacing-6xl) 0;
+    }
+
+    .stat-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-card);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-2xl);
+      text-align: center;
+      transition: var(--transition-normal);
+    }
+
+    .stat-card:hover {
+      border-color: var(--color-border-hover);
+      transform: translateY(-2px);
+    }
+
+    .stat-value {
+      font-size: var(--font-size-4xl);
+      font-weight: var(--font-weight-bold);
+      display: block;
+      margin-bottom: var(--spacing-sm);
+      color: var(--color-text-headline);
+    }
+
+    .stat-value.profit { color: var(--color-text-profit); }
+    .stat-value.tech { color: var(--color-text-tech); }
+
+    .stat-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-body);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wide);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .stat-detail {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-body);
+    }
+
+    /* Section */
+    .section {
+      margin: var(--gap-sections) 0;
+    }
+
+    .section-title {
+      font-size: var(--font-size-base);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wider);
+      color: var(--color-text-label);
+      margin-bottom: var(--spacing-2xl);
+      text-align: center;
+      font-weight: var(--font-weight-bold);
+    }
+
+    /* Summary Box */
+    .summary-box {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-card);
+      border-left: 4px solid var(--color-cta-primary);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-3xl);
+      margin: var(--spacing-3xl) 0;
+    }
+
+    .summary-box h3 {
+      font-size: var(--font-size-2xl);
+      margin-bottom: var(--spacing-lg);
+      color: var(--color-cta-primary);
+      font-weight: var(--font-weight-bold);
+    }
+
+    .summary-box p {
+      font-size: var(--font-size-md);
+      color: var(--color-text-body);
+      line-height: var(--line-height-relaxed);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .summary-box strong {
+      color: var(--color-text-headline);
+      font-weight: var(--font-weight-bold);
+    }
+
+    /* Takeaway Grid */
+    .takeaway-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: var(--gap-cards);
+    }
+
+    .takeaway-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-card);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      transition: var(--transition-normal);
+    }
+
+    .takeaway-card:hover {
+      border-color: var(--color-border-hover);
+      transform: translateY(-2px);
+    }
+
+    .takeaway-title {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--spacing-sm);
+      color: var(--color-text-headline);
+    }
+
+    .takeaway-text {
+      font-size: var(--font-size-base);
+      color: var(--color-text-body);
+      margin-bottom: var(--spacing-md);
+      line-height: var(--line-height-normal);
+    }
+
+    .takeaway-action {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-profit);
+      padding: var(--spacing-sm) var(--spacing-md);
+      background: rgba(34,197,94,0.1);
+      border-radius: var(--radius-sm);
+      display: inline-block;
+      font-weight: var(--font-weight-semibold);
+    }
+
+    /* Quote Cards */
+    .quote-card {
+      background: var(--color-bg-card);
+      border-left: 3px solid var(--color-text-tech);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-2xl);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .quote-text {
+      font-size: var(--font-size-lg);
+      font-style: italic;
+      margin-bottom: var(--spacing-md);
+      line-height: var(--line-height-relaxed);
+      color: var(--color-text-body-alt);
+    }
+
+    .quote-author {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      color: var(--color-text-body);
+      font-size: var(--font-size-base);
+    }
+
+    .quote-category {
+      display: inline-block;
+      padding: var(--spacing-xs) 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-left: auto;
+      color: var(--color-text-tech);
+    }
+
+    /* Praise Grid */
+    .praise-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: var(--gap-cards);
+    }
+
+    .praise-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-card);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      transition: var(--transition-normal);
+    }
+
+    .praise-card:hover {
+      border-color: var(--color-border-hover);
+    }
+
+    .praise-text {
+      font-size: var(--font-size-base);
+      color: var(--color-text-body);
+      margin-bottom: var(--spacing-sm);
+      font-style: italic;
+    }
+
+    .praise-author {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-agent);
+      font-weight: var(--font-weight-semibold);
+      font-family: var(--font-mono);
+    }
+
+    .praise-context {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-body);
+      margin-top: var(--spacing-xs);
+    }
+
+    /* Links Grid */
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: var(--gap-cards);
+    }
+
+    .link-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-card);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      transition: var(--transition-normal);
+    }
+
+    .link-card:hover {
+      border-color: var(--color-border-hover);
+    }
+
+    .link-card a {
+      color: var(--color-cta-primary);
+      text-decoration: none;
+      word-break: break-all;
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .link-card a:hover {
+      text-decoration: underline;
+    }
+
+    .link-title {
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--spacing-sm);
+      color: var(--color-text-headline);
+    }
+
+    .link-description {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-body);
+      margin-top: var(--spacing-sm);
+      line-height: var(--line-height-normal);
+    }
+
+    /* Tools Grid */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--gap-cards);
+    }
+
+    .tool-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-card);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      transition: var(--transition-normal);
+    }
+
+    .tool-card:hover {
+      border-color: var(--color-border-hover);
+    }
+
+    .tool-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .tool-name {
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-semibold);
+      margin: 0;
+      color: var(--color-text-headline);
+    }
+
+    .tool-badge {
+      flex-shrink: 0;
+      white-space: nowrap;
+      padding: 4px var(--spacing-sm);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .tool-badge.essential {
+      background: rgba(34,197,94,0.15);
+      color: var(--color-text-profit);
+      border: 1px solid rgba(34,197,94,0.3);
+    }
+
+    .tool-description {
+      font-size: var(--font-size-base);
+      color: var(--color-text-body);
+      line-height: var(--line-height-normal);
+    }
+
+    /* CTA */
+    .cta-box {
+      background: var(--color-bg-card);
+      border: 2px solid var(--color-cta-primary);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-3xl);
+      text-align: center;
+      margin: var(--spacing-6xl) 0;
+    }
+
+    .cta-box h3 {
+      font-size: var(--font-size-2xl);
+      color: var(--color-text-headline);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .cta-box p {
+      font-size: var(--font-size-base);
+      color: var(--color-text-body);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: var(--spacing-md) var(--spacing-2xl);
+      background: var(--color-cta-primary);
+      color: var(--color-bg-page);
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wide);
+      border-radius: var(--radius-pill);
+      text-decoration: none;
+      transition: var(--transition-fast);
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      background: var(--color-cta-hover);
+      transform: translateY(-2px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      body {
+        padding: var(--spacing-xl) var(--spacing-md);
+      }
+
+      h1 {
+        font-size: var(--font-size-3xl);
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .takeaway-grid,
+      .links-grid,
+      .tools-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .praise-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <span class="label">COHORT AIOS AVANÇADO • 04 FEV 2026</span>
+      <h1>
+        Aula 01 AIOS Avançado
+        <span class="italic">Arquitetura, Workflows e Mindset Para Desenvolvimento 10x Mais Rápido</span>
+      </h1>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Duração</span>
+        <span class="stat-value">3h10min</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Participantes</span>
+        <span class="stat-value">48</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value profit">9.3/10</span>
+        <span class="stat-label">Satisfação</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Mensagens</span>
+        <span class="stat-value">1.310</span>
+      </div>
+    </div>
+
+    <!-- Summary Box -->
+    <div class="summary-box">
+      <h3>Resumo Executivo</h3>
+      <p>
+        Nesta aula de 3h10min, Alan Nicolas e Pedro Valerio Lopez desmistificaram a arquitetura completa do AIOS Framework e transformaram a forma como você deve pensar desenvolvimento. Alan começou com um choque de realidade: <strong>tokens NÃO são luxo, são infraestrutura</strong>. A lição: pare de economizar e foque em CRIAR. Pedro desmontou o AIOS peça por peça - .aios-core, expansion-packs, claude.md. A hierarquia Epic → Story → Task foi o ponto de virada. O momento "mind blowing" da aula: <strong>criar DOCUMENTOS estruturados funciona MELHOR que chat conversacional</strong>. Essa foi a sacada contra-intuitiva que fez a turma explodir em reações.
+      </p>
+    </div>
+
+    <!-- Takeaways Section -->
+    <div class="section">
+      <h2 class="section-title">Principais Aprendizados</h2>
+
+      <div class="takeaway-grid">
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">Tokens como Energia Elétrica</h3>
+          <p class="takeaway-text">
+            R$200/mês não é custo, é infraestrutura essencial (como luz/internet). Alan mostrou que 1 mês do trabalho dele equivale a R$1M em time tradicional - enquanto gasta R$200-500 em tokens.
+          </p>
+          <span class="takeaway-action">✅ Assinar Claude Pro ou API esta semana</span>
+        </div>
+
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">Estrutura AIOS</h3>
+          <p class="takeaway-text">
+            .aios-core é o framework base (nunca edite!), expansion-packs são suas customizações, e claude.md é a "Terra" - regras globais. Tudo na mesma pasta compartilhando configuração.
+          </p>
+          <span class="takeaway-action">✅ Explorar estrutura nos próximos 3 dias</span>
+        </div>
+
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">Epic → Story → Task</h3>
+          <p class="takeaway-text">
+            Epic = grande objetivo, Story = pedaço entregável, Task = ação específica. Essa decomposição permite AIOS não se perder em contexto gigante.
+          </p>
+          <span class="takeaway-action">✅ Praticar decomposição no papel</span>
+        </div>
+
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">@ vs / - Diferença Crítica</h3>
+          <p class="takeaway-text">
+            @ = persona-switching (apenas muda tom), / = spawn agente DE VERDADE (executa workflow completo com ferramentas). Essa distinção é crucial para usar AIOS corretamente.
+          </p>
+          <span class="takeaway-action">✅ Usar / para execução real</span>
+        </div>
+
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">Ferramentas Essenciais</h3>
+          <p class="takeaway-text">
+            CodeRabbit (code review IA), GitHub Actions (CI/CD automatizado), Environment Bootstrap (instala tudo automaticamente). Cada ferramenta tem papel específico no workflow.
+          </p>
+          <span class="takeaway-action">✅ Criar conta CodeRabbit gratuita</span>
+        </div>
+
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">Documentação > Conversa</h3>
+          <p class="takeaway-text">
+            Revelação contra-intuitiva: criar DOCUMENTOS estruturados funciona MELHOR que chat conversacional. Documentos dão contexto claro e determinismo. Chats levam a ambiguidade.
+          </p>
+          <span class="takeaway-action">✅ Criar brief.md ANTES de chamar AIOS</span>
+        </div>
+
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">BOB (Baby On Board)</h3>
+          <p class="takeaway-text">
+            Agente para iniciantes com modo "rodinhas" que guia você passo a passo. Não tenha vergonha de usar BOB - até experts usam quando estão aprendendo nova área.
+          </p>
+          <span class="takeaway-action">✅ Usar /bob para próximo projeto pequeno</span>
+        </div>
+
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">Monorepo</h3>
+          <p class="takeaway-text">
+            Tudo na mesma pasta - múltiplos projetos compartilhando configuração. Simplifica gerenciamento e mantém consistência entre projetos.
+          </p>
+          <span class="takeaway-action">✅ Entender estrutura monorepo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quotes Section -->
+    <div class="section">
+      <h2 class="section-title">Citações Memoráveis</h2>
+
+      <div class="quote-card">
+        <p class="quote-text">"Tokens para empresa = energia elétrica. Não é gasto, é operação. Você não fica 3 meses sem luz para economizar."</p>
+        <div class="quote-author">
+          <span>— Alan Nicolas</span>
+          <span class="quote-category">Mindset</span>
+        </div>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">"@ = persona-switching (simula), / = spawn de agente (executa DE VERDADE)"</p>
+        <div class="quote-author">
+          <span>— Insight Técnico</span>
+          <span class="quote-category">Arquitetura</span>
+        </div>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">"Documentação estruturada > Chat conversacional. Totalmente contra-intuitivo, mas é o que funciona."</p>
+        <div class="quote-author">
+          <span>— Pedro Valerio Lopez</span>
+          <span class="quote-category">Metodologia</span>
+        </div>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">"1 mês do meu trabalho com AIOS = equivalente a R$1M em time tradicional. Gastei R$500."</p>
+        <div class="quote-author">
+          <span>— Alan Nicolas</span>
+          <span class="quote-category">ROI</span>
+        </div>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">"Quando tenho dúvida, pergunto para o Claude… quando o Claude tem dúvida, pergunta para o Pedro."</p>
+        <div class="quote-author">
+          <span>— rodrigofaerman</span>
+          <span class="quote-category">Humor</span>
+        </div>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">"AIOS é o que tangibiliza da forma mais impressionante que vi o porquê projetam unicórnios de 1 pessoa só em 2026."</p>
+        <div class="quote-author">
+          <span>— Thiago Otto</span>
+          <span class="quote-category">Visão</span>
+        </div>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">"Mind blowing!!! Totalmente contra intuitivo. Grande sacada."</p>
+        <div class="quote-author">
+          <span>— rogeriochinen</span>
+          <span class="quote-category">Insight</span>
+        </div>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">"BOB (Baby On Board) = agente para iniciantes. Não é vergonha usar 'rodinhas'."</p>
+        <div class="quote-author">
+          <span>— Conceito AIOS</span>
+          <span class="quote-category">Didática</span>
+        </div>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">"Monorepo = tudo na mesma pasta. Compartilha configuração, simplifica gerenciamento."</p>
+        <div class="quote-author">
+          <span>— Pedro Valerio Lopez</span>
+          <span class="quote-category">Arquitetura</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Praise Section -->
+    <div class="section">
+      <h2 class="section-title">Depoimentos dos Alunos</h2>
+
+      <div class="praise-grid">
+        <div class="praise-card">
+          <p class="praise-text">"Criei um app completo"</p>
+          <p class="praise-author">— edgardpacheco</p>
+          <p class="praise-context">Compartilhando conquista após começar a usar AIOS</p>
+        </div>
+
+        <div class="praise-card">
+          <p class="praise-text">"Explicação perfeita!"</p>
+          <p class="praise-author">— Helder</p>
+          <p class="praise-context">Sobre a explicação de @ vs / para agentes</p>
+        </div>
+
+        <div class="praise-card">
+          <p class="praise-text">"Cara eu entendi 100%"</p>
+          <p class="praise-author">— Paulo de Tarso Chaves</p>
+          <p class="praise-context">Sobre mapa visual de workflows</p>
+        </div>
+
+        <div class="praise-card">
+          <p class="praise-text">"Mind blowing!!! Totalmente contra intuitivo. Grande sacada."</p>
+          <p class="praise-author">— rogeriochinen</p>
+          <p class="praise-context">Descobrindo que documentação funciona melhor que conversa</p>
+        </div>
+
+        <div class="praise-card">
+          <p class="praise-text">"Quando o Pedro nasceu ele que deu um tapa na bunda do médico e o médico começou a chorar"</p>
+          <p class="praise-author">— João Lozano</p>
+          <p class="praise-context">Elogio humorístico à didática do Pedro</p>
+        </div>
+
+        <div class="praise-card">
+          <p class="praise-text">"O AIOS é o que tangibiliza da forma mais impressionante que vi o pq projetam os unicórnios de uma pessoa só em 2026"</p>
+          <p class="praise-author">— Thiago Otto</p>
+          <p class="praise-context">Compreendendo potencial transformador</p>
+        </div>
+
+        <div class="praise-card">
+          <p class="praise-text">"entender a estrutura do AIOS dá muita segurança para investir no sistema"</p>
+          <p class="praise-author">— Cristiano Justo</p>
+          <p class="praise-context">Após ver a arquitetura completa</p>
+        </div>
+
+        <div class="praise-card">
+          <p class="praise-text">"Esse mindset é o que muda o jogo"</p>
+          <p class="praise-author">— Marcos Ferreira</p>
+          <p class="praise-context">Sobre mentalidade de investir em tokens vs economizar</p>
+        </div>
+
+        <div class="praise-card">
+          <p class="praise-text">"Esse resumo foi top"</p>
+          <p class="praise-author">— Artur Omori</p>
+          <p class="praise-context">Pedro resumindo estrutura de development</p>
+        </div>
+
+        <div class="praise-card">
+          <p class="praise-text">"isso tá sendo uma universidade condensada de como desenvolver"</p>
+          <p class="praise-author">— Renata Baldissara-Kunnela</p>
+          <p class="praise-context">Reconhecendo profundidade do conteúdo</p>
+        </div>
+
+        <div class="praise-card">
+          <p class="praise-text">"É realmente impressionante"</p>
+          <p class="praise-author">— Renata Baldissara-Kunnela</p>
+          <p class="praise-context">Sobre a estrutura completa do AIOS</p>
+        </div>
+
+        <div class="praise-card">
+          <p class="praise-text">"Estava quebrando a cabeça hoje criando workflows, bora com rodinha e evoluir"</p>
+          <p class="praise-author">— Artur Omori</p>
+          <p class="praise-context">Aluno reconhecendo valor da abordagem BOB</p>
+        </div>
+
+        <div class="praise-card">
+          <p class="praise-text">"Isso é muito bom"</p>
+          <p class="praise-author">— Victor Pontes</p>
+          <p class="praise-context">Reação ao processo de documentação</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Links Section -->
+    <div class="section">
+      <h2 class="section-title">Recursos Compartilhados</h2>
+
+      <div class="links-grid">
+        <div class="link-card">
+          <div class="link-title">AIOS Core GitHub</div>
+          <a href="https://github.com/SynkraAI/aios-core" target="_blank">github.com/SynkraAI/aios-core</a>
+          <p class="link-description">Repositório oficial para atualizar AIOS com git pull. Compartilhado por josecarlosamorim.</p>
+        </div>
+
+        <div class="link-card">
+          <div class="link-title">Site Cohort Avançado</div>
+          <a href="https://aios-advanced-cohort.vercel.app/" target="_blank">aios-advanced-cohort.vercel.app</a>
+          <p class="link-description">Documentação visual completa - José Carlos mapeou tudo da aula em tempo real.</p>
+        </div>
+
+        <div class="link-card">
+          <div class="link-title">Bíblia AIOS Interativa</div>
+          <a href="https://biblia-aios-interativa.vercel.app/" target="_blank">biblia-aios-interativa.vercel.app</a>
+          <p class="link-description">Documentação completa do framework AIOS criada por João Lozano.</p>
+        </div>
+
+        <div class="link-card">
+          <div class="link-title">CodeRabbit</div>
+          <a href="https://app.coderabbit.ai/" target="_blank">app.coderabbit.ai</a>
+          <p class="link-description">Ferramenta de code review com IA. Criar conta gratuita e integrar com GitHub.</p>
+        </div>
+
+        <div class="link-card">
+          <div class="link-title">ALMA Memory Framework</div>
+          <a href="https://github.com/RBKunnela/ALMA-memory.git" target="_blank">github.com/RBKunnela/ALMA-memory.git</a>
+          <p class="link-description">Sistema de memória para agentes IA desenvolvido por Renata Baldissara-Kunnela.</p>
+        </div>
+
+        <div class="link-card">
+          <div class="link-title">ALMA Memory Docs</div>
+          <a href="https://alma-memory.pages.dev/" target="_blank">alma-memory.pages.dev</a>
+          <p class="link-description">Documentação completa de uso do ALMA Memory.</p>
+        </div>
+
+        <div class="link-card">
+          <div class="link-title">Veritas Framework</div>
+          <a href="https://github.com/RBKunnela/veritas-framework" target="_blank">github.com/RBKunnela/veritas-framework</a>
+          <p class="link-description">Framework anti-alucinação para IA desenvolvido por Renata Baldissara-Kunnela.</p>
+        </div>
+
+        <div class="link-card">
+          <div class="link-title">SAFe Framework</div>
+          <a href="https://framework.scaledagile.com/#big-picture" target="_blank">framework.scaledagile.com</a>
+          <p class="link-description">Metodologia enterprise compartilhada por Thiago Otto - inspiração para AIOS 2.0.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tools Section -->
+    <div class="section">
+      <h2 class="section-title">Ferramentas Essenciais</h2>
+
+      <div class="tools-grid">
+        <div class="tool-card">
+          <div class="tool-header">
+            <h3 class="tool-name">CodeRabbit</h3>
+            <span class="tool-badge essential">Essencial</span>
+          </div>
+          <p class="tool-description">
+            Ferramenta de code review com IA que integra diretamente com GitHub. Analisa pull requests automaticamente e fornece feedback técnico detalhado.
+          </p>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-header">
+            <h3 class="tool-name">GitHub Actions</h3>
+            <span class="tool-badge essential">Essencial</span>
+          </div>
+          <p class="tool-description">
+            CI/CD automatizado (Continuous Integration / Continuous Deployment). Executa testes, build e deploy automaticamente a cada commit.
+          </p>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-header">
+            <h3 class="tool-name">Environment Bootstrap</h3>
+            <span class="tool-badge essential">Essencial</span>
+          </div>
+          <p class="tool-description">
+            Comando /devops *environment-bootstrap que instala TUDO automaticamente - dependências, configurações, ferramentas.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="cta-box">
+      <h3>Próximos Passos</h3>
+      <p>
+        Executar os 7 takeaways acionáveis, praticar decomposição Epic → Story → Task, e preparar dúvidas específicas para aula 02 (Design System + Memory Layer).
+      </p>
+      <a href="https://aios-advanced-cohort.vercel.app/" class="btn-primary" target="_blank">Acessar Documentação Completa</a>
+    </div>
+
+  </div>
+</body>
+</html>

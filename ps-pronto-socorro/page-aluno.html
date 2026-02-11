@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PS - Business, Fundamentos e Técnico Avançado</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../../templates/design-tokens-dark-premium.css">
+  <style>
+    .lucide {
+      display: inline-block;
+      vertical-align: middle;
+      stroke-width: 2;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-bg-page);
+      color: var(--color-text-primary);
+      line-height: var(--line-height-normal);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 50%;
+      height: 50%;
+      background: var(--glow-top-right);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: var(--spacing-2xl);
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero {
+      text-align: center;
+      padding: var(--spacing-4xl) 0;
+      border-bottom: 1px solid var(--color-border-card);
+      margin-bottom: var(--spacing-3xl);
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-lg);
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: var(--radius-pill);
+      font-size: var(--font-size-sm);
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wide);
+      color: #EF4444;
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .hero h1 {
+      font-size: var(--font-size-4xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-headline);
+      margin-bottom: var(--spacing-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-md);
+    }
+
+    .hero-subtitle {
+      font-size: var(--font-size-xl);
+      color: var(--color-text-body);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-2xl);
+      font-size: var(--font-size-base);
+      color: var(--color-text-label);
+      margin-top: var(--spacing-xl);
+    }
+
+    .hero-meta-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-3xl);
+    }
+
+    .stat-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-card);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-2xl);
+      text-align: center;
+      backdrop-filter: blur(10px);
+      transition: var(--transition-normal);
+    }
+
+    .stat-card:hover {
+      border-color: var(--color-border-hover);
+      transform: translateY(-2px);
+    }
+
+    .stat-icon {
+      display: inline-block;
+      margin-bottom: var(--spacing-md);
+      color: var(--color-cta-primary);
+    }
+
+    .stat-value {
+      display: block;
+      font-size: var(--font-size-3xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-headline);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .stat-label {
+      display: block;
+      font-size: var(--font-size-sm);
+      color: var(--color-text-label);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wide);
+    }
+
+    .section {
+      margin-bottom: var(--spacing-3xl);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-2xl);
+      padding-bottom: var(--spacing-xl);
+      border-bottom: 2px solid var(--color-border-card);
+    }
+
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-xs) var(--spacing-md);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-xs);
+      font-weight: var(--font-weight-bold);
+      flex-shrink: 0;
+    }
+
+    .section-badge.business {
+      background: rgba(34,197,94,0.15);
+      border: 1px solid rgba(34,197,94,0.3);
+      color: #22C55E;
+    }
+
+    .section-badge.fundamentos {
+      background: rgba(59,130,246,0.15);
+      border: 1px solid rgba(59,130,246,0.3);
+      color: #3B82F6;
+    }
+
+    .section-badge.tecnico {
+      background: rgba(139,92,246,0.15);
+      border: 1px solid rgba(139,92,246,0.3);
+      color: #8B5CF6;
+    }
+
+    .section-title {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-headline);
+    }
+
+    .qa-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-card);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-2xl);
+      margin-bottom: var(--spacing-xl);
+      backdrop-filter: blur(10px);
+      transition: var(--transition-normal);
+    }
+
+    .qa-card:hover {
+      border-color: var(--color-border-hover);
+    }
+
+    .qa-card.business {
+      background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(34,197,94,0.04));
+      border-color: rgba(34,197,94,0.3);
+    }
+
+    .qa-card.fundamentos {
+      background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.04));
+      border-color: rgba(59,130,246,0.3);
+    }
+
+    .qa-card.tecnico {
+      background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(139,92,246,0.04));
+      border-color: rgba(139,92,246,0.3);
+    }
+
+    .qa-question {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .qa-icon {
+      color: var(--color-cta-primary);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .qa-question-text {
+      flex: 1;
+    }
+
+    .qa-student {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-label);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .qa-text {
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-headline);
+      line-height: var(--line-height-relaxed);
+    }
+
+    .qa-answer {
+      background: rgba(0,0,0,0.3);
+      border-left: 3px solid var(--color-cta-primary);
+      padding: var(--spacing-lg);
+      border-radius: var(--radius-md);
+    }
+
+    .qa-professor {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      font-size: var(--font-size-xs);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      background: rgba(245,197,24,0.15);
+      border: 1px solid rgba(245,197,24,0.3);
+      border-radius: var(--radius-pill);
+      color: var(--color-cta-primary);
+      font-weight: var(--font-weight-bold);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .qa-answer-text {
+      font-size: var(--font-size-base);
+      color: var(--color-text-body);
+      line-height: var(--line-height-relaxed);
+    }
+
+    .insights-section {
+      background: linear-gradient(135deg, rgba(251,146,60,0.08), rgba(251,146,60,0.04));
+      border: 1px solid rgba(251,146,60,0.3);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-3xl);
+      margin-bottom: var(--spacing-3xl);
+    }
+
+    .insights-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    .insights-title {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-headline);
+    }
+
+    .insight-item {
+      background: rgba(0,0,0,0.2);
+      border-left: 3px solid #FB923C;
+      padding: var(--spacing-lg);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--spacing-md);
+      font-size: var(--font-size-base);
+      color: var(--color-text-body);
+      line-height: var(--line-height-relaxed);
+    }
+
+    .takeaways-section {
+      background: linear-gradient(135deg, rgba(245,197,24,0.08), rgba(245,197,24,0.04));
+      border: 1px solid rgba(245,197,24,0.3);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-3xl);
+      margin-bottom: var(--spacing-3xl);
+    }
+
+    .takeaways-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    .takeaways-title {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-headline);
+    }
+
+    .takeaway-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-md);
+      background: rgba(0,0,0,0.2);
+      padding: var(--spacing-lg);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--spacing-md);
+      border-left: 3px solid var(--color-cta-primary);
+    }
+
+    .takeaway-icon {
+      color: var(--color-cta-primary);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .takeaway-text {
+      flex: 1;
+      font-size: var(--font-size-base);
+      color: var(--color-text-body);
+      line-height: var(--line-height-relaxed);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: var(--spacing-lg);
+      }
+
+      .hero h1 {
+        font-size: var(--font-size-2xl);
+        flex-direction: column;
+      }
+
+      .hero-meta {
+        flex-direction: column;
+        gap: var(--spacing-md);
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <div class="hero">
+      <div class="hero-badge">
+        <i data-lucide="heart-pulse" width="16" height="16"></i>
+        PS - PRONTO SOCORRO
+      </div>
+      <h1>
+        <i data-lucide="zap" width="56" height="56"></i>
+        Business, Fundamentos e Técnico Avançado
+      </h1>
+      <p class="hero-subtitle">3 Sessões Especializadas de Dúvidas e Resolução de Problemas</p>
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <i data-lucide="calendar" width="18" height="18"></i>
+          <span>06 Fev 2026</span>
+        </div>
+        <div class="hero-meta-item">
+          <i data-lucide="users" width="18" height="18"></i>
+          <span>3 Sessões</span>
+        </div>
+        <div class="hero-meta-item">
+          <i data-lucide="message-circle" width="18" height="18"></i>
+          <span>16 Q&A</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i data-lucide="briefcase" width="32" height="32"></i>
+        </div>
+        <span class="stat-value">5</span>
+        <span class="stat-label">Business</span>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i data-lucide="book-open" width="32" height="32"></i>
+        </div>
+        <span class="stat-value">5</span>
+        <span class="stat-label">Fundamentos</span>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i data-lucide="code-2" width="32" height="32"></i>
+        </div>
+        <span class="stat-value">6</span>
+        <span class="stat-label">Técnico Avançado</span>
+      </div>
+    </div>
+
+    <!-- SESSÃO BUSINESS -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-badge business">
+          <i data-lucide="briefcase" width="14" height="14"></i>
+          SESSÃO 1
+        </span>
+        <h2 class="section-title">Business</h2>
+      </div>
+      <div class="qa-card business">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Edgard Pacheco
+            </div>
+            <div class="qa-text">Como fazer scraping de dados de viagens sem acesso à API do Booking.com, evitando detecção como spam e problemas jurídicos?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            José Carlos Amorim (Zé)
+          </div>
+          <div class="qa-answer-text">Use MCP (Microsoft Playwright) para simular navegação humana, incluindo cliques em botões de verificação "sou humano". O MCP é indicado especialmente quando não há API disponível. Rode o software localmente na máquina do usuário para reduzir custos e use VPS apenas para acesso via browser.</div>
+        </div>
+      </div>
+
+      <div class="qa-card business">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Betty Bonaparte
+            </div>
+            <div class="qa-text">Como estruturar o setor de marketing da empresa usando AIOS, desde a pesquisa de APIs até a publicação automatizada em redes sociais?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            José Carlos Amorim (Zé)
+          </div>
+          <div class="qa-answer-text">Passo 1: Pesquise APIs necessárias (Meta, LinkedIn, AppFI). Passo 2: Construa um squad via Squad Creator inserindo as APIs como ferramentas. Passo 3: Crie um "feio que funciona" em 1 semana, focando em fechar o fluxo de criação até postagem no Instagram. O Claude Code fará a simbiose entre APIs e squad automaticamente. PRD e Briefs não são necessários neste estágio inicial.</div>
+        </div>
+      </div>
+
+      <div class="qa-card business">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Bruno (PulsifyAI)
+            </div>
+            <div class="qa-text">Como usar AIOS para otimizar e acelerar a construção de agentes, código e dashboards que consomem muitas horas de desenvolvimento?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            José Carlos Amorim (Zé)
+          </div>
+          <div class="qa-answer-text">Primeiro passo: Suba todos os projetos visuais (Bolt, Lovable, AI Studio) para o GitHub para corrigir o débito técnico gerado por essas ferramentas, que quebram ao escalar. Esse processo se chama "Brownfield Discovery". Depois, use o AIOS como analista para pesquisar e fazer benchmark, sugerindo melhorias no dashboard. O AIOS guiará a conexão com GitHub e correção do débito técnico.</div>
+        </div>
+      </div>
+
+      <div class="qa-card business">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Cleverson Silva
+            </div>
+            <div class="qa-text">Como os agentes de viagem rentabilizarão com a plataforma? Há parcerias com operadoras?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            Edgard Pacheco (esclarecimento)
+          </div>
+          <div class="qa-answer-text">A plataforma é para uma empresa de marketing multinível específica (nicho fechado), não um sistema aberto. O objetivo é facilitar a pesquisa que hoje leva 10-15 minutos. O dinheiro já cai automaticamente na conta do agente através do sistema existente da empresa.</div>
+        </div>
+      </div>
+
+      <div class="qa-card business">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Virginia Marcal
+            </div>
+            <div class="qa-text">Como começar com AIOS tendo que aprender N8N, Supabase e outras tecnologias simultaneamente?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            Renato Lhamas
+          </div>
+          <div class="qa-answer-text">Escolha um projeto vertical específico (exemplo: checklist automatizado para cerimonial) e se lance no processo. Contrate uma VPS barata para hospedar o banco de dados (Supabase usa PostGres) necessário para rodar N8N. Antes de automatizar, tenha o processo desenhado. Siga a documentação passo a passo para instalação do AIOS no Claude Code.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SESSÃO FUNDAMENTOS -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-badge fundamentos">
+          <i data-lucide="book-open" width="14" height="14"></i>
+          SESSÃO 2
+        </span>
+        <h2 class="section-title">Fundamentos</h2>
+      </div>
+      <div class="qa-card fundamentos">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Gaston (Eduardo K)
+            </div>
+            <div class="qa-text">Como usar efetivamente o Claude Code e por onde começar quando se está perdido?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            João Lozano
+          </div>
+          <div class="qa-answer-text">Use Claude Code dentro do terminal, onde ele carrega todos os arquivos do projeto para comunicação contextualizada. Comece explorando o sistema conversando com o agente iOS Master. Use o comando /guide para puxar todos os comandos de um agente e suas explicações. Crie um arquivo markdown contextualizando quem você é, seu nível técnico e interesses para os agentes adequarem suas respostas.</div>
+        </div>
+      </div>
+
+      <div class="qa-card fundamentos">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Fabiana Furtado
+            </div>
+            <div class="qa-text">É melhor estudar pelo próprio sistema ou usar notebook LLM com transcrições das aulas?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            João Lozano
+          </div>
+          <div class="qa-answer-text">Use o notebook LLM de forma complementar, não substitutiva. A exploração interna do sistema deve ser o foco inicial. Dúvidas que surgirem podem ser levadas ao notebook LLM para cruzar informações. Subir arquivos do GitHub no notebook (em vez de apenas links) pode causar desatualização, mas os fundamentos do AIOS não mudam significativamente entre versões.</div>
+        </div>
+      </div>
+
+      <div class="qa-card fundamentos">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Eduardo K
+            </div>
+            <div class="qa-text">Por que o comando "clear" não funciona para limpar a tela do terminal?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            João Lozano
+          </div>
+          <div class="qa-answer-text">No AIOS, todos os comandos devem começar com barra (/). O comando correto é /clear. Alternativamente, abra um novo terminal, o que equivale a uma nova instância do projeto. Não se intimide com o terminal - é apenas a interface raiz, similar ao Chat GPT.</div>
+        </div>
+      </div>
+
+      <div class="qa-card fundamentos">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Marcelo Matos
+            </div>
+            <div class="qa-text">O que é o arquivo claude.md e qual sua função no sistema?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            João Lozano
+          </div>
+          <div class="qa-answer-text">O claude.md é o "cérebro central" e "contexto universal" da operação, contendo as regras e leis do projeto. É criado usando o comando /init, que averigua o projeto e gera o arquivo. Cuidado para não sobrescrever as regras do núcleo do AIOS (contexto core), que são fundamentais para o sistema funcionar.</div>
+        </div>
+      </div>
+
+      <div class="qa-card fundamentos">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Marcelo Matos
+            </div>
+            <div class="qa-text">Squads e agentes internos podem ser usados em sistemas em produção?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            João Lozano
+          </div>
+          <div class="qa-answer-text">O AIOS é primariamente um framework de desenvolvimento. Para integrar um squad em produção (como via API), simule o projeto com os agentes e depois use-o. Para transformar um squad em produto com interface para clientes, siga o processo de desenvolvimento do AIOS usando o Meta AIOS. Isso é mais eficiente por limitar o escopo.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SESSÃO TÉCNICO AVANÇADO -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-badge tecnico">
+          <i data-lucide="code-2" width="14" height="14"></i>
+          SESSÃO 3
+        </span>
+        <h2 class="section-title">Técnico Avançado</h2>
+      </div>
+      <div class="qa-card tecnico">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Renata Baldissara-Kunnela
+            </div>
+            <div class="qa-text">O que é o processo de Preflight no Brownfield Discovery e preciso esperar ele terminar?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            Talles Souza / Pedagógico Academia Lendária
+          </div>
+          <div class="qa-answer-text">Preflight é uma simulação (dry run) que testa o ambiente sem fazer alterações - funciona como controle de qualidade (QA) inicial para identificar melhorias. SIM, você deve esperar o processo terminar completamente antes de prosseguir.</div>
+        </div>
+      </div>
+
+      <div class="qa-card tecnico">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Jose Petrucio Da Silva
+            </div>
+            <div class="qa-text">Por que o Dev está chamando meus agentes pré-existentes (não-AIOS) durante o Brownfield, causando problemas?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            Talles Souza
+          </div>
+          <div class="qa-answer-text">Isso ocorre porque agentes pré-existentes são ativados pelo Claude Code e não pelo AIOS, o que não está previsto no cenário atual. Solução: isole o ambiente, separando os agentes ao usar o AIOS. Use os agentes customizados isoladamente apenas onde for necessário. Alternativamente, crie uma skill que chame o agente Swift customizado, adicionando camada sem alterar estrutura central do Dev.</div>
+        </div>
+      </div>
+
+      <div class="qa-card tecnico">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Jose Petrucio Da Silva
+            </div>
+            <div class="qa-text">Como transportar um agente especialista (ex: Swift) do Squad Creator para dentro do AIOS corretamente?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            Talles Souza / Pedagógico Academia Lendária
+          </div>
+          <div class="qa-answer-text">Como o AIOS nasceu antes das skills do Claude, esse problema ocorreu. Use o AIOS Master para criar agentes e workflows - ele está preparado para registrar comandos no Claude MD e colocar as peças no lugar certo. Na release atual, não dependa do Squad. Alternativamente, crie uma skill que chame o agente customizado, ao invés de alterar a estrutura original do Dev.</div>
+        </div>
+      </div>
+
+      <div class="qa-card tecnico">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Jose Petrucio Da Silva
+            </div>
+            <div class="qa-text">Por que o paralelismo de waves gerou 29 subagentes do Dev em paralelo, travando meu Mac de 24GB?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            Talles Souza / Pedagógico Academia Lendária
+          </div>
+          <div class="qa-answer-text">Waves ainda não estão totalmente implementadas na release atual. Cada subprocesso do Claude consome 500 MB de memória, limitando execução de subagentes. Execução simultânea é problemática pois um subagente pode modificar o trabalho do outro. Use Control+E e Control+C para recuperar sessão e analisar logs. Recomendação: abra um AIOS Master paralelo para monitorar o que está acontecendo por trás e controlar melhor a chamada dos agentes.</div>
+        </div>
+      </div>
+
+      <div class="qa-card tecnico">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Marcus Vinicius Coelho
+            </div>
+            <div class="qa-text">Qual a diferença entre "npx aios-core install" e "npx core init" para projetos clonados?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            Pedagógico Academia Lendária / Talles Souza
+          </div>
+          <div class="qa-answer-text">npx aios-core install: instala o AIOS Core dentro de um projeto EXISTENTE (clonado do GitHub). npx core init: cria um NOVO repositório quando não há projeto no GitHub. O NPX puxa o componente baseado no último release (versão validada), diferentemente do git clone que puxa a versão mais recente da branch main.</div>
+        </div>
+      </div>
+
+      <div class="qa-card tecnico">
+        <div class="qa-question">
+          <i data-lucide="help-circle" width="24" height="24" class="qa-icon"></i>
+          <div class="qa-question-text">
+            <div class="qa-student">
+              <i data-lucide="user" width="12" height="12"></i>
+              Vlademir Fagundes / Renata Baldissara-Kunnela
+            </div>
+            <div class="qa-text">Posso modificar o AIOS Core open source e usar corporativamente? Posso revender?</div>
+          </div>
+        </div>
+        <div class="qa-answer">
+          <div class="qa-professor">
+            <i data-lucide="graduation-cap" width="12" height="12"></i>
+            Pedagógico Academia Lendária / Talles Souza
+          </div>
+          <div class="qa-answer-text">SIM, pode modificar (faça fork no Git para não perder alterações e contribuir via pull request). SIM, pode usar corporativamente como ferramenta de trabalho para produzir desenvolvimentos para clientes. NÃO pode revender ou compartilhar o código-fonte do AIOS Core em si, mas pode informar que o utiliza como framework. As regras para o AIOS Pro ainda não foram definidas publicamente e dependerão do modelo de licenciamento.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSIGHTS GERAIS -->
+    <div class="insights-section">
+      <div class="insights-header">
+        <i data-lucide="lightbulb" width="32" height="32" style="color:#FB923C;"></i>
+        <h2 class="insights-title">Insights Valiosos</h2>
+      </div>
+      <div class="insight-item">
+        <strong>Filosofia Prática:</strong> "Feio que funciona" em 1 semana supera perfeição demorada - validação real > código perfeito
+      </div>
+      <div class="insight-item">
+        <strong>Ferramentas Visuais:</strong> Bolt, Lovable e AI Studio são úteis para protótipos mas geram débito técnico crítico ao escalar - GitHub + Brownfield Discovery é essencial
+      </div>
+      <div class="insight-item">
+        <strong>Nichos Fechados:</strong> São vantagem estratégica na era da IA - aproveite para criar casos de sucesso antes de mercado abrir
+      </div>
+      <div class="insight-item">
+        <strong>Terminal Desmistificado:</strong> Não é inimigo - é interface de conversação contextualizada, similar ao Chat GPT mas com poder de execução
+      </div>
+      <div class="insight-item">
+        <strong>Exploração Ativa:</strong> Errar, perguntar, testar supera estudo passivo - sistema recompensa experimentação
+      </div>
+      <div class="insight-item">
+        <strong>Isolamento de Ambientes:</strong> Agentes customizados vs AIOS devem ser separados para evitar conflitos imprevistos e economizar horas de debug
+      </div>
+      <div class="insight-item">
+        <strong>Hardware Importa:</strong> Paralelismo de subagentes consome 500 MB cada, planeje capacidade antes de escalar
+      </div>
+      <div class="insight-item">
+        <strong>Open Source Estratégico:</strong> AIOS Core bem feito acelera adoção corporativa mantendo controle sobre versões premium (AIOS Pro)
+      </div>
+      <div class="insight-item">
+        <strong>Mindset Shift:</strong> Usuário é cérebro orquestrador, não executor - fundamental para aproveitar AIOS completamente
+      </div>
+    </div>
+
+    <!-- TAKEAWAYS GERAIS -->
+    <div class="takeaways-section">
+      <div class="takeaways-header">
+        <i data-lucide="check-circle" width="32" height="32" style="color:var(--color-cta-primary);"></i>
+        <h2 class="takeaways-title">Takeaways Práticos</h2>
+      </div>
+      <div class="takeaway-item">
+        <i data-lucide="arrow-right" width="20" height="20" class="takeaway-icon"></i>
+        <div class="takeaway-text">MCP (Microsoft Playwright) para scraping quando não há API - simula humano e passa verificações</div>
+      </div>
+      <div class="takeaway-item">
+        <i data-lucide="arrow-right" width="20" height="20" class="takeaway-icon"></i>
+        <div class="takeaway-text">Brownfield Discovery: GitHub primeiro → AIOS corrige débito técnico → Sistema escalável</div>
+      </div>
+      <div class="takeaway-item">
+        <i data-lucide="arrow-right" width="20" height="20" class="takeaway-icon"></i>
+        <div class="takeaway-text">Criação de squad marketing: APIs → Squad Creator → Fechar fluxo completo em 1 semana → Refinar</div>
+      </div>
+      <div class="takeaway-item">
+        <i data-lucide="arrow-right" width="20" height="20" class="takeaway-icon"></i>
+        <div class="takeaway-text">Todos os comandos AIOS começam com / - diferencia de comandos do sistema operacional</div>
+      </div>
+      <div class="takeaway-item">
+        <i data-lucide="arrow-right" width="20" height="20" class="takeaway-icon"></i>
+        <div class="takeaway-text">Use /guide com nome do agente para documentação completa e contextualizada</div>
+      </div>
+      <div class="takeaway-item">
+        <i data-lucide="arrow-right" width="20" height="20" class="takeaway-icon"></i>
+        <div class="takeaway-text">Preflight (dry run) identifica problemas antes de alterações reais - sempre espere terminar</div>
+      </div>
+      <div class="takeaway-item">
+        <i data-lucide="arrow-right" width="20" height="20" class="takeaway-icon"></i>
+        <div class="takeaway-text">Isole agentes customizados dos agentes AIOS para evitar conflitos de ativação</div>
+      </div>
+      <div class="takeaway-item">
+        <i data-lucide="arrow-right" width="20" height="20" class="takeaway-icon"></i>
+        <div class="takeaway-text">Crie skills para chamar agentes customizados ao invés de modificar estrutura central</div>
+      </div>
+      <div class="takeaway-item">
+        <i data-lucide="arrow-right" width="20" height="20" class="takeaway-icon"></i>
+        <div class="takeaway-text">npx aios-core install (projeto existente) vs npx core init (novo projeto) - use comando correto</div>
+      </div>
+      <div class="takeaway-item">
+        <i data-lucide="arrow-right" width="20" height="20" class="takeaway-icon"></i>
+        <div class="takeaway-text">Faça fork antes de modificar AIOS Core - contribua via pull request sem perder alterações</div>
+      </div>
+      <div class="takeaway-item">
+        <i data-lucide="arrow-right" width="20" height="20" class="takeaway-icon"></i>
+        <div class="takeaway-text">VPS barata essencial para banco de dados (Supabase/PostGres) + N8N em produção</div>
+      </div>
+      <div class="takeaway-item">
+        <i data-lucide="arrow-right" width="20" height="20" class="takeaway-icon"></i>
+        <div class="takeaway-text">Desenhe e documente processos ANTES de automatizar - automação sem processo = caos</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+
+</body>
+</html>

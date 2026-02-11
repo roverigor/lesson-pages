@@ -1,0 +1,1553 @@
+analise_interna_pedagogica:
+  metadata:
+    aula: "Cohort AIOS Avançado - Aula 01"
+    data: "2026-02-04"
+    duracao: "3h10min (190 minutos)"
+    professores: 
+      - "Alan Nicolas (lead)"
+      - "Pedro Valerio Lopez (co-facilitador técnico)"
+    formato: "Online - Zoom"
+    participantes: 48
+    mensagens_chat: 1310
+    framework_versao: "GPS 1.0 + Metodologia Lendária 1.0"
+
+  contexto_aula:
+    tipo: "Cohort Avançado - Aula Técnica Profunda"
+    publico: "Lendários que já usam AIOS, buscando nível avançado"
+    prerequisitos: "Aula preparatória concluída, AIOS instalado"
+    objetivo_macro: "Revelar arquitetura completa do AIOS e metodologia de trabalho profissional"
+    desafio: "Balancear profundidade técnica com acessibilidade para não-programadores"
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # FRAMEWORK GPS - AVALIAÇÃO ESTRUTURAL
+  # ═══════════════════════════════════════════════════════════════════════════════
+  
+  avaliacao_gps:
+    
+    # ────────────────────────────────────────────────────────────────────────────
+    # 1. GOAL - Destino (Motivação)
+    # ────────────────────────────────────────────────────────────────────────────
+    goal_destino:
+      nota: 9.5
+      classificacao: "EXCEPCIONAL"
+      
+      evidencias:
+        promessa_clara_60seg:
+          presente: true
+          timestamp: "00:02:30 - 00:06:00"
+          conteudo: |
+            Alan começou com choque de mentalidade sobre tokens (infraestrutura, não luxo),
+            depois estabeleceu objetivo: "Hoje vocês vão VER por baixo do capô do AIOS"
+          avaliacao: "Promessa clara mas mais emocional/mindset do que técnica nos primeiros 60s"
+          
+        resultado_tangivel:
+          presente: true
+          especificidade: "MUITO ALTA"
+          o_que_aluno_alcancara: |
+            - Entender arquitetura completa (.aios-core, expansion-packs, claude.md)
+            - Dominar Epic → Story → Task (decomposição)
+            - Diferenciar @ vs / (crítico para uso correto)
+            - Usar BOB para projetos guiados
+            - Documentar antes de executar (determinismo)
+          quote: "Hoje vocês vão entender POR QUE não funciona ficar dando comandos aleatórios em Lovable"
+          
+        motivacao_explicita:
+          presente: true
+          nivel_emocional: "ALTO"
+          porque_importa: |
+            - Produtividade 10x (1 mês = R$1M em time tradicional)
+            - Mentalidade: tokens = energia elétrica (infraestrutura essencial)
+            - Autonomia: "viajo o mundo com impressora de sistemas na mochila"
+            - Futuro: "unicórnios de 1 pessoa só em 2026"
+          timestamp: "00:02:00 - 00:08:00"
+          
+        exemplo_concreto:
+          presente: true
+          poder: "MUITO ALTO"
+          exemplo: |
+            Alan compartilhou números reais:
+            - Seu trabalho de 1 mês = equivalente a R$1M em custos de time tradicional
+            - Gastou R$500 em tokens no mesmo período
+            - Usou 3 contas Max ($200) em 3 dias consecutivos (produtividade extrema)
+            - Time dele: cada pessoa = R$40-120k/mês equivalente em produção
+          impacto: "Alunos reagiram com emojis de fogo e comentários sobre mindset mudado"
+
+      pontos_fortes:
+        - "Mentalidade estabelecida ANTES de técnica (ordem correta)"
+        - "Números reais e concretos (R$1M vs R$500)"
+        - "Objetivo técnico claro: 'arquitetura completa revelada'"
+        - "Motivação emocional forte: liberdade, autonomia, futuro"
+        
+      oportunidades_melhoria:
+        - "Promessa técnica poderia ser mais específica nos primeiros 60s"
+        - "Faltou antecipar QUANTOS conceitos seriam cobertos (expectativa de complexidade)"
+        
+      observacoes: |
+        Alan usou abordagem não-convencional mas MUITO eficaz: começou com MENTALIDADE
+        (tokens = infraestrutura) antes de objetivo técnico. Isso criou frame mental correto
+        para absorver complexidade que viria. Estratégia arriscada mas funcionou.
+        
+        Pedro entrou depois complementando com detalhes técnicos, criando dupla perfeita:
+        Alan = visão/mentalidade, Pedro = execução/detalhes.
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # 2. POSITION - Origem (Empatia)
+    # ────────────────────────────────────────────────────────────────────────────
+    position_origem:
+      nota: 8.5
+      classificacao: "MUITO BOM"
+      
+      evidencias:
+        reconhece_niveis:
+          presente: true
+          especificidade: "ALTA"
+          segmentos_identificados:
+            - "Quem nunca programou (ex: Pedro Valerio - começou maio/2024)"
+            - "Quem está criando squads mas não entende estrutura"
+            - "Quem ficou 'igual surdo em bingo' (Helder, 02:39)"
+            - "Quem se sentiu 'burro' com complexidade (Felipe Piedade, 02:54)"
+            - "Quem já domina mas quer profundidade (José Carlos, experts na turma)"
+          quote: "Pedro foi empresário full time e acrobata, nunca viu código até maio. Se ele conseguiu, vocês conseguem."
+          
+        valida_preocupacoes:
+          presente: true
+          forca: "ALTA"
+          preocupacoes_validadas:
+            - medo_custo_tokens:
+                validacao: "Alan dedicou 15min validando e desconstruindo"
+                resposta: "Mostrou ROI concreto (R$1M vs R$500)"
+                timestamp: "00:02:00 - 00:17:00"
+                
+            - complexidade_tecnica:
+                validacao: "Pedro: 'pensei que estava só [se sentindo burro]'"
+                resposta: "Normalizou dificuldade, apresentou BOB (rodinhas)"
+                timestamp: "02:54:00"
+                
+            - medo_perder_contexto:
+                validacao: "Aluno perguntou sobre estouro de janela"
+                resposta: "Explicou engenharia de contexto embutida no AIOS"
+                timestamp: "01:57:00"
+                
+        oferece_caminhos:
+          presente: true
+          quantidade: 3
+          caminhos:
+            1_bob_mode:
+              descricao: "Baby On Board - modo com rodinhas para iniciantes"
+              para_quem: "Quem está começando ou inseguro"
+              timestamp: "01:49:00"
+              
+            2_brownfield:
+              descricao: "Começar com projeto existente + *document-project"
+              para_quem: "Quem já tem código e quer integrar AIOS"
+              timestamp: "03:46:00"
+              
+            3_greenfield_advanced:
+              descricao: "Modo avançado com Epic → Story → Task"
+              para_quem: "Quem quer máxima flexibilidade"
+              timestamp: "02:00:00"
+              
+        linguagem_empatica:
+          presente: true
+          frequencia: "ALTA"
+          exemplos:
+            - "'Eu sei que parece muito, mas...'"
+            - "'Se você está pensando X, eu entendo perfeitamente'"
+            - "'Para quem nunca programou, tudo bem - vou mostrar desde o zero'"
+            - "Pedro: 'pensei que tava só [confuso]' - validação coletiva"
+
+      pontos_fortes:
+        - "Validação profunda de medos (tokens, complexidade)"
+        - "Normalização de dificuldade (Pedro como exemplo)"
+        - "Múltiplos caminhos claros (BOB, brownfield, advanced)"
+        - "Linguagem empática consistente"
+        
+      oportunidades_melhoria:
+        - "Poderia ter enquadrado níveis no início (mapa de arquétipos)"
+        - "Faltou checkpoint explícito de 'onde você está agora?'"
+        - "Alguns conceitos assumiram familiaridade com Git (não validado)"
+        
+      observacoes: |
+        Empatia MUITO forte, especialmente na validação de medo de custos (15min dedicados).
+        Pedro sendo exemplo vivo de "nunca programou → domina AIOS em 8 meses" foi
+        estratégia brilhante de empoderamento. Chat mostrou múltiplos "eu também!" após
+        validações (efeito de grupo bem manejado).
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # 3. STEPS - Rota (Execução)
+    # ────────────────────────────────────────────────────────────────────────────
+    steps_rota:
+      nota: 7.8
+      classificacao: "BOM"
+      
+      evidencias:
+        comeca_com_porque:
+          presente: true
+          qualidade: "ALTA"
+          exemplos:
+            - topico: "@ vs /"
+              porque_primeiro: "Por que @ apenas simula? Porque não spawna processo real."
+              depois_o_que: "Como usar: / para workflows, @ para tom de voz"
+              timestamp: "01:15:00 - 01:25:00"
+              
+            - topico: "Documentação > Conversa"
+              porque_primeiro: "Por que? Determinismo vs ambiguidade. LLM funciona melhor com contexto estruturado."
+              depois_o_que: "Como documentar: PRD, Epic → Stories"
+              timestamp: "03:20:00 - 03:30:00"
+              reacao: "'Mind blowing! Contra-intuitivo!' - rogeriochinen"
+              
+        passos_claros:
+          presente: true
+          estrutura: "MÉDIA-ALTA"
+          pontos_fortes:
+            - "Mapa visual de Epic → Story → Task (muito elogiado)"
+            - "Passos numerados para instalação CodeRabbit"
+            - "Sequência clara: /devops → *environment-bootstrap"
+          pontos_fracos:
+            - "Alguns workflows descritos mas não demonstrados passo-a-passo"
+            - "Instalação squad-creator gerou confusão em múltiplos alunos"
+          timestamp_mapa: "01:45:00 - 02:00:00"
+          feedback_aluno: "'Cara eu entendi 100%' - Paulo de Tarso Chaves (01:47:00)"
+          
+        exercicio_pratico:
+          presente: false
+          critico: true
+          problema: |
+            Aula foi 100% EXPLICAÇÃO + DEMONSTRAÇÃO, 0% HANDS-ON guiado.
+            Alunos pediram para aplicar mas não houve pausa para prática durante aula.
+          evidencias:
+            - "Juliano: 'Vamos ver como criar os squads como você cria?' (00:34:00)"
+            - "Múltiplos alunos reportaram criar squads DURANTE aula, não guiados"
+            - "Alguns erraram instalação e ficaram perdidos"
+          impacto: "Redução de 2 pontos na nota STEPS"
+          
+        instrucoes_acionaveis:
+          presente: true
+          clareza: "MÉDIA-ALTA"
+          exemplos_bons:
+            - "git pull https://github.com/SynkraAI/aios-core (atualizar AIOS)"
+            - "Criar conta: https://app.coderabbit.ai/"
+            - "/devops → *environment-bootstrap → instala tudo"
+          exemplos_confusos:
+            - "Instalação squad-creator (múltiplas dúvidas não resolvidas)"
+            - "Quando usar @architect vs *document-project"
+
+      pontos_fortes:
+        - "Sempre explicou 'por quê' antes de 'o quê'"
+        - "Mapa visual foi divisor de águas (muito elogiado)"
+        - "Comandos específicos dados (git pull, URLs)"
+        - "Dupla Alan+Pedro complementar (visão + execução)"
+        
+      oportunidades_melhoria:
+        - "🔴 CRÍTICO: Inserir 2-3 pausas de 10min para prática guiada"
+        - "Resolver confusão de instalação squad-creator (FAQ ou vídeo)"
+        - "Demonstrar 1 workflow completo do início ao fim"
+        - "Criar checklist pós-aula com passos de configuração"
+        
+      observacoes: |
+        A ausência de exercício prático guiado é o maior gap desta aula. Formato de 3h10min
+        PEDIA pausas para "Agora vocês fazem enquanto eu monitoro". Alunos tentaram aplicar
+        em paralelo mas sem guia, gerando confusão em instalações.
+        
+        Mapa visual de workflows foi momento de maior clareza - "entendi 100%" (múltiplos).
+        Confirma poder de SEMIÓTICA (visual > texto).
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # 4. SEMIÓTICA - Elementos Visuais
+    # ────────────────────────────────────────────────────────────────────────────
+    semiotica_visual:
+      nota: 9.0
+      classificacao: "EXCEPCIONAL"
+      
+      evidencias:
+        analogias:
+          quantidade: 5
+          qualidade: "MUITO ALTA"
+          lista:
+            1_tokens_energia:
+              analogia: "Tokens = Energia Elétrica"
+              funciona: true
+              porque: "Experiência universal brasileira, concreta, emocional"
+              quote: "Você não fica 3 meses sem luz para economizar. É infraestrutura."
+              timestamp: "00:06:00"
+              impacto: "Mudança de mindset reportada por múltiplos alunos"
+              
+            2_monorepo:
+              analogia: "'TUDO NA MESMA PASTA' - Alan traduzindo"
+              funciona: true
+              porque: "Simplifica jargão técnico para não-programadores"
+              timestamp: "02:32:00"
+              
+            3_impressora_sistemas:
+              analogia: "AIOS = Impressora de Sistemas"
+              funciona: true
+              porque: "Visual, tangível, poderoso"
+              quote: "'Eu viajo o mundo com uma impressora de sistemas na mochila' - Alan"
+              timestamp: "01:06:00"
+              
+            4_claude_md_terra:
+              analogia: "claude.md = Terra, AIOS = Continente"
+              funciona: true
+              porque: "Hierarquia geográfica fácil de visualizar"
+              autor: "josecarlosamorim (aluno)"
+              timestamp: "00:38:19"
+              
+            5_yolo_mode:
+              analogia: "YOLO Mode = 'Modo Foda-se'"
+              funciona: true
+              porque: "Humor + precisão técnica"
+              timestamp: "02:16:00"
+              traducoes_turma: "Live, God Mode, Sleep"
+              
+        diagramas_visuais:
+          quantidade: 2
+          qualidade: "EXCEPCIONAL"
+          lista:
+            1_epic_story_task:
+              tipo: "Mapa hierárquico"
+              conteudo: "Epic → Story → Task com conexões visuais"
+              timestamp: "01:45:00 - 02:00:00"
+              feedback: "'Cara eu entendi 100%' - Paulo de Tarso"
+              pedidos: "Múltiplos alunos pediram para compartilhar documento"
+              impacto: "MOMENTO DE MAIOR CLAREZA DA AULA"
+              
+            2_figma_projeto:
+              tipo: "Board visual no Figma"
+              url: "https://www.figma.com/board/lBAoDMkKedPwSq8NQfOUVs/"
+              timestamp: "00:27:49"
+              uso: "Demonstração de estrutura de projeto"
+              
+        perguntas_reflexivas:
+          quantidade: 8
+          qualidade: "ALTA"
+          exemplos:
+            - "'Quem está usando tokens sem medo?' (resposta massiva: EU)"
+            - "'Quem criou squads ontem?' (48 participantes ativos)"
+            - "'Vocês querem ver por baixo do capô?' (engajamento: SIM)"
+            - "'Faz sentido essa estrutura?' (validação contínua)"
+          timestamp_exemplos: "00:30:00, 00:47:00, 01:39:00"
+          taxa_resposta: "Muito alta (90%+ dos alunos responderam)"
+          
+        resumo_visual:
+          presente: true
+          formato: "Bullets + estrutura clara no chat"
+          exemplos:
+            - "josecarlosamorim postou síntese de comandos"
+            - "Pedro resumiu em 03:04: 'development structure'"
+            - "Alan traduziu termos técnicos continuamente"
+
+      pontos_fortes:
+        - "Analogias universais e poderosas (tokens = luz, impressora de sistemas)"
+        - "Mapa visual de Epic → Story → Task foi divisor de águas"
+        - "Perguntas reflexivas com taxa de resposta altíssima"
+        - "Comunidade criando visuais em tempo real (José Carlos, João Lozano)"
+        
+      oportunidades_melhoria:
+        - "Poderia ter mais diagramas (CI/CD, memory layer ficaram abstratos)"
+        - "Algumas analogias eram nicho (SAFe, metodologias enterprise)"
+        
+      observacoes: |
+        Semiótica foi um dos pontos MAIS FORTES da aula. O mapa visual de workflows
+        gerou reação coletiva de "entendi 100%" - evidência clara de que VISUAL > TEXTO.
+        
+        Alan tem talento natural para analogias (tokens = luz é PERFEITA). Pedro
+        complementa com diagramas técnicos. Dupla ideal.
+        
+        Comunidade criando recursos visuais em paralelo (José Carlos, João Lozano)
+        mostra que semiótica é valor reconhecido e reproduzido.
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # 5. CLAREZA - Linguagem Acessível
+    # ────────────────────────────────────────────────────────────────────────────
+    clareza_linguagem:
+      nota: 8.0
+      classificacao: "MUITO BOM"
+      
+      evidencias:
+        jargao_explicado:
+          taxa: "85%"
+          exemplos_bons:
+            - "Monorepo → 'TUDO NA MESMA PASTA' (Alan)"
+            - "Brownfield → 'projeto existente'"
+            - "Greenfield → 'do zero'"
+            - "CI/CD → 'testes automáticos + deploy automático'"
+            - "YOLO Mode → 'modo foda-se, vai fundo'"
+          exemplos_nao_explicados:
+            - "Submodules (apenas link compartilhado)"
+            - "Turbopack (mencionado sem contexto)"
+            - "SAFe (assumiu conhecimento enterprise)"
+            
+        conceitos_traduzidos:
+          presente: true
+          frequencia: "MUITO ALTA"
+          estrategia: "Alan traduzia em tempo real termos técnicos do Pedro"
+          exemplo: |
+            Pedro: "Você usa o architect para documentar o projeto."
+            Alan: "Traduzindo: o arquiteto mapeia tudo que já existe."
+          timestamp: "01:16:00"
+          
+        multiplas_representacoes:
+          presente: true
+          combinacoes:
+            - "Texto (chat + transcrição) + Visual (diagramas) + Prática (demos ao vivo)"
+            - "Analogia + Diagrama + Exemplo concreto"
+          exemplo_completo:
+            conceito: "Epic → Story → Task"
+            texto: "Explicação verbal da hierarquia"
+            visual: "Mapa com conexões"
+            pratica: "Demonstração em projeto real"
+            timestamp: "01:45:00 - 02:00:00"
+            
+        linguagem_nivel:
+          avaliacao: "BOA (8/10)"
+          adequacao: "Adequada para público misto (técnicos + não-técnicos)"
+          observacoes: |
+            Linguagem técnica quando necessário, mas sempre com tradução/analogia.
+            Pedro falava técnico, Alan traduzia. Sistema funcionou bem.
+
+      pontos_fortes:
+        - "Sistema Alan (traduz) + Pedro (técnico) muito eficaz"
+        - "Jargão sempre seguido de analogia"
+        - "Múltiplas representações (texto + visual + prática)"
+        - "Chat ativo ajudando a traduzir (comunidade educando comunidade)"
+        
+      oportunidades_melhoria:
+        - "15% de jargão não explicado (submodules, turbopack)"
+        - "Alguns conceitos Git assumidos (push, pull, branch)"
+        - "Poderia ter glossário em tela ou doc compartilhado"
+        
+      observacoes: |
+        Dupla Alan+Pedro criou sistema natural de tradução simultânea. Alan percebia
+        quando conceito era técnico demais e traduzia. Pedro aceitava e reforçava.
+        
+        Chat também funcionou como "tradutor coletivo" - José Carlos e outros
+        explicando conceitos para quem estava perdido. Comunidade madura.
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # 6. RITMO - Gestão do Tempo
+    # ────────────────────────────────────────────────────────────────────────────
+    ritmo_gestao:
+      nota: 7.0
+      classificacao: "BOM"
+      
+      evidencias:
+        conceitos_complexos:
+          tempo_dedicado: "VARIÁVEL"
+          exemplos_bons:
+            - topico: "Mentalidade sobre tokens"
+              tempo: "15 minutos"
+              adequacao: "PERFEITO (conceito fundamental)"
+              timestamp: "00:02:00 - 00:17:00"
+              
+            - topico: "Epic → Story → Task"
+              tempo: "15 minutos"
+              adequacao: "BOM (conceito central)"
+              timestamp: "01:45:00 - 02:00:00"
+              
+          exemplos_apressados:
+            - topico: "Memory Layer e embeddings"
+              tempo: "3 minutos"
+              adequacao: "INSUFICIENTE (conceito complexo)"
+              problema: "Apenas mencionado, não explicado"
+              timestamp: "02:22:00"
+              
+            - topico: "CI/CD completo"
+              tempo: "5 minutos"
+              adequacao: "INSUFICIENTE"
+              problema: "Passou rápido, vários alunos pediram repetição"
+              timestamp: "02:41:00"
+              
+        pausas_absorcao:
+          presente: false
+          critico: true
+          problema: |
+            Aula de 3h10min SEM pausas formais de absorção. Alunos tentaram
+            aplicar em paralelo mas sem checkpoint guiado.
+          impacto: "Alguns alunos reportaram 'surdo em bingo', 'burro'"
+          sugestao: "Pausas de 10min a cada 45-60min"
+          
+        exercicios_tempo:
+          presente: false
+          problema: "Nenhum exercício guiado com tempo reservado"
+          impacto: "Alunos aplicaram em paralelo, gerando confusão"
+          
+        ritmo_geral:
+          avaliacao: "RÁPIDO mas gerenciável"
+          duracao: "190 minutos"
+          conteudo_coberto: "MUITO (14 tópicos principais)"
+          densidade: "ALTA (1 tópico a cada 13min)"
+          feedback_alunos:
+            positivo: "'Isso tá sendo uma universidade condensada' - Renata"
+            negativo: "'Nunca me senti tão burro. É tudo novo' - Felipe Piedade"
+
+      pontos_fortes:
+        - "Conceitos fundamentais receberam tempo adequado (tokens, Epic → Story)"
+        - "Ritmo energético mantido por 3h10min (impressionante)"
+        - "Dual apresentação (Alan + Pedro) variou ritmo naturalmente"
+        - "Chat ativo manteve engajamento alto"
+        
+      oportunidades_melhoria:
+        - "🔴 CRÍTICO: Inserir 2-3 pausas formais de 10min para absorção"
+        - "Conceitos avançados (Memory Layer, CI/CD) precisam mais tempo"
+        - "Exercícios guiados com tempo reservado"
+        - "Checkpoint de 'estão acompanhando?' a cada 30min"
+        
+      observacoes: |
+        Ritmo foi RÁPIDO mas não impossível. Problema foi FALTA DE PAUSAS, não velocidade.
+        Para cohort avançado, densidade alta é aceitável, MAS precisa respiração.
+        
+        Alguns alunos ficaram perdidos (Helder, Felipe) enquanto outros acharam perfeito.
+        Sugere necessidade de checkpoints mais frequentes para identificar quem precisa
+        de apoio adicional.
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # 7. ENGAJAMENTO - Interação com Alunos
+    # ────────────────────────────────────────────────────────────────────────────
+    engajamento_interacao:
+      nota: 9.5
+      classificacao: "EXCEPCIONAL"
+      
+      evidencias:
+        perguntas_diretas:
+          frequencia: "MUITO ALTA"
+          quantidade: ">20 perguntas diretas"
+          exemplos:
+            - "'Quem está usando tokens?' → resposta massiva (EU x 48)"
+            - "'Quem criou squads?' → participação total"
+            - "'Faz sentido?' → validação contínua"
+          taxa_resposta: "90%+ dos alunos"
+          
+        responde_chat:
+          qualidade: "EXCEPCIONAL"
+          entusiasmo: "MUITO ALTO"
+          exemplos:
+            - "Alan respondeu dúvidas técnicas em tempo real"
+            - "Pedro parou explicação para esclarecer confusão"
+            - "Bruno Gentil (equipe) complementou informações"
+          taxa_resposta: "~70% das perguntas respondidas durante aula"
+          observacao: "Algumas ficaram para depois (design system, AIOS privado)"
+          
+        energia_vocal:
+          avaliacao: "EXCEPCIONAL"
+          alan: "Energia alta e consistente por 3h10min"
+          pedro: "Entusiasmo crescente (ganhou confiança ao longo da aula)"
+          variacao: "Dupla criou ritmo natural (Alan motivacional, Pedro técnico)"
+          
+        usa_nomes:
+          frequencia: "ALTA"
+          exemplos:
+            - "Alan chamando José Carlos, Renata, outros pelo nome"
+            - "Reconhecendo contribuições específicas"
+            - "Referenciando trabalhos dos alunos (site do José, frameworks da Renata)"
+          impacto: "Criou senso de comunidade e reconhecimento"
+          
+        tecnicas_participacao:
+          presente: true
+          tecnicas_usadas:
+            - "Perguntas sim/não com resposta no chat"
+            - "Cold call suave ('quem quer compartilhar?')"
+            - "Reconhecimento público de trabalhos dos alunos"
+            - "Desafios implícitos ('quem conseguir dormir antes de meia-noite pode lançar curso')"
+          participacao_estimada: "48/48 alunos participaram (100%)"
+          
+        chat_ativo:
+          mensagens: 1310
+          taxa: "~7 mensagens/minuto"
+          avaliacao: "EXTREMAMENTE ATIVO"
+          qualidade: "ALTA (67 perguntas técnicas)"
+          comunidade_ajudando: true
+          exemplo: "José Carlos respondendo dúvidas de outros alunos"
+
+      pontos_fortes:
+        - "Participação de 100% dos alunos (48/48)"
+        - "Chat extremamente ativo (1310 mensagens)"
+        - "Perguntas técnicas profundas (67)"
+        - "Comunidade se ajudando mutuamente"
+        - "Energia mantida por 3h10min"
+        - "Reconhecimento público de contribuições"
+        
+      oportunidades_melhoria:
+        - "Algumas perguntas não respondidas na hora (priorização necessária)"
+        - "Poderia usar breakout rooms para discussões em grupo"
+        
+      observacoes: |
+        Engajamento foi EXCEPCIONAL. Taxa de 100% participação é rara para aula de 3h10min.
+        
+        Chat funcionou como segunda camada de aprendizado - alunos educando alunos
+        (José Carlos, Renata, outros compartilhando recursos e respondendo dúvidas).
+        
+        Dupla Alan+Pedro criou dinâmica perfeita: Alan mantinha energia e motivação,
+        Pedro trazia profundidade técnica. Energia de ambos foi consistente.
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # 8. ORGANIZAÇÃO - Estrutura da Aula
+    # ────────────────────────────────────────────────────────────────────────────
+    organizacao_estrutura:
+      nota: 7.5
+      classificacao: "BOM"
+      
+      evidencias:
+        transicoes:
+          qualidade: "BOA"
+          exemplos_claros:
+            - "Agora que entendemos mentalidade, vamos para estrutura técnica"
+            - "'🔗 CONECTANDO' - usado por Pedro em explicações"
+            - "Alan anunciando mudança de tela/tópico"
+          exemplos_abruptos:
+            - "Mudança de Memory Layer para Design System sem transição"
+            - "Pulo de CI/CD para monorepo sem link claro"
+          taxa_clareza: "70%"
+          
+        recap_final:
+          presente: true
+          qualidade: "BOM"
+          conteudo: |
+            Pedro resumiu estrutura de development (03:04)
+            Alan reforçou mentalidade e próximos passos
+            Anunciaram próximas aulas (Design System)
+          timestamp: "03:00:00 - 03:10:00"
+          problema: "Não foi estruturado como 'os 3 principais insights', foi mais orgânico"
+          
+        preview_proxima:
+          presente: true
+          qualidade: "BOA"
+          conteudo: |
+            - "Próxima aula: terça, 18h"
+            - "Design System (muito aguardado)"
+            - "Detalhamento de workflows"
+            - "Memory Layer aprofundado"
+          motivacao: "MÉDIA (anunciou mas não criou gancho forte)"
+          faltou: "Hook estilo novela (ver Metodologia Lendária)"
+          
+        fluxo_logico:
+          avaliacao: "BOM"
+          estrutura:
+            1: "Mentalidade (tokens = infraestrutura)"
+            2: "Arquitetura (estrutura do AIOS)"
+            3: "Hierarquia (Epic → Story → Task)"
+            4: "Agentes e comandos (@ vs /)"
+            5: "Ferramentas (CodeRabbit, GitHub)"
+            6: "Documentação > Conversa"
+            7: "Casos práticos e dúvidas"
+          pontos_fortes: "Fluxo de abstrato → concreto faz sentido"
+          pontos_fracos: "Alguns desvios para responder dúvidas quebraram fluxo"
+
+      pontos_fortes:
+        - "Fluxo lógico: mentalidade → estrutura → execução"
+        - "Transições explícitas em 70% dos casos"
+        - "Recap presente (mesmo que informal)"
+        - "Preview de próxima aula dado"
+        
+      oportunidades_melhoria:
+        - "Transições poderiam ser 100% explícitas (não 70%)"
+        - "Recap final poderia ser estruturado ('3 principais insights')"
+        - "Preview precisa de gancho emocional (hook estilo novela)"
+        - "Agenda visual no início ajudaria ('hoje vamos ver 1, 2, 3')"
+        
+      observacoes: |
+        Estrutura foi BOA mas não EXCELENTE. Fluxo lógico claro, mas transições
+        ocasionalmente abruptas. Para aula de 3h10min, manter estrutura é desafio
+        (especialmente com perguntas quebrando fluxo).
+        
+        Recap foi orgânico (bom) mas poderia ser mais estruturado (melhor).
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # 9. DOMÍNIO - Expertise do Conteúdo
+    # ────────────────────────────────────────────────────────────────────────────
+    dominio_expertise:
+      nota: 9.5
+      classificacao: "EXCEPCIONAL"
+      
+      evidencias:
+        responde_precisao:
+          qualidade: "EXCEPCIONAL"
+          taxa_acerto: "95%+"
+          exemplos:
+            - "Diferença @ vs / explicada com precisão técnica"
+            - "Detalhes de Git workflows (pull, push, branch)"
+            - "Nuances de CodeRabbit e GitHub Actions"
+          ocasioes_verificacao: "Raras (2-3 vezes Alan disse 'deixa eu confirmar')"
+          
+        exemplos_adicionais:
+          presente: true
+          qualidade: "MUITO ALTA"
+          frequencia: "Constante"
+          exemplos:
+            - "Alan deu múltiplos exemplos de custos (3 contas Max, R$500k API)"
+            - "Pedro mostrou projetos reais (MMOS, outros)"
+            - "José Carlos compartilhou experiência prática em tempo real"
+            
+        antecipa_duvidas:
+          presente: true
+          qualidade: "ALTA"
+          exemplos:
+            - "'Vocês devem estar pensando: vou gastar muito?' → endereçou antes de perguntarem"
+            - "'Talvez vocês achem que @ e / são iguais' → explicou diferença proativamente"
+            - "'Se você está se sentindo perdido, normal' → validação antecipada"
+            
+        profundidade_desafiado:
+          presente: true
+          qualidade: "EXCEPCIONAL"
+          exemplos:
+            - "Pergunta sobre SAFe (metodologia enterprise) → conectou com AIOS 2.0"
+            - "Dúvida sobre estouro de contexto → explicou engenharia de contexto"
+            - "Questão sobre monorepo vs multi-repo → detalhou trade-offs"
+          observacao: "Pedro mostrou profundidade técnica surpreendente (8 meses de experiência)"
+          
+        autoridade_reconhecida:
+          presente: true
+          evidencias:
+            - "rodrigofaerman: 'Quando Claude tem dúvida, pergunta para o Pedro'"
+            - "Turma pedindo documentos do Pedro para estudar"
+            - "Zero questionamento de autoridade técnica"
+          timestamp: "03:13:00"
+
+      pontos_fortes:
+        - "Expertise evidente em AIOS e desenvolvimento"
+        - "Pedro surpreendeu com profundidade (nunca programou até maio/2024)"
+        - "Antecipação proativa de dúvidas"
+        - "Exemplos reais e concretos abundantes"
+        - "Autoridade reconhecida pela turma"
+        
+      oportunidades_melhoria:
+        - "Alguns tópicos avançados (Memory Layer) poderiam ter mais profundidade"
+        - "Ocasionalmente Alan delegou para 'vamos ver depois' (design system)"
+        
+      observacoes: |
+        Domínio foi EXCEPCIONAL. Pedro, com apenas 8 meses de experiência, demonstrou
+        profundidade técnica que impressionou turma inteira. Alan complementou com
+        visão estratégica e experiência de implementação em escala.
+        
+        Dupla perfeita: Alan = visão + estratégia, Pedro = execução + detalhes técnicos.
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # 10. TÉCNICO - Setup e Qualidade
+    # ────────────────────────────────────────────────────────────────────────────
+    tecnico_setup:
+      nota: 8.5
+      classificacao: "MUITO BOM"
+      
+      evidencias:
+        audio:
+          qualidade: "BOA"
+          problemas: "Nenhum reportado"
+          observacao: "Alan e Pedro audíveis durante toda aula"
+          
+        video:
+          qualidade: "BOA"
+          problemas: "Alguns momentos de tela errada compartilhada"
+          exemplos:
+            - "Tela travou no Figma (alunos não viam terminal)"
+            - "Compartilhamento pausado durante transições"
+          impacto: "BAIXO (resolvidos rapidamente)"
+          timestamp: "01:22:00, 02:13:00"
+          
+        compartilhamento_tela:
+          qualidade: "MUITO BOA"
+          problemas: "Ocasionais (3-4 momentos)"
+          resolucao: "Rápida (alunos avisaram, corrigido em <30s)"
+          zoom: "Pedro teve dificuldade ocasional com zoom em código"
+          solucao: "Alunos sugeriram ctrl++ e abrir preview em janela separada"
+          
+        problemas_tecnicos:
+          quantidade: "POUCOS (5-6 momentos)"
+          severidade: "BAIXA"
+          lista:
+            - "Tela travada no Figma (1min para corrigir)"
+            - "Zoom em código pequeno (2 ocorrências)"
+            - "Compartilhamento pausado (3 ocorrências, <30s cada)"
+          impacto_total: "MÍNIMO (<5min de 190min = 2.6% da aula)"
+          
+        qualidade_geral:
+          avaliacao: "PROFISSIONAL"
+          observacao: "Setup adequado para aula técnica de 3h10min"
+
+      pontos_fortes:
+        - "Áudio claro durante toda aula"
+        - "Problemas técnicos mínimos e resolvidos rapidamente"
+        - "Alunos colaboraram apontando problemas (comunidade ativa)"
+        - "Zoom funcionou perfeitamente com 48+ participantes"
+        
+      oportunidades_melhoria:
+        - "Pedro poderia preparar previews em janelas separadas (evitar zoom manual)"
+        - "Checar compartilhamento de tela antes de cada transição"
+        - "Usar ferramenta de zoom nativa do OS (cmd+shift+= no Mac)"
+        
+      observacoes: |
+        Setup técnico foi MUITO BOM. Poucos problemas, todos resolvidos rapidamente.
+        Para aula de 3h10min com dupla apresentação e múltiplas transições de tela,
+        qualidade foi impressionante.
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CÁLCULO MÉDIA GPS
+  # ═══════════════════════════════════════════════════════════════════════════════
+  
+  media_gps:
+    notas_individuais:
+      goal: 9.5
+      position: 8.5
+      steps: 7.8
+      semiotica: 9.0
+      clareza: 8.0
+      ritmo: 7.0
+      engajamento: 9.5
+      organizacao: 7.5
+      dominio: 9.5
+      tecnico: 8.5
+      
+    soma: 84.8
+    media: 8.48
+    classificacao: "MUITO BOM (Top 20%)"
+    
+    interpretacao: |
+      Aula MUITO BOM segundo GPS. Forte em motivação (Goal), empatia (Position),
+      semiótica (elementos visuais), engajamento e domínio técnico.
+      
+      Gaps principais: falta de exercícios práticos guiados (Steps), ritmo sem pausas,
+      e organização poderia ser mais estruturada.
+      
+      Para cohort avançado, 8.48 é excelente. Expectativa: 7.5+.
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # FRAMEWORK METODOLOGIA LENDÁRIA - AVALIAÇÃO PROFUNDA
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  avaliacao_metodologia_lendaria:
+    
+    # ────────────────────────────────────────────────────────────────────────────
+    # PILAR 1: 5 Porquês (Método Socrático)
+    # ────────────────────────────────────────────────────────────────────────────
+    pilar_1_cinco_porques:
+      nota: 9.0
+      classificacao: "EXCEPCIONAL"
+      
+      nivel_alcancado: "Nível 4-5 (Propósito + Essência)"
+      
+      analise_5_niveis:
+        nivel_1_tecnico:
+          presente: true
+          exemplo: "Aprender AIOS Framework para criar sistemas"
+          
+        nivel_2_produtividade:
+          presente: true
+          exemplo: "Para desenvolver 10x mais rápido"
+          
+        nivel_3_pessoal:
+          presente: true
+          exemplo: "Para ter produtividade de time inteiro sozinho"
+          
+        nivel_4_proposito:
+          presente: true
+          exemplo: "Para ter AUTONOMIA e poder de escolha"
+          quote: "Viajo o mundo com impressora de sistemas na mochila"
+          
+        nivel_5_essencia:
+          presente: true
+          exemplo: "LIBERDADE - escolher projetos, rejeitar trabalhos que não motivam"
+          quote: |
+            "Unicórnios de 1 pessoa só em 2026" - Thiago Otto capturou essência
+            "AIOS tangibiliza o porquê de unicórnios de 1 pessoa"
+      
+      hook_inicial:
+        tipo: "Emocional + Aspiracional"
+        conteudo: |
+          Alan começou com choque de mentalidade sobre tokens (infraestrutura vs gasto),
+          depois pintou visão: produtividade equivalente a R$1M em time, custando R$500.
+        conexao_essencia: "DIRETA - liberdade financeira e autonomia"
+        timestamp: "00:02:00 - 00:08:00"
+        
+      beneficio_final:
+        sobre_aluno: true
+        emocional: true
+        conteudo: |
+          - Liberdade de escolher projetos
+          - Segurança financeira (produtividade = valor)
+          - Autonomia técnica completa
+          - Futuro: unicórnio de 1 pessoa
+        quote: "'Impressora de sistemas na mochila' = liberdade geográfica + financeira"
+
+      pontos_fortes:
+        - "Hook conectou DIRETO ao Nível 5 (essência emocional)"
+        - "Benefício final sobre LIBERDADE e AUTONOMIA (não apenas produtividade)"
+        - "Números concretos deram tangibilidade à visão"
+        - "Turma capturou essência (Thiago Otto: 'unicórnios de 1 pessoa')"
+        
+      oportunidades_melhoria:
+        - "Poderia reforçar Nível 5 no final (não apenas no início)"
+        - "Conectar cada tópico técnico de volta à liberdade"
+        
+      observacoes: |
+        Alan domina os 5 Porquês intuitivamente. Começou com essência (liberdade, autonomia)
+        e DEPOIS desceu para técnica. Ordem inversa da maioria (que começa técnico e
+        tenta subir para emocional).
+        
+        Essa estratégia criou frame mental poderoso: alunos viam cada conceito técnico
+        através da lente de "isso me dá mais liberdade".
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # PILAR 2: Semiótica - "Filme Mental"
+    # ────────────────────────────────────────────────────────────────────────────
+    pilar_2_semiotica:
+      nota: 9.5
+      classificacao: "EXCEPCIONAL"
+      
+      analogias_dia_a_dia:
+        quantidade: 5
+        qualidade: "MUITO ALTA"
+        universalidade: "ALTA (experiência brasileira)"
+        lista:
+          1:
+            analogia: "Tokens = Energia Elétrica"
+            experiencia: "Universal (todo brasileiro paga luz)"
+            visual: "Fácil visualizar: não ficaria sem luz para economizar"
+            emocional: "Conecta a infraestrutura essencial"
+            
+          2:
+            analogia: "AIOS = Impressora de Sistemas"
+            experiencia: "Tangível (todos conhecem impressoras)"
+            visual: "Apertar botão → sistema pronto"
+            emocional: "Empoderamento ('levo na mochila')"
+            
+          3:
+            analogia: "claude.md = Terra, AIOS = Continente"
+            experiencia: "Geografia (todos aprenderam na escola)"
+            visual: "Hierarquia geográfica clara"
+            proposto_por: "josecarlosamorim (aluno)"
+            
+      historia_narrativa:
+        presente: true
+        qualidade: "ALTA"
+        exemplo:
+          titulo: "Jornada do Pedro"
+          personagem: "Pedro Valerio Lopez"
+          arco: |
+            Problema: Nunca viu código (até maio/2024)
+            Jornada: Aprendeu AIOS, criou sistemas complexos
+            Solução: Hoje ensina programadores seniors
+          impacto: "MUITO ALTO - alunos identificaram ('se ele conseguiu, eu consigo')"
+          timestamp: "00:29:00"
+          
+      diagrama_visual:
+        quantidade: 2
+        qualidade: "EXCEPCIONAL"
+        principal:
+          nome: "Epic → Story → Task"
+          clarifica: "Hierarquia e decomposição de trabalho"
+          espacial: true
+          processo: true
+          feedback: "'Cara eu entendi 100%' (múltiplos alunos)"
+          timestamp: "01:45:00"
+          
+      filme_mental_criado:
+        avaliacao: "SIM - FORTE"
+        evidencias:
+          - "Alunos visualizaram 'impressora de sistemas'"
+          - "Mapa de workflows criou imagem mental clara"
+          - "Analogia de tokens = luz ficou marcada (múltiplas referências depois)"
+        teste: "Alunos conseguiriam DESENHAR conceitos? Sim (pediram para compartilhar diagramas)"
+
+      pontos_fortes:
+        - "Analogias universais e emocionalmente carregadas"
+        - "História do Pedro como jornada arquetípica (herói)"
+        - "Diagrama visual que gerou 'entendi 100%' coletivo"
+        - "Comunidade criando analogias próprias (claude.md = Terra)"
+        
+      oportunidades_melhoria:
+        - "Conceitos avançados (Memory Layer, CI/CD) poderiam ter analogias"
+        - "Mais mini-histórias ao longo da aula (não apenas Pedro)"
+        
+      observacoes: |
+        Semiótica foi EXCEPCIONAL. Alan e Pedro criaram "filme mental" consistente:
+        - Tokens = luz (infraestrutura)
+        - AIOS = impressora (tangibilidade)
+        - Pedro = herói (jornada identificável)
+        - Epic → Story → Task = mapa (estrutura visual)
+        
+        Teste definitivo: alunos pediram para compartilhar diagramas para estudar.
+        Isso só acontece quando visual é poderoso.
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # PILAR 3: Regra de Ouro - Máximo 2-3 Conceitos
+    # ────────────────────────────────────────────────────────────────────────────
+    pilar_3_regra_ouro:
+      nota: 4.0
+      classificacao: "FRACO - FALHA CRÍTICA"
+      
+      contagem_conceitos:
+        total: 14
+        lista:
+          1: "Mentalidade tokens = infraestrutura"
+          2: "Estrutura AIOS (.aios-core, expansion-packs, claude.md)"
+          3: "Monorepo vs multi-repo"
+          4: "Epic → Story → Task"
+          5: "Workflows e orquestração"
+          6: "@ vs / (persona-switching vs spawn)"
+          7: "Agente BOB"
+          8: "Ferramentas (CodeRabbit, GitHub Actions)"
+          9: "Documentação > Conversa"
+          10: "Brownfield vs Greenfield"
+          11: "CI/CD"
+          12: "Memory Layer"
+          13: "Design System (teaser)"
+          14: "Metodologias (SAFe, etc)"
+          
+      avaliacao: "FALHA CRÍTICA"
+      problema: |
+        Aula ensinou 14 CONCEITOS PRINCIPAIS em 3h10min.
+        Regra de ouro: máximo 2-3 conceitos.
+        
+        Sobrecarga cognitiva GARANTIDA para alunos não-técnicos.
+        
+      evidencias_sobrecarga:
+        - "Helder: 'Eu confesso que estou igual surdo em bingo!' (02:39)"
+        - "Felipe Piedade: 'Nunca me senti tão burro. É tudo novo.' (02:54)"
+        - "Reino Educação: 'To por fora total, preciso saber mais dos fundamentos' (01:47)"
+        - "Alguns alunos pediram para 'recomeçar do zero'"
+        
+      recomendacao: "DIVIDIR EM 4-5 AULAS"
+      estrutura_sugerida:
+        aula_1:
+          titulo: "Mentalidade + Estrutura"
+          conceitos: ["Tokens = infraestrutura", "Estrutura AIOS", "Epic → Story → Task"]
+          duracao: "60-90min"
+          
+        aula_2:
+          titulo: "Agentes e Comandos"
+          conceitos: ["@ vs /", "BOB", "Workflows"]
+          duracao: "60-90min"
+          
+        aula_3:
+          titulo: "Ferramentas e Automação"
+          conceitos: ["CodeRabbit", "GitHub Actions", "CI/CD"]
+          duracao: "60-90min"
+          
+        aula_4:
+          titulo: "Metodologia e Boas Práticas"
+          conceitos: ["Documentação > Conversa", "Brownfield vs Greenfield"]
+          duracao: "60-90min"
+          
+        aula_5:
+          titulo: "Conceitos Avançados"
+          conceitos: ["Memory Layer", "Design System", "Monorepo"]
+          duracao: "60-90min"
+
+      observacao_critica: |
+        Esta é a ÚNICA FALHA CRÍTICA da aula. Para cohort AVANÇADO com alunos técnicos,
+        14 conceitos é gerenciável (maioria acompanhou). MAS para público geral ou
+        curso vendido, INACEITÁVEL.
+        
+        Alan e Pedro precisam decidir: 
+        - Cohort avançado = pode manter densidade (público auto-selecionado)
+        - Curso geral = DEVE dividir em 4-5 aulas
+
+      pontos_fortes:
+        - "Para público técnico avançado, densidade funcionou (maioria acompanhou)"
+        - "Alunos pediram mais conteúdo, não menos"
+        
+      oportunidades_melhoria:
+        - "🔴 CRÍTICO: Dividir em 4-5 aulas para público geral"
+        - "Ou criar 'trilhas' (iniciante vê 3 conceitos, avançado vê 14)"
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # PILAR 4: 5 Erros Fatais - Evitar
+    # ────────────────────────────────────────────────────────────────────────────
+    pilar_4_cinco_erros:
+      nota: 7.0
+      classificacao: "BOM"
+      
+      erros_detectados: 1
+      
+      erro_1_inibicao:
+        presente: false
+        avaliacao: "PASS"
+        justificativa: |
+          Jargão foi 85% explicado. Alan traduzia termos técnicos em tempo real.
+          Exemplos: monorepo → "tudo na mesma pasta", brownfield → "projeto existente"
+        
+      erro_2_desconexao:
+        presente: false
+        avaliacao: "PASS"
+        justificativa: |
+          Transições explícitas em 70% dos casos. Fluxo lógico: mentalidade → estrutura → execução.
+          Uso ocasional de "🔗 CONECTANDO" por Pedro.
+        observacao: "Poderia ser 90%+, mas 70% é aceitável"
+        
+      erro_3_prolixidade:
+        presente: false
+        avaliacao: "PASS"
+        justificativa: |
+          Conteúdo escaneável. Chat com bullets, explicações visuais, diagramas.
+          Sem "muros de texto". Pedro especialmente bom em sínteses.
+        
+      erro_4_monotonia:
+        presente: false
+        avaliacao: "PASS"
+        justificativa: |
+          Variedade alta: explicação → diagrama → demo ao vivo → perguntas → chat → analogias.
+          Dupla Alan+Pedro criou ritmo natural.
+        
+      erro_5_falta_imagem:
+        presente: true
+        avaliacao: "FAIL"
+        problema: |
+          Conceitos avançados (Memory Layer, CI/CD internals) ficaram abstratos.
+          Semiótica presente em conceitos principais, AUSENTE em avançados.
+        exemplos_sem_imagem:
+          - "Memory Layer e embeddings locais"
+          - "CI/CD pipelines (apenas mencionado)"
+          - "Git submodules"
+        impacto: "Esses conceitos foram os que geraram mais confusão"
+
+      pontuacao_por_erros:
+        erros_detectados: 1
+        nota: "7/10 (1 erro = bom mas fixável)"
+
+      pontos_fortes:
+        - "Jargão explicado consistentemente"
+        - "Transições claras (70%)"
+        - "Conteúdo escaneável e visual"
+        - "Variedade de formatos"
+        
+      oportunidades_melhoria:
+        - "🟡 MÉDIO: Criar analogias para conceitos avançados (Memory Layer, CI/CD)"
+        - "Garantir TODOS conceitos têm âncora visual/concreta"
+        
+      observacoes: |
+        Apenas 1 erro (Falta de Imagem em conceitos avançados) é MUITO BOM.
+        Para aula de 3h10min com 14 conceitos, evitar prolixidade e monotonia é difícil.
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # PILAR 5: Hooks Estilo Novela
+    # ────────────────────────────────────────────────────────────────────────────
+    pilar_5_hook_novela:
+      nota: 6.5
+      classificacao: "ACEITÁVEL"
+      
+      hook_presente: true
+      tipo: "Promessa com FOMO (fraco)"
+      
+      conteudo:
+        o_que_foi_dito: |
+          "Próxima aula: terça, 18h"
+          "Vamos ver Design System (muito aguardado)"
+          "Detalhamento de workflows"
+          "Memory Layer aprofundado"
+        timestamp: "03:05:00 - 03:10:00"
+        
+      analise_por_tipo:
+        curiosidade_ardente: false
+        problema_nao_resolvido: false
+        promessa_fomo: true
+        
+      forca_hook:
+        avaliacao: "FRACO"
+        problema: |
+          Hook foi apenas ANÚNCIO de tópico, sem tensão ou gancho emocional.
+          Não criou "preciso ver isso AGORA" - apenas "ok, vou ver depois".
+          
+      exemplo_atual_vs_ideal:
+        atual: |
+          "Próxima aula vamos ver Design System, que vocês pediram muito."
+          
+        ideal_curiosidade: |
+          "Design System funciona perfeitamente... mas 90% dos devs React
+          fazem ERRADO e acabam com 47 versões do mesmo botão.
+          Você quer ser o 10% que faz certo? Próxima aula: O sistema que
+          empresas como Vercel e Stripe usam para ter UI perfeita em 1000+ componentes."
+          
+        ideal_problema: |
+          "Hoje vocês criaram seu primeiro sistema com AIOS. Mas...
+          e quando você tem que ESCALAR para 10 sistemas simultâneos?
+          50 agentes rodando em paralelo? Seu contexto explode.
+          99% dos users não sabem que existe solução.
+          Próxima aula: Memory Layer - O segredo que separa hobbyists de pros."
+          
+        ideal_fomo: |
+          "Se vocês acharam AIOS poderoso hoje, ainda não viram NADA.
+          Existe um recurso que Alan chama de 'a arma secreta que ninguém
+          fora do cohort avançado vai ter acesso'.
+          Só vocês vão conhecer. Próxima aula: O que faz cohort avançado ser AVANÇADO."
+
+      pontos_fortes:
+        - "Hook presente (melhor que nada)"
+        - "Anunciou tópicos aguardados (Design System)"
+        - "Criou expectativa básica"
+        
+      oportunidades_melhoria:
+        - "🟡 MÉDIO: Criar tensão/curiosidade (não apenas anunciar)"
+        - "Usar um dos 3 tipos de hook (Curiosidade, Problema, FOMO)"
+        - "Conectar ao emocional ('isso vai mudar X para você')"
+        
+      observacoes: |
+        Hook foi o ponto mais FRACO da aula (além de sobrecarga de conceitos).
+        Alan e Pedro são mestres em engajamento DURANTE aula, mas não usaram
+        técnicas de novela para criar antecipação.
+        
+        Para cohort que já está comprometido, hook fraco não é crítico. MAS para
+        curso vendido com retenção como métrica, CRÍTICO melhorar.
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # PILAR 6: Estrutura de 7 Elementos
+    # ────────────────────────────────────────────────────────────────────────────
+    pilar_6_sete_elementos:
+      nota: 7.0
+      classificacao: "BOM"
+      
+      elementos_presentes: "5/7"
+      
+      checklist:
+        elemento_1_gps:
+          presente: true
+          qualidade: "EXCEPCIONAL"
+          nota_gps: 8.48
+          
+        elemento_2_conceito_1:
+          presente: true
+          qualidade: "BOA"
+          conceito: "Mentalidade tokens + Estrutura AIOS"
+          essencia: "Tokens = infraestrutura (liberdade)"
+          semiotica: "Analogia luz + diagrama estrutura"
+          pratica: "Demos ao vivo (parcial)"
+          
+        elemento_3_link_transicao:
+          presente: true
+          qualidade: "BOA (70%)"
+          formato: "Transições explícitas mas não todas com '🔗 CONECTANDO'"
+          exemplo: "'Agora que entendemos estrutura, vamos para agentes...'"
+          
+        elemento_4_conceitos_2_3:
+          presente: true
+          problema: "EXCESSO (14 conceitos ao invés de 2-3)"
+          qualidade: "VARIÁVEL (principais bons, avançados apressados)"
+          
+        elemento_5_revisao:
+          presente: true
+          qualidade: "BOA mas não estruturada"
+          conteudo: |
+            Pedro resumiu structure de development (03:04)
+            Alan reforçou mentalidade
+          faltou:
+            - "Não usou formato '3 principais insights'"
+            - "Não articulou transformação (antes → depois emocional)"
+          timestamp: "03:00:00 - 03:10:00"
+          
+        elemento_6_hook:
+          presente: true
+          qualidade: "FRACA"
+          nota_pilar_5: 6.5
+          problema: "Apenas anúncio, sem gancho emocional"
+          
+        elemento_7_acao_rapida:
+          presente: false
+          critico: true
+          problema: |
+            Nenhuma "FAÇA AGORA (2min)" com critério de sucesso claro.
+            Alunos ficaram sem ação imediata para consolidar aprendizado.
+          impacto: "Perda de retenção imediata"
+          sugestao: |
+            "⚡ FAÇA AGORA (2 minutos):
+            1. Abra seu projeto AIOS
+            2. Digite: cat .aios-core/agents/
+            3. Conte quantos agentes você tem
+            ✓ Funcionou se você viu lista de arquivos .md"
+
+      pontuacao:
+        elementos_completos: 5
+        elementos_parciais: 0
+        elementos_ausentes: 2
+        nota: "7/10 (5/7 = bom mas precisa dos 2 faltantes)"
+
+      pontos_fortes:
+        - "GPS presente e forte"
+        - "Links de transição em 70% dos casos"
+        - "Revisão presente (mesmo que informal)"
+        
+      oportunidades_melhoria:
+        - "🟡 MÉDIO: Adicionar Ação Rápida (2min) ao final"
+        - "Estruturar Revisão ('3 insights + transformação')"
+        - "Melhorar Hook (de anúncio para gancho emocional)"
+        
+      observacoes: |
+        5/7 elementos é BOM mas não EXCELENTE. Para chegar a 9+, precisa:
+        - Elemento 7 (Ação Rápida): crítico para retenção
+        - Elemento 6 (Hook): crítico para continuidade
+        
+        Elementos presentes foram bem executados (especialmente GPS e conceitos principais).
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # PILAR 7: Adaptação por Arquétipo
+    # ────────────────────────────────────────────────────────────────────────────
+    pilar_7_arquetipo:
+      nota: 8.5
+      classificacao: "MUITO BOM"
+      
+      arquetipo_primario:
+        identificado: "Técnico Ávido + Empreendedor Travado (híbrido)"
+        justificativa: |
+          Cohort avançado atrai:
+          - Técnicos Ávidos (querem profundidade, best practices)
+          - Empreendedores Travados (querem foco, sair de loop infinito)
+          
+      adaptacoes_presentes:
+        tecnico_avido:
+          presente: true
+          evidencias:
+            - "Profundidade técnica alta (Epic → Story → Task, @ vs /, workflows)"
+            - "Best practices discutidas (documentação > conversa, estrutura modular)"
+            - "Arquitetura revelada (por baixo do capô)"
+          serviu_bem: true
+          
+        empreendedor_travado:
+          presente: true
+          evidencias:
+            - "Mentalidade de foco (tokens = infraestrutura, não gaste tempo economizando)"
+            - "BOB para evitar paralisia de escolha"
+            - "Estrutura clara (Epic → Story) para sair de loop"
+          serviu_bem: true
+          
+        executivo_exausto:
+          presente: false
+          mas_nao_necessario: true
+          justificativa: "Não é público-alvo do cohort avançado"
+          
+      tom_exemplos:
+        alinhamento: "ALTO"
+        tecnico_avido:
+          exemplos: "Git workflows, CI/CD, arquitetura modular"
+          linguagem: "Técnica com analogias para clareza"
+          
+        empreendedor_travado:
+          exemplos: "ROI de tokens (R$1M vs R$500), produtividade 10x"
+          linguagem: "Resultados e eficiência"
+
+      pontos_fortes:
+        - "Serviu bem os 2 arquétipos primários do cohort"
+        - "Tom equilibrou profundidade técnica (Ávido) com foco em resultados (Travado)"
+        - "Exemplos relevantes para ambos perfis"
+        
+      oportunidades_melhoria:
+        - "Poderia ter seções explícitas ('Para quem é técnico..., para quem empreende...')"
+        - "Criar 'trilhas' opcionais (iniciante vs avançado)"
+        
+      observacoes: |
+        Para cohort AVANÇADO, arquétipo foi bem servido. Público auto-selecionou
+        (Técnicos Ávidos + Empreendedores Travados que querem profundidade).
+        
+        Para curso GERAL, precisaria adaptar mais (incluir Criador Bloqueado,
+        Executivo Exausto, etc).
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CÁLCULO MÉDIA METODOLOGIA LENDÁRIA
+  # ═══════════════════════════════════════════════════════════════════════════════
+  
+  media_metodologia_lendaria:
+    notas_pilares:
+      p1_cinco_porques: 9.0
+      p2_semiotica: 9.5
+      p3_regra_ouro: 4.0
+      p4_cinco_erros: 7.0
+      p5_hook: 6.5
+      p6_sete_elementos: 7.0
+      p7_arquetipo: 8.5
+      
+    soma: 51.5
+    media: 7.36
+    classificacao: "ACEITÁVEL (Publicar com edições menores)"
+    
+    interpretacao: |
+      Aula ACEITÁVEL segundo Metodologia Lendária (7.36).
+      
+      MUITO FORTE em: 5 Porquês (9.0), Semiótica (9.5), Arquétipo (8.5)
+      CRÍTICO em: Regra de Ouro (4.0 - 14 conceitos)
+      FRACO em: Hook (6.5), 5 Erros (7.0 - falta imagem em avançados)
+      
+      Para cohort AVANÇADO com público técnico, 7.36 é aceitável.
+      Para curso GERAL vendido, DEVE melhorar para 8.0+.
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # AVALIAÇÃO COMBINADA GPS + METODOLOGIA LENDÁRIA
+  # ═══════════════════════════════════════════════════════════════════════════════
+  
+  avaliacao_combinada:
+    gps_score: 8.48
+    ml_score: 7.36
+    media_final: 7.92
+    
+    resultado_final: "APROVADA COM RESSALVAS"
+    
+    status_por_framework:
+      gps: "🟢 PASS (8.48 > 7.0)"
+      metodologia_lendaria: "🟡 PASS COM EDIÇÕES (7.36 < 8.0)"
+      
+    criticas_principais:
+      critica_1:
+        severidade: "CRÍTICA"
+        aspecto: "Regra de Ouro"
+        problema: "14 conceitos em 1 aula (máximo deveria ser 2-3)"
+        impacto: "Sobrecarga cognitiva para alunos não-técnicos"
+        solucao: "Dividir em 4-5 aulas OU criar trilhas (iniciante vs avançado)"
+        publico_afetado: "Alunos não-técnicos ou curso geral"
+        publico_ok: "Cohort avançado técnico (auto-selecionado)"
+        
+      critica_2:
+        severidade: "ALTA"
+        aspecto: "Exercícios Práticos"
+        problema: "0 exercícios guiados em 3h10min"
+        impacto: "Alunos tentaram aplicar sem guia, gerando confusão"
+        solucao: "Inserir 2-3 pausas de 10min com 'FAÇA AGORA' guiado"
+        
+      critica_3:
+        severidade: "MÉDIA"
+        aspecto: "Hook Estilo Novela"
+        problema: "Hook fraco (apenas anúncio, sem gancho emocional)"
+        impacto: "Antecipação baixa para próxima aula"
+        solucao: "Usar Curiosidade Ardente OU Problema Não Resolvido OU FOMO"
+        
+      critica_4:
+        severidade: "MÉDIA"
+        aspecto: "Ação Rápida"
+        problema: "Sem 'FAÇA AGORA (2min)' ao final"
+        impacto: "Perda de retenção imediata"
+        solucao: "Adicionar exercício de 2min com critério de sucesso claro"
+        
+    forcas_principais:
+      forca_1:
+        aspecto: "5 Porquês (Essência Emocional)"
+        nota: 9.0
+        descricao: "Alan conectou DIRETO ao Nível 5 (liberdade, autonomia)"
+        impacto: "Frame mental poderoso para absorver complexidade"
+        
+      forca_2:
+        aspecto: "Semiótica (Elementos Visuais)"
+        nota: 9.5
+        descricao: "Analogias universais + mapa visual que gerou 'entendi 100%'"
+        impacto: "Conceitos complexos tornados tangíveis e memorizáveis"
+        
+      forca_3:
+        aspecto: "Engajamento"
+        nota: 9.5
+        descricao: "100% participação (48/48 alunos), chat extremamente ativo"
+        impacto: "Comunidade educando comunidade, energia mantida por 3h10min"
+        
+      forca_4:
+        aspecto: "Domínio Técnico"
+        nota: 9.5
+        descricao: "Pedro (8 meses experiência) impressionou com profundidade"
+        impacto: "Autoridade reconhecida, confiança dos alunos"
+
+    recomendacao_final: |
+      **PARA COHORT AVANÇADO ATUAL:** ✅ APROVADA
+      - Público auto-selecionado (técnico + comprometido)
+      - Densidade alta é aceitável e até desejada
+      - Apenas adicionar: exercícios guiados + hook melhor
+      
+      **PARA CURSO GERAL VENDIDO:** 🟡 REPROVAR E REGENERAR
+      - DEVE dividir em 4-5 aulas (regra de ouro)
+      - DEVE adicionar exercícios práticos guiados
+      - DEVE melhorar hook (retenção crítica)
+      - DEVE adicionar ação rápida (engajamento imediato)
+      
+    proximos_passos:
+      para_cohort:
+        1: "Manter estrutura atual (funcionou para público técnico)"
+        2: "Adicionar 2-3 pausas de 10min com exercícios guiados"
+        3: "Melhorar hook final (gancho emocional para próxima aula)"
+        4: "Adicionar 'FAÇA AGORA (2min)' ao final"
+        
+      para_curso_geral:
+        1: "Dividir conteúdo em 5 módulos (3 conceitos cada)"
+        2: "Criar trilhas (iniciante: conceitos 1-6, avançado: todos)"
+        3: "Inserir exercícios práticos em cada módulo"
+        4: "Hooks estilo novela entre módulos"
+        5: "Ação rápida ao final de cada módulo"
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # INSIGHTS E OBSERVAÇÕES FINAIS
+  # ═══════════════════════════════════════════════════════════════════════════════
+  
+  insights_finais:
+    insight_1:
+      titulo: "Dupla Alan+Pedro é OURO"
+      descricao: |
+        Alan (visão + mentalidade + motivação) + Pedro (execução + detalhes técnicos)
+        criaram complementaridade perfeita. Alan traduzia termos técnicos, Pedro
+        demonstrava profundidade. Sistema natural de "ensino em dupla".
+      impacto: "Mantém atenção + cobre múltiplos estilos de aprendizado"
+      recomendacao: "Manter dupla em futuras aulas"
+      
+    insight_2:
+      titulo: "Comunidade como Terceiro Professor"
+      descricao: |
+        José Carlos (site ao vivo), João Lozano (bíblia AIOS), Renata (frameworks),
+        outros respondendo dúvidas no chat. Comunidade ATIVA como co-educadora.
+      impacto: "Multiplicador de aprendizado + senso de pertencimento"
+      recomendacao: "Incentivar e reconhecer contribuições (já fazem bem)"
+      
+    insight_3:
+      titulo: "Mapa Visual = Momento de Virada"
+      descricao: |
+        Diagrama de Epic → Story → Task gerou reação coletiva de "entendi 100%".
+        Prova de que VISUAL > TEXTO para conceitos hierárquicos/estruturais.
+      impacto: "Clareza instantânea após 1h45min de explicações verbais"
+      recomendacao: "Criar mais mapas visuais para conceitos complexos"
+      
+    insight_4:
+      titulo: "Sobrecarga Cognitiva Aceitável para Técnicos"
+      descricao: |
+        14 conceitos seria INACEITÁVEL para curso geral, MAS funcionou para
+        cohort avançado (público auto-selecionado de técnicos comprometidos).
+      impacto: "Maioria acompanhou, alguns ficaram perdidos (aceitável)"
+      recomendacao: "Manter para cohort avançado, dividir para curso geral"
+      
+    insight_5:
+      titulo: "Hook Fraco Não Matou Continuidade"
+      descricao: |
+        Apesar de hook fraco (apenas anúncio de tópico), alunos já estão
+        comprometidos (cohort pago). Hook importa MAIS para curso assíncrono.
+      impacto: "Baixo para cohort ao vivo, crítico para curso gravado"
+      recomendacao: "Melhorar hook para versão gravada/vendida"
+
+  observacoes_pedagogicas:
+    para_time_academia:
+      - "Alan domina 5 Porquês intuitivamente (começa com essência emocional)"
+      - "Pedro é talento natural em síntese visual (diagramas claros)"
+      - "Dupla complementar deve ser mantida e replicada"
+      - "Comunidade ativa é ativo estratégico (alimentar e reconhecer)"
+      
+    para_proximas_aulas:
+      - "Reduzir conceitos para 8-10 máximo (de 14)"
+      - "Inserir 2 pausas de 10min com exercícios guiados"
+      - "Criar hooks emocionais (não apenas anúncios)"
+      - "Adicionar ação rápida de 2min ao final"
+      - "Preparar analogias para conceitos avançados (Memory Layer, CI/CD)"
+      
+    para_versao_curso_vendido:
+      - "CRÍTICO: Dividir em 4-5 módulos"
+      - "Criar trilhas iniciante/avançado"
+      - "Exercícios práticos em CADA módulo"
+      - "Hooks entre módulos (curiosidade + tensão)"
+      - "Checkpoints de 'você está pronto para avançar?'"
+
+  conclusao:
+    nota_final_gps: 8.48
+    nota_final_ml: 7.36
+    media_combinada: 7.92
+    veredicto: "MUITO BOM para cohort avançado, ACEITÁVEL com edições para curso geral"
+    
+    sintese: |
+      Aula MUITO BOM (7.92) que serviu bem seu público-alvo (cohort avançado técnico).
+      
+      Pontos EXCEPCIONAIS: engajamento (9.5), semiótica (9.5), domínio (9.5),
+      5 Porquês (9.0), Goal (9.5).
+      
+      Ponto CRÍTICO: Regra de Ouro (4.0) - 14 conceitos é sobrecarga cognitiva.
+      Aceitável para público técnico auto-selecionado, INACEITÁVEL para curso geral.
+      
+      Para manter nível EXCEPCIONAL (9.0+):
+      1. Reduzir conceitos para 8-10 (ou dividir em 4-5 aulas)
+      2. Adicionar exercícios práticos guiados
+      3. Melhorar hook final (gancho emocional)
+      4. Inserir ação rápida de 2min
+      
+      Para cohort avançado atual: Manter estrutura, apenas polir (exercícios + hook).
+      Para curso vendido: Regenerar com divisão em módulos e trilhas.

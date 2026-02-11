@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aula Preparatória AIOS Avançado</title>
+  <link rel="stylesheet" href="../../templates/design-tokens-dark-premium.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-bg-page);
+      color: var(--color-text-primary);
+      line-height: var(--line-height-normal);
+      padding: var(--spacing-3xl) var(--spacing-xl);
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 50%;
+      height: 50%;
+      background: var(--glow-top-right);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: var(--width-container);
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: var(--spacing-6xl);
+      padding: var(--spacing-3xl) 0;
+    }
+
+    .label {
+      display: inline-block;
+      padding: var(--spacing-xs) var(--spacing-md);
+      background: rgba(245,197,24,0.15);
+      border: 1px solid rgba(245,197,24,0.3);
+      border-radius: var(--radius-pill);
+      font-size: var(--font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wide);
+      margin-bottom: var(--spacing-xl);
+      color: var(--color-cta-primary);
+      font-weight: var(--font-weight-bold);
+    }
+
+    h1 {
+      font-size: var(--font-size-5xl);
+      font-weight: var(--font-weight-black);
+      margin-bottom: var(--spacing-md);
+      line-height: var(--line-height-tight);
+      color: var(--color-text-headline);
+    }
+
+    h1 .italic {
+      font-style: italic;
+      font-weight: var(--font-weight-regular);
+      display: block;
+      margin-top: var(--spacing-sm);
+      color: var(--color-text-body);
+    }
+
+    h2 {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      margin-bottom: var(--spacing-lg);
+      color: var(--color-text-headline);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--gap-cards);
+      margin: var(--spacing-6xl) 0;
+    }
+
+    .stat-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-card);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-2xl);
+      text-align: center;
+      transition: var(--transition-normal);
+    }
+
+    .stat-card:hover {
+      border-color: var(--color-border-hover);
+      transform: translateY(-2px);
+    }
+
+    .stat-value {
+      font-size: var(--font-size-4xl);
+      font-weight: var(--font-weight-bold);
+      display: block;
+      margin-bottom: var(--spacing-sm);
+      color: var(--color-text-headline);
+    }
+
+    .stat-value.profit { color: var(--color-text-profit); }
+
+    .stat-label {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-body);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wide);
+    }
+
+    .section {
+      margin: var(--gap-sections) 0;
+    }
+
+    .section-title {
+      font-size: var(--font-size-base);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wider);
+      color: var(--color-text-label);
+      margin-bottom: var(--spacing-2xl);
+      text-align: center;
+      font-weight: var(--font-weight-bold);
+    }
+
+    .summary-box {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-card);
+      border-left: 4px solid var(--color-cta-primary);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-3xl);
+      margin: var(--spacing-3xl) 0;
+    }
+
+    .summary-box h3 {
+      font-size: var(--font-size-2xl);
+      margin-bottom: var(--spacing-lg);
+      color: var(--color-cta-primary);
+      font-weight: var(--font-weight-bold);
+    }
+
+    .summary-box p {
+      font-size: var(--font-size-md);
+      color: var(--color-text-body);
+      line-height: var(--line-height-relaxed);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .summary-box ul {
+      list-style: none;
+      margin: var(--spacing-lg) 0;
+      padding-left: 0;
+    }
+
+    .summary-box li {
+      padding: var(--spacing-sm) 0;
+      padding-left: var(--spacing-xl);
+      position: relative;
+      font-size: var(--font-size-md);
+      color: var(--color-text-body);
+      line-height: var(--line-height-relaxed);
+    }
+
+    .summary-box li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--color-cta-primary);
+      font-weight: var(--font-weight-bold);
+      font-size: var(--font-size-xl);
+    }
+
+    .takeaway-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: var(--gap-cards);
+    }
+
+    .takeaway-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-card);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      transition: var(--transition-normal);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .takeaway-card:hover {
+      border-color: var(--color-border-hover);
+      transform: translateY(-2px);
+    }
+
+    .takeaway-title {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--spacing-sm);
+      color: var(--color-text-headline);
+    }
+
+    .takeaway-text {
+      font-size: var(--font-size-base);
+      color: var(--color-text-body);
+      margin-bottom: var(--spacing-md);
+      line-height: var(--line-height-normal);
+    }
+
+    .takeaway-action {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-profit);
+      padding: var(--spacing-sm) var(--spacing-md);
+      background: rgba(34,197,94,0.1);
+      border-radius: var(--radius-sm);
+      display: inline-block;
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .quote-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-card);
+      border-left: 4px solid var(--color-cta-primary);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .quote-text {
+      font-size: var(--font-size-lg);
+      font-style: italic;
+      color: var(--color-text-headline);
+      margin-bottom: var(--spacing-md);
+      line-height: var(--line-height-relaxed);
+    }
+
+    .quote-author {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-body);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .quote-context {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-label);
+      margin-top: var(--spacing-xs);
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--spacing-lg);
+    }
+
+    .tool-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-card);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      transition: var(--transition-normal);
+    }
+
+    .tool-card:hover {
+      border-color: var(--color-border-hover);
+      transform: translateY(-2px);
+    }
+
+    .tool-badge {
+      display: inline-block;
+      padding: 4px var(--spacing-sm);
+      background: rgba(245,197,24,0.15);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-xs);
+      color: var(--color-cta-primary);
+      font-weight: var(--font-weight-bold);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .tool-name {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-headline);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .tool-description {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-body);
+      line-height: var(--line-height-normal);
+    }
+
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: var(--spacing-lg);
+    }
+
+    .link-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border-card);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      transition: var(--transition-normal);
+    }
+
+    .link-card:hover {
+      border-color: var(--color-border-hover);
+      transform: translateY(-2px);
+    }
+
+    .link-category {
+      display: inline-block;
+      padding: 4px var(--spacing-sm);
+      background: rgba(59,130,246,0.15);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-xs);
+      color: #3B82F6;
+      font-weight: var(--font-weight-bold);
+      margin-bottom: var(--spacing-sm);
+      text-transform: uppercase;
+    }
+
+    .link-title {
+      font-size: var(--font-size-md);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-headline);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .link-description {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-body);
+      line-height: var(--line-height-normal);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .link-url {
+      font-size: var(--font-size-xs);
+      color: var(--color-cta-primary);
+      word-break: break-all;
+      font-family: var(--font-mono);
+    }
+
+    .link-shared-by {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-label);
+      margin-top: var(--spacing-xs);
+    }
+
+    .timestamp {
+      display: inline-block;
+      padding: 2px 8px;
+      background: rgba(59,130,246,0.15);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-size-xs);
+      color: #3B82F6;
+      font-weight: var(--font-weight-bold);
+      font-family: var(--font-mono);
+      margin-left: var(--spacing-xs);
+    }
+
+    .cta-box {
+      background: linear-gradient(135deg, rgba(245,197,24,0.15), rgba(245,197,24,0.05));
+      border: 2px solid var(--color-cta-primary);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-3xl);
+      margin: var(--spacing-6xl) 0;
+      text-align: center;
+    }
+
+    .cta-box h3 {
+      font-size: var(--font-size-3xl);
+      color: var(--color-cta-primary);
+      margin-bottom: var(--spacing-lg);
+      font-weight: var(--font-weight-black);
+    }
+
+    .cta-box p {
+      font-size: var(--font-size-lg);
+      color: var(--color-text-body);
+      line-height: var(--line-height-relaxed);
+      margin-bottom: var(--spacing-md);
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-list {
+      list-style: none;
+      margin: var(--spacing-xl) 0;
+      text-align: left;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-list li {
+      padding: var(--spacing-sm) 0;
+      padding-left: var(--spacing-xl);
+      position: relative;
+      font-size: var(--font-size-md);
+      color: var(--color-text-headline);
+    }
+
+    .cta-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--color-text-profit);
+      font-weight: var(--font-weight-bold);
+      font-size: var(--font-size-lg);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: var(--spacing-xl) var(--spacing-md);
+      }
+
+      h1 {
+        font-size: var(--font-size-3xl);
+      }
+
+      .stats-grid,
+      .takeaway-grid,
+      .tools-grid,
+      .links-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <span class="label">COHORT AIOS AVANÇADO • 03 FEV 2026</span>
+      <h1>
+        Aula Preparatória AIOS Avançado
+        <span class="italic">Squads Auto-Atualizáveis + Tool Discovery + Modelos Mentais</span>
+      </h1>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Duração</span>
+        <span class="stat-value">2h20min</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Participantes</span>
+        <span class="stat-value">48</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value profit">8.5</span>
+        <span class="stat-label">Satisfação</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Mensagens</span>
+        <span class="stat-value">635</span>
+      </div>
+    </div>
+
+    <div class="summary-box">
+      <h3>Resumo Executivo Completo</h3>
+      <p>
+        Esta foi uma aula preparatória intensiva para o Cohort AIOS Avançado, onde <strong>Alan Nicolas</strong>
+        e <strong>Pedro Valerio Lopez</strong> (convidado especial) mostraram técnicas avançadas de automação
+        e arquitetura de sistemas de IA.
+      </p>
+      <p>
+        <strong>Tema Central:</strong> Como construir sistemas que se auto-melhoram através de Tool Discovery
+        automático e priorização inteligente usando frameworks comprovados (Matriz RICE, WSJF).
+      </p>
+
+      <h3 style="margin-top: var(--spacing-2xl); margin-bottom: var(--spacing-md); font-size: var(--font-size-lg);">
+        Demonstrações Práticas ao Vivo
+      </h3>
+      <ul>
+        <li>Configuração de Upstream para manter AIOS atualizado automaticamente sem perder customizações <span class="timestamp">00:12-00:25 (13min)</span></li>
+        <li>Discussão sobre Monorepo vs Múltiplos Repositórios - quando usar cada abordagem <span class="timestamp">00:23-01:04 (41min)</span></li>
+        <li>Integração completa com Google Gemini CLI (ferramenta lançada recentemente pelo Google) <span class="timestamp">00:30-00:45 (15min)</span></li>
+        <li>Sistema de Tool Discovery que pesquisa automaticamente MCPs, Skills, APIs e projetos Github <span class="timestamp">00:58-01:15 (17min)</span></li>
+        <li>Aplicação da Matriz RICE para decidir quais tools implementar primeiro baseado em ROI <span class="timestamp">01:14-01:22 (8min)</span></li>
+        <li>Demonstração de como clonar mentes reais e integrá-las no Squad Creator <span class="timestamp">~01:22 (pontual)</span></li>
+      </ul>
+
+      <h3 style="margin-top: var(--spacing-2xl); margin-bottom: var(--spacing-md); font-size: var(--font-size-lg);">
+        Insights Profundos Compartilhados
+      </h3>
+      <ul>
+        <li><strong>Pedro Valerio:</strong> Revelou sua estrutura de priorização automática usando Matriz RICE integrada ao ClickUp <span class="timestamp">01:14-01:22 (8min)</span></li>
+        <li><strong>Alan Nicolas:</strong> Demonstrou como clonou a mente do Pedro e integrou no Squad Creator para automação de decisões <span class="timestamp">~01:22 (pontual)</span></li>
+        <li><strong>Arquitetura:</strong> Discussão profunda sobre monorepo vs múltiplos repositórios - quando usar cada abordagem <span class="timestamp">01:04-02:10 (1h06min)</span></li>
+        <li><strong>Automação Real:</strong> Pedro mostrou uso de Google App Script para automação complexa em planilhas do Mercado Livre</li>
+        <li><strong>Modelos Mentais:</strong> Alan revelou ter mais de 1.000 modelos mentais extraídos das maiores mentes do mundo <span class="timestamp">~01:16 (pontual)</span></li>
+      </ul>
+
+      <h3 style="margin-top: var(--spacing-2xl); margin-bottom: var(--spacing-md); font-size: var(--font-size-lg);">
+        Tópicos Abordados em Profundidade
+      </h3>
+      <ul>
+        <li><strong>Instalação e Atualização do AIOS:</strong> Como manter AIOS sempre atualizado via Upstream <span class="timestamp">00:12-00:25 (13min)</span></li>
+        <li><strong>Estrutura de Projetos:</strong> Decisões arquiteturais entre Monorepo vs Múltiplos Repos <span class="timestamp">00:23-01:04 (41min)</span></li>
+        <li><strong>Tool Discovery Automático:</strong> Sistema que pesquisa MCPs, Skills, APIs automaticamente <span class="timestamp">00:58-01:15 (17min)</span></li>
+        <li><strong>Matriz RICE para Priorização:</strong> Reach × Impact × Confidence / Effort <span class="timestamp">01:14-01:22 (8min)</span></li>
+        <li><strong>Modelos Mentais:</strong> Como bilionários usam frameworks mentais para decisões - revelação de ter 1000+ frameworks mapeados <span class="timestamp">01:16-01:23 (7min)</span></li>
+        <li><strong>Squad Creator em Ação:</strong> Demonstração ao vivo com Tool Discovery integrado <span class="timestamp">00:58-01:20 (22min)</span></li>
+        <li><strong>MCPs Indispensáveis:</strong> context7, desktop-commander, browser essenciais <span class="timestamp">02:42-02:46 (4min)</span></li>
+        <li><strong>Estratégias de Aprendizado Rápido:</strong> Por que executar rapidamente vale mais que planejar perfeitamente <span class="timestamp">01:11-01:25 (14min)</span></li>
+      </ul>
+
+      <p style="margin-top: var(--spacing-2xl);">
+        <strong>Mensagem Principal:</strong> A diferença entre quem tem resultado não é conhecimento, mas executar
+        rapidamente. Mesmo se não entender tudo, vá fazendo - seu aprendizado vem da ação, não da teoria.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">Principais Aprendizados</h2>
+      <div class="takeaway-grid">
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">MCPs Essenciais</h3>
+          <p class="takeaway-text">
+            context7, desktop-commander, browser reduzem custo de tokens e aumentam capacidades
+          </p>
+          <span class="takeaway-action">✓ Instalar os 3 MCPs no seu projeto hoje</span>
+        </div>
+
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">Upstream Auto-Update</h3>
+          <p class="takeaway-text">
+            Upstream mantém AIOS atualizado sem perder customizações - nunca mais fique com versão desatualizada
+          </p>
+          <span class="takeaway-action">✓ Configurar upstream do repositório oficial</span>
+        </div>
+
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">Tool Discovery Automático</h3>
+          <p class="takeaway-text">
+            Automatiza pesquisa de soluções prontas - economiza 80% do tempo pesquisando manualmente
+          </p>
+          <span class="takeaway-action">✓ Integrar Tool Discovery no seu Squad Creator</span>
+        </div>
+
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">Matriz RICE</h3>
+          <p class="takeaway-text">
+            Prioriza features por ROI real - foco apenas no que traz retorno mensurável
+          </p>
+          <span class="takeaway-action">✓ Aplicar RICE nas próximas decisões de feature</span>
+        </div>
+
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">Executar > Planejar</h3>
+          <p class="takeaway-text">
+            Executar 5000x mal feito > Planejar 1x perfeitamente - aprenda 10x mais rápido pela experimentação
+          </p>
+          <span class="takeaway-action">✓ Criar 3 squads ruins esta semana ao invés de planejar 1 perfeito</span>
+        </div>
+
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">Monorepo FTW</h3>
+          <p class="takeaway-text">
+            IA acessa tudo sem fragmentação - resolve bugs cross-stack sem trocar de contexto
+          </p>
+          <span class="takeaway-action">✓ Migrar projetos relacionados para monorepo</span>
+        </div>
+
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">Modelos Mentais</h3>
+          <p class="takeaway-text">
+            Como bilionários pensam - decisões 100x melhores usando mental models
+          </p>
+          <span class="takeaway-action">✓ Estudar 1 modelo mental por semana (RICE, WSJF, etc)</span>
+        </div>
+
+        <div class="takeaway-card">
+          <h3 class="takeaway-title">Clone Mentes Reais</h3>
+          <p class="takeaway-text">
+            Ter mentoria 24/7 dos melhores - Alan + Pedro estão no Squad Creator
+          </p>
+          <span class="takeaway-action">✓ Identificar mente para clonar no seu domínio</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">Links Compartilhados na Aula</h2>
+      <div class="links-grid">
+        <div class="link-card">
+          <span class="link-category">REPOSITÓRIO</span>
+          <div class="link-title">AIOS Core - GitHub Oficial</div>
+          <p class="link-description">Repositório oficial do AIOS no GitHub para atualizações via git pull</p>
+          <div class="link-url">https://github.com/SynkraAI/aios-core</div>
+          <div class="link-shared-by">Compartilhado por: José Carlos Amorim</div>
+        </div>
+
+        <div class="link-card">
+          <span class="link-category">DOCUMENTAÇÃO</span>
+          <div class="link-title">Site do Cohort Avançado</div>
+          <p class="link-description">José mapeou tudo da aula em site interativo - documentação visual completa</p>
+          <div class="link-url">https://aios-advanced-cohort.vercel.app/</div>
+          <div class="link-shared-by">Criado por: José Carlos Amorim (aluno)</div>
+        </div>
+
+        <div class="link-card">
+          <span class="link-category">DOCUMENTAÇÃO</span>
+          <div class="link-title">Bíblia AIOS Interativa</div>
+          <p class="link-description">Documentação completa do AIOS de forma interativa</p>
+          <div class="link-url">https://biblia-aios-interativa.vercel.app/</div>
+          <div class="link-shared-by">Criado por: João Lozano (aluno)</div>
+        </div>
+
+        <div class="link-card">
+          <span class="link-category">FERRAMENTA</span>
+          <div class="link-title">CodeRabbit</div>
+          <p class="link-description">Ferramenta de code review com IA - criar conta gratuita e integrar com AIOS</p>
+          <div class="link-url">https://app.coderabbit.ai/</div>
+          <div class="link-shared-by">Recomendado por: Alan Nicolas</div>
+        </div>
+
+        <div class="link-card">
+          <span class="link-category">REPOSITÓRIO</span>
+          <div class="link-title">ALMA Memory Framework</div>
+          <p class="link-description">Sistema de memória para agentes IA criado por aluna do cohort</p>
+          <div class="link-url">https://github.com/RBKunnela/ALMA-memory.git</div>
+          <div class="link-shared-by">Criado por: Renata Baldissara-Kunnela (aluna)</div>
+        </div>
+
+        <div class="link-card">
+          <span class="link-category">DOCUMENTAÇÃO</span>
+          <div class="link-title">ALMA Memory - Docs</div>
+          <p class="link-description">Página de documentação explicando uso do ALMA Memory</p>
+          <div class="link-url">https://alma-memory.pages.dev/</div>
+          <div class="link-shared-by">Criado por: Renata Baldissara-Kunnela</div>
+        </div>
+
+        <div class="link-card">
+          <span class="link-category">REPOSITÓRIO</span>
+          <div class="link-title">Veritas Framework</div>
+          <p class="link-description">Framework para evitar alucinação em IA</p>
+          <div class="link-url">https://github.com/RBKunnela/veritas-framework</div>
+          <div class="link-shared-by">Criado por: Renata Baldissara-Kunnela</div>
+        </div>
+
+        <div class="link-card">
+          <span class="link-category">FRAMEWORK</span>
+          <div class="link-title">SAFe - Scaled Agile Framework</div>
+          <p class="link-description">Metodologia adotada por empresas corporativas - Thiago sugeriu incorporar no AIOS 2.0</p>
+          <div class="link-url">https://framework.scaledagile.com/#big-picture</div>
+          <div class="link-shared-by">Compartilhado por: Thiago Otto</div>
+        </div>
+
+        <div class="link-card">
+          <span class="link-category">REFERÊNCIA</span>
+          <div class="link-title">Andrew Ng - Site Oficial</div>
+          <p class="link-description">Referência sobre Andrew Ng mencionado durante a aula</p>
+          <div class="link-url">https://www.andrewng.org/</div>
+          <div class="link-shared-by">Compartilhado por: Betty Bonaparte</div>
+        </div>
+
+        <div class="link-card">
+          <span class="link-category">DOCUMENTAÇÃO</span>
+          <div class="link-title">Git Submodules</div>
+          <p class="link-description">Documentação oficial sobre Git Submodules na discussão de monorepo</p>
+          <div class="link-url">https://git-scm.com/book/en/v2/Git-Tools-Submodules</div>
+          <div class="link-shared-by">Compartilhado por: Adriano Rogowski</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">Citações Memoráveis</h2>
+
+      <div class="quote-card">
+        <p class="quote-text">
+          "O problema não vai ser técnico - vai ser falta de repertório"
+        </p>
+        <p class="quote-author">— Alan Nicolas</p>
+        <p class="quote-context">Sobre o que realmente impede progresso no cohort</p>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">
+          "Fonte da verdade: o repositório Github. Não um zip, não uma mensagem - o repositório."
+        </p>
+        <p class="quote-author">— Alan Nicolas</p>
+        <p class="quote-context">Estabelecendo padrão de onde buscar informação oficial</p>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">
+          "A maior parte do meu tempo era fazendo pergunta pra IA. Hoje ainda é 20%. Nunca pare de perguntar."
+        </p>
+        <p class="quote-author">— Alan Nicolas</p>
+        <p class="quote-context">Como ele ainda aprende constantemente</p>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">
+          "Eu literalmente pergunto pro Devops: 'O que é melhor, merge ou rebase?' Não tenho medo de perguntar pra IA."
+        </p>
+        <p class="quote-author">— Alan Nicolas</p>
+        <p class="quote-context">Eliminando vergonha de não saber</p>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">
+          "A diferença não é conhecimento - é executar rapidamente o que aprendeu"
+        </p>
+        <p class="quote-author">— Alan Nicolas</p>
+        <p class="quote-context">Explicando por que alguns alunos se destacam</p>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">
+          "Minha irmã cria coisas incríveis sem saber o básico. Como? Ela executa."
+        </p>
+        <p class="quote-author">— Alan Nicolas</p>
+        <p class="quote-context">Caso real de não-programadora criando sistemas complexos</p>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">
+          "Se você ficar 5 anos fazendo 1 copo perfeito, vai entregar pior que quem fez 5.000 copos ruins no ano"
+        </p>
+        <p class="quote-author">— Pedro Valerio Lopez</p>
+        <p class="quote-context">Metáfora sobre volume vs perfeição</p>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">
+          "Eu tenho mais de mil modelos mentais extraídos das maiores mentes do mundo. Se você quer ficar rico, trabalhe com modelos mentais."
+        </p>
+        <p class="quote-author">— Alan Nicolas</p>
+        <p class="quote-context">Revelando seu sistema de frameworks</p>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">
+          "Eu clonei o Pedro e botei dentro do Squad Creator para essas coisas acontecerem"
+        </p>
+        <p class="quote-author">— Alan Nicolas</p>
+        <p class="quote-context">Explicando como integrou mente do Pedro no sistema</p>
+      </div>
+
+      <div class="quote-card">
+        <p class="quote-text">
+          "Não economize token achando que vai fazer certo da primeira vez. Vai fazendo, vai testando."
+        </p>
+        <p class="quote-author">— Pedro Valerio Lopez</p>
+        <p class="quote-context">Incentivando experimentação</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">Ferramentas Essenciais Mencionadas</h2>
+      <div class="tools-grid">
+        <div class="tool-card">
+          <span class="tool-badge">ESSENCIAL</span>
+          <div class="tool-name">Context7</div>
+          <p class="tool-description">Documentação atualizada de qualquer biblioteca</p>
+        </div>
+
+        <div class="tool-card">
+          <span class="tool-badge">ESSENCIAL</span>
+          <div class="tool-name">Desktop Commander</div>
+          <p class="tool-description">Acesso ao sistema de arquivos e processos</p>
+        </div>
+
+        <div class="tool-card">
+          <span class="tool-badge">ESSENCIAL</span>
+          <div class="tool-name">Browser (Playwright/Puppeteer)</div>
+          <p class="tool-description">Automação de testes UI e web scraping</p>
+        </div>
+
+        <div class="tool-card">
+          <span class="tool-badge">OPCIONAL</span>
+          <div class="tool-name">Exa</div>
+          <p class="tool-description">Busca avançada (similar ao Brave API)</p>
+        </div>
+
+        <div class="tool-card">
+          <span class="tool-badge">ESPECIALIZADO</span>
+          <div class="tool-name">Google App Script</div>
+          <p class="tool-description">Automação em Google Sheets e Drive</p>
+        </div>
+
+        <div class="tool-card">
+          <span class="tool-badge">EMERGENTE</span>
+          <div class="tool-name">ClawdBot</div>
+          <p class="tool-description">Integração com Claude via WhatsApp (8 menções)</p>
+        </div>
+
+        <div class="tool-card">
+          <span class="tool-badge">EMERGENTE</span>
+          <div class="tool-name">Happy Coder</div>
+          <p class="tool-description">App Mobile para orquestrar Claude Code pelo celular</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">Estatísticas Chave Compartilhadas</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-value">19</span>
+          <span class="stat-label">Releases do AIOS</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value profit">1000+</span>
+          <span class="stat-label">Modelos Mentais Mapeados</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">3</span>
+          <span class="stat-label">MCPs Indispensáveis</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">5000:1</span>
+          <span class="stat-label">Execução vs Perfeição</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">Projetos Destaque de Alunos</h2>
+      <div class="links-grid">
+        <div class="link-card">
+          <span class="link-category">FRAMEWORK</span>
+          <div class="link-title">ALMA Memory Framework</div>
+          <p class="link-description">Sistema de memória para agentes IA - exemplo concreto de aluno aplicando conteúdo e criando algo original</p>
+          <div class="link-url">https://github.com/RBKunnela/ALMA-memory</div>
+          <div class="link-shared-by">Criado por: Renata Baldissara-Kunnela</div>
+        </div>
+
+        <div class="link-card">
+          <span class="link-category">FERRAMENTA</span>
+          <div class="link-title">Veritas Framework</div>
+          <p class="link-description">Framework para evitar alucinação em IA - abordagem técnica avançada</p>
+          <div class="link-url">https://github.com/RBKunnela/veritas-framework</div>
+          <div class="link-shared-by">Criado por: Renata Baldissara-Kunnela</div>
+        </div>
+
+        <div class="link-card">
+          <span class="link-category">VISUALIZAÇÃO</span>
+          <div class="link-title">Modelos Mentais Interativos v2.0</div>
+          <p class="link-description">Artifact Claude com visualização de frameworks mentais - compartilhado durante aula e usado por múltiplos alunos</p>
+          <div class="link-url">https://claude.ai/public/artifacts/f9137638-1991-4c51-9a5f-156dacc4dd14</div>
+          <div class="link-shared-by">Criado por: julianotorriani</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">Próximos Passos Práticos</h2>
+
+      <div class="summary-box">
+        <h3>Ações Recomendadas</h3>
+        <ul>
+          <li>Instalar os 3 MCPs essenciais (context7, desktop-commander, browser)</li>
+          <li>Configurar Upstream do AIOS para receber atualizações</li>
+          <li>Rever gravação e anotar comandos demonstrados</li>
+          <li>Criar 3 squads simples (não se preocupe com perfeição)</li>
+          <li>Implementar Tool Discovery em algum squad</li>
+          <li>Experimentar Matriz RICE em 1 decisão real</li>
+          <li>Estudar modelos mentais (RICE, WSJF, First Principles, Inversion)</li>
+          <li>Construir biblioteca pessoal de frameworks</li>
+          <li>Clonar primeira mente do seu domínio</li>
+          <li>Contribuir com 1 pull request para AIOS</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cta-box">
+      <h3>Valor Principal Entregue</h3>
+      <p>
+        Esta aula entregou muito mais que técnicas - entregou <strong>MENTALIDADE</strong>.
+      </p>
+
+      <ul class="cta-list">
+        <li>Que não saber tudo não te impede de criar (veja a irmã do Alan)</li>
+        <li>Que executar mal 5000x > planejar perfeitamente 1x</li>
+        <li>Que modelos mentais dos bilionários são replicáveis</li>
+        <li>Que perguntar pra IA não tem vergonha - é estratégia</li>
+        <li>Que squads podem ter clones de mentes reais (inclusive Alan + Pedro)</li>
+      </ul>
+
+      <p style="margin-top: var(--spacing-xl); font-size: var(--font-size-xl); color: var(--color-cta-primary);">
+        <strong>Aplique HOJE:</strong> Pegue 1 conceito desta aula e implemente HOJE (mal feito).
+        Não amanhã. HOJE. Mesmo que fique ruim.
+      </p>
+
+      <p style="margin-top: var(--spacing-md);">
+        Isso é o que separa quem sai daqui transformado de quem apenas assistiu mais uma aula.
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>
