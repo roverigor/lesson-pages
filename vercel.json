@@ -1,0 +1,14 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/abstracts",
+      "destination": "/abstracts/index.html"
+    },
+    {
+      "source": "/squad-creator",
+      "destination": "/squad-creator/index.html"
+    }
+  ]
+}
