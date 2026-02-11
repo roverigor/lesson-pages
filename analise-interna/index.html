@@ -426,7 +426,7 @@
 
       <div class="sidebar-stats">
         <div class="stat-item">
-          <span class="stat-value"><i data-lucide="book-open" width="20" height="20" style="display:inline;vertical-align:middle;margin-right:4px;"></i>2</span>
+          <span class="stat-value"><i data-lucide="book-open" width="20" height="20" style="display:inline;vertical-align:middle;margin-right:4px;"></i>5</span>
           <span class="stat-label">Aulas</span>
         </div>
         <div class="stat-item">
@@ -478,6 +478,60 @@
             <span class="lesson-score">
               <i data-lucide="star" width="14" height="14"></i>
               9.3
+            </span>
+          </div>
+        </div>
+
+        <div class="lesson-item" data-lesson="ps-glossario">
+          <div class="lesson-number">
+            <i data-lucide="book-text" width="14" height="14" style="display:inline;vertical-align:middle;margin-right:6px;"></i>
+            PS - GLOSSÁRIO
+          </div>
+          <div class="lesson-title">Termos Técnicos e Definições</div>
+          <div class="lesson-meta">
+            <span class="lesson-date">
+              <i data-lucide="layers" width="14" height="14"></i>
+              20+ termos
+            </span>
+            <span class="lesson-score">
+              <i data-lucide="search" width="14" height="14"></i>
+              Busca ativa
+            </span>
+          </div>
+        </div>
+
+        <div class="lesson-item" data-lesson="ps-faq">
+          <div class="lesson-number">
+            <i data-lucide="help-circle" width="14" height="14" style="display:inline;vertical-align:middle;margin-right:6px;"></i>
+            PS - FAQ
+          </div>
+          <div class="lesson-title">Perguntas Frequentes</div>
+          <div class="lesson-meta">
+            <span class="lesson-date">
+              <i data-lucide="message-circle" width="14" height="14"></i>
+              28 Q&A
+            </span>
+            <span class="lesson-score">
+              <i data-lucide="zap" width="14" height="14"></i>
+              Resposta rápida
+            </span>
+          </div>
+        </div>
+
+        <div class="lesson-item" data-lesson="ps-qa-completa">
+          <div class="lesson-number">
+            <i data-lucide="file-text" width="14" height="14" style="display:inline;vertical-align:middle;margin-right:6px;"></i>
+            PS - Q&A COMPLETA
+          </div>
+          <div class="lesson-title">Análise Detalhada de Dúvidas</div>
+          <div class="lesson-meta">
+            <span class="lesson-date">
+              <i data-lucide="clock" width="14" height="14"></i>
+              10 Fev 2026
+            </span>
+            <span class="lesson-score">
+              <i data-lucide="users" width="14" height="14"></i>
+              ~18 alunos
             </span>
           </div>
         </div>
@@ -571,7 +625,13 @@
 
       // Handle different lesson path structures (internal pages)
       let lessonPath;
-      if (lessonId === 'ps-10-02-2026') {
+      if (lessonId === 'ps-glossario') {
+        lessonPath = `../interno/ps-10-02-2026/glossario.html`;
+      } else if (lessonId === 'ps-faq') {
+        lessonPath = `../interno/ps-10-02-2026/faq.html`;
+      } else if (lessonId === 'ps-qa-completa') {
+        lessonPath = `../interno/ps-10-02-2026/qa-completa.html`;
+      } else if (lessonId === 'ps-10-02-2026') {
         lessonPath = `../interno/${lessonId}/index.html`;
       } else if (lessonId.startsWith('ps-')) {
         lessonPath = `../interno/${lessonId}/index.html`;
