@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glossário Técnico - PS 10/02/2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: #000;
+            color: #fff;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px 0;
+        }
+
+        .label {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+            color: #ef4444;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .search-box {
+            max-width: 600px;
+            margin: 40px auto;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 16px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .search-box input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .categories {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 40px 0;
+        }
+
+        .category-filter {
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-filter:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .category-filter.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+            color: #3b82f6;
+        }
+
+        .section {
+            margin: 80px 0;
+        }
+
+        .section-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 32px;
+            padding-left: 16px;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .glossary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .term-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .term-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .term-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #3b82f6;
+        }
+
+        .term-category {
+            display: inline-block;
+            padding: 4px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            color: #3b82f6;
+        }
+
+        .term-definition {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        .term-context {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #22c55e;
+        }
+
+        .term-context-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #22c55e;
+            margin-bottom: 6px;
+        }
+
+        .term-context-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 32px;
+            }
+
+            .glossary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .categories {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="label">PRONTO SOCORRO • 10 FEV 2026</span>
+            <h1>Glossário Técnico</h1>
+            <p class="subtitle">
+                Definições completas de todos os termos técnicos mencionados no PS de 10/02/2026. Categorias: Setup, Workflow, Ferramentas, Metodologias, APIs.
+            </p>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Buscar termo... (ex: AIOS, CloudMD, PRD)">
+        </div>
+
+        <div class="categories">
+            <button class="category-filter active" data-category="all">Todos</button>
+            <button class="category-filter" data-category="setup">Setup</button>
+            <button class="category-filter" data-category="workflow">Workflow</button>
+            <button class="category-filter" data-category="ferramentas">Ferramentas</button>
+            <button class="category-filter" data-category="metodologias">Metodologias</button>
+            <button class="category-filter" data-category="apis">APIs</button>
+        </div>
+
+        <!-- SETUP -->
+        <div class="section" data-category="setup">
+            <h2 class="section-title">Setup e Configuração</h2>
+            <div class="glossary-grid">
+                <div class="term-card" data-term="aios">
+                    <div class="term-name">AIOS</div>
+                    <div class="term-category">Setup</div>
+                    <div class="term-definition">
+                        AI-Orchestrated System (Sistema Orquestrado por IA). Framework que coordena múltiplos agentes de IA para gerenciar projetos de desenvolvimento de software completos.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Instalado via <code>aios install</code>. Estrutura com .aios-core/, .aios/, .claude/commands/. Cada projeto precisa de sua própria instalação AIOS com CLAUDE.md específico.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="cloudmd">
+                    <div class="term-name">CLAUDE.md (CloudMD)</div>
+                    <div class="term-category">Setup</div>
+                    <div class="term-definition">
+                        Arquivo de configuração que atua como "cérebro" do sistema AIOS. Contém regras, heurísticas e contexto específico do projeto.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            CRÍTICO: Deve ser POR PROJETO, nunca global. CloudMD global = "frankenstein" (quebra contexto). Cada projeto precisa de seu próprio CLAUDE.md com regras específicas daquele código/arquitetura.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="workspace">
+                    <div class="term-name">Workspace Master</div>
+                    <div class="term-category">Setup</div>
+                    <div class="term-definition">
+                        Pasta raiz que contém múltiplos projetos individuais. Pode ter seu próprio CLAUDE.md com heurísticas transversais (design system comum, padrões globais).
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Estrutura: ~/code/ (workspace master) → projeto-api/, projeto-camban/, projeto-loja-bio/ (projetos individuais com AIOS próprio).
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="squad-creator">
+                    <div class="term-name">Squad Creator</div>
+                    <div class="term-category">Setup</div>
+                    <div class="term-definition">
+                        Template/framework criado por Alan Nicolas para inicializar projetos com AIOS. Inclui estrutura de agentes, workflows e configurações pré-definidas.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Disponível no GitHub oficial + grupo WhatsApp. Versão mencionada: 5-2-26. Atualizado frequentemente por Alan para necessidades avançadas.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="expansion-packs">
+                    <div class="term-name">Expansion Packs</div>
+                    <div class="term-category">Setup</div>
+                    <div class="term-definition">
+                        Módulos/extensões do AIOS que adicionam funcionalidades específicas (ex: creator-os, mmos, innerlens). Ficam em pasta separada da estrutura core.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Estrutura: .aios-core/ (framework base) vs expansion-packs/ (extensões customizadas). Sincronizados automaticamente para .claude/commands/ via pre-commit hook.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORKFLOW -->
+        <div class="section" data-category="workflow">
+            <h2 class="section-title">Workflow de Desenvolvimento</h2>
+            <div class="glossary-grid">
+                <div class="term-card" data-term="prd">
+                    <div class="term-name">PRD (Product Requirements Document)</div>
+                    <div class="term-category">Workflow</div>
+                    <div class="term-definition">
+                        Documento de Requisitos do Produto. Especificação detalhada de features, regras de negócio e comportamentos esperados. Base para desenvolvimento.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Pode ser PRD completo (do zero ao MVP) ou PRD incremental (feature por feature). Workflow recomendado: Specs modulares → AIOS consolida PRD → Épicos/Stories.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="epic">
+                    <div class="term-name">Épico (Epic)</div>
+                    <div class="term-category">Workflow</div>
+                    <div class="term-definition">
+                        Camada grande de funcionalidade dentro do PRD. Equivalente a "andares do prédio". Contém múltiplas stories relacionadas.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Hierarquia: PRD → Épicos (foundation, auth, features) → Stories (sprints) → Tasks (ações atômicas). Criado pelo Project Manager (@pm).
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="story">
+                    <div class="term-name">Story (História)</div>
+                    <div class="term-category">Workflow</div>
+                    <div class="term-definition">
+                        Unidade de trabalho dentro de um épico. Equivalente a "sprint". Implementável em dias/semanas. Contém tasks específicas.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Refinada pelo Scrum Master (@sm) e validada pelo Product Owner (@po). Implementada pelo Developer (@dev). Formato: Story 2.1, Story 3.4, etc.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="task">
+                    <div class="term-name">Task (Tarefa)</div>
+                    <div class="term-category">Workflow</div>
+                    <div class="term-definition">
+                        Ação atômica e específica dentro de uma story. Menor unidade executável. Exemplos: criar componente, escrever teste, configurar endpoint.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Executadas sequencialmente pelo agente @dev. Rastreadas via checkboxes em arquivos .md das stories. Comandadas via *task no AIOS.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="doc-specs">
+                    <div class="term-name">Doc Specs (Specs Modulares)</div>
+                    <div class="term-category">Workflow</div>
+                    <div class="term-definition">
+                        Documentos de especificação separados por dimensão (UI, Tech, Features, Wireframes). Alternativa a PRD gigante monolítico.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Workflow João: Specs separadas (UI/UX, Tech Stack, Features, Philosophy, Wireframes, Design System) → AIOS consolida PRD. Evita sobrecarga cognitiva da LLM.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="prova-fogo">
+                    <div class="term-name">Prova de Fogo</div>
+                    <div class="term-category">Workflow</div>
+                    <div class="term-definition">
+                        Etapa de validação onde você "destrói sua ideia". Identifica pontos cegos, falhas de lógica, SWOT, o que NÃO faz sentido.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Workflow: Descarrego → Briefing → Pesquisas → Enriquecer → PROVA DE FOGO → Ajustar → Specs → PRD. Previne desperdício de tempo com ideias inviáveis.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="pm">
+                    <div class="term-name">PM (Project Manager)</div>
+                    <div class="term-category">Workflow</div>
+                    <div class="term-definition">
+                        Agente AIOS responsável por criar épicos a partir do PRD. Divide o projeto em camadas grandes de funcionalidade.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Chamado via @pm no Cloud Code. Primeiro agente acionado após PRD pronto. Output: Estrutura de épicos (foundation, features, auth, etc.).
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="po">
+                    <div class="term-name">PO (Product Owner)</div>
+                    <div class="term-category">Workflow</div>
+                    <div class="term-definition">
+                        Agente AIOS responsável por validar checklists e histórias. Garante que implementação está alinhada com requisitos de negócio.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Chamado via @po. Executa checklist de validação após PM e antes/depois do SM. Valida stories antes de ir para Dev.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="sm">
+                    <div class="term-name">SM (Scrum Master)</div>
+                    <div class="term-category">Workflow</div>
+                    <div class="term-definition">
+                        Agente AIOS responsável por refinar histórias (stories) dentro dos épicos. Quebra épicos em sprints implementáveis.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Chamado via @sm. Atua após PO executar checklist e antes do Dev implementar. Output: Stories refinadas com tasks claras.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="dev">
+                    <div class="term-name">Dev (Developer)</div>
+                    <div class="term-category">Workflow</div>
+                    <div class="term-definition">
+                        Agente AIOS responsável por implementar código. Executa tasks dentro de stories validadas pelo PO.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Chamado via @dev. Último agente na cadeia (PM → PO → SM → PO → Dev). Implementa código, testes, documenta, faz commits.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FERRAMENTAS -->
+        <div class="section" data-category="ferramentas">
+            <h2 class="section-title">Ferramentas e IDEs</h2>
+            <div class="glossary-grid">
+                <div class="term-card" data-term="cloud-code">
+                    <div class="term-name">Cloud Code</div>
+                    <div class="term-category">Ferramentas</div>
+                    <div class="term-definition">
+                        Motor de IA conectado ao terminal. Interface de linha de comando para conversar com LLM (Claude). Roda workflows, agentes e comandos AIOS.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            NÃO é uma IDE. É o cérebro conversacional. Pode rodar dentro de IDE (terminal integrado) ou terminal puro. Analogia: Cloud Code = motor, IDE = visualização.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="ide">
+                    <div class="term-name">IDE (Integrated Development Environment)</div>
+                    <div class="term-category">Ferramentas</div>
+                    <div class="term-definition">
+                        Ambiente visual para ver arquivos, pastas e código. Exemplos: Cursor, AntiGravity, VSCode, Windsurf. "Obsidian do código".
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Iniciantes: IDE + terminal integrado rodando Cloud Code. Avançados (4+ terminais): terminal puro (mais leve, escalável). IDE ≠ Cloud Code.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="deep-serve">
+                    <div class="term-name">Deep Serve</div>
+                    <div class="term-category">Ferramentas</div>
+                    <div class="term-definition">
+                        Ferramenta de pesquisa profunda na internet. Busca contexto rico sobre mercado, concorrentes, tecnologias, gaps.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Workflow: Deep Serve/Perplexity → pesquisa de mercado → estruturar projeto → jogar pro AIOS criar PRD. Traz tech stack e lacunas que você não conhecia.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="perplexity">
+                    <div class="term-name">Perplexity</div>
+                    <div class="term-category">Ferramentas</div>
+                    <div class="term-definition">
+                        Motor de busca com IA que retorna respostas contextualizadas. Alternativa ao Deep Serve para pesquisa de mercado e validação de ideias.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Usado antes de criar PRD para identificar concorrentes, tendências, bibliotecas, APIs disponíveis. Enriquece briefing com dados reais.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="architect-agent">
+                    <div class="term-name">Architect Agent</div>
+                    <div class="term-category">Ferramentas</div>
+                    <div class="term-definition">
+                        Agente customizado (Google AI Studio) criado por João. Transforma briefing em sitemap, wireframes, estrutura de navegação e fluxos.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Usado ANTES de codar. Input: Briefing. Output: Wireframes + Fluxos + Sitemap. Dá tangibilidade visual à ideia antes de entrar no AIOS.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="cursor">
+                    <div class="term-name">Cursor</div>
+                    <div class="term-category">Ferramentas</div>
+                    <div class="term-definition">
+                        IDE (fork do VSCode) com IA integrada. Uma das opções de ambiente de desenvolvimento recomendadas para uso com AIOS.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Alternativas: AntiGravity (usado por João), VSCode, Windsurf. Todos funcionam com Cloud Code no terminal integrado.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="aios-master">
+                    <div class="term-name">@aios-master</div>
+                    <div class="term-category">Ferramentas</div>
+                    <div class="term-definition">
+                        Agente mentor do AIOS. Responde perguntas sobre processo, metodologia, boas práticas. "Professor pessoal" que ensina tudo sobre AIOS.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Setup recomendado: Janela 1 = @aios-master (só perguntas), Janela 2 = projeto (trabalho). Contextos separados. Pergunte TUDO pra ele.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- METODOLOGIAS -->
+        <div class="section" data-category="metodologias">
+            <h2 class="section-title">Metodologias e Frameworks</h2>
+            <div class="glossary-grid">
+                <div class="term-card" data-term="5-porques">
+                    <div class="term-name">5 Porquês</div>
+                    <div class="term-category">Metodologias</div>
+                    <div class="term-definition">
+                        Técnica de descoberta de motivações profundas. Perguntar "por quê?" 5 vezes seguidas até chegar ao Nível 5 (liberdade, autonomia, propósito).
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Usado para conectar features técnicas a benefícios emocionais. Ex: Tokens = infraestrutura (técnico) → Liberdade geográfica/temporal (emocional).
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="gps">
+                    <div class="term-name">GPS Framework</div>
+                    <div class="term-category">Metodologias</div>
+                    <div class="term-definition">
+                        Framework de avaliação pedagógica com 10 aspectos: Goal, Semiótica, Engajamento, Domínio, Steps, Personalização, Clareza, Aplicabilidade, Inovação, Retenção.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Usado em avaliações internas de aulas/conteúdo. Notas de 0-10 em cada aspecto. Média final indica qualidade pedagógica.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="metodologia-lendaria">
+                    <div class="term-name">Metodologia Lendária</div>
+                    <div class="term-category">Metodologias</div>
+                    <div class="term-definition">
+                        Framework pedagógico com 7 pilares para criar conteúdo educacional de alta qualidade. Inclui regras como limite de 2-3 conceitos por aula.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Usado junto com GPS Framework em avaliações. Pilar 3 (Regra de Ouro): máximo 2-3 conceitos por aula para evitar sobrecarga cognitiva.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="matriz-rice">
+                    <div class="term-name">Matriz RICE</div>
+                    <div class="term-category">Metodologias</div>
+                    <div class="term-definition">
+                        Framework de priorização de features. RICE = Reach (alcance), Impact (impacto), Confidence (confiança), Effort (esforço).
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Usado por PM/PO para decidir quais features implementar primeiro. Calcula score: (Reach x Impact x Confidence) / Effort.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="brownfield">
+                    <div class="term-name">Brownfield</div>
+                    <div class="term-category">Metodologias</div>
+                    <div class="term-definition">
+                        Projeto existente (código legado). Adicionar features/melhorias em sistema já funcionando. Oposto de Greenfield (do zero).
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            PRDs incrementais são ideais para Brownfield. Adicionar 3 telas + OAuth em sistema existente vs. reconstruir tudo.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="greenfield">
+                    <div class="term-name">Greenfield</div>
+                    <div class="term-category">Metodologias</div>
+                    <div class="term-definition">
+                        Projeto do zero. Sem código legado, sem restrições técnicas. Liberdade total de arquitetura e stack.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            PRD completo (foundation → MVP) é ideal para Greenfield. AIOS cria épicos de setup, database, auth, features, deploy.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- APIS -->
+        <div class="section" data-category="apis">
+            <h2 class="section-title">APIs e Integrações</h2>
+            <div class="glossary-grid">
+                <div class="term-card" data-term="evolution-api">
+                    <div class="term-name">Evolution API</div>
+                    <div class="term-category">APIs</div>
+                    <div class="term-definition">
+                        API não-oficial para WhatsApp. Permite criar instâncias, vincular webhooks, processar mensagens, gerar QR codes. Mais simples que Meta Business API.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Usado por Zé Carlos com Cloud Code. Desafio: bloqueios do WhatsApp. Solução: rotação entre 5 instâncias. Começar com Evolution antes de Meta Business.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="meta-business">
+                    <div class="term-name">Meta Business API</div>
+                    <div class="term-category">APIs</div>
+                    <div class="term-definition">
+                        API oficial da Meta (Facebook/Instagram/WhatsApp). Requer aplicativo no Facebook Developers, solicitação de permissões, aprovações burocráticas.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Burocrática mas segura. Cliente precisa aprovar várias etapas. NÃO usar API não-oficial (risco de ban permanente). Para Ads: ÚNICO caminho recomendado.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="mcp">
+                    <div class="term-name">MCP (Model Context Protocol)</div>
+                    <div class="term-category">APIs</div>
+                    <div class="term-definition">
+                        Protocolo para conectar LLMs a ferramentas externas. Permite que Claude acesse APIs, bancos de dados, ferramentas via interface padronizada.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Usado pelo AIOS para integrar n8n, Playwright, Desktop Commander, Supabase, etc. Cada MCP = ponte entre Claude e ferramenta específica.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="tool-discovery">
+                    <div class="term-name">Tool Discovery</div>
+                    <div class="term-category">APIs</div>
+                    <div class="term-definition">
+                        Processo pelo qual AIOS identifica e lista MCPs (ferramentas) disponíveis no ambiente. Permite que agentes saibam quais capacidades têm.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            AIOS escaneia .mcp.json e diretórios de tools. Agentes descobrem dinamicamente quais APIs podem usar (ex: n8n pra automação, Playwright pra web).
+                        </div>
+                    </div>
+                </div>
+
+                <div class="term-card" data-term="upstream">
+                    <div class="term-name">Upstream</div>
+                    <div class="term-category">APIs</div>
+                    <div class="term-definition">
+                        Repositório Git original de onde o projeto foi forkado. Usado para sincronizar atualizações do projeto base para seu fork.
+                    </div>
+                    <div class="term-context">
+                        <div class="term-context-label">Contexto de Uso</div>
+                        <div class="term-context-text">
+                            Comando: git atualizar (alias para fetch upstream + merge upstream/main). Mantém fork sincronizado com repositório original.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const termCards = document.querySelectorAll('.term-card');
+        const categoryFilters = document.querySelectorAll('.category-filter');
+        const sections = document.querySelectorAll('.section');
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+
+            termCards.forEach(card => {
+                const termName = card.querySelector('.term-name').textContent.toLowerCase();
+                const definition = card.querySelector('.term-definition').textContent.toLowerCase();
+                const context = card.querySelector('.term-context-text').textContent.toLowerCase();
+
+                if (termName.includes(searchTerm) || definition.includes(searchTerm) || context.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Show/hide sections based on visible cards
+            sections.forEach(section => {
+                const visibleCards = section.querySelectorAll('.term-card[style="display: block;"], .term-card:not([style])');
+                if (visibleCards.length === 0 && searchTerm !== '') {
+                    section.style.display = 'none';
+                } else {
+                    section.style.display = 'block';
+                }
+            });
+        });
+
+        // Category filter functionality
+        categoryFilters.forEach(filter => {
+            filter.addEventListener('click', () => {
+                // Remove active class from all filters
+                categoryFilters.forEach(f => f.classList.remove('active'));
+                // Add active class to clicked filter
+                filter.classList.add('active');
+
+                const category = filter.dataset.category;
+
+                if (category === 'all') {
+                    sections.forEach(section => section.style.display = 'block');
+                } else {
+                    sections.forEach(section => {
+                        if (section.dataset.category === category) {
+                            section.style.display = 'block';
+                        } else {
+                            section.style.display = 'none';
+                        }
+                    });
+                }
+
+                // Clear search when changing category
+                searchInput.value = '';
+                termCards.forEach(card => card.style.display = 'block');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - Perguntas Frequentes | PS 10/02/2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: #000;
+            color: #fff;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px 0;
+        }
+
+        .label {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+            color: #ef4444;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 48px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 8px;
+            color: #3b82f6;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section {
+            margin: 80px 0;
+        }
+
+        .section-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 32px;
+            padding-left: 16px;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .faq-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .faq-question {
+            padding: 20px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            user-select: none;
+        }
+
+        .faq-question:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .faq-question-text {
+            flex: 1;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .faq-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3b82f6;
+            font-size: 20px;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+            margin-left: 16px;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .faq-answer-content {
+            padding: 0 24px 24px 24px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.8;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 1000px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 32px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .faq-question {
+                padding: 16px;
+            }
+
+            .faq-answer-content {
+                padding: 0 16px 16px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="label">PRONTO SOCORRO • 10 FEV 2026</span>
+            <h1>FAQ - Perguntas Frequentes</h1>
+            <p class="subtitle">
+                28 perguntas e respostas da sessão de tira-dúvidas do cohort avançado sobre AIOS, desenvolvimento com IA, e implementação de projetos reais.
+            </p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-value">28</span>
+                <span class="stat-label">Perguntas</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">4</span>
+                <span class="stat-label">Categorias</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">2h</span>
+                <span class="stat-label">Duração</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">~18</span>
+                <span class="stat-label">Participantes</span>
+            </div>
+        </div>
+
+        <!-- SETUP E CONFIGURAÇÃO -->
+        <div class="section">
+            <h2 class="section-title">Setup e Configuração (9 perguntas)</h2>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P1: Qual a última versão do Squad Creator? Onde está?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> GitHub oficial + grupo WhatsApp. Versão: 5-2-26.<br><br>
+                        O Squad Creator do Alan Nicolas está disponível no repositório oficial do GitHub e as atualizações são compartilhadas no grupo do WhatsApp. A versão mencionada durante o PS foi "5-2-26 squad-creator 3h33". Recomenda-se atualizar via <code>git pull</code> do GitHub.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P2: Copiar pasta AIOS ou instalar do zero em projeto novo?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Ambos funcionam. Copiar: toda infraestrutura EXCETO CLAUDE.md. Instalar: <code>claude init</code> + <code>aios install</code>.<br><br>
+                        <strong>Opção 1 - Copiar:</strong><br>
+                        • Copiar .aios-core/, .aios/, .claude/commands/<br>
+                        • IMPORTANTE: NÃO copiar CLAUDE.md (específico do projeto original)<br>
+                        • Colar na pasta exatamente espelhado<br><br>
+                        <strong>Opção 2 - Instalar do zero:</strong><br>
+                        • Rodar <code>claude init</code> na pasta nova<br>
+                        • Rodar <code>aios install</code> para configurar<br><br>
+                        <strong>Regra de ouro:</strong> Cada projeto precisa de seu próprio CLAUDE.md (cérebro do sistema). Se copiar CLAUDE.md de outro projeto → vai quebrar (contexto errado).
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P3: Como atualizar AIOS em todos os projetos?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Rodar <code>aios install</code> em cada repositório/pasta.<br><br>
+                        1. Ir em cada repositório/pasta onde AIOS está instalado<br>
+                        2. Rodar <code>aios install</code> ou <code>aios update</code><br>
+                        3. Atualiza automaticamente em cada projeto<br><br>
+                        <strong>Dica Pro:</strong> Se você tem vários projetos, vale ter um workspace central. O workspace opera outras pastas filhas, concentrando atualizações.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P4: CloudMD por projeto ou global?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Por projeto. CloudMD global = frankenstein (quebra contexto).<br><br>
+                        <strong>O ideal é por PROJETO:</strong><br>
+                        • CloudMD = cérebro do sistema, primeira coisa carregada<br>
+                        • CloudMD "frankenstein" (misturando vários contextos) → confunde a LLM<br>
+                        • Cada projeto tem contexto, arquivos, pastas específicas<br>
+                        • CloudMD global não sabe quais arquivos existem em cada projeto<br><br>
+                        <strong>Exceção:</strong> Você pode ter um CloudMD MASTER (na raiz do workspace) com heurísticas transversais (design system comum). Cada projeto ainda tem seu próprio CloudMD específico.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P5: Como organizar workspace vs projetos?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Workspace master na raiz + projetos individuais com AIOS próprio. Cada um com seu CLAUDE.md.<br><br>
+                        <strong>Estrutura recomendada:</strong><br>
+                        <code>~/code/</code> (Workspace master)<br>
+                        ├── .claude/CLAUDE.md (CloudMD MASTER - heurísticas globais)<br>
+                        ├── projeto-api/ (Projeto 1)<br>
+                        │   ├── .claude/CLAUDE.md (CloudMD específico)<br>
+                        │   ├── .aios-core/<br>
+                        │   └── .aios/<br>
+                        ├── projeto-camban/ (Projeto 2)<br>
+                        └── projeto-loja-bio/ (Projeto 3)<br><br>
+                        <strong>Pastas auxiliares (separadas):</strong><br>
+                        <code>~/marketing/</code> (agentes marketing)<br>
+                        <code>~/mentes-clonadas/</code> (mentes dos mentores)
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P6: Pastas auxiliares (agentes customizados) - onde ficam?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Fora do workspace (ex: ~/marketing/, ~/mentes-clonadas/). Copiar pra dentro do projeto quando precisar.<br><br>
+                        <strong>Workflow:</strong><br>
+                        1. Abrir IDE (Cursor, AntiGravity, VSCode) na pasta do projeto<br>
+                        2. Dentro da IDE, usar terminal com Cloud Code<br>
+                        3. Quando precisar de agente externo (ex: UX master) → copiar pra dentro do projeto<br><br>
+                        Mantém separação de contextos e permite reutilização de agentes entre projetos.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P7: Como usar Deep Serve pra pesquisa de mercado?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Cloud AI Studio → pesquisa de mercado → estruturar projeto → jogar pro AIOS. Traz gaps, concorrentes, tech stack.<br><br>
+                        <strong>Processo:</strong><br>
+                        1. Abrir Cloud AI Studio (ou Google AI Studio)<br>
+                        2. Fazer pesquisa de mercado: "Pesquise sobre [seu nicho/produto]"<br>
+                        3. Busca na internet inteira, retorna contexto rico<br>
+                        4. Estruturar projeto: "Com base nessa pesquisa, estruture um projeto para implementar X usando AIOS"<br>
+                        5. Jogar resultado pro AIOS pra criar PRD<br><br>
+                        <strong>Por que funciona:</strong> Deep Serve traz gaps que você não pensou, identifica concorrentes, sugere tech stack (bibliotecas que você nem conhecia), direciona features.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P8: Como trabalhar com múltiplas janelas Cloud Code?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Janela 1: @aios-master (só perguntas). Janela 2: projeto (desenvolvimento).<br><br>
+                        <strong>Setup recomendado:</strong><br><br>
+                        <strong>Janela 1 - AIOS Master (Perguntas):</strong><br>
+                        • Terminal aberto só com @aios-master<br>
+                        • Usar pra fazer TODAS as perguntas<br>
+                        • "Como faço X?", "O que é Y?", "Qual próximo passo?"<br>
+                        • Ele ensina tudo<br><br>
+                        <strong>Janela 2 - Desenvolvimento:</strong><br>
+                        • Terminal do projeto<br>
+                        • Onde você roda agentes (@dev, @po, @sm, etc.)<br>
+                        • Onde acontece o trabalho<br><br>
+                        <strong>Vantagens:</strong> Contextos separados, histórico de perguntas não polui histórico de dev, AIOS Master vira seu mentor pessoal.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P9: Architect Agent - o que é?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Agente do João (Google AI Studio). Input: briefing. Output: sitemap, wireframes, estrutura navegação, fluxos. Dá tangibilidade antes de codar.<br><br>
+                        <strong>Como funciona:</strong><br>
+                        • Agente customizado criado no Google AI Studio<br>
+                        • Input: Briefing do projeto<br>
+                        • Output: Sitemap completo + Wireframes + Estrutura de navegação + Fluxos de usuário<br>
+                        • Usado ANTES de começar a codar<br>
+                        • Dá tangibilidade visual à ideia antes de entrar no AIOS
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORKFLOW DE DESENVOLVIMENTO -->
+        <div class="section">
+            <h2 class="section-title">Workflow de Desenvolvimento (8 perguntas)</h2>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P10: Fazer tudo fora do AIOS e trazer depois?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Sim (preferência do João).<br><br>
+                        <strong>Workflow completo:</strong><br>
+                        1. Sessão descarrego (áudio/call)<br>
+                        2. Transformar em briefing<br>
+                        3. Pesquisas (mercado + tech)<br>
+                        4. Enriquecer briefing<br>
+                        5. Prova de fogo (destrua ideia)<br>
+                        6. Enriquecer novamente<br>
+                        7. Doc specs modularizadas (UI, tech, wireframes, features)<br>
+                        8. AIOS consolida PRD<br><br>
+                        <strong>Ferramenta favorita:</strong> Architect Agent (Google AI Studio) para criar sitemap, wireframes e fluxos antes de codar.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P11: PRD inteiro ou só feature?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Ambos. Incremental (feature por feature) é melhor que PRD gigante.<br><br>
+                        <strong>Opção A - PRD do Zero:</strong><br>
+                        • Do zero até MVP<br>
+                        • Grandes épicos, muitas stories<br><br>
+                        <strong>Opção B - PRD Incremental (Recomendado):</strong><br>
+                        • Produto já existe<br>
+                        • PRD só pra adicionar 3 novas telas + 3 features<br>
+                        • Épicos menores, menos stories<br><br>
+                        <strong>Vantagens do incremental:</strong> Menos pontos de conexão = menos chance de erro probabilístico. LLMs são voláteis - quanto maior o processo, maior risco.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P12: Fluxo recomendado depois do PRD?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> PM → PO → checklist → SM → PO valida → Dev implementa.<br><br>
+                        <strong>Fluxo detalhado:</strong><br>
+                        PRD pronto<br>
+                        ↓<br>
+                        Project Manager (@pm) - Criar épicos<br>
+                        ↓<br>
+                        Product Owner (@po) - Executar checklist de validação<br>
+                        ↓<br>
+                        Scrum Master (@sm) - Refinar histórias (stories)<br>
+                        ↓<br>
+                        Product Owner (@po) - Validar tudo de novo<br>
+                        ↓<br>
+                        Developer (@dev) - Implementar
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P13: Por que modularizar specs ao invés de PRD gigante de uma vez?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> LLM tem 100% capacidade num ciclo. PRD gigante = prova de vestibular gigante = cansaço no final. Specs modulares = laser focus = qualidade.<br><br>
+                        <strong>Por quê modularizar:</strong><br>
+                        • LLM tem 100% capacidade cognitiva num ciclo input→output<br>
+                        • PRD gigante = prova de vestibular gigante = LLM cansada no final<br>
+                        • Specs modulares = laser focus = 100% capacidade em cada spec<br><br>
+                        <strong>Specs recomendadas:</strong><br>
+                        • Doc Spec: UI/UX<br>
+                        • Doc Spec: Filosofia/Conceito<br>
+                        • Doc Spec: Tech Stack (bibliotecas, APIs, integrações)<br>
+                        • Doc Spec: Wireframes + Fluxos de usuário<br>
+                        • Doc Spec: Features<br>
+                        • Doc Spec: Design System
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P14: Como validar ideia antes de codar?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Prova de fogo - "Destrua sua ideia". Ponto cego, SWOT, o que NÃO faz sentido.<br><br>
+                        <strong>Processo Prova de Fogo:</strong><br>
+                        1. Descarrego → Briefing<br>
+                        2. Pesquisas (mercado + tech)<br>
+                        3. Enriquecer briefing<br>
+                        4. PROVA DE FOGO: "Destrua sua ideia"<br>
+                        5. Perguntar: Pontos cegos? SWOT? O que NÃO faz sentido? Onde estou viajando?<br>
+                        6. Ajustar briefing com insights<br>
+                        7. Specs → PRD<br><br>
+                        Previne desperdício de tempo com ideias inviáveis.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P15: Diferença entre IDE e Cloud Code?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> IDE = Obsidian do código (visualizar arquivos). Cloud Code = motor IA no terminal. São coisas diferentes.<br><br>
+                        <strong>IDE (Integrated Development Environment):</strong><br>
+                        • Ambiente visual pra ver arquivos, pastas, código<br>
+                        • Exemplos: Cursor, AntiGravity, VSCode, Windsurf<br>
+                        • "Obsidian do código"<br><br>
+                        <strong>Cloud Code:</strong><br>
+                        • Motor de IA conectado ao terminal<br>
+                        • Roda dentro do terminal (pode ser dentro da IDE ou terminal puro)<br>
+                        • É o cérebro que conversa com você<br><br>
+                        <strong>Preferência João:</strong> IDE (AntiGravity) + Cloud Code no terminal integrado. Vantagens: visualização de pastas, controle de versionamento (git), ver o que tá sendo editado.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P16: IDE ou terminal puro?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Iniciantes: IDE + terminal integrado. Avançados rodando 4+ terminais: terminal puro (mais leve, escalável).<br><br>
+                        <strong>Quando usar terminal puro (sem IDE):</strong><br>
+                        • Quando rodar 4+ terminais simultâneos<br>
+                        • IDE começa a sobrecarregar<br>
+                        • Poluição visual com muitos terminais<br>
+                        • Terminal puro é infinitamente escalável (20+ tabs sem travar)<br><br>
+                        <strong>Dica pra iniciantes:</strong> Começar com IDE + terminal integrado. Melhor visualização, mais fácil se achar. Depois migrar pra terminal puro se quiser escalar.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P17: Como saber se estou no caminho certo?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Pergunta pro @aios-master. Ele ensina tudo. Janela separada só pra perguntas.<br><br>
+                        Use o @aios-master como seu mentor pessoal. Configure uma janela separada só pra perguntas e pergunte TUDO: "Como faço X?", "O que é Y?", "Qual próximo passo?", "Estou no caminho certo?"<br><br>
+                        Ele tem todo o conhecimento do AIOS embutido e pode guiar você através de qualquer processo.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CASOS DE USO / NEGÓCIOS -->
+        <div class="section">
+            <h2 class="section-title">Casos de Uso / Negócios (6 perguntas)</h2>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P18: Como aplicar AIOS em consultoria jurídica?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Cliente com 30-50+ clientes, não escala. AIOS pra criar sistemas de consistência operacional, identificar gargalos. Desafio: ranço com IA (funcionários usaram errado).<br><br>
+                        <strong>Problema:</strong><br>
+                        • Cliente com 30-50+ clientes (triplicou)<br>
+                        • Não consegue dar qualidade de atendimento<br>
+                        • Processos empíricos dependentes dos sócios<br>
+                        • Gargalos em várias áreas (financeiro, jurídico, RH)<br><br>
+                        <strong>Solução proposta:</strong><br>
+                        • Criar sistemas com AIOS para consistência operacional<br>
+                        • Identificar gargalos que impedem escala<br>
+                        • Implantar IA nos processos do cliente<br><br>
+                        <strong>Desafio cultural:</strong> Funcionários usando IA errado (delegando decisões em vez de agilizar processos). Quebrar barreira do ranço com IA criado por mal uso.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P19: Como aplicar AIOS em saúde masculina (urologia)?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> IA como primeiro atendimento anônimo (reduz vergonha), acompanhamento contínuo, CS da IA 24/7. Desafio: quadramento (monetização) complexo, precisa minerar mais.<br><br>
+                        <strong>Problema:</strong><br>
+                        • Homem historicamente não cuida da saúde<br>
+                        • Barreira cultural pra falar sobre saúde masculina/urologia<br>
+                        • Atendimento episódico vs. acompanhamento contínuo<br><br>
+                        <strong>Oportunidades com IA:</strong><br>
+                        • IA como primeiro atendimento anônimo (pessoas preferem falar com IA do que com médico sobre certos assuntos - reduz vergonha)<br>
+                        • Acompanhamento contínuo (ex: reação alérgica à meia-noite → CS da IA responde)<br>
+                        • Agilizar triagem e diagnóstico inicial<br><br>
+                        <strong>Desafio:</strong> Solução tem potencial MAS quadramento (monetização) é complexo. Precisa minerar mais pra entender onde encaixa no processo.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P20: Disparador WhatsApp - como fazer?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Evolution API (não-oficial). Pegar documentação → jogar no Cloud Code → construir tudo. Desafio atual: bloqueios. Solução: rotação entre 5 instâncias.<br><br>
+                        <strong>Processo (Zé Carlos):</strong><br>
+                        1. Pegou documentação completa da Evolution API<br>
+                        2. Jogou no Cloud Code pra entender todos os endpoints<br>
+                        3. Cloud Code construiu tudo<br>
+                        4. Refatorou com Cloud Code + AIOS (segurança, best practices)<br><br>
+                        <strong>Features implementadas:</strong><br>
+                        • Criar instância<br>
+                        • Vincular proxy da instância<br>
+                        • Vincular webhook<br>
+                        • Vincular eventos<br>
+                        • Processar grupos<br>
+                        • Gerar QR Code (base64 → imagem)<br><br>
+                        <strong>Desafio atual:</strong> WhatsApp normal bloqueando muito. Solução: Co-existência de 5 instâncias por cliente (rotação entre números).
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P21: WhatsApp: Evolution API ou Meta Business API?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Começar Evolution (simples). Meta Business é burocrático (cliente precisa aprovar várias coisas, você pega na mão).<br><br>
+                        <strong>Evolution API (não-oficial):</strong><br>
+                        • Mais simples pra começar<br>
+                        • Documentação clara<br>
+                        • Risco de bloqueios<br>
+                        • Boa pra aprender e testar<br><br>
+                        <strong>Meta Business API (oficial):</strong><br>
+                        • Burocrático<br>
+                        • Cliente precisa aprovar várias etapas<br>
+                        • Você tem que pegar na mão do cliente<br>
+                        • Pessoas cobram só pra fazer cadastro na Meta<br>
+                        • Quem gira muito tráfego sofre com Meta Business<br>
+                        • Seguro e oficial<br><br>
+                        <strong>Recomendação:</strong> Começar com Evolution pra aprender. Migrar pra Meta Business se precisar escalar com segurança.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P22: Como conectar com Meta Ads (campanhas, ROAS)?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Via oficial (aplicativo Facebook Developers, solicitar permissões, aguardar aprovação). Via não-oficial = ban permanente.<br><br>
+                        <strong>Caminho oficial (ÚNICO recomendado):</strong><br>
+                        1. Criar aplicativo no Facebook Developers<br>
+                        2. Solicitar permissões da API de Ads<br>
+                        3. Aguardar liberação da Meta (aprovações, autenticações)<br>
+                        4. Implementar OAuth + tokens<br><br>
+                        <strong>Via não-oficial (Instagram/Facebook):</strong><br>
+                        • ❌ NÃO RECOMENDADO<br>
+                        • Meta coloca flag na conta<br>
+                        • Pode banir pra sempre<br>
+                        • Nunca mais consegue fazer nada<br><br>
+                        <strong>Conclusão:</strong> Não tem caminho mais rápido. Tem que seguir processo burocrático oficial. Enquanto isso: trabalhar no resto da solução.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P23: Qual o erro mais comum?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Ficar na teoria, não colocar mão na massa. Esperar tudo perfeito antes de começar. Comparar-se com Alan (ele tá 10 níveis à frente).<br><br>
+                        <strong>Erros mais comuns:</strong><br>
+                        • Ficar na teoria, não colocar mão na massa<br>
+                        • Esperar tudo perfeito antes de começar<br>
+                        • Comparar-se com Alan (ele tá 10 níveis à frente)<br>
+                        • Ficar esperando próxima versão do Squad Creator<br>
+                        • Nunca materializar nada por medo de errar<br><br>
+                        <strong>Solução:</strong> Conhecimento empírico > conhecimento teórico. Campo de batalha (skin in the game). 80/20: Colocar mão na massa. Progresso incremental: Hoje melhor que ontem.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MINDSET E PRÁTICAS -->
+        <div class="section">
+            <h2 class="section-title">Mindset e Práticas (5 perguntas)</h2>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P24: Como não ficar preso esperando próxima versão do Squad Creator?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Alan lança versões pra necessidades dele (nível avançado). Se você não sente necessidade → versão atual serve. 80/20 = dominar PROCESSO, não ferramenta.<br><br>
+                        <strong>80/20 do aprendizado:</strong><br>
+                        • Não é dominar ferramentas<br>
+                        • Não é acompanhar todas atualizações do Alan<br>
+                        • É dominar o PROCESSO (como tudo se conecta, lógica por trás, motor do sistema)<br><br>
+                        <strong>Por quê Alan lança tantas versões:</strong><br>
+                        • Ele tá num nível avançado<br>
+                        • Precisa de funcionalidades que você ainda não precisa<br>
+                        • Se você não sente necessidade de atualização → versão atual serve perfeitamente<br><br>
+                        <strong>Conselho:</strong> Pegue versão atual, salve numa pasta, COMECE A DESENVOLVER. Se bloquear, atualiza. Se não bloquear, segue com o que tem.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P25: E se não sair perfeito na primeira vez?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Faz de novo. Conhecimento empírico > teórico. Progresso incremental (hoje melhor que ontem).<br><br>
+                        <strong>Mindset correto:</strong><br>
+                        • FAZ DE NOVO<br>
+                        • Não importa o app que vai sair<br>
+                        • O que importa é dominar o processo<br>
+                        • Conhecimento empírico > conhecimento teórico<br><br>
+                        <strong>Exemplo (Torriani):</strong><br>
+                        "Fiz tudo no Cloud, achei que nunca ia conseguir no Cloud Code. Hoje tá tudo no Cloud Code, não quero nem olhar pro Cloud. Progresso incremental: Hoje melhor que ontem."<br><br>
+                        <strong>Conselho:</strong> Não tenha medo de começar do zero de novo. Pegue processo que João ensinou. Crie qualquer coisa (lista de tarefas, organizador de notas). Teste o processo. Vai aprender FAZENDO.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P26: Como começar se estou perdido?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Crie QUALQUER COISA simples (lista de tarefas, organizador de notas). Siga workflow do João. Teste processo. Aprende FAZENDO.<br><br>
+                        <strong>Passo a passo pra começar:</strong><br>
+                        1. Escolha projeto SIMPLES (lista de tarefas, organizador de notas, qualquer coisa)<br>
+                        2. Siga workflow do João (descarrego → briefing → pesquisas → prova de fogo → specs → PRD)<br>
+                        3. Use AIOS pra criar o projeto<br>
+                        4. Teste o processo completo<br>
+                        5. Aprende FAZENDO (não fica só na teoria)<br><br>
+                        <strong>Não existe conhecimento mais valioso que conhecimento empírico.</strong> Campo de batalha, skin in the game. 80/20: Colocar mão na massa.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P27: Devo me preocupar com atualizações constantes?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Não. Se tá funcionando, não precisa atualizar. Atualiza só se bloquear.<br><br>
+                        Se sua versão do Squad Creator tá funcionando, não precisa atualizar. Atualiza só se você:<br>
+                        • Bloquear em alguma funcionalidade<br>
+                        • Encontrar bug crítico<br>
+                        • Precisar de feature específica da nova versão<br><br>
+                        <strong>Regra de ouro:</strong> "Se tá funcionando, não mexe." Foque em dominar o processo, não em ter a última versão da ferramenta.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span class="faq-question-text">P28: Quanto tempo ficar planejando antes de codar?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        <strong>Resposta:</strong> Não ficar eternamente. Fazer prova de fogo, validar, e IR PRA PRÁTICA. Senão fica só na ideação.<br><br>
+                        <strong>Planejamento ideal:</strong><br>
+                        1. Descarrego (1 sessão)<br>
+                        2. Briefing (1-2 horas)<br>
+                        3. Pesquisas (2-4 horas)<br>
+                        4. Prova de fogo (1 hora)<br>
+                        5. Specs modulares (4-8 horas)<br>
+                        6. IR PRA PRÁTICA (não esperar mais)<br><br>
+                        <strong>Armadilha:</strong> Ficar eternamente no planejamento, esperando tudo perfeito, nunca começar a codar. Senão fica só na ideação e nunca materializa nada.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // FAQ Accordion functionality
+        const faqItems = document.querySelectorAll('.faq-item');
+
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+
+            question.addEventListener('click', () => {
+                // Toggle active class
+                item.classList.toggle('active');
+            });
+        });
+
+        // Optional: Close other items when opening one (uncomment if desired)
+        /*
+        faqItems.forEach(item => {
+            const question = item.querySelector('.faq-question');
+
+            question.addEventListener('click', () => {
+                // Close all other items
+                faqItems.forEach(otherItem => {
+                    if (otherItem !== item) {
+                        otherItem.classList.remove('active');
+                    }
+                });
+
+                // Toggle current item
+                item.classList.toggle('active');
+            });
+        });
+        */
+    </script>
+</body>
+</html>

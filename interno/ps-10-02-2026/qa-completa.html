@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q&A Completa - PS 10/02/2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: #000;
+            color: #fff;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px 0;
+        }
+
+        .label {
+            display: inline-block;
+            padding: 6px 16px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+            color: #ef4444;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        .context-box {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #3b82f6;
+            border-radius: 12px;
+            padding: 32px;
+            margin: 40px 0;
+        }
+
+        .context-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #3b82f6;
+        }
+
+        .context-text {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin: 40px 0;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 8px;
+            color: #3b82f6;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section {
+            margin: 80px 0;
+        }
+
+        .section-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 32px;
+            padding-left: 16px;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .qa-card {
+            background: #0a0a0a;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .qa-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: #0f0f0f;
+        }
+
+        .qa-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 16px;
+        }
+
+        .qa-question {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #fff;
+            line-height: 1.4;
+        }
+
+        .qa-meta {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .qa-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .qa-answer {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 3px solid #22c55e;
+            margin-bottom: 20px;
+        }
+
+        .qa-answer-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #22c55e;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .qa-answer-text {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.8;
+        }
+
+        .qa-context {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .qa-context-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #eab308;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .qa-context-text {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        .qa-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .qa-tag {
+            padding: 4px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #3b82f6;
+        }
+
+        .quote-box {
+            background: rgba(234, 179, 8, 0.05);
+            border-left: 3px solid #eab308;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .resources-list {
+            list-style: none;
+        }
+
+        .resources-list li {
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .insight-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .insight-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #3b82f6;
+        }
+
+        .insight-text {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 32px;
+            }
+
+            .qa-card {
+                padding: 20px;
+            }
+
+            .qa-question {
+                font-size: 18px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="label">PRONTO SOCORRO • 10 FEV 2026</span>
+            <h1>Análise Q&A Completa</h1>
+            <p class="subtitle">
+                Análise completa e detalhada de todas as 28 perguntas e respostas da sessão de tira-dúvidas do cohort avançado sobre AIOS. Inclui contexto, casos de uso, frameworks mencionados, citações memoráveis e recursos compartilhados.
+            </p>
+        </div>
+
+        <div class="context-box">
+            <div class="context-title">Contexto da Sessão</div>
+            <div class="context-text">
+                <strong>Data:</strong> 10 de fevereiro de 2026<br>
+                <strong>Tipo:</strong> Pronto Socorro (Tira-dúvidas)<br>
+                <strong>Especialistas:</strong> João, Zé Carlos, Talles, equipe Academia Lendária<br>
+                <strong>Participantes:</strong> ~15-20 alunos do cohort avançado<br>
+                <strong>Formato:</strong> Sala principal + salas simultâneas (Fundamentos, Business, Técnico Avançado)
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-value">28</span>
+                <span class="stat-label">Perguntas</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">2h</span>
+                <span class="stat-label">Duração</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">9</span>
+                <span class="stat-label">Setup</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">8</span>
+                <span class="stat-label">Workflow</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">6</span>
+                <span class="stat-label">Casos de Uso</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value">5</span>
+                <span class="stat-label">Ferramentas</span>
+            </div>
+        </div>
+
+        <!-- SETUP E CONFIGURAÇÃO -->
+        <div class="section">
+            <h2 class="section-title">Setup e Configuração do AIOS</h2>
+
+            <div class="qa-card">
+                <div class="qa-number">1</div>
+                <div class="qa-question">Qual a última versão do Squad Creator do Alan? Onde está?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Perguntado por: Fábio</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 00:29:25</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Resposta (Academia Lendária)</div>
+                    <div class="qa-answer-text">
+                        Está disponível no <strong>GitHub</strong> (repositório oficial). Alan também envia atualizações no <strong>grupo do WhatsApp</strong>. Versão mencionada: "5-2-26 squad-creator 3h33". Recomendação: Atualizar via <code>git pull</code> do GitHub.
+                    </div>
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Setup</span>
+                    <span class="qa-tag">Squad Creator</span>
+                    <span class="qa-tag">Versões</span>
+                </div>
+            </div>
+
+            <div class="qa-card">
+                <div class="qa-number">2</div>
+                <div class="qa-question">Para instalar AIOS em projeto novo, copio pasta ou instalo do zero?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Perguntado por: Alexandre</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 00:20:42</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Resposta (João)</div>
+                    <div class="qa-answer-text">
+                        <strong>Opção 1 - Copiar:</strong><br>
+                        • Copiar TODAS as pastas de infraestrutura do AIOS: .aios-core/, .aios/, .claude/commands/<br>
+                        • <strong>IMPORTANTE:</strong> NÃO copiar o CLAUDE.md (é específico do projeto original)<br>
+                        • Colar na pasta exatamente espelhado<br><br>
+
+                        <strong>Opção 2 - Instalar do zero:</strong><br>
+                        • Rodar <code>claude init</code> na pasta nova<br>
+                        • Rodar <code>aios install</code> para configurar<br><br>
+
+                        <strong>Regra de ouro:</strong> Cada projeto precisa de seu próprio CLAUDE.md (cérebro do sistema). Se copiar CLAUDE.md de outro projeto → vai quebrar (contexto errado).
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Contexto Adicional</div>
+                    <div class="qa-context-text">
+                        O CLAUDE.md é o arquivo mais crítico do AIOS. Ele contém todas as regras, heurísticas e contexto específico daquele projeto. Copiar CLAUDE.md entre projetos é como transplantar o cérebro de uma pessoa para outra - simplesmente não funciona porque o contexto é completamente diferente.
+                    </div>
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Setup</span>
+                    <span class="qa-tag">CLAUDE.md</span>
+                    <span class="qa-tag">Instalação</span>
+                </div>
+            </div>
+
+            <div class="qa-card">
+                <div class="qa-number">3</div>
+                <div class="qa-question">Quando tiver atualização do AIOS, como atualizo em todos os projetos?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Perguntado por: Fábio</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 00:24:36</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Resposta (João)</div>
+                    <div class="qa-answer-text">
+                        1. Ir em cada repositório/pasta onde AIOS está instalado<br>
+                        2. Rodar <code>aios install</code> ou <code>aios update</code><br>
+                        3. Atualiza automaticamente em cada projeto
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Dica Pro (João)</div>
+                    <div class="qa-context-text">
+                        Se você tem vários projetos, vale ter um <strong>workspace central</strong>. O workspace opera outras pastas filhas. Assim você concentra atualizações e tem melhor controle de versões.
+                    </div>
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Setup</span>
+                    <span class="qa-tag">Atualização</span>
+                    <span class="qa-tag">Workspace</span>
+                </div>
+            </div>
+
+            <div class="qa-card">
+                <div class="qa-number">4</div>
+                <div class="qa-question">CloudMD deve ser por projeto ou pode ser global?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Perguntado por: João (aluno)</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 00:23:45</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Resposta (João - instrutor)</div>
+                    <div class="qa-answer-text">
+                        <strong>O ideal é por PROJETO</strong><br><br>
+
+                        CloudMD = cérebro do sistema, primeira coisa carregada. Se você colocar um CloudMD "frankenstein" (misturando vários contextos) → vai confundir a LLM.<br><br>
+
+                        <strong>Por quê:</strong><br>
+                        • Cada projeto tem contexto, arquivos, pastas específicas<br>
+                        • CloudMD global não sabe quais arquivos existem em cada projeto<br>
+                        • Seria como colocar cérebro de um projeto em outro corpo
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Exceção</div>
+                    <div class="qa-context-text">
+                        Você pode ter um CloudMD MASTER (na raiz do workspace) que rege todos os projetos. Ele contém heurísticas transversais (design system comum, etc.). Cada projeto ainda tem seu próprio CloudMD específico. O MASTER complementa, não substitui.
+                    </div>
+                </div>
+                <div class="quote-box">
+                    "CloudMD é o cérebro do sistema. Se você colocar cérebro frankenstein que não tem aqueles arquivos, aquelas pastas - vai quebrar." — João
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Setup</span>
+                    <span class="qa-tag">CLAUDE.md</span>
+                    <span class="qa-tag">Contexto</span>
+                </div>
+            </div>
+
+            <div class="qa-card">
+                <div class="qa-number">5</div>
+                <div class="qa-question">Como organizar workspace vs projetos individuais?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Discussão liderada por: Alexandre</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 01:37:00+</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Resposta (João)</div>
+                    <div class="qa-answer-text">
+                        <strong>Estrutura recomendada:</strong><br><br>
+
+                        <code>
+                        ~/code/                          # Workspace master<br>
+                        ├── .claude/CLAUDE.md            # CloudMD MASTER (heurísticas globais)<br>
+                        ├── projeto-api/                 # Projeto 1<br>
+                        │   ├── .claude/CLAUDE.md        # CloudMD específico do projeto<br>
+                        │   ├── .aios-core/              # Infraestrutura AIOS<br>
+                        │   └── .aios/<br>
+                        ├── projeto-camban/              # Projeto 2<br>
+                        │   ├── .claude/CLAUDE.md<br>
+                        │   ├── .aios-core/<br>
+                        │   └── .aios/<br>
+                        └── projeto-loja-bio/            # Projeto 3<br>
+                            ├── .claude/CLAUDE.md<br>
+                            ├── .aios-core/<br>
+                            └── .aios/<br>
+                        </code><br><br>
+
+                        <strong>Pastas auxiliares (separadas do workspace):</strong><br><br>
+
+                        <code>
+                        ~/marketing/                     # Pasta de agentes marketing<br>
+                        ├── agente-copy.md<br>
+                        ├── agente-ux.md<br>
+                        └── agente-vendedor.md<br><br>
+
+                        ~/mentes-clonadas/              # Mentes dos mentores<br>
+                        ├── alan.md<br>
+                        ├── ze.md<br>
+                        ├── pedro.md<br>
+                        └── minha-mente.md<br>
+                        </code>
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Workflow</div>
+                    <div class="qa-context-text">
+                        1. Abrir IDE (Cursor, AntiGravity, VSCode) na pasta do projeto<br>
+                        2. Dentro da IDE, usar terminal com Cloud Code<br>
+                        3. Quando precisar de agente externo (ex: UX master) → copiar pra dentro do projeto
+                    </div>
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Setup</span>
+                    <span class="qa-tag">Workspace</span>
+                    <span class="qa-tag">Organização</span>
+                </div>
+            </div>
+
+            <div class="qa-card">
+                <div class="qa-number">6</div>
+                <div class="qa-question">Pastas auxiliares (agentes customizados) - onde ficam?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Contexto da discussão</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: Ao longo da sessão</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Resposta (João)</div>
+                    <div class="qa-answer-text">
+                        <strong>Fora do workspace</strong> (ex: ~/marketing/, ~/mentes-clonadas/). Copiar pra dentro do projeto quando precisar.<br><br>
+
+                        Isso mantém separação de contextos e permite reutilização de agentes entre projetos sem poluir o workspace principal.
+                    </div>
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Setup</span>
+                    <span class="qa-tag">Agentes</span>
+                    <span class="qa-tag">Organização</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORKFLOW DE DESENVOLVIMENTO -->
+        <div class="section">
+            <h2 class="section-title">Workflow de Desenvolvimento</h2>
+
+            <div class="qa-card">
+                <div class="qa-number">7</div>
+                <div class="qa-question">Como você trabalha hoje - faz tudo fora e traz pro AIOS depois?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Perguntado por: João (aluno)</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 00:27:04</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Resposta (João - instrutor) - WORKFLOW COMPLETO</div>
+                    <div class="qa-answer-text">
+                        <strong>1️⃣ SESSÃO DE DESCARREGO (Fora do AIOS)</strong><br>
+                        └─> Gravar áudio OU fazer call + transcrição<br>
+                        └─> Vomitar ideias, contexto, dores<br><br>
+
+                        <strong>2️⃣ TRANSFORMAR EM BRIEFING</strong><br>
+                        └─> Jogar transcrição pra LLM<br>
+                        └─> Output: Briefing estruturado<br><br>
+
+                        <strong>3️⃣ PESQUISAS (Enriquecer + Preencher Lacunas)</strong><br>
+                        └─> Pesquisa de mercado (concorrentes, tendências)<br>
+                        └─> Tech research (bibliotecas, APIs, stack)<br>
+                        └─> Pode usar Deep Serve, Perplexity, ou agente de busca<br><br>
+
+                        <strong>4️⃣ ENRIQUECER O BRIEFING</strong><br>
+                        └─> Adicionar resultados das pesquisas ao briefing<br><br>
+
+                        <strong>5️⃣ PROVA DE FOGO 🔥</strong><br>
+                        └─> "Destrua sua ideia"<br>
+                        └─> Ponto cegos, SWOT, validações<br>
+                        └─> O que NÃO faz sentido? Onde estou viajando?<br><br>
+
+                        <strong>6️⃣ ENRIQUECER DE NOVO</strong><br>
+                        └─> Ajustar briefing com insights da prova de fogo<br><br>
+
+                        <strong>7️⃣ DOCUMENTAÇÃO MODULARIZADA (Doc Specs)</strong><br>
+                        └─> NÃO fazer PRD gigante de uma vez!<br>
+                        └─> Quebrar em mini-specs multidimensionais:<br>
+                        • Doc Spec: UI/UX<br>
+                        • Doc Spec: Filosofia/Conceito<br>
+                        • Doc Spec: Tech Stack (bibliotecas, APIs, integrações)<br>
+                        • Doc Spec: Wireframes + Fluxos de usuário<br>
+                        • Doc Spec: Features<br>
+                        • Doc Spec: Design System<br><br>
+
+                        <strong>8️⃣ CONSOLIDAR PRD (Dentro do AIOS)</strong><br>
+                        └─> Jogar todas as specs pro AIOS<br>
+                        └─> AIOS junta tudo e cria PRD final<br>
+                        └─> PRD já vem modularizado por Épicos + Stories<br><br>
+
+                        <strong>9️⃣ DESENVOLVIMENTO (AIOS)</strong><br>
+                        └─> AIOS orquestra agentes (DevOps, QA, etc.)<br>
+                        └─> Épicos = camadas do prédio (foundation, features, auth, etc.)<br>
+                        └─> Stories = sprints dentro de cada épico<br>
+                        └─> Tasks = ações atômicas dentro de cada story
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Por Quê Modularizar Specs?</div>
+                    <div class="qa-context-text">
+                        LLM tem 100% capacidade cognitiva num ciclo input→output. PRD gigante = prova de vestibular gigante = LLM cansada no final. Specs modulares = laser focus = 100% capacidade em cada spec.
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Ferramenta Favorita do João</div>
+                    <div class="qa-context-text">
+                        <strong>Architect Agent</strong> (Google AI Studio):<br>
+                        • Input: Briefing<br>
+                        • Output: Sitemap completo, wireframes, estrutura de navegação, fluxos<br>
+                        • Dá tangibilidade ANTES de começar a codar
+                    </div>
+                </div>
+                <div class="quote-box">
+                    "LLM fazendo PRD inteiro é igual você no final da prova de vestibular - não consegue nem ler a pergunta direito." — João
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Workflow</span>
+                    <span class="qa-tag">PRD</span>
+                    <span class="qa-tag">Specs Modulares</span>
+                    <span class="qa-tag">Prova de Fogo</span>
+                </div>
+            </div>
+
+            <div class="qa-card">
+                <div class="qa-number">8</div>
+                <div class="qa-question">PRD precisa ser do projeto inteiro ou pode ser só pra feature?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Pergunta implícita</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 00:43:20</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Resposta (João)</div>
+                    <div class="qa-answer-text">
+                        <strong>AMBOS! Você pode:</strong><br><br>
+
+                        <strong>Opção A - PRD do Zero:</strong><br>
+                        • Do zero até MVP<br>
+                        • Grandes épicos, muitas stories<br><br>
+
+                        <strong>Opção B - PRD Incremental (Recomendado):</strong><br>
+                        • Produto já existe<br>
+                        • PRD só pra adicionar 3 novas telas + 3 features<br>
+                        • Épicos menores, menos stories<br><br>
+
+                        <strong>Vantagens do incremental:</strong><br>
+                        • Menos pontos de conexão = menos chance de erro probabilístico<br>
+                        • LLMs são voláteis - quanto maior o processo, maior risco<br>
+                        • Agilidade - você valida e segue pro próximo
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Exemplo Prático</div>
+                    <div class="qa-context-text">
+                        1. PRD Foundation (setup, database, auth básico)<br>
+                        2. PRD Feature: Adicionar OAuth → 2 épicos, 3 stories → rápido, testado, pronto<br>
+                        3. PRD Feature: Adicionar sistema de notificações → 1 épico, 4 stories → deploy, valida, segue
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Metáfora</div>
+                    <div class="qa-context-text">
+                        Melhor fazer vários PRDs pequenos (mini-mansões) do que um PRD gigante ("construir Google novo").
+                    </div>
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Workflow</span>
+                    <span class="qa-tag">PRD</span>
+                    <span class="qa-tag">Incremental</span>
+                </div>
+            </div>
+
+            <div class="qa-card">
+                <div class="qa-number">9</div>
+                <div class="qa-question">Fluxo recomendado depois do PRD?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Compartilhado por: Torriani</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 01:03:06</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Resposta (aprendida na sala avançada)</div>
+                    <div class="qa-answer-text">
+                        PRD pronto<br>
+                        ↓<br>
+                        <strong>Project Manager (@pm)</strong><br>
+                        ├─> Criar épicos<br>
+                        ↓<br>
+                        <strong>Product Owner (@po)</strong><br>
+                        ├─> Executar checklist de validação<br>
+                        ↓<br>
+                        <strong>Scrum Master (@sm)</strong><br>
+                        ├─> Refinar histórias (stories)<br>
+                        ↓<br>
+                        <strong>Product Owner (@po)</strong><br>
+                        ├─> Validar tudo de novo<br>
+                        ↓<br>
+                        <strong>Developer (@dev)</strong><br>
+                        └─> Implementar
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Dica de Torriani</div>
+                    <div class="qa-context-text">
+                        Ter uma janela do <code>@aios-master</code> aberta só pra perguntas. Outra janela pro desenvolvimento. Perguntar TUDO pro master - ele ensina o processo.
+                    </div>
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Workflow</span>
+                    <span class="qa-tag">Agentes</span>
+                    <span class="qa-tag">PM</span>
+                    <span class="qa-tag">PO</span>
+                    <span class="qa-tag">SM</span>
+                    <span class="qa-tag">Dev</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FERRAMENTAS -->
+        <div class="section">
+            <h2 class="section-title">Ferramentas e Configuração</h2>
+
+            <div class="qa-card">
+                <div class="qa-number">10</div>
+                <div class="qa-question">Diferença entre IDE e Cloud Code?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Perguntado por: Monica</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 00:49:48</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Resposta (João - analogia perfeita)</div>
+                    <div class="qa-answer-text">
+                        <strong>IDE = Obsidian do código</strong><br>
+                        • Ambiente visual pra ver arquivos, pastas, código<br>
+                        • Exemplos: Cursor, AntiGravity, VSCode, Windsurf<br>
+                        • Só muda a plataforma, conceito é o mesmo<br>
+                        • Como usar Obsidian vs. Notion vs. Evernote pra notas<br><br>
+
+                        <strong>Cloud Code = Motor de IA conectado ao terminal</strong><br>
+                        • Roda dentro do terminal (pode ser dentro da IDE ou terminal puro)<br>
+                        • É o cérebro que conversa com você<br>
+                        • Não é uma IDE - é uma ferramenta<br><br>
+
+                        <strong>Analogia:</strong><br>
+                        Obsidian (IDE) ←→ Cursor/AntiGravity/VSCode (IDE)<br>
+                        ↓<br>
+                        Visualizar notas ←→ Visualizar código
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Contexto da Confusão</div>
+                    <div class="qa-context-text">
+                        Cloud AI Studio recomendou "IDE: Cloud Code". Monica achou que eram a mesma coisa. Na verdade, são ferramentas completamente diferentes com propósitos diferentes.
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Preferência do João</div>
+                    <div class="qa-context-text">
+                        Usa IDE (AntiGravity) MAS roda Cloud Code no terminal dentro da IDE.<br>
+                        <strong>Vantagens:</strong> Visualização de pastas, controle de versionamento (git), ver o que tá sendo editado, terminal integrado rodando Cloud Code.
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Preferência do Alan</div>
+                    <div class="qa-context-text">
+                        Terminal puro (prompt de comando). Sem IDE, sem interface visual. Mais leve, mas menos visual.
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Quando usar terminal puro (sem IDE)?</div>
+                    <div class="qa-context-text">
+                        • Quando rodar 4+ terminais simultâneos<br>
+                        • IDE começa a sobrecarregar<br>
+                        • Poluição visual com muitos terminais<br>
+                        • Terminal puro é infinitamente escalável (20+ tabs sem travar)
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Dica pra iniciantes</div>
+                    <div class="qa-context-text">
+                        Começar com IDE + terminal integrado. Melhor visualização, mais fácil se achar. Depois migrar pra terminal puro se quiser escalar.
+                    </div>
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Ferramentas</span>
+                    <span class="qa-tag">IDE</span>
+                    <span class="qa-tag">Cloud Code</span>
+                </div>
+            </div>
+
+            <div class="qa-card">
+                <div class="qa-number">11</div>
+                <div class="qa-question">Como usar Deep Serve + Cloud para pesquisa de mercado?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Perguntado por: Marcos</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 00:15:51</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Resposta (Marcos compartilhando descoberta)</div>
+                    <div class="qa-answer-text">
+                        <strong>Processo:</strong><br>
+                        1. Abrir Cloud AI Studio (ou Google AI Studio)<br>
+                        2. Fazer pesquisa de mercado: "Pesquise sobre [seu nicho/produto]"<br>
+                        3. Busca na internet inteira, retorna contexto rico<br>
+                        4. Estruturar projeto: "Com base nessa pesquisa, estruture um projeto para implementar X usando AIOS"<br>
+                        5. Output: Plano de projeto estruturado<br>
+                        6. Jogar resultado pro AIOS pra criar PRD
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Por que funciona</div>
+                    <div class="qa-context-text">
+                        • Deep Serve procura em toda internet<br>
+                        • Traz gaps (lacunas) que você não pensou<br>
+                        • Identifica concorrentes<br>
+                        • Sugere tech stack (bibliotecas que você nem conhecia)<br>
+                        • Direcionamento de features
+                    </div>
+                </div>
+                <div class="quote-box">
+                    "Tá dando muito certo aqui pra mim" — Marcos
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Ferramentas</span>
+                    <span class="qa-tag">Deep Serve</span>
+                    <span class="qa-tag">Pesquisa</span>
+                </div>
+            </div>
+
+            <div class="qa-card">
+                <div class="qa-number">12</div>
+                <div class="qa-question">Como trabalhar com múltiplas janelas Cloud Code?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Respondido por: Torriani</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 01:04:19</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Setup recomendado</div>
+                    <div class="qa-answer-text">
+                        <strong>Janela 1 - AIOS Master (Perguntas):</strong><br>
+                        • Terminal aberto só com <code>@aios-master</code><br>
+                        • Usar pra fazer TODAS as perguntas<br>
+                        • "Como faço X?", "O que é Y?", "Qual próximo passo?"<br>
+                        • Ele ensina tudo<br><br>
+
+                        <strong>Janela 2 - Desenvolvimento:</strong><br>
+                        • Terminal do projeto<br>
+                        • Onde você roda agentes (@dev, @po, @sm, etc.)<br>
+                        • Onde acontece o trabalho
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Vantagens</div>
+                    <div class="qa-context-text">
+                        • Contextos separados<br>
+                        • Histórico de perguntas não polui histórico de dev<br>
+                        • AIOS Master vira seu mentor pessoal
+                    </div>
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Ferramentas</span>
+                    <span class="qa-tag">AIOS Master</span>
+                    <span class="qa-tag">Workflow</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CASOS DE USO -->
+        <div class="section">
+            <h2 class="section-title">Casos de Uso e Negócios</h2>
+
+            <div class="qa-card">
+                <div class="qa-number">13</div>
+                <div class="qa-question">Como você está aplicando AIOS em clientes reais?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Discussão: Cristiano</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 00:07:00+</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Caso 1 - Consultoria Jurídica Empresarial</div>
+                    <div class="qa-answer-text">
+                        <strong>Problema:</strong><br>
+                        • Cliente com 30-50+ clientes (triplicou nos últimos anos)<br>
+                        • Não consegue dar qualidade de atendimento<br>
+                        • Processos empíricos dependentes dos sócios<br>
+                        • Quando tiram o olho da operação → processos se perdem<br>
+                        • Gargalos em várias áreas (financeiro, jurídico, RH, processos)<br><br>
+
+                        <strong>Solução proposta:</strong><br>
+                        • Criar sistemas com AIOS para consistência operacional<br>
+                        • Identificar gargalos que impedem escala<br>
+                        • Implantar IA nos processos do cliente<br><br>
+
+                        <strong>Desafio cultural:</strong><br>
+                        • "Time que tá ganhando não se mexe" (mentalidade do cliente)<br>
+                        • Funcionários usando IA errado (delegando decisões em vez de agilizar processos)<br>
+                        • Respostas rasas porque estão sendo preguiçosos<br>
+                        • Desafio: Quebrar barreira do ranço com IA criado por mal uso
+                    </div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Caso 2 - Saúde Masculina (Urologia)</div>
+                    <div class="qa-answer-text">
+                        <strong>Problema:</strong><br>
+                        • Homem historicamente não cuida da saúde<br>
+                        • Barreira cultural pra falar sobre saúde masculina/urologia<br>
+                        • Atendimento episódico vs. acompanhamento contínuo<br>
+                        • Pessoas não querem falar com humano sobre certas coisas<br><br>
+
+                        <strong>Oportunidades com IA:</strong><br>
+                        • Agilizar triagem e diagnóstico inicial<br>
+                        • Uso de IA para robótica médica (hospitais/universidades já fazem)<br>
+                        • <strong>Destaque:</strong> IA como primeiro atendimento anônimo<br>
+                        &nbsp;&nbsp;- Pessoas preferem falar com IA do que com médico sobre certos assuntos<br>
+                        &nbsp;&nbsp;- Reduz vergonha/embaraço<br>
+                        • Acompanhamento contínuo (ex: reação alérgica à meia-noite → CS da IA responde)<br><br>
+
+                        <strong>Desafio:</strong><br>
+                        • Solução tem potencial MAS quadramento (monetização) é complexo<br>
+                        • Precisa minerar mais pra entender onde encaixa no processo<br>
+                        • Não é episódico (consulta única) - é acompanhamento<br>
+                        • Mais tempo pra desenvolver vs. soluções rápidas
+                    </div>
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Casos de Uso</span>
+                    <span class="qa-tag">Consultoria</span>
+                    <span class="qa-tag">Saúde</span>
+                </div>
+            </div>
+
+            <div class="qa-card">
+                <div class="qa-number">14</div>
+                <div class="qa-question">Estou desenvolvendo disparador de WhatsApp (Evolution API)</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Compartilhado por: Zé Carlos</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 00:00:57+</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Processo de Desenvolvimento</div>
+                    <div class="qa-answer-text">
+                        <strong>Contexto:</strong><br>
+                        • Criando disparador com Evolution API (WhatsApp não-oficial)<br>
+                        • Stack: Evolution API + Cloud Code + AIOS<br><br>
+
+                        <strong>Processo:</strong><br>
+                        1. Pegou documentação completa da Evolution API<br>
+                        2. Jogou no Cloud Code pra entender todos os endpoints<br>
+                        3. Cloud Code construiu tudo<br>
+                        4. Refatorou com Cloud Code + AIOS (segurança, best practices)<br><br>
+
+                        <strong>Features implementadas:</strong><br>
+                        • Criar instância<br>
+                        • Vincular proxy da instância<br>
+                        • Vincular webhook<br>
+                        • Vincular eventos<br>
+                        • Processar grupos<br>
+                        • Gerar QR Code (base64 → imagem)
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Desafio Atual</div>
+                    <div class="qa-context-text">
+                        <strong>WhatsApp normal bloqueando muito</strong><br><br>
+
+                        <strong>Solução: Co-existência de 5 instâncias por cliente</strong><br>
+                        • Sistema alterna entre números automaticamente<br>
+                        • 5 mensagens do número 1<br>
+                        • 5 mensagens do número 2<br>
+                        • Rotação manual pra não conversar sempre com mesmo número<br>
+                        • Evita bloqueio
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Dica (Zé + Talles)</div>
+                    <div class="qa-context-text">
+                        Começar pela <strong>Evolution API</strong> (não-oficial) pra aprender.<br><br>
+
+                        API Oficial do WhatsApp (Meta Business) é muito burocrática:<br>
+                        • Cliente precisa aprovar várias coisas<br>
+                        • Você tem que pegar na mão do cliente<br>
+                        • Pessoas cobram só pra fazer cadastro na Meta<br>
+                        • Quem gira muito tráfego sofre com Meta Business
+                    </div>
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Casos de Uso</span>
+                    <span class="qa-tag">WhatsApp</span>
+                    <span class="qa-tag">Evolution API</span>
+                </div>
+            </div>
+
+            <div class="qa-card">
+                <div class="qa-number">15</div>
+                <div class="qa-question">Integração com Meta Ads - como conectar campanhas?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Perguntado por: Davidson</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 00:13:01</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Contexto</div>
+                    <div class="qa-answer-text">
+                        Quer puxar custo por lead, ROAS de campanha em tempo real. Análise de lead na hora que chega. Tudo funcionando, <strong>falta conectar com Meta Ads</strong>.
+                    </div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Resposta (João + Zé)</div>
+                    <div class="qa-answer-text">
+                        <strong>Caminho oficial (ÚNICO recomendado):</strong><br>
+                        1. Criar aplicativo no Facebook Developers<br>
+                        2. Solicitar permissões da API de Ads<br>
+                        3. Aguardar liberação da Meta (aprovações, autenticações)<br>
+                        4. Implementar OAuth + tokens<br><br>
+
+                        <strong>Via não-oficial (Instagram/Facebook):</strong><br>
+                        • ❌ NÃO RECOMENDADO<br>
+                        • Meta coloca flag na conta<br>
+                        • Pode banir pra sempre<br>
+                        • Nunca mais consegue fazer nada
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Conclusão</div>
+                    <div class="qa-context-text">
+                        Não tem caminho mais rápido. Tem que seguir processo burocrático oficial. Enquanto isso: trabalhar no resto da solução.
+                    </div>
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Casos de Uso</span>
+                    <span class="qa-tag">Meta Ads</span>
+                    <span class="qa-tag">APIs</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MINDSET -->
+        <div class="section">
+            <h2 class="section-title">Mindset e Boas Práticas</h2>
+
+            <div class="qa-card">
+                <div class="qa-number">16</div>
+                <div class="qa-question">Como não ficar preso esperando próxima versão do Squad Creator?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Discussão geral</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 01:01:00+</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Resposta (João)</div>
+                    <div class="qa-answer-text">
+                        <strong>80/20 do aprendizado:</strong><br>
+                        • Não é dominar ferramentas<br>
+                        • Não é acompanhar todas atualizações do Alan<br>
+                        • É dominar o <strong>PROCESSO</strong><br>
+                        &nbsp;&nbsp;- Como tudo se conecta<br>
+                        &nbsp;&nbsp;- Como tudo se amarra<br>
+                        &nbsp;&nbsp;- Lógica por trás<br>
+                        &nbsp;&nbsp;- Motor do sistema<br><br>
+
+                        <strong>Por quê Alan lança tantas versões?</strong><br>
+                        • Ele tá num nível avançado<br>
+                        • Precisa de funcionalidades que você ainda não precisa<br>
+                        • Se você não sente necessidade de atualização → versão atual serve perfeitamente
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Conselho</div>
+                    <div class="qa-context-text">
+                        1. Pegue versão atual do Squad Creator<br>
+                        2. Salve numa pasta<br>
+                        3. <strong>COMECE A DESENVOLVER</strong><br>
+                        4. Se bloquear, atualiza<br>
+                        5. Se não bloquear, segue com o que tem
+                    </div>
+                </div>
+                <div class="quote-box">
+                    "Se você ficar esperando a próxima versão do Alan, vai ficar pra sempre na sombra dele e nunca vai materializar nada." — João
+                </div>
+                <div class="quote-box">
+                    "80/20 não é dominar ferramenta, é dominar o PROCESSO. A ferramenta vai evoluir, o processo fica." — João
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Mindset</span>
+                    <span class="qa-tag">Aprendizado</span>
+                    <span class="qa-tag">80/20</span>
+                </div>
+            </div>
+
+            <div class="qa-card">
+                <div class="qa-number">17</div>
+                <div class="qa-question">Não saia perfeito na primeira vez - e agora?</div>
+                <div class="qa-meta">
+                    <div class="qa-meta-item">👤 Discussão: Torriani + João</div>
+                    <div class="qa-meta-item">⏱️ Timestamp: 01:00:33</div>
+                </div>
+                <div class="qa-answer">
+                    <div class="qa-answer-label">Resposta</div>
+                    <div class="qa-answer-text">
+                        <strong>FAZ DE NOVO</strong><br>
+                        • Não importa o app que vai sair<br>
+                        • O que importa é dominar o processo<br>
+                        • Conhecimento empírico > conhecimento teórico
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Exemplo Real (Torriani)</div>
+                    <div class="qa-context-text">
+                        "Fiz tudo no Cloud, achei que nunca ia conseguir no Cloud Code"<br>
+                        "Hoje tá tudo no Cloud Code, não quero nem olhar pro Cloud"<br>
+                        <strong>Progresso incremental:</strong> Hoje melhor que ontem
+                    </div>
+                </div>
+                <div class="qa-context">
+                    <div class="qa-context-label">Conselho (Torriani)</div>
+                    <div class="qa-context-text">
+                        • Não tenha medo de começar do zero de novo<br>
+                        • Pegue processo que João ensinou<br>
+                        • Crie qualquer coisa (lista de tarefas, organizador de notas)<br>
+                        • Teste o processo<br>
+                        • Vai aprender FAZENDO
+                    </div>
+                </div>
+                <div class="quote-box">
+                    "Não existe conhecimento mais valioso que o conhecimento empírico - campo de batalha, skin in the game." — João
+                </div>
+                <div class="quote-box">
+                    "Fiz tudo no Cloud, achei que nunca ia conseguir no Cloud Code. Hoje não quero nem olhar pro Cloud." — Torriani
+                </div>
+                <div class="qa-tags">
+                    <span class="qa-tag">Mindset</span>
+                    <span class="qa-tag">Prática</span>
+                    <span class="qa-tag">Progresso</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RECURSOS E INSIGHTS -->
+        <div class="section">
+            <h2 class="section-title">Recursos Compartilhados</h2>
+
+            <ul class="resources-list">
+                <li><strong>Squad Creator (versão 5-2-26):</strong> GitHub + grupo WhatsApp</li>
+                <li><strong>Evolution API:</strong> Documentação completa (Zé Carlos usou)</li>
+                <li><strong>Architect Agent:</strong> Google AI Studio (João usa pra wireframes)</li>
+                <li><strong>Processo de workflow:</strong> Diagrama desenhado por João (screenshot compartilhado)</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Principais Aprendizados</h2>
+
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-title">Para Iniciantes</div>
+                    <div class="insight-text">
+                        ✅ Use IDE com terminal integrado (não comece direto no terminal puro)<br>
+                        ✅ CloudMD por projeto (não tente fazer global/frankenstein)<br>
+                        ✅ Comece com projeto simples (lista de tarefas, organizador)<br>
+                        ✅ Duas janelas: Master (perguntas) + Dev (trabalho)<br>
+                        ✅ Não espere próxima versão - comece com o que tem
+                    </div>
+                </div>
+
+                <div class="insight-card">
+                    <div class="insight-title">Para Intermediários</div>
+                    <div class="insight-text">
+                        ✅ Modularize PRD em specs (UI, tech, features separados)<br>
+                        ✅ PRDs incrementais (feature por feature) > PRD gigante<br>
+                        ✅ Sessão de descarrego + pesquisas antes de entrar no AIOS<br>
+                        ✅ Prova de fogo sempre (destrua sua ideia)<br>
+                        ✅ Workspace + projetos (estrutura organizada)
+                    </div>
+                </div>
+
+                <div class="insight-card">
+                    <div class="insight-title">Para Avançados</div>
+                    <div class="insight-text">
+                        ✅ Terminal puro quando rodar 4+ agentes simultâneos<br>
+                        ✅ Agents customizados em pastas separadas (marketing/, mentes-clonadas/)<br>
+                        ✅ Architect agent (Google AI) pra wireframes antes de codar<br>
+                        ✅ Copiar AIOS infra entre projetos (exceto CLAUDE.md)<br>
+                        ✅ Rotação de instâncias (WhatsApp - evitar bloqueio)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Citações Memoráveis</h2>
+
+            <div class="quote-box">
+                "Se você ficar esperando a próxima versão do Alan, vai ficar pra sempre na sombra dele e nunca vai materializar nada." — João
+            </div>
+
+            <div class="quote-box">
+                "LLM fazendo PRD inteiro é igual você no final da prova de vestibular - não consegue nem ler a pergunta direito." — João
+            </div>
+
+            <div class="quote-box">
+                "80/20 não é dominar ferramenta, é dominar o PROCESSO. A ferramenta vai evoluir, o processo fica." — João
+            </div>
+
+            <div class="quote-box">
+                "Não existe conhecimento mais valioso que o conhecimento empírico - campo de batalha, skin in the game." — João
+            </div>
+
+            <div class="quote-box">
+                "Fiz tudo no Cloud, achei que nunca ia conseguir no Cloud Code. Hoje não quero nem olhar pro Cloud." — Torriani
+            </div>
+
+            <div class="quote-box">
+                "CloudMD é o cérebro do sistema. Se você colocar cérebro frankenstein que não tem aqueles arquivos, aquelas pastas - vai quebrar." — João
+            </div>
+        </div>
+    </div>
+</body>
+</html>
