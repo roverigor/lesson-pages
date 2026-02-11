@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avaliação Pedagógica Completa - AIOS Avançado: Aula 01 | 04 Fev 2026</title>
+    <title>Avaliação Pedagógica Interna - Aula 01 | 04 Fev 2026</title>
     <style>
         * {
             margin: 0;
@@ -24,7 +24,6 @@
             margin: 0 auto;
         }
 
-        /* Header */
         .header {
             text-align: center;
             margin-bottom: 60px;
@@ -64,7 +63,6 @@
             line-height: 1.8;
         }
 
-        /* Scores Grid */
         .scores-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -112,7 +110,6 @@
             margin-top: 4px;
         }
 
-        /* Alert Box */
         .alert-box {
             background: rgba(239, 68, 68, 0.1);
             border: 2px solid rgba(239, 68, 68, 0.3);
@@ -136,7 +133,6 @@
             line-height: 1.7;
         }
 
-        /* Section */
         .section {
             margin: 80px 0;
         }
@@ -150,7 +146,6 @@
             text-align: center;
         }
 
-        /* GPS Cards */
         .gps-card {
             background: #0a0a0a;
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -185,6 +180,7 @@
         .gps-score.excellent { color: #22c55e; }
         .gps-score.good { color: #3b82f6; }
         .gps-score.acceptable { color: #eab308; }
+        .gps-score.weak { color: #ef4444; }
 
         .gps-content {
             display: grid;
@@ -226,95 +222,6 @@
             color: rgba(255, 255, 255, 0.3);
         }
 
-        /* Action Cards */
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-        }
-
-        .action-card {
-            background: #0a0a0a;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 24px;
-            transition: all 0.3s ease;
-        }
-
-        .action-card:hover {
-            border-color: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .action-card.critical {
-            border-color: rgba(239, 68, 68, 0.3);
-            background: rgba(239, 68, 68, 0.05);
-        }
-
-        .action-card.medium {
-            border-color: rgba(234, 179, 8, 0.3);
-            background: rgba(234, 179, 8, 0.05);
-        }
-
-        .action-card.low {
-            border-color: rgba(34, 197, 94, 0.3);
-            background: rgba(34, 197, 94, 0.05);
-        }
-
-        .action-priority {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-        }
-
-        .action-priority.critical {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-        }
-
-        .action-priority.medium {
-            background: rgba(234, 179, 8, 0.2);
-            color: #eab308;
-        }
-
-        .action-priority.low {
-            background: rgba(34, 197, 94, 0.2);
-            color: #22c55e;
-        }
-
-        .action-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .action-description {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.6);
-            line-height: 1.7;
-            margin-bottom: 16px;
-        }
-
-        .action-metrics {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .action-metric {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* Feedback Box */
         .feedback-box {
             background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -346,6 +253,40 @@
             border-left: 3px solid #3b82f6;
         }
 
+        .sentiment-card {
+            background: #0a0a0a;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .sentiment-header {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #3b82f6;
+        }
+
+        .sentiment-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .sentiment-quote {
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+        }
+
+        .sentiment-meta {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 32px;
@@ -363,24 +304,22 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <div class="header">
             <span class="label">🔒 CONFIDENCIAL - TIME PEDAGÓGICO • 04 FEV 2026</span>
             <h1>
-                Avaliação Pedagógica Completa:<br>
+                Avaliação Pedagógica Interna:<br>
                 <span class="italic">Aula 01 - Arquitetura e Workflows AIOS</span>
             </h1>
             <p class="subtitle">
-                Análise detalhada usando GPS (10 aspectos) + Metodologia Lendária (7 pilares)
+                Análise detalhada usando GPS (10 aspectos) + Metodologia Lendária (7 pilares) | Professores: Alan Nicolas + Pedro Valerio Lopez | Duração: 3h10min
             </p>
         </div>
 
-        <!-- Scores Overview -->
         <div class="scores-grid">
-            <div class="score-card good">
-                <span class="score-value">8.2</span>
+            <div class="score-card acceptable">
+                <span class="score-value">7.9</span>
                 <span class="score-label">Nota Final</span>
-                <span class="score-detail">Muito Bom</span>
+                <span class="score-detail">Aceitável</span>
             </div>
             <div class="score-card good">
                 <span class="score-value">8.5</span>
@@ -388,7 +327,7 @@
                 <span class="score-detail">10 aspectos</span>
             </div>
             <div class="score-card acceptable">
-                <span class="score-value">7.9</span>
+                <span class="score-value">7.4</span>
                 <span class="score-label">Met. Lendária</span>
                 <span class="score-detail">7 pilares</span>
             </div>
@@ -399,71 +338,48 @@
             </div>
         </div>
 
-        <!-- Critical Alert -->
         <div class="alert-box">
             <div class="alert-title">
                 🔴 ÁREA CRÍTICA - AÇÃO IMEDIATA NECESSÁRIA
             </div>
             <div class="alert-text">
-                <strong>Sobrecarga Cognitiva Detectada:</strong> 7 conceitos ensinados vs limite recomendado de 2-3.<br><br>
-                <strong>Impacto:</strong> Risco de alunos lembrarem superficialmente sem dominar nenhum conceito.<br>
-                <strong>Evidência:</strong> Chat mostrou múltiplas perguntas sobre Tool Discovery não esclarecidas completamente.<br><br>
-                <strong>✅ Ação Recomendada:</strong> Dividir conteúdo em 2 aulas separadas.
+                <strong>Sobrecarga Cognitiva EXTREMA Detectada:</strong> 14 conceitos ensinados vs limite recomendado de 2-3.<br><br>
+                <strong>Impacto:</strong> Múltiplos alunos reportaram "surdo em bingo", "nunca me senti tão burro".<br>
+                <strong>Evidência:</strong> Felipe Piedade: "nunca me senti tão burro. é tudo novo." | Helder: "Eu confesso que estou igual surdo em bingo!"<br><br>
+                <strong>✅ Ação Recomendada:</strong> Dividir conteúdo em 4-5 aulas separadas:<br>
+                - Aula 1: Mentalidade + Estrutura AIOS<br>
+                - Aula 2: Agentes e Comandos (@ vs /)<br>
+                - Aula 3: Ferramentas e Automação<br>
+                - Aula 4: Metodologia e Boas Práticas<br>
+                - Aula 5: Conceitos Avançados
             </div>
         </div>
 
-        <!-- GPS Framework -->
         <div class="section">
-            <h2 class="section-title">Framework GPS - 10 Aspectos Pedagógicos</h2>
+            <h2 class="section-title">Framework GPS - 10 Aspectos Pedagógicos (Resumo Top 5)</h2>
 
             <div class="gps-card">
                 <div class="gps-header">
                     <h3 class="gps-title">1. Goal (Destino & Motivação)</h3>
-                    <span class="gps-score good">8.5</span>
-                </div>
-                <div class="gps-content">
-                    <div class="gps-column">
-                        <div class="gps-column-title">✅ Evidências Positivas</div>
-                        <ul>
-                            <li>Promessa clara: preparar para cohort avançado</li>
-                            <li>Objetivo tangível: atualização automática do AIOS</li>
-                            <li>Motivação explícita: "Não deixar ninguém para trás"</li>
-                            <li>Benefício concreto: sistemas que se auto-melhoram</li>
-                        </ul>
-                    </div>
-                    <div class="gps-column">
-                        <div class="gps-column-title">⚠️ Oportunidades de Melhoria</div>
-                        <ul>
-                            <li>Conectar mais ao "por quê" emocional (Nível 5 dos 5 Porquês)</li>
-                            <li>Hook inicial foi mais técnico que aspiracional</li>
-                            <li>Faltou conexão explícita ao impacto de vida/carreira</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="gps-card">
-                <div class="gps-header">
-                    <h3 class="gps-title">2. Position (Origem & Empatia)</h3>
                     <span class="gps-score excellent">9.5</span>
                 </div>
                 <div class="gps-content">
                     <div class="gps-column">
-                        <div class="gps-column-title">✅ Evidências Positivas</div>
+                        <div class="gps-column-title">✅ Evidências Excepcionais</div>
                         <ul>
-                            <li>Reconheceu múltiplos níveis: "Muitos não sabem nada de código"</li>
-                            <li>Validou medos: "Sei que vocês estão com muitas dúvidas"</li>
-                            <li>Empatia genuína: "Não vamos deixar ninguém para trás"</li>
-                            <li>Linguagem inclusiva: "Até o Zé não entende algumas coisas"</li>
-                            <li>Desmistificou: mostrou que ele mesmo ainda aprende</li>
+                            <li>Hook emocional PODEROSO: Tokens = infraestrutura (não luxo)</li>
+                            <li>Números concretos: R$1M em time = R$500 em tokens</li>
+                            <li>Visão aspiracional: "Unicórnios de 1 pessoa só em 2026"</li>
+                            <li>Benefício tangível: "Impressora de sistemas na mochila"</li>
+                            <li>Conexão direta ao Nível 5 dos 5 Porquês (liberdade, autonomia)</li>
                         </ul>
                     </div>
                     <div class="gps-column">
-                        <div class="gps-column-title">🌟 Destaque Excepcional</div>
+                        <div class="gps-column-title">🌟 Momento Excepcional</div>
                         <ul>
-                            <li>Alan criou segurança psicológica ao admitir que não sabe tudo</li>
-                            <li>Ofereceu múltiplos caminhos de aprendizado</li>
-                            <li>"Eu pergunto pra IA sem vergonha" - eliminou bloqueios</li>
+                            <li>Alan começou com MENTALIDADE antes de técnica (ordem inversa perfeita)</li>
+                            <li>Criou frame mental: "cada conceito = mais liberdade"</li>
+                            <li>Alunos reagiram: "Esse mindset é o que muda o jogo"</li>
                         </ul>
                     </div>
                 </div>
@@ -471,130 +387,26 @@
 
             <div class="gps-card">
                 <div class="gps-header">
-                    <h3 class="gps-title">3. Steps (Rota & Execução)</h3>
-                    <span class="gps-score acceptable">7.5</span>
-                </div>
-                <div class="gps-content">
-                    <div class="gps-column">
-                        <div class="gps-column-title">✅ Evidências Positivas</div>
-                        <ul>
-                            <li>Demonstrou instalação passo a passo</li>
-                            <li>Mostrou estrutura de pastas concretamente</li>
-                            <li>Hands-on: criou Squad Creator ao vivo</li>
-                            <li>Sequência lógica: setup → customização → uso</li>
-                        </ul>
-                    </div>
-                    <div class="gps-column">
-                        <div class="gps-column-title">⚠️ Oportunidades de Melhoria</div>
-                        <ul>
-                            <li>Alguns passos não numerados explicitamente</li>
-                            <li>Faltou exercício prático IMEDIATO para alunos</li>
-                            <li>Muito conteúdo sem pausas estruturadas</li>
-                            <li>Sugestão: "Peguem 5min e façam X. Joinha no chat quando conseguir"</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="gps-card">
-                <div class="gps-header">
-                    <h3 class="gps-title">4. Semiótica (Elementos Visuais)</h3>
-                    <span class="gps-score good">8.0</span>
-                </div>
-                <div class="gps-content">
-                    <div class="gps-column">
-                        <div class="gps-column-title">✅ Analogias Poderosas</div>
-                        <ul>
-                            <li>"Fonte da verdade = mocinho do shopping onde criança perdida vai"</li>
-                            <li>"Alfred do Batman trabalhando nos bastidores"</li>
-                            <li>"Github = Control+Z pra sua vida"</li>
-                            <li>"Furadeira que te responde enquanto trabalha"</li>
-                            <li>Compartilhou tela o tempo todo (visual forte)</li>
-                        </ul>
-                    </div>
-                    <div class="gps-column">
-                        <div class="gps-column-title">⚠️ Oportunidades</div>
-                        <ul>
-                            <li>Poderia ter desenhado diagrama da estrutura Upstream</li>
-                            <li>Metáfora do "copo" (Pedro) merecia visual complementar</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="gps-card">
-                <div class="gps-header">
-                    <h3 class="gps-title">5. Clareza (Linguagem Acessível)</h3>
-                    <span class="gps-score good">8.5</span>
-                </div>
-                <div class="gps-content">
-                    <div class="gps-column">
-                        <div class="gps-column-title">✅ Evidências Positivas</div>
-                        <ul>
-                            <li>Jargões explicados: "Merge é mesclar. Tu pega e mistura"</li>
-                            <li>Traduziu termos: "Fork, Upstream... calma que vou explicar"</li>
-                            <li>Linguagem coloquial: "Putz", "Cara" (proximidade)</li>
-                            <li>Auto-crítica saudável: "Eu nem sei os nomes técnicos"</li>
-                        </ul>
-                    </div>
-                    <div class="gps-column">
-                        <div class="gps-column-title">⚠️ Oportunidades</div>
-                        <ul>
-                            <li>MCP = Model Context Protocol foi assumido (não explicado)</li>
-                            <li>Tool Discovery ficou abstrato demais</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="gps-card">
-                <div class="gps-header">
-                    <h3 class="gps-title">6. Ritmo (Gestão de Tempo)</h3>
-                    <span class="gps-score acceptable">7.0</span>
-                </div>
-                <div class="gps-content">
-                    <div class="gps-column">
-                        <div class="gps-column-title">✅ Evidências Positivas</div>
-                        <ul>
-                            <li>Conceitos complexos tiveram tempo adequado</li>
-                            <li>Pausou para perguntas do chat várias vezes</li>
-                            <li>Demonstrações permitiram absorção</li>
-                        </ul>
-                    </div>
-                    <div class="gps-column">
-                        <div class="gps-column-title">⚠️ Oportunidades</div>
-                        <ul>
-                            <li>Aula longa (2h20) sem intervalos estruturados</li>
-                            <li>Alguns tópicos apressados no final</li>
-                            <li>Acelerou muito na última meia hora</li>
-                            <li>Sugestão: Intervalo de 5-10min na marca de 1h</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="gps-card">
-                <div class="gps-header">
-                    <h3 class="gps-title">7. Engajamento (Interação)</h3>
+                    <h3 class="gps-title">2. Semiótica (Elementos Visuais)</h3>
                     <span class="gps-score excellent">9.0</span>
                 </div>
                 <div class="gps-content">
                     <div class="gps-column">
-                        <div class="gps-column-title">✅ Evidências Positivas</div>
+                        <div class="gps-column-title">✅ Analogias Universais</div>
                         <ul>
-                            <li>Respondeu >30 perguntas do chat ativamente</li>
-                            <li>Chamou alunos pelo nome: Flávio, Marcos, José, Thales</li>
-                            <li>Energy alta mantida por 2h+</li>
-                            <li>Trouxe Pedro como convidado (variedade)</li>
-                            <li>Reconheceu conquistas: "Renata criou ALMA"</li>
+                            <li>"Tokens = Energia Elétrica" (experiência brasileira universal)</li>
+                            <li>"AIOS = Impressora de Sistemas" (tangível, poderoso)</li>
+                            <li>"claude.md = Terra, AIOS = Continente" (proposta por aluno)</li>
+                            <li>"YOLO Mode = Modo Foda-se" (humor + precisão)</li>
                         </ul>
                     </div>
                     <div class="gps-column">
-                        <div class="gps-column-title">🌟 Destaque</div>
+                        <div class="gps-column-title">🌟 Mapa Visual = Virada</div>
                         <ul>
-                            <li>48 participantes ativos (taxa muito alta)</li>
-                            <li>Clima de comunidade forte</li>
-                            <li>Alunos ajudando outros alunos</li>
+                            <li>Diagrama Epic → Story → Task gerou "entendi 100%" coletivo</li>
+                            <li>Momento de MAIOR CLAREZA da aula</li>
+                            <li>Alunos pediram para compartilhar documento</li>
+                            <li>Prova: VISUAL > TEXTO</li>
                         </ul>
                     </div>
                 </div>
@@ -602,53 +414,26 @@
 
             <div class="gps-card">
                 <div class="gps-header">
-                    <h3 class="gps-title">8. Organização (Estrutura)</h3>
-                    <span class="gps-score acceptable">7.5</span>
-                </div>
-                <div class="gps-content">
-                    <div class="gps-column">
-                        <div class="gps-column-title">✅ Evidências Positivas</div>
-                        <ul>
-                            <li>Transições presentes: "Bom, agora vou mostrar..."</li>
-                            <li>Preview dado: "Vamos revisar + pontos novos"</li>
-                            <li>Contextualizou: "Essa é extra, não é programático"</li>
-                        </ul>
-                    </div>
-                    <div class="gps-column">
-                        <div class="gps-column-title">⚠️ Oportunidades</div>
-                        <ul>
-                            <li>Faltou recap estruturado no final</li>
-                            <li>Transições às vezes abruptas</li>
-                            <li>Não apresentou agenda explícita no início</li>
-                            <li>Sugestão: Slide inicial com 5 tópicos numerados</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="gps-card">
-                <div class="gps-header">
-                    <h3 class="gps-title">9. Domínio (Expertise do Conteúdo)</h3>
+                    <h3 class="gps-title">3. Engajamento (Interação)</h3>
                     <span class="gps-score excellent">9.5</span>
                 </div>
                 <div class="gps-content">
                     <div class="gps-column">
-                        <div class="gps-column-title">✅ Evidências Positivas</div>
+                        <div class="gps-column-title">✅ Participação Excepcional</div>
                         <ul>
-                            <li>Expertise evidente em AIOS/arquitetura</li>
-                            <li>Respondeu todas perguntas com precisão</li>
-                            <li>Demonstrou profundidade quando desafiado</li>
-                            <li>Antecipou dúvidas: "Sei que vão perguntar sobre..."</li>
-                            <li>Trouxe exemplos além do óbvio</li>
+                            <li>100% dos 48 alunos participaram ativamente</li>
+                            <li>1310 mensagens no chat (7 msgs/min)</li>
+                            <li>67 perguntas técnicas profundas</li>
+                            <li>Comunidade se ajudando mutuamente (José Carlos, Renata)</li>
+                            <li>Energia mantida por 3h10min</li>
                         </ul>
                     </div>
                     <div class="gps-column">
-                        <div class="gps-column-title">🌟 Momento Destaque</div>
+                        <div class="gps-column-title">🌟 Comunidade Ativa</div>
                         <ul>
-                            <li>Pegou feedback do Pedro em tempo real</li>
-                            <li>Integrou no Squad Creator ao vivo (Matriz RICE)</li>
-                            <li>Domínio não apenas técnico, mas FILOSÓFICO</li>
-                            <li>Entende o "por quê" por trás do "o quê"</li>
+                            <li>Alunos respondendo dúvidas de outros alunos</li>
+                            <li>José Carlos criando recursos em tempo real</li>
+                            <li>Clima de comunidade forte e colaborativa</li>
                         </ul>
                     </div>
                 </div>
@@ -656,161 +441,244 @@
 
             <div class="gps-card">
                 <div class="gps-header">
-                    <h3 class="gps-title">10. Técnico (Setup & Qualidade)</h3>
-                    <span class="gps-score good">8.5</span>
+                    <h3 class="gps-title">4. Domínio (Expertise)</h3>
+                    <span class="gps-score excellent">9.5</span>
                 </div>
                 <div class="gps-content">
                     <div class="gps-column">
-                        <div class="gps-column-title">✅ Evidências Positivas</div>
+                        <div class="gps-column-title">✅ Expertise Reconhecida</div>
                         <ul>
-                            <li>Áudio claro na maior parte do tempo</li>
-                            <li>Compartilhamento de tela funcional</li>
-                            <li>Sem travamentos ou interrupções técnicas</li>
-                            <li>Setup profissional - gravação + chat sincronizados</li>
+                            <li>Pedro (8 meses experiência) impressionou com profundidade</li>
+                            <li>Aluno: "Quando Claude tem dúvida, pergunta para o Pedro"</li>
+                            <li>Antecipou dúvidas proativamente</li>
+                            <li>Respondeu perguntas com precisão técnica</li>
+                            <li>Domínio filosófico + técnico</li>
                         </ul>
                     </div>
                     <div class="gps-column">
-                        <div class="gps-column-title">⚠️ Incidentes Menores</div>
+                        <div class="gps-column-title">🌟 Dupla Perfeita</div>
                         <ul>
-                            <li>1 relato de áudio mudo (00:26)</li>
-                            <li>Resolvido em <1min</li>
+                            <li>Alan = visão + mentalidade + motivação</li>
+                            <li>Pedro = execução + detalhes técnicos</li>
+                            <li>Sistema natural de tradução simultânea</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gps-card">
+                <div class="gps-header">
+                    <h3 class="gps-title">5. Steps (Rota & Execução)</h3>
+                    <span class="gps-score acceptable">7.8</span>
+                </div>
+                <div class="gps-content">
+                    <div class="gps-column">
+                        <div class="gps-column-title">✅ Pontos Fortes</div>
+                        <ul>
+                            <li>Sempre explicou "por quê" antes de "o quê"</li>
+                            <li>Mapa visual foi divisor de águas</li>
+                            <li>Comandos específicos dados</li>
+                            <li>Dupla complementar (visão + execução)</li>
+                        </ul>
+                    </div>
+                    <div class="gps-column">
+                        <div class="gps-column-title">🔴 CRÍTICO: Falta Prática Guiada</div>
+                        <ul>
+                            <li>Aula 100% EXPLICAÇÃO, 0% HANDS-ON guiado</li>
+                            <li>Alunos tentaram aplicar em paralelo sem guia</li>
+                            <li>Gerou confusão em instalações</li>
+                            <li>Faltaram pausas estruturadas para exercícios</li>
                         </ul>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Metodologia Lendária (Resumida) -->
         <div class="section">
-            <h2 class="section-title">Metodologia Lendária - 7 Pilares (Resumo)</h2>
+            <h2 class="section-title">Metodologia Lendária - Pilar Crítico</h2>
 
             <div class="gps-card">
                 <div class="gps-header">
                     <h3 class="gps-title">Pilar 3: Regra de Ouro (2-3 Conceitos)</h3>
-                    <span class="gps-score acceptable">6.0</span>
+                    <span class="gps-score weak">4.0</span>
                 </div>
                 <div class="alert-text" style="padding: 16px; background: rgba(239, 68, 68, 0.05); border-radius: 8px; margin-top: 16px;">
-                    <strong>⚠️ ATENÇÃO - Risco de Sobrecarga:</strong><br><br>
-                    7 conceitos ensinados = 3.4x o limite recomendado (2-3)<br><br>
+                    <strong>🔴 FALHA CRÍTICA - Sobrecarga Extrema:</strong><br><br>
+                    14 conceitos em 3h10min = 6.6x o limite recomendado (2-3)<br><br>
                     <strong>Conceitos Identificados:</strong><br>
-                    1. Upstream (atualização automática)<br>
-                    2. Estrutura de projetos (monorepo vs multi)<br>
-                    3. Tool Discovery (pesquisa automática)<br>
-                    4. Matriz RICE (priorização)<br>
-                    5. Modelos Mentais (frameworks de decisão)<br>
-                    6. Clonagem de Mentes<br>
-                    7. MCPs essenciais (context7, desktop-commander, browser)
+                    1. Mentalidade tokens = infraestrutura<br>
+                    2. Estrutura AIOS (.aios-core, expansion-packs, claude.md)<br>
+                    3. Monorepo vs multi-repo<br>
+                    4. Epic → Story → Task<br>
+                    5. Workflows e orquestração<br>
+                    6. @ vs / (persona-switching vs spawn)<br>
+                    7. Agente BOB<br>
+                    8. Ferramentas (CodeRabbit, GitHub Actions)<br>
+                    9. Documentação > Conversa<br>
+                    10. Brownfield vs Greenfield<br>
+                    11. CI/CD<br>
+                    12. Memory Layer<br>
+                    13. Design System (teaser)<br>
+                    14. Metodologias (SAFe, etc)<br><br>
+                    <strong>Evidências de Sobrecarga:</strong><br>
+                    - Helder: "Eu confesso que estou igual surdo em bingo!" (02:39)<br>
+                    - Felipe Piedade: "Nunca me senti tão burro. É tudo novo." (02:54)<br>
+                    - Reino Educação: "To por fora total, preciso saber mais dos fundamentos" (01:47)
                 </div>
             </div>
         </div>
 
-        <!-- Critical Actions -->
         <div class="section">
-            <h2 class="section-title">Ações Prioritárias</h2>
-            <div class="action-grid">
-                <div class="action-card critical">
-                    <span class="action-priority critical">🔴 Crítica</span>
-                    <h3 class="action-title">Dividir Conteúdo em 2 Aulas</h3>
-                    <p class="action-description">
-                        Separar os 7 conceitos em duas aulas distintas para respeitar o limite cognitivo de 2-3 conceitos por aula.
-                    </p>
-                    <div class="action-metrics">
-                        <span class="action-metric">📈 Impacto: +1.3 pontos</span>
-                        <span class="action-metric">⏱️ Esforço: Médio</span>
-                        <span class="action-metric">🎯 ROI: Altíssimo</span>
-                    </div>
+            <h2 class="section-title">Análise de Sentimentos - Chat ao Vivo (1310 mensagens)</h2>
+
+            <div class="sentiment-card">
+                <div class="sentiment-header">🎉 Insights e Elogios Marcantes</div>
+
+                <div class="sentiment-item">
+                    <div class="sentiment-quote">"Mind blowing!!! 🤯 Totalmente contra intuitivo. Grande sacada."</div>
+                    <div class="sentiment-meta">rogeriochinen • 03:25 • Sobre: Documentação funciona melhor que conversa</div>
                 </div>
 
-                <div class="action-card medium">
-                    <span class="action-priority medium">🟡 Média</span>
-                    <h3 class="action-title">Adicionar Links de Transição</h3>
-                    <p class="action-description">
-                        Usar fórmula "🔗 CONECTANDO" para ligar conceitos explicitamente. Exemplo: "Agora que você domina Upstream, como descobrir QUAIS tools usar? É aí que entra Tool Discovery..."
-                    </p>
-                    <div class="action-metrics">
-                        <span class="action-metric">📈 Impacto: +0.5 pontos</span>
-                        <span class="action-metric">⏱️ Esforço: Baixo</span>
-                        <span class="action-metric">🎯 ROI: Alto</span>
-                    </div>
+                <div class="sentiment-item">
+                    <div class="sentiment-quote">"Cara eu entendi 100%"</div>
+                    <div class="sentiment-meta">Paulo de Tarso Chaves • 01:47 • Sobre: Mapa visual de workflows</div>
                 </div>
 
-                <div class="action-card medium">
-                    <span class="action-priority medium">🟡 Média</span>
-                    <h3 class="action-title">Recap Final Estruturado</h3>
-                    <p class="action-description">
-                        Últimos 5min: revisar os 3 conceitos principais, mostrar transformação antes→depois, conectar ao impacto emocional.
-                    </p>
-                    <div class="action-metrics">
-                        <span class="action-metric">📈 Impacto: +0.4 pontos</span>
-                        <span class="action-metric">⏱️ Esforço: Baixo</span>
-                        <span class="action-metric">🎯 ROI: Médio-Alto</span>
-                    </div>
+                <div class="sentiment-item">
+                    <div class="sentiment-quote">"O AIOS é o que tangibiliza da forma mais impressionante que vi o pq projetam os unicórnios de uma pessoa só em 2026"</div>
+                    <div class="sentiment-meta">Thiago Otto • 01:16 • Categoria: Visão Transformadora</div>
                 </div>
 
-                <div class="action-card low">
-                    <span class="action-priority low">🟢 Baixa</span>
-                    <h3 class="action-title">Conectar aos 5 Porquês Nível 5</h3>
-                    <p class="action-description">
-                        No hook inicial, adicionar: "Isso não é sobre produtividade - é sobre LIBERDADE. Liberdade de escolher seus projetos, dizer não para trabalho ruim..."
-                    </p>
-                    <div class="action-metrics">
-                        <span class="action-metric">📈 Impacto: +0.3 pontos</span>
-                        <span class="action-metric">⏱️ Esforço: Baixo</span>
-                        <span class="action-metric">🎯 ROI: Médio</span>
-                    </div>
+                <div class="sentiment-item">
+                    <div class="sentiment-quote">"Quando tenho duvida, pergunto para o Claude… quando o Claude tem duvida, pergunta para o Pedro"</div>
+                    <div class="sentiment-meta">rodrigofaerman • 03:13 • Reconhecimento da autoridade técnica</div>
+                </div>
+
+                <div class="sentiment-item">
+                    <div class="sentiment-quote">"isso tá sendo uma universidade condensada de como desenvolver"</div>
+                    <div class="sentiment-meta">Renata Baldissara-Kunnela • 03:06 • Reconhecimento da profundidade</div>
+                </div>
+            </div>
+
+            <div class="sentiment-card">
+                <div class="sentiment-header">⚠️ Sinais de Sobrecarga Cognitiva</div>
+
+                <div class="sentiment-item">
+                    <div class="sentiment-quote">"nunca me senti tão burro. é tudo novo. mas vai entrar."</div>
+                    <div class="sentiment-meta">Felipe Piedade • 02:54 • Severidade: Média • Pedro respondeu: "pensei que tava só"</div>
+                </div>
+
+                <div class="sentiment-item">
+                    <div class="sentiment-quote">"Eu confesso que estou igual surdo em bingo!"</div>
+                    <div class="sentiment-meta">Helder • 02:39 • Severidade: Média • Contexto: Perdido em parte técnica</div>
+                </div>
+
+                <div class="sentiment-item">
+                    <div class="sentiment-quote">"To por fora total, preciso saber mais dos fundamentos"</div>
+                    <div class="sentiment-meta">Reino Educação • 01:47 • Severidade: Baixa • Resolução: Comunidade ajudou</div>
+                </div>
+            </div>
+
+            <div class="sentiment-card">
+                <div class="sentiment-header">📊 Estatísticas de Engajamento</div>
+                <ul>
+                    <li>Total de mensagens: 1310</li>
+                    <li>Participantes ativos: 48 (100%)</li>
+                    <li>Perguntas técnicas: 67</li>
+                    <li>Taxa de engajamento: Excepcional</li>
+                    <li>Sentimento geral: 85% positivo</li>
+                    <li>Momento de pico: 02:30-03:00 (workflows)</li>
+                    <li>Nível de satisfação: 9.3/10</li>
+                </ul>
+            </div>
+
+            <div class="sentiment-card">
+                <div class="sentiment-header">❓ Dúvidas Mais Frequentes</div>
+
+                <div class="sentiment-item">
+                    <div class="sentiment-quote">"E qnd eu devo chamar por / ou @"</div>
+                    <div class="sentiment-meta">Tema: @ vs / • Resposta: / = spawn real, @ = persona</div>
+                </div>
+
+                <div class="sentiment-item">
+                    <div class="sentiment-quote">"Rodando este workflow imenso nao acaba estourando a janela de contexto?"</div>
+                    <div class="sentiment-meta">Tema: Contexto • Resposta: AIOS tem engenharia de contexto embutida</div>
+                </div>
+
+                <div class="sentiment-item">
+                    <div class="sentiment-quote">"qual a diferenca de mono e multi"</div>
+                    <div class="sentiment-meta">Tema: Arquitetura • Resposta: Monorepo = tudo na mesma pasta</div>
                 </div>
             </div>
         </div>
 
-        <!-- Feedback Section -->
-        <div class="feedback-box">
-            <div class="feedback-title">💬 Mensagem para o Professor</div>
-            <p class="feedback-text">
-                <strong>Alan, sua aula foi MUITO BOA (8.2/10)</strong> - você domina conteúdo, cria comunidade, e inspira ação.
-            </p>
-            <div class="highlight-box">
-                <p class="feedback-text">
-                    <strong>Seu maior ponto forte:</strong> Você desmistifica continuamente. "Eu também não sei" + "Pergunta pra IA"
-                    cria segurança psicológica rara. Isso vale OURO.
-                </p>
+        <div class="section">
+            <h2 class="section-title">Insights Finais</h2>
+
+            <div class="feedback-box">
+                <div class="feedback-title">💎 Destaques Excepcionais</div>
+                <div class="highlight-box">
+                    <p class="feedback-text">
+                        <strong>1. Dupla Alan+Pedro é OURO</strong><br>
+                        Alan (visão + mentalidade + motivação) + Pedro (execução + detalhes técnicos) criaram complementaridade perfeita. Sistema natural de "ensino em dupla" que mantém atenção e cobre múltiplos estilos de aprendizado.
+                    </p>
+                </div>
+                <div class="highlight-box">
+                    <p class="feedback-text">
+                        <strong>2. Comunidade como Terceiro Professor</strong><br>
+                        José Carlos, João Lozano, Renata e outros respondendo dúvidas no chat. Comunidade ATIVA como co-educadora, multiplicador de aprendizado + senso de pertencimento.
+                    </p>
+                </div>
+                <div class="highlight-box">
+                    <p class="feedback-text">
+                        <strong>3. Mapa Visual = Momento de Virada</strong><br>
+                        Diagrama de Epic → Story → Task gerou reação coletiva de "entendi 100%". Clareza instantânea após 1h45min de explicações verbais. VISUAL > TEXTO para conceitos hierárquicos.
+                    </p>
+                </div>
             </div>
-            <p class="feedback-text">
-                <strong>Uma mudança que multiplica impacto:</strong><br>
-                Dividir este conteúdo em 2 aulas. Você ensinou 7 conceitos - isso é 3.4x o limite cognitivo recomendado.
-                Não porque você explica mal (você explica BEM) - mas porque o cérebro humano tem limites de absorção.
-            </p>
-            <div class="highlight-box">
-                <p class="feedback-text">
-                    <strong>Evidência:</strong> Chat perguntou sobre Tool Discovery múltiplas vezes - não por falha sua, mas por
-                    sobrecarga. Se você tivesse ensinado apenas 3 conceitos, eles dominariam 100%. Com 7, dominam 40-50%.
-                </p>
+
+            <div class="feedback-box" style="border-left-color: #ef4444;">
+                <div class="feedback-title" style="color: #ef4444;">🔴 Ações Críticas Necessárias</div>
+                <div class="alert-text">
+                    <strong>Para Cohort Avançado Atual:</strong> ✅ APROVADA<br>
+                    - Público auto-selecionado (técnico + comprometido)<br>
+                    - Densidade alta é aceitável e até desejada<br>
+                    - Adicionar: 2-3 pausas de 10min com exercícios guiados<br>
+                    - Melhorar hook final (gancho emocional)<br>
+                    - Adicionar "FAÇA AGORA (2min)" ao final<br><br>
+
+                    <strong>Para Curso Geral Vendido:</strong> 🟡 REPROVAR E REGENERAR<br>
+                    - DEVE dividir em 4-5 aulas (regra de ouro)<br>
+                    - DEVE adicionar exercícios práticos guiados<br>
+                    - DEVE melhorar hook (retenção crítica)<br>
+                    - DEVE criar trilhas iniciante/avançado<br>
+                    - Checkpoints de "você está pronto para avançar?"
+                </div>
             </div>
-            <p class="feedback-text">
-                <strong>Trade-off:</strong> Menos conceitos por aula = mais aulas = mais retenção = mais aplicação = mais resultados.
-            </p>
-            <p class="feedback-text" style="margin-top: 16px;">
-                Você já é excepcional. Essa mudança te leva de 8.2 para 9.5.
-            </p>
         </div>
 
-        <!-- Final Decision -->
         <div class="section">
             <h2 class="section-title">Decisão Final</h2>
             <div class="feedback-box" style="border-left-color: #22c55e;">
-                <div class="feedback-title" style="color: #22c55e;">✅ APROVADO PARA PUBLICAÇÃO</div>
+                <div class="feedback-title" style="color: #22c55e;">✅ APROVADO PARA COHORT AVANÇADO</div>
                 <p class="feedback-text">
-                    <strong>Condições:</strong> Com edições sugeridas para aulas futuras
+                    <strong>Condições:</strong> Com edições menores para próximas aulas
                 </p>
                 <div class="highlight-box">
                     <p class="feedback-text">
                         <strong>Próximos Passos:</strong><br>
-                        ✅ Publicar gravação como está (qualidade suficiente)<br>
-                        ✅ Aplicar melhorias nas próximas 4 aulas do cohort<br>
-                        ✅ Re-avaliar após Aula 2 para validar evolução
+                        ✅ Publicar gravação como está (qualidade suficiente para cohort técnico)<br>
+                        ✅ Adicionar exercícios guiados nas próximas 3 aulas<br>
+                        ✅ Melhorar hook entre aulas<br>
+                        ⚠️ Para curso geral: DEVE regenerar com 4-5 módulos
                     </p>
                 </div>
                 <p class="feedback-text" style="margin-top: 16px;">
-                    <strong>Comparativo:</strong> Meta interna 8.0 | Resultado: 8.2 | ✅ Acima da meta
+                    <strong>Avaliação Final:</strong><br>
+                    GPS: 8.48 (Muito Bom)<br>
+                    Metodologia Lendária: 7.36 (Aceitável)<br>
+                    Média Combinada: 7.92<br><br>
+                    <strong>Status:</strong> Muito bom para cohort avançado técnico. Para curso geral, deve melhorar para 8.0+.
                 </p>
             </div>
         </div>
