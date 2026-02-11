@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Squad Creator - Documentação Completa</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Layout */
+            --sidebar-width: 280px;
+            
+            /* Dark Premium Colors */
+            --color-bg-page: #0A0A0A;
+            --color-bg-card: #141414;
+            --color-bg-card-alt: #1A1A1A;
+            --color-bg-glass: rgba(20, 20, 20, 0.7);
+            
+            /* Text */
+            --color-text-headline: #FFFFFF;
+            --color-text-body: #999999;
+            --color-text-body-alt: #AAAAAA;
+            --color-text-label: #EF4444;
+            --color-text-muted: rgba(255, 255, 255, 0.5);
+            
+            /* Semantic Colors */
+            --color-success: #22C55E;
+            --color-info: #3B82F6;
+            --color-warning: #F97316;
+            --color-error: #EF4444;
+            --color-purple: #A855F7;
+            --color-cyan: #06B6D4;
+            --color-pink: #EC4899;
+            
+            /* CTA */
+            --color-cta-primary: #F5C518;
+            --color-cta-primary-hover: #FFD700;
+            --color-cta-primary-text: #000000;
+            
+            /* Borders */
+            --color-border-card: rgba(255, 255, 255, 0.08);
+            --color-border-hover: rgba(255, 255, 255, 0.15);
+            --color-border-separator: rgba(255, 255, 255, 0.06);
+            
+            /* Spacing */
+            --spacing-xs: 8px;
+            --spacing-sm: 12px;
+            --spacing-md: 16px;
+            --spacing-lg: 20px;
+            --spacing-xl: 24px;
+            --spacing-xxl: 32px;
+            --spacing-xxxl: 40px;
+            --spacing-huge: 48px;
+            --spacing-massive: 60px;
+            
+            /* Border Radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --radius-pill: 9999px;
+            
+            /* Typography */
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            --font-mono: 'Courier New', monospace;
+            
+            /* Transitions */
+            --transition-fast: 150ms ease;
+            --transition-normal: 300ms ease;
+            --transition-slow: 500ms ease;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--color-bg-page);
+            color: var(--color-text-body);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Glow Effects */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(ellipse at top right, rgba(239, 68, 68, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 50%;
+            height: 50%;
+            background: radial-gradient(ellipse at bottom left, rgba(239, 68, 68, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* LUCIDE ICONS */
+        .lucide {
+            display: inline-block;
+            vertical-align: middle;
+            stroke-width: 2;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-right: 1px solid var(--color-border-card);
+            color: var(--color-text-headline);
+            padding: var(--spacing-xxl) var(--spacing-xl);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform var(--transition-normal);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar-header {
+            margin-bottom: var(--spacing-xxl);
+            padding-bottom: var(--spacing-xl);
+            border-bottom: 2px solid var(--color-border-card);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.5em;
+            margin-bottom: var(--spacing-xs);
+            color: var(--color-text-headline);
+            font-weight: 800;
+        }
+
+        .sidebar-header .version {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--color-text-label);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 4px 12px;
+            border-radius: var(--radius-pill);
+            font-size: 0.85em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            display: inline-block;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            color: var(--color-text-body-alt);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-normal);
+            font-size: 0.95em;
+            border: 1px solid transparent;
+        }
+
+        .sidebar-nav a:hover {
+            background: var(--color-bg-glass);
+            border-color: var(--color-border-hover);
+            color: var(--color-text-headline);
+            transform: translateX(4px);
+        }
+
+        .sidebar-nav a.active {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: var(--color-text-headline);
+            font-weight: 700;
+        }
+
+        .sidebar-nav .icon {
+            font-size: 1.3em;
+            flex-shrink: 0;
+        }
+
+        .sidebar-stats {
+            margin-top: var(--spacing-xxl);
+            padding-top: var(--spacing-xl);
+            border-top: 2px solid var(--color-border-card);
+        }
+
+        .sidebar-stats h3 {
+            font-size: 0.75em;
+            margin-bottom: var(--spacing-md);
+            color: var(--color-text-label);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+
+        .stat-item {
+            background: var(--color-bg-glass);
+            border: 1px solid var(--color-border-card);
+            padding: var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-xs);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all var(--transition-normal);
+        }
+
+        .stat-item:hover {
+            border-color: var(--color-border-hover);
+            background: rgba(20, 20, 20, 0.9);
+        }
+
+        .stat-value {
+            font-weight: 800;
+            font-size: 1.1em;
+            color: var(--color-success);
+        }
+
+        /* MOBILE TOGGLE */
+        .menu-toggle {
+            position: fixed;
+            top: var(--spacing-md);
+            left: var(--spacing-md);
+            z-index: 1001;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.8) 0%, rgba(239, 68, 68, 0.6) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: var(--color-text-headline);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-sm);
+            font-size: 1.2em;
+            cursor: pointer;
+            display: none;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            transition: all var(--transition-normal);
+        }
+
+        .menu-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: var(--spacing-massive);
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content-section {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border-card);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-massive);
+            margin-bottom: var(--spacing-xxl);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            scroll-margin-top: var(--spacing-xxl);
+            transition: all var(--transition-normal);
+        }
+
+        .content-section:hover {
+            border-color: var(--color-border-hover);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: var(--spacing-massive);
+        }
+
+        .section-header h2 {
+            font-size: 2.5em;
+            color: var(--color-text-headline);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-md);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .section-header .subtitle {
+            font-size: 1.2em;
+            color: var(--color-text-body);
+            font-weight: 400;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            color: var(--color-text-headline);
+            text-align: center;
+            padding: var(--spacing-massive) var(--spacing-massive);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--spacing-xxl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-20px, -20px); }
+        }
+
+        .hero h1 {
+            font-size: 3.5em;
+            margin-bottom: var(--spacing-md);
+            text-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero .tagline {
+            font-size: 1.5em;
+            color: var(--color-text-body-alt);
+            margin-bottom: var(--spacing-xxl);
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--spacing-xl);
+            margin-top: var(--spacing-massive);
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-stat {
+            background: var(--color-bg-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--color-border-card);
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-normal);
+        }
+
+        .hero-stat:hover {
+            border-color: var(--color-border-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.2);
+        }
+
+        .hero-stat-value {
+            font-size: 2.5em;
+            font-weight: 900;
+            margin-bottom: var(--spacing-xs);
+            color: var(--color-text-headline);
+        }
+
+        .hero-stat-label {
+            font-size: 0.95em;
+            color: var(--color-text-body);
+        }
+
+        /* ANSWER BOX */
+        .answer-box {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%);
+            border-left: 5px solid var(--color-success);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            padding: var(--spacing-xxl);
+            border-radius: var(--radius-md);
+            margin: var(--spacing-xxl) 0;
+        }
+
+        .answer-box h3 {
+            color: var(--color-success);
+            font-size: 1.8em;
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-weight: 700;
+        }
+
+        .answer-box p {
+            font-size: 1.2em;
+            color: var(--color-text-body-alt);
+            line-height: 1.8;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .answer-box strong {
+            color: var(--color-text-headline);
+            font-weight: 700;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.05) 100%);
+            border-left: 5px solid var(--color-warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-md);
+            margin: var(--spacing-xl) 0;
+        }
+
+        .highlight-box strong {
+            color: var(--color-warning);
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+
+        /* COMPARISON CARDS */
+        .comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--spacing-xxl);
+            margin: var(--spacing-xxl) 0;
+        }
+
+        .comparison-card {
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            border: 2px solid;
+            transition: all var(--transition-normal);
+            background: var(--color-bg-card-alt);
+        }
+
+        .comparison-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .comparison-card.ready { 
+            border-color: var(--color-success);
+        }
+        
+        .comparison-card.need { 
+            border-color: var(--color-warning);
+        }
+
+        .card-header {
+            padding: var(--spacing-xxl) var(--spacing-xl);
+            color: var(--color-text-headline);
+            text-align: center;
+        }
+
+        .comparison-card.ready .card-header {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.05) 100%);
+        }
+
+        .comparison-card.need .card-header {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0.05) 100%);
+        }
+
+        .card-icon {
+            font-size: 3em;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .card-title {
+            font-size: 1.8em;
+            font-weight: 800;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .card-subtitle {
+            font-size: 1em;
+            color: var(--color-text-body);
+        }
+
+        .card-body {
+            padding: var(--spacing-xl);
+            background: var(--color-bg-card);
+        }
+
+        .item-list {
+            list-style: none;
+        }
+
+        .item-list li {
+            padding: var(--spacing-sm);
+            background: var(--color-bg-glass);
+            border: 1px solid var(--color-border-card);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-xs);
+            display: flex;
+            gap: var(--spacing-sm);
+            align-items: start;
+            transition: all var(--transition-normal);
+        }
+
+        .item-list li:hover {
+            border-color: var(--color-border-hover);
+            background: var(--color-bg-card-alt);
+        }
+
+        .item-list li::before {
+            font-size: 1.3em;
+            flex-shrink: 0;
+        }
+
+        .comparison-card.ready .item-list li::before { 
+            content: "";
+            display: none;
+        }
+        .comparison-card.need .item-list li::before { 
+            content: "";
+            display: none;
+        }
+        
+        .item-list li .lucide {
+            flex-shrink: 0;
+            margin-right: 8px;
+        }
+
+        .item-name {
+            font-weight: 700;
+            display: block;
+            margin-bottom: 4px;
+            color: var(--color-text-headline);
+        }
+
+        .item-desc {
+            color: var(--color-text-body);
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        /* FLOW DIAGRAM */
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xl);
+            margin: var(--spacing-xxl) 0;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xl);
+            background: var(--color-bg-glass);
+            border: 1px solid var(--color-border-card);
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-md);
+            border-left: 5px solid;
+            transition: all var(--transition-normal);
+        }
+
+        .flow-step:hover {
+            transform: translateX(8px);
+            border-color: var(--color-border-hover);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .flow-step:nth-child(1) { border-left-color: var(--color-error); }
+        .flow-step:nth-child(3) { border-left-color: var(--color-warning); }
+        .flow-step:nth-child(5) { border-left-color: var(--color-success); }
+        .flow-step:nth-child(7) { border-left-color: var(--color-info); }
+        .flow-step:nth-child(9) { border-left-color: var(--color-purple); }
+
+        .step-icon {
+            font-size: 3em;
+            flex-shrink: 0;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--color-bg-card);
+            border: 2px solid var(--color-border-card);
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .step-content h3 {
+            font-size: 1.4em;
+            margin-bottom: var(--spacing-xs);
+            color: var(--color-text-headline);
+            font-weight: 700;
+        }
+
+        .step-content p {
+            color: var(--color-text-body);
+            line-height: 1.6;
+        }
+
+        .step-example {
+            background: var(--color-bg-card-alt);
+            border: 1px solid var(--color-border-card);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin-top: var(--spacing-sm);
+            border-left: 3px solid var(--color-info);
+            font-style: italic;
+            color: var(--color-text-body-alt);
+        }
+
+        .arrow-down {
+            text-align: center;
+            font-size: 2em;
+            color: var(--color-text-muted);
+            margin: calc(var(--spacing-sm) * -1) 0;
+        }
+
+        /* ROLES GRID */
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--spacing-xl);
+            margin: var(--spacing-xxl) 0;
+        }
+
+        .role-card {
+            background: var(--color-bg-card-alt);
+            border: 2px solid;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: all var(--transition-normal);
+            cursor: pointer;
+        }
+
+        .role-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .role-card.boss { border-color: var(--color-warning); }
+        .role-card.specialist1 { border-color: var(--color-info); }
+        .role-card.specialist2 { border-color: var(--color-success); }
+
+        .role-header {
+            padding: var(--spacing-xxl) var(--spacing-xl);
+            color: var(--color-text-headline);
+            text-align: center;
+        }
+
+        .role-card.boss .role-header {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0.05) 100%);
+        }
+
+        .role-card.specialist1 .role-header {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.05) 100%);
+        }
+
+        .role-card.specialist2 .role-header {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.05) 100%);
+        }
+
+        .role-icon {
+            font-size: 3.5em;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .role-name {
+            font-size: 1.6em;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .role-title {
+            font-size: 1em;
+            color: var(--color-text-body);
+        }
+
+        .role-body {
+            padding: var(--spacing-xl);
+        }
+
+        .role-analogy {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-md);
+            border-left: 3px solid var(--color-warning);
+        }
+
+        .role-analogy strong {
+            color: var(--color-warning);
+            display: block;
+            margin-bottom: var(--spacing-xs);
+            font-weight: 700;
+        }
+
+        .role-responsibilities {
+            list-style: none;
+        }
+
+        .role-responsibilities li {
+            padding: var(--spacing-xs) 0;
+            padding-left: 28px;
+            position: relative;
+            color: var(--color-text-body);
+            line-height: 1.6;
+            display: flex;
+            align-items: start;
+            gap: 8px;
+        }
+
+        .role-responsibilities li .lucide {
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* INSTALL STEPS */
+        .install-steps {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-xl);
+            margin: var(--spacing-xxl) 0;
+        }
+
+        .install-step {
+            display: flex;
+            gap: var(--spacing-xl);
+            padding: var(--spacing-xl);
+            background: var(--color-bg-glass);
+            border: 1px solid var(--color-border-card);
+            border-radius: var(--radius-md);
+            border-left: 5px solid var(--color-info);
+            align-items: start;
+            transition: all var(--transition-normal);
+        }
+
+        .install-step:hover {
+            border-color: var(--color-border-hover);
+            background: var(--color-bg-card-alt);
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, var(--color-bg-card) 0%, var(--color-bg-card-alt) 100%);
+            border: 2px solid var(--color-info);
+            color: var(--color-info);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.5em;
+            flex-shrink: 0;
+        }
+
+        .code-box {
+            background: var(--color-bg-card-alt);
+            border: 1px solid var(--color-border-card);
+            color: var(--color-success);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            margin-top: var(--spacing-sm);
+            overflow-x: auto;
+            font-weight: 600;
+        }
+
+        code {
+            background: var(--color-bg-card-alt);
+            border: 1px solid var(--color-border-card);
+            color: var(--color-success);
+            padding: 4px 12px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+
+        /* COMPONENTS GRID */
+        .components-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-lg);
+            margin: var(--spacing-xxl) 0;
+        }
+
+        .component-card {
+            background: var(--color-bg-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--color-border-card);
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-md);
+            border-top: 4px solid;
+            text-align: center;
+            transition: all var(--transition-normal);
+        }
+
+        .component-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--color-border-hover);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .component-card:nth-child(1) { border-top-color: var(--color-error); }
+        .component-card:nth-child(2) { border-top-color: var(--color-warning); }
+        .component-card:nth-child(3) { border-top-color: var(--color-success); }
+        .component-card:nth-child(4) { border-top-color: var(--color-info); }
+        .component-card:nth-child(5) { border-top-color: var(--color-purple); }
+        .component-card:nth-child(6) { border-top-color: var(--color-pink); }
+
+        .component-icon {
+            font-size: 3em;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .component-name {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+            color: var(--color-text-headline);
+        }
+
+        .component-desc {
+            color: var(--color-text-body);
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+
+        /* CTA BUTTON */
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            background: var(--color-cta-primary);
+            color: var(--color-cta-primary-text);
+            border-radius: var(--radius-pill);
+            padding: var(--spacing-md) var(--spacing-xxl);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            box-shadow: 0 4px 20px rgba(245, 197, 24, 0.2);
+            font-size: 1.1em;
+            text-decoration: none;
+        }
+
+        .cta-button:hover {
+            background: var(--color-cta-primary-hover);
+            box-shadow: 0 0 20px rgba(245, 197, 24, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* BACK TO TOP */
+        .back-to-top {
+            position: fixed;
+            bottom: var(--spacing-xxl);
+            right: var(--spacing-xxl);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.8) 0%, rgba(239, 68, 68, 0.6) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--color-text-headline);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+            transition: all var(--transition-normal);
+            opacity: 0;
+            visibility: hidden;
+            z-index: 999;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 0 24px rgba(239, 68, 68, 0.5);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            :root {
+                --sidebar-width: 0px;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: var(--spacing-xl) var(--spacing-md);
+                padding-top: 72px;
+            }
+
+            .content-section {
+                padding: var(--spacing-xxl) var(--spacing-xl);
+            }
+
+            .hero {
+                padding: var(--spacing-massive) var(--spacing-xl);
+            }
+
+            .hero h1 {
+                font-size: 2.5em;
+            }
+
+            .section-header h2 {
+                font-size: 2em;
+            }
+
+            .flow-step {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .step-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 2em;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .comparison,
+            .roles-grid,
+            .components-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .install-step {
+                flex-direction: column;
+            }
+
+            .hero h1 {
+                font-size: 2em;
+            }
+
+            .section-header h2 {
+                font-size: 1.5em;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--color-bg-card);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-border-card);
+            border-radius: var(--radius-sm);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-border-hover);
+        }
+    </style>
+</head>
+<body>
+    <!-- MOBILE TOGGLE -->
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h1><i data-lucide="building-2" width="28" height="28"></i> Squad Creator</h1>
+            <span class="version">v3.0.0</span>
+        </div>
+
+        <nav>
+            <ul class="sidebar-nav">
+                <li><a href="#inicio" class="nav-link active"><span class="icon"><i data-lucide="home" width="20" height="20"></i></span> Início</a></li>
+                <li><a href="#instalacao" class="nav-link"><span class="icon"><i data-lucide="help-circle" width="20" height="20"></i></span> Preciso Instalar?</a></li>
+                <li><a href="#como-funciona" class="nav-link"><span class="icon"><i data-lucide="target" width="20" height="20"></i></span> Como Funciona?</a></li>
+                <li><a href="#personagens" class="nav-link"><span class="icon"><i data-lucide="users" width="20" height="20"></i></span> Quem Faz o Quê?</a></li>
+                <li><a href="#exemplo" class="nav-link"><span class="icon"><i data-lucide="film" width="20" height="20"></i></span> Exemplo Real</a></li>
+                <li><a href="#componentes" class="nav-link"><span class="icon"><i data-lucide="puzzle" width="20" height="20"></i></span> O Que É Criado?</a></li>
+                <li><a href="#comecar" class="nav-link"><span class="icon"><i data-lucide="rocket" width="20" height="20"></i></span> Como Começar?</a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-stats">
+            <h3><i data-lucide="bar-chart-3" width="16" height="16"></i> Em Produção</h3>
+            <div class="stat-item">
+                <span>Squads</span>
+                <span class="stat-value">31+</span>
+            </div>
+            <div class="stat-item">
+                <span>Agents</span>
+                <span class="stat-value">206+</span>
+            </div>
+            <div class="stat-item">
+                <span>Minds</span>
+                <span class="stat-value">60+</span>
+            </div>
+            <div class="stat-item">
+                <span>Fidelidade</span>
+                <span class="stat-value">85-97%</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- HERO -->
+        <section id="inicio" class="hero">
+            <h1><i data-lucide="building-2" width="56" height="56"></i> Squad Creator</h1>
+            <p class="tagline">Crie equipes de especialistas digitais baseados em experts reais</p>
+
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value">31+</div>
+                    <div class="hero-stat-label">Squads Criados</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">206+</div>
+                    <div class="hero-stat-label">Agents Ativos</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">60+</div>
+                    <div class="hero-stat-label">Minds Clonados</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">85-97%</div>
+                    <div class="hero-stat-label">Fidelidade</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 1: INSTALAÇÃO -->
+        <section id="instalacao" class="content-section">
+            <div class="section-header">
+                <h2><span><i data-lucide="help-circle" width="40" height="40"></i></span> Preciso Instalar Algo?</h2>
+                <p class="subtitle">Resposta rápida e clara sobre dependências</p>
+            </div>
+
+            <div class="answer-box">
+                <h3><i data-lucide="check-circle" width="28" height="28"></i> Resposta Curta:</h3>
+                <p><strong>NÃO precisa instalar MCPs nem outras ferramentas!</strong></p>
+                <p>O Squad Creator já vem 100% pronto.</p>
+            </div>
+
+            <div class="highlight-box">
+                <strong><i data-lucide="lightbulb" width="20" height="20"></i> Só precisa de 2 coisas:</strong>
+                <i data-lucide="circle-1" width="18" height="18" style="display: inline-block; vertical-align: middle;"></i> Claude Code funcionando<br>
+                <i data-lucide="circle-2" width="18" height="18" style="display: inline-block; vertical-align: middle;"></i> Estrutura básica do AIOS no seu projeto
+            </div>
+
+            <h3 style="font-size: 1.8em; margin: 48px 0 24px; color: var(--color-text-headline);">
+                <i data-lucide="package" width="32" height="32" style="display: inline-block; vertical-align: middle;"></i> O Que Vem Pronto vs O Que Você Precisa
+            </h3>
+
+            <div class="comparison">
+                <div class="comparison-card ready">
+                    <div class="card-header">
+                        <div class="card-icon"><i data-lucide="check-circle" width="48" height="48"></i></div>
+                        <div class="card-title">Já Vem Pronto</div>
+                        <div class="card-subtitle">100% Funcional</div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="item-list">
+                            <li>
+                                <i data-lucide="check-circle" width="20" height="20" style="color: var(--color-success);"></i>
+                                <div>
+                                    <span class="item-name">3 Agents Especialistas</span>
+                                    <span class="item-desc">Squad Chief, Oalan Nicolas, Pedro Valério</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i data-lucide="check-circle" width="20" height="20" style="color: var(--color-success);"></i>
+                                <div>
+                                    <span class="item-name">70+ Tasks Prontas</span>
+                                    <span class="item-desc">Criar squad, clonar mind, validar, etc.</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i data-lucide="check-circle" width="20" height="20" style="color: var(--color-success);"></i>
+                                <div>
+                                    <span class="item-name">13 Workflows Completos</span>
+                                    <span class="item-desc">Processos automáticos de ponta a ponta</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i data-lucide="check-circle" width="20" height="20" style="color: var(--color-success);"></i>
+                                <div>
+                                    <span class="item-name">Templates e Checklists</span>
+                                    <span class="item-desc">Tudo necessário para criar squads</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i data-lucide="check-circle" width="20" height="20" style="color: var(--color-success);"></i>
+                                <div>
+                                    <span class="item-name">Scripts Python</span>
+                                    <span class="item-desc">Validação, analytics, quality gates</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i data-lucide="check-circle" width="20" height="20" style="color: var(--color-success);"></i>
+                                <div>
+                                    <span class="item-name">Documentação Completa</span>
+                                    <span class="item-desc">Guias, tutoriais, troubleshooting</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="comparison-card need">
+                    <div class="card-header">
+                        <div class="card-icon"><i data-lucide="settings" width="48" height="48"></i></div>
+                        <div class="card-title">Você Precisa Ter</div>
+                        <div class="card-subtitle">Pré-requisitos Básicos</div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="item-list">
+                            <li>
+                                <i data-lucide="settings" width="20" height="20" style="color: var(--color-warning);"></i>
+                                <div>
+                                    <span class="item-name">Claude Code</span>
+                                    <span class="item-desc">A plataforma que roda tudo (você já tem!)</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i data-lucide="settings" width="20" height="20" style="color: var(--color-warning);"></i>
+                                <div>
+                                    <span class="item-name">Estrutura AIOS</span>
+                                    <span class="item-desc">Pastas agents/, tasks/, workflows/</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i data-lucide="settings" width="20" height="20" style="color: var(--color-warning);"></i>
+                                <div>
+                                    <span class="item-name">Python 3.8+</span>
+                                    <span class="item-desc">Para scripts de validação (provavelmente já tem)</span>
+                                </div>
+                            </li>
+                            <li>
+                                <i data-lucide="settings" width="20" height="20" style="color: var(--color-warning);"></i>
+                                <div>
+                                    <span class="item-name">Internet</span>
+                                    <span class="item-desc">Para pesquisar elite minds (modo YOLO)</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 2: COMO FUNCIONA -->
+        <section id="como-funciona" class="content-section">
+            <div class="section-header">
+                <h2><span><i data-lucide="target" width="40" height="40"></i></span> Como Funciona?</h2>
+                <p class="subtitle">Passo a passo simples do sistema completo</p>
+            </div>
+
+            <p style="text-align: center; font-size: 1.2em; color: var(--color-text-body); margin-bottom: 32px;">
+                Imagine que você quer criar uma <strong style="color: var(--color-text-headline);">equipe de especialistas digitais</strong> para ajudar em alguma área específica.
+                O Squad Creator pesquisa os melhores especialistas do mundo real, aprende como eles pensam e falam,
+                e cria versões digitais deles para trabalhar pra você!
+            </p>
+
+            <div class="flow-diagram">
+                <div class="flow-step">
+                    <div class="step-icon"><i data-lucide="message-square" width="48" height="48"></i></div>
+                    <div class="step-content">
+                        <h3>1. Você Pede Uma Equipe</h3>
+                        <p>Você diz: "Quero uma equipe de copywriting" ou "Preciso de especialistas em vendas"</p>
+                        <div class="step-example"><i data-lucide="message-circle" width="18" height="18"></i> Exemplo: "Crie um squad de copywriting para mim"</div>
+                    </div>
+                </div>
+
+                <div class="arrow-down"><i data-lucide="arrow-down" width="32" height="32"></i></div>
+
+                <div class="flow-step">
+                    <div class="step-icon"><i data-lucide="search" width="48" height="48"></i></div>
+                    <div class="step-content">
+                        <h3>2. Sistema Pesquisa Especialistas</h3>
+                        <p>O sistema busca automaticamente os <strong style="color: var(--color-text-headline);">melhores especialistas do mundo</strong>
+                        naquela área (pessoas reais com livros, cursos, frameworks comprovados)</p>
+                        <div class="step-example"><i data-lucide="book-open" width="18" height="18"></i> Encontra: Alex Hormozi, Gary Halbert, Dan Kennedy...</div>
+                    </div>
+                </div>
+
+                <div class="arrow-down"><i data-lucide="arrow-down" width="32" height="32"></i></div>
+
+                <div class="flow-step">
+                    <div class="step-icon"><i data-lucide="dna" width="48" height="48"></i></div>
+                    <div class="step-content">
+                        <h3>3. Extrai o "DNA" Deles</h3>
+                        <p>Lê livros, transcrições, artigos e extrai:<br>
+                        • <strong style="color: var(--color-text-headline);">Como eles falam</strong> (vocabulário, tom, histórias)<br>
+                        • <strong style="color: var(--color-text-headline);">Como eles pensam</strong> (frameworks, estratégias, decisões)</p>
+                        <div class="step-example"><i data-lucide="dna" width="18" height="18"></i> DNA do Alex Hormozi: "stack the value", "Grand Slam Offer", Value Equation...</div>
+                    </div>
+                </div>
+
+                <div class="arrow-down"><i data-lucide="arrow-down" width="32" height="32"></i></div>
+
+                <div class="flow-step">
+                    <div class="step-icon"><i data-lucide="bot" width="48" height="48"></i></div>
+                    <div class="step-content">
+                        <h3>4. Cria os Agents (Clones Digitais)</h3>
+                        <p>Gera versões digitais de cada especialista, com toda personalidade,
+                        conhecimento e estilo de decisão deles programados</p>
+                        <div class="step-example"><i data-lucide="sparkles" width="18" height="18"></i> Resultado: @alex-hormozi, @gary-halbert prontos pra usar!</div>
+                    </div>
+                </div>
+
+                <div class="arrow-down"><i data-lucide="arrow-down" width="32" height="32"></i></div>
+
+                <div class="flow-step">
+                    <div class="step-icon"><i data-lucide="check-circle" width="48" height="48"></i></div>
+                    <div class="step-content">
+                        <h3>5. Testa e Entrega</h3>
+                        <p>Roda testes para garantir que os agents realmente se comportam como os especialistas originais.
+                        Mede a "fidelidade" (similaridade com o expert real: 85-97%)</p>
+                        <div class="step-example"><i data-lucide="target" width="18" height="18"></i> Sua equipe de especialistas digitais está pronta!</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 3: PERSONAGENS -->
+        <section id="personagens" class="content-section">
+            <div class="section-header">
+                <h2><span><i data-lucide="users" width="40" height="40"></i></span> Quem Faz o Quê?</h2>
+                <p class="subtitle">Os 3 personagens principais do sistema</p>
+            </div>
+
+            <div class="roles-grid">
+                <div class="role-card boss" onclick="alert('Squad Chief diz: Posso criar qualquer squad que você precisar! Basta me dizer o domínio.')">
+                    <div class="role-header">
+                        <div class="role-icon"><i data-lucide="crown" width="56" height="56"></i></div>
+                        <div class="role-name">Squad Chief</div>
+                        <div class="role-title">O Chefe / Coordenador</div>
+                    </div>
+                    <div class="role-body">
+                        <div class="role-analogy">
+                            <strong><i data-lucide="building-2" width="20" height="20"></i> É tipo o arquiteto da construção civil:</strong>
+                            Coordena tudo, delega tarefas, garante que o projeto saia do papel
+                        </div>
+                        <ul class="role-responsibilities">
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Recebe seu pedido e entende o que você quer</li>
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Decide quem vai fazer cada parte do trabalho</li>
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Coordena os especialistas</li>
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Cria o squad completo do começo ao fim</li>
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Valida que tudo ficou com qualidade</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="role-card specialist1" onclick="alert('Oalan Nicolas diz: Extraio o DNA de qualquer expert. Fidelidade de 85-97% garantida!')">
+                    <div class="role-header">
+                        <div class="role-icon"><i data-lucide="dna" width="56" height="56"></i></div>
+                        <div class="role-name">Oalan Nicolas</div>
+                        <div class="role-title">Especialista em "Clonar Mentes"</div>
+                    </div>
+                    <div class="role-body">
+                        <div class="role-analogy">
+                            <strong><i data-lucide="microscope" width="20" height="20"></i> É tipo um cientista de laboratório:</strong>
+                            Extrai o "DNA mental" de cada especialista, estudando como eles pensam e falam
+                        </div>
+                        <ul class="role-responsibilities">
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Pesquisa fontes sobre cada expert (livros, vídeos, artigos)</li>
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Extrai o DNA de Voz (como falam)</li>
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Extrai o DNA de Pensamento (como decidem)</li>
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Cria os frameworks e playbooks</li>
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Valida se o clone ficou fiel ao original (85-97%)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="role-card specialist2" onclick="alert('Pedro Valério diz: Processos devem impossibilitar erros, não apenas detectá-los.')">
+                    <div class="role-header">
+                        <div class="role-icon"><i data-lucide="settings" width="56" height="56"></i></div>
+                        <div class="role-name">Pedro Valério</div>
+                        <div class="role-title">Especialista em Processos</div>
+                    </div>
+                    <div class="role-body">
+                        <div class="role-analogy">
+                            <strong><i data-lucide="wrench" width="20" height="20"></i> É tipo um engenheiro de controle de qualidade:</strong>
+                            Garante que os processos não permitam erros, com checklists e validações
+                        </div>
+                        <ul class="role-responsibilities">
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Valida os workflows (fluxos de trabalho)</li>
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Cria checklists de qualidade</li>
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Define "veto conditions" (condições que bloqueiam erros)</li>
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Automatiza partes repetitivas</li>
+                            <li><i data-lucide="check" width="18" height="18" style="color: var(--color-success);"></i> Garante que o processo seja à prova de falhas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 4: EXEMPLO REAL -->
+        <section id="exemplo" class="content-section">
+            <div class="section-header">
+                <h2><span><i data-lucide="film" width="40" height="40"></i></span> Exemplo Real de Uso</h2>
+                <p class="subtitle">Veja o sistema em ação do início ao fim</p>
+            </div>
+
+            <div class="answer-box">
+                <h3><i data-lucide="message-circle" width="28" height="28"></i> Você pede:</h3>
+                <p style="font-size: 1.3em; font-weight: bold;">
+                    "Quero um squad de copywriting para criar anúncios e emails de venda"
+                </p>
+            </div>
+
+            <div class="install-steps">
+                <div class="install-step">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h3 style="margin-bottom: 8px; font-size: 1.2em; color: var(--color-text-headline);">Squad Chief</h3>
+                        <p style="color: var(--color-text-body); line-height: 1.6;">
+                            "Entendi! Vou pesquisar os melhores copywriters do mundo e criar uma equipe pra você. Deixa comigo!"
+                        </p>
+                    </div>
+                </div>
+
+                <div class="install-step">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h3 style="margin-bottom: 8px; font-size: 1.2em; color: var(--color-text-headline);">Sistema faz research automático</h3>
+                        <p style="color: var(--color-text-body); line-height: 1.6;">
+                            Encontra: Alex Hormozi (ofertas), Gary Halbert (cartas de venda),
+                            Dan Kennedy (marketing direto), Eugene Schwartz (headlines),
+                            David Ogilvy (publicidade), Claude Hopkins (anúncios testados)...
+                        </p>
+                    </div>
+                </div>
+
+                <div class="install-step">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h3 style="margin-bottom: 8px; font-size: 1.2em; color: var(--color-text-headline);">Oalan Nicolas entra em ação</h3>
+                        <p style="color: var(--color-text-body); line-height: 1.6;">
+                            Lê "100M Offers" do Hormozi, "The Boron Letters" do Halbert,
+                            extrai vocabulário, frameworks (Value Equation, AIDA, PAS),
+                            histórias favoritas, estilo de escrita...
+                        </p>
+                    </div>
+                </div>
+
+                <div class="install-step">
+                    <div class="step-number">4</div>
+                    <div>
+                        <h3 style="margin-bottom: 8px; font-size: 1.2em; color: var(--color-text-headline);">Pedro Valério valida</h3>
+                        <p style="color: var(--color-text-body); line-height: 1.6;">
+                            Cria checklists: "Todo agent precisa ter 3+ exemplos de output",
+                            "Voice DNA deve ter 8+ palavras características",
+                            "Smoke tests devem passar em 3/3 cenários"...
+                        </p>
+                    </div>
+                </div>
+
+                <div class="install-step">
+                    <div class="step-number">5</div>
+                    <div>
+                        <h3 style="margin-bottom: 8px; font-size: 1.2em; color: var(--color-text-headline);">Squad Chief entrega</h3>
+                        <p style="color: var(--color-text-body); line-height: 1.6;">
+                            "Pronto! Seu squad 'copy' está criado com 25 copywriters clonados.
+                            Use @copy:alex-hormozi para ofertas, @copy:gary-halbert para cartas de venda, etc."
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="answer-box">
+                <h3><i data-lucide="party-popper" width="28" height="28"></i> Resultado Final:</h3>
+                <p>
+                    Você tem agora uma equipe de 25 copywriters lendários trabalhando pra você 24/7!
+                    Cada um com sua especialidade, personalidade e frameworks originais preservados.
+                </p>
+                <p style="margin-top: 16px;">
+                    <strong>Fidelidade ao original: 85-97%</strong><br>
+                    (é como se você tivesse os experts reais te aconselhando!)
+                </p>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 5: COMPONENTES -->
+        <section id="componentes" class="content-section">
+            <div class="section-header">
+                <h2><span><i data-lucide="puzzle" width="40" height="40"></i></span> O Que É Criado?</h2>
+                <p class="subtitle">Peças que compõem um squad completo</p>
+            </div>
+
+            <p style="text-align: center; font-size: 1.2em; color: var(--color-text-body); margin-bottom: 32px;">
+                Quando você pede um squad, o sistema cria várias "peças" que trabalham juntas:
+            </p>
+
+            <div class="components-grid">
+                <div class="component-card">
+                    <div class="component-icon"><i data-lucide="bot" width="48" height="48"></i></div>
+                    <div class="component-name">Agents</div>
+                    <div class="component-desc">
+                        Os "clones digitais" dos especialistas.
+                        Cada agent tem personalidade, vocabulário e frameworks únicos.
+                    </div>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-icon"><i data-lucide="clipboard-list" width="48" height="48"></i></div>
+                    <div class="component-name">Tasks</div>
+                    <div class="component-desc">
+                        Tarefas específicas que os agents sabem fazer
+                        (ex: "escrever headline", "criar oferta", "validar copy")
+                    </div>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-icon"><i data-lucide="workflow" width="48" height="48"></i></div>
+                    <div class="component-name">Workflows</div>
+                    <div class="component-desc">
+                        Processos passo-a-passo para projetos maiores
+                        (ex: "criar campanha completa de email marketing")
+                    </div>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-icon"><i data-lucide="file-text" width="48" height="48"></i></div>
+                    <div class="component-name">Templates</div>
+                    <div class="component-desc">
+                        Modelos prontos para outputs
+                        (ex: template de headline, carta de vendas, página de vendas)
+                    </div>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-icon"><i data-lucide="check-square" width="48" height="48"></i></div>
+                    <div class="component-name">Checklists</div>
+                    <div class="component-desc">
+                        Listas de validação para garantir qualidade
+                        (ex: "todo email deve ter CTA claro", "headline testada em 3 variações")
+                    </div>
+                </div>
+
+                <div class="component-card">
+                    <div class="component-icon"><i data-lucide="library" width="48" height="48"></i></div>
+                    <div class="component-name">Knowledge Base</div>
+                    <div class="component-desc">
+                        Biblioteca de conhecimento: frameworks, swipe files,
+                        heurísticas e melhores práticas da área
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 6: COMO COMEÇAR -->
+        <section id="comecar" class="content-section">
+            <div class="section-header">
+                <h2><span><i data-lucide="rocket" width="40" height="40"></i></span> Como Começar?</h2>
+                <p class="subtitle">3 passos simples para criar seu primeiro squad</p>
+            </div>
+
+            <div class="install-steps">
+                <div class="install-step">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h3 style="margin-bottom: 12px; font-size: 1.3em; color: var(--color-text-headline);">Ative o Squad Creator</h3>
+                        <p style="color: var(--color-text-body); line-height: 1.6; margin-bottom: 12px;">
+                            Se a pasta <code>squad-creator</code> está no seu projeto, basta ativar:
+                        </p>
+                        <div class="code-box">@squad-creator</div>
+                        <p style="color: var(--color-text-body); line-height: 1.6; margin-top: 12px;">
+                            <strong style="color: var(--color-text-headline);">É só isso!</strong> O Squad Chief vai aparecer e se apresentar.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="install-step">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h3 style="margin-bottom: 12px; font-size: 1.3em; color: var(--color-text-headline);">Peça Seu Squad</h3>
+                        <p style="color: var(--color-text-body); line-height: 1.6; margin-bottom: 12px;">
+                            Diga naturalmente o que você quer:
+                        </p>
+                        <div class="code-box">"Quero um squad de copywriting"</div>
+                        <p style="color: var(--color-text-body); line-height: 1.6; margin-top: 12px;">
+                            O sistema vai pesquisar automaticamente os melhores experts do mundo nessa área.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="install-step">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h3 style="margin-bottom: 12px; font-size: 1.3em; color: var(--color-text-headline);">Aguarde a Criação</h3>
+                        <p style="color: var(--color-text-body); line-height: 1.6; margin-bottom: 12px;">
+                            O Squad Creator faz tudo automaticamente:
+                        </p>
+                        <ul style="margin-left: 20px; color: var(--color-text-body); line-height: 1.8;">
+                            <li>Pesquisa elite minds</li>
+                            <li>Extrai DNA (voz + pensamento)</li>
+                            <li>Cria agents</li>
+                            <li>Roda testes de qualidade</li>
+                            <li>Entrega o squad pronto!</li>
+                        </ul>
+                        <p style="color: var(--color-text-body); line-height: 1.6; margin-top: 16px;">
+                            <strong style="color: var(--color-text-headline);">Tempo total: 15-60 minutos</strong> (dependendo do modo escolhido)
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="answer-box" style="margin-top: 48px;">
+                <h3><i data-lucide="party-popper" width="28" height="28"></i> Resumindo:</h3>
+                <p>
+                    <strong>Instalar = ZERO!</strong><br>
+                    Só precisa do Claude Code (que você já tem) e a pasta squad-creator no projeto.
+                </p>
+                <p style="margin-top: 16px;">
+                    É só ativar com <code>@squad-creator</code> e começar!
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <!-- BACK TO TOP -->
+    <div class="back-to-top" id="backToTop" onclick="scrollToTop()">↑</div>
+
+    <script>
+        // Navegação da sidebar
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.content-section, .hero');
+
+        // Smooth scroll
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+
+                targetSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+
+                // Update active link
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                // Close sidebar on mobile
+                if (window.innerWidth <= 1024) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+
+        // Highlight active section on scroll
+        window.addEventListener('scroll', () => {
+            let current = '';
+
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Show/hide back to top button
+            const backToTop = document.getElementById('backToTop');
+            if (scrollY > 500) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        // Toggle sidebar on mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Back to top
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.querySelector('.menu-toggle');
+
+            if (window.innerWidth <= 1024 &&
+                !sidebar.contains(e.target) &&
+                !toggle.contains(e.target) &&
+                sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+        });
+
+        // Animação de entrada
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.flow-step, .role-card, .component-card, .comparison-card, .install-step').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease';
+            observer.observe(el);
+        });
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
