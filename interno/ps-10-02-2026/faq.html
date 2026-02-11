@@ -278,18 +278,18 @@
 
             <div class="faq-item">
                 <div class="faq-question">
-                    <span class="faq-question-text">P4: CloudMD por projeto ou global?</span>
+                    <span class="faq-question-text">P4: CLAUDE.md por projeto ou global?</span>
                     <span class="faq-icon">▼</span>
                 </div>
                 <div class="faq-answer">
                     <div class="faq-answer-content">
-                        <strong>Resposta:</strong> Por projeto. CloudMD global = frankenstein (quebra contexto).<br><br>
+                        <strong>Resposta:</strong> Por projeto. CLAUDE.md global = frankenstein (quebra contexto).<br><br>
                         <strong>O ideal é por PROJETO:</strong><br>
-                        • CloudMD = cérebro do sistema, primeira coisa carregada<br>
-                        • CloudMD "frankenstein" (misturando vários contextos) → confunde a LLM<br>
+                        • CLAUDE.md = cérebro do sistema, primeira coisa carregada<br>
+                        • CLAUDE.md "frankenstein" (misturando vários contextos) → confunde a LLM<br>
                         • Cada projeto tem contexto, arquivos, pastas específicas<br>
-                        • CloudMD global não sabe quais arquivos existem em cada projeto<br><br>
-                        <strong>Exceção:</strong> Você pode ter um CloudMD MASTER (na raiz do workspace) com heurísticas transversais (design system comum). Cada projeto ainda tem seu próprio CloudMD específico.
+                        • CLAUDE.md global não sabe quais arquivos existem em cada projeto<br><br>
+                        <strong>Exceção:</strong> Você pode ter um CLAUDE.md MASTER (na raiz do workspace) com heurísticas transversais (design system comum). Cada projeto ainda tem seu próprio CLAUDE.md específico.
                     </div>
                 </div>
             </div>
@@ -304,9 +304,9 @@
                         <strong>Resposta:</strong> Workspace master na raiz + projetos individuais com AIOS próprio. Cada um com seu CLAUDE.md.<br><br>
                         <strong>Estrutura recomendada:</strong><br>
                         <code>~/code/</code> (Workspace master)<br>
-                        ├── .claude/CLAUDE.md (CloudMD MASTER - heurísticas globais)<br>
+                        ├── .claude/CLAUDE.md (CLAUDE.md MASTER - heurísticas globais)<br>
                         ├── projeto-api/ (Projeto 1)<br>
-                        │   ├── .claude/CLAUDE.md (CloudMD específico)<br>
+                        │   ├── .claude/CLAUDE.md (CLAUDE.md específico)<br>
                         │   ├── .aios-core/<br>
                         │   └── .aios/<br>
                         ├── projeto-camban/ (Projeto 2)<br>
