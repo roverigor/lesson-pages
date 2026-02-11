@@ -7,6 +7,10 @@
       "destination": "/abstracts/index.html"
     },
     {
+      "source": "/analise-interna",
+      "destination": "/analise-interna/index.html"
+    },
+    {
       "source": "/squad-creator",
       "destination": "/squad-creator/index.html"
     }

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Análises Pedagógicas - AIOS Avançado</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="../templates/design-tokens-dark-premium.css">
+  <style>
+    .lucide {
+      display: inline-block;
+      vertical-align: middle;
+      stroke-width: 2;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-bg-page);
+      color: var(--color-text-primary);
+      line-height: var(--line-height-normal);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Glow */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 50%;
+      height: 50%;
+      background: var(--glow-top-right);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar {
+      width: 320px;
+      background: var(--color-bg-card);
+      border-right: 1px solid var(--color-border-card);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      overflow: hidden;
+      transition: all var(--transition-normal);
+    }
+
+    .sidebar.collapsed {
+      width: 60px;
+    }
+
+    .sidebar.collapsed .sidebar-header,
+    .sidebar.collapsed .sidebar-stats,
+    .sidebar.collapsed .sidebar-search,
+    .sidebar.collapsed .lessons-list {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .sidebar-header {
+      padding: var(--spacing-2xl) var(--spacing-xl);
+      border-bottom: 1px solid var(--color-border-card);
+      background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.04));
+    }
+
+    .sidebar-badge {
+      display: inline-block;
+      font-size: var(--font-size-xs);
+      padding: var(--spacing-xs) 12px;
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: var(--radius-pill);
+      color: var(--color-text-label);
+      font-weight: var(--font-weight-bold);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wide);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .sidebar-title {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      margin-bottom: var(--spacing-sm);
+      color: var(--color-text-headline);
+    }
+
+    .sidebar-subtitle {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-body);
+    }
+
+    .sidebar-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-md);
+      padding: var(--spacing-lg) var(--spacing-xl);
+      border-bottom: 1px solid var(--color-border-card);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: var(--font-size-2xl);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-headline);
+      display: block;
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .stat-value.success { color: var(--color-text-profit); }
+
+    .stat-label {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-body);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wide);
+    }
+
+    .sidebar-search {
+      padding: var(--spacing-lg) var(--spacing-xl);
+      border-bottom: 1px solid var(--color-border-card);
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: calc(var(--spacing-xl) + 12px);
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-text-body);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: var(--spacing-md) var(--spacing-lg) var(--spacing-md) 44px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--color-border-card);
+      border-radius: var(--radius-md);
+      color: var(--color-text-primary);
+      font-size: var(--font-size-base);
+      font-family: var(--font-sans);
+      transition: var(--transition-normal);
+    }
+
+    .search-input:focus {
+      outline: none;
+      background: rgba(255,255,255,0.08);
+      border-color: var(--color-border-hover);
+    }
+
+    .search-input::placeholder {
+      color: var(--color-text-body);
+    }
+
+    .lessons-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--spacing-md) var(--spacing-sm);
+    }
+
+    .lesson-item {
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-sm);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--color-border-card);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition-normal);
+    }
+
+    .lesson-item:hover {
+      background: rgba(255,255,255,0.05);
+      border-color: var(--color-border-hover);
+      transform: translateX(4px);
+    }
+
+    .lesson-item.active {
+      background: linear-gradient(135deg, rgba(245,197,24,0.15), rgba(245,197,24,0.08));
+      border-color: var(--color-cta-primary);
+    }
+
+    .lesson-number {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-body);
+      text-transform: uppercase;
+      letter-spacing: var(--letter-spacing-wide);
+      margin-bottom: var(--spacing-xs);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .lesson-title {
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-headline);
+      margin-bottom: var(--spacing-sm);
+      line-height: var(--line-height-snug);
+    }
+
+    .lesson-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      font-size: var(--font-size-xs);
+      color: var(--color-text-body);
+    }
+
+    .lesson-date {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+    }
+
+    .lesson-score {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      padding: 4px var(--spacing-sm);
+      background: rgba(34,197,94,0.15);
+      border-radius: var(--radius-sm);
+      color: var(--color-text-profit);
+      font-weight: var(--font-weight-bold);
+    }
+
+    .sidebar-toggle {
+      display: flex;
+      position: absolute;
+      top: var(--spacing-lg);
+      right: var(--spacing-lg);
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--color-border-card);
+      border-radius: var(--radius-md);
+      color: var(--color-text-headline);
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-normal);
+      z-index: 10;
+    }
+
+    .sidebar-toggle::before {
+      content: '‹';
+      font-size: 24px;
+      font-weight: bold;
+      transition: var(--transition-fast);
+    }
+
+    .sidebar.collapsed .sidebar-toggle::before {
+      content: '›';
+    }
+
+    .sidebar-toggle:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: var(--color-border-hover);
+    }
+
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 99;
+    }
+
+    .main-content {
+      flex: 1;
+      margin-left: 320px;
+      min-height: 100vh;
+      transition: margin-left var(--transition-normal);
+    }
+
+    .sidebar.collapsed ~ .main-content {
+      margin-left: 60px;
+    }
+
+    .lesson-frame {
+      width: 100%;
+      height: 100vh;
+      border: none;
+      display: block;
+      overflow: auto;
+    }
+
+    /* Loading State */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: var(--color-text-body);
+    }
+
+    .loading-spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--color-cta-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.03);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.2);
+      border-radius: var(--radius-sm);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        z-index: 100;
+        width: 320px !important;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar.collapsed {
+        width: 320px !important;
+        opacity: 1;
+      }
+
+      .sidebar.collapsed .sidebar-header,
+      .sidebar.collapsed .sidebar-stats,
+      .sidebar.collapsed .sidebar-search,
+      .sidebar.collapsed .lessons-list {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .sidebar-toggle {
+        position: fixed;
+        top: var(--spacing-lg);
+        left: var(--spacing-lg);
+        right: auto;
+        width: 44px;
+        height: 44px;
+        z-index: 101;
+      }
+
+      .sidebar-toggle::before {
+        content: '☰';
+        font-size: 20px;
+      }
+
+      .sidebar.open .sidebar-toggle::before {
+        content: '✕';
+      }
+
+      .sidebar-backdrop.active {
+        display: block;
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .sidebar.collapsed ~ .main-content {
+        margin-left: 0;
+      }
+
+      .sidebar-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="app-container">
+
+    <aside class="sidebar" id="sidebar">
+      <button class="sidebar-toggle" id="sidebarToggle"></button>
+
+      <div class="sidebar-header">
+        <div class="sidebar-badge">INTERNO</div>
+        <h1 class="sidebar-title">AIOS Avançado</h1>
+        <p class="sidebar-subtitle">Análises Pedagógicas</p>
+      </div>
+
+      <div class="sidebar-stats">
+        <div class="stat-item">
+          <span class="stat-value"><i data-lucide="book-open" width="20" height="20" style="display:inline;vertical-align:middle;margin-right:4px;"></i>3</span>
+          <span class="stat-label">Aulas</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value success"><i data-lucide="star" width="20" height="20" style="display:inline;vertical-align:middle;margin-right:4px;"></i>8.9</span>
+          <span class="stat-label">Média Satisfação</span>
+        </div>
+      </div>
+
+      <div class="sidebar-search">
+        <i data-lucide="search" width="18" height="18" class="search-icon"></i>
+        <input
+          type="text"
+          class="search-input"
+          id="searchInput"
+          placeholder="Buscar aula..."
+        >
+      </div>
+
+      <div class="lessons-list" id="lessonsList">
+        <div class="lesson-item" data-lesson="preparatorio">
+          <div class="lesson-number">
+            <i data-lucide="book-open" width="14" height="14" style="display:inline;vertical-align:middle;margin-right:6px;"></i>
+            AULA PREPARATÓRIA
+          </div>
+          <div class="lesson-title">Squads Auto-Atualizáveis + Tool Discovery</div>
+          <div class="lesson-meta">
+            <span class="lesson-date">
+              <i data-lucide="calendar" width="14" height="14"></i>
+              03 Fev 2026
+            </span>
+            <span class="lesson-score">
+              <i data-lucide="star" width="14" height="14"></i>
+              8.5
+            </span>
+          </div>
+        </div>
+
+        <div class="lesson-item" data-lesson="01">
+          <div class="lesson-number">
+            <i data-lucide="book-open" width="14" height="14" style="display:inline;vertical-align:middle;margin-right:6px;"></i>
+            AULA 01
+          </div>
+          <div class="lesson-title">Arquitetura, Workflows e Mindset</div>
+          <div class="lesson-meta">
+            <span class="lesson-date">
+              <i data-lucide="calendar" width="14" height="14"></i>
+              04 Fev 2026
+            </span>
+            <span class="lesson-score">
+              <i data-lucide="star" width="14" height="14"></i>
+              9.3
+            </span>
+          </div>
+        </div>
+
+        <div class="lesson-item" data-lesson="20260203-2100">
+          <div class="lesson-number">
+            <i data-lucide="book-open" width="14" height="14" style="display:inline;vertical-align:middle;margin-right:6px;"></i>
+            AULA 03/02 - 21:00
+          </div>
+          <div class="lesson-title">Análise Pedagógica Interna</div>
+          <div class="lesson-meta">
+            <span class="lesson-date">
+              <i data-lucide="calendar" width="14" height="14"></i>
+              03 Fev 2026
+            </span>
+            <span class="lesson-score">
+              <i data-lucide="message-circle" width="14" height="14"></i>
+              28 Q&A
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <main class="main-content" id="mainContent">
+      <iframe class="lesson-frame" src="../interno/aula-preparatorio/index.html"></iframe>
+    </main>
+
+  </div>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+    const mainContent = document.getElementById('mainContent');
+    const searchInput = document.getElementById('searchInput');
+    const lessonItems = document.querySelectorAll('.lesson-item');
+
+    // Load collapsed state from localStorage
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (isCollapsed && window.innerWidth > 768) {
+      sidebar.classList.add('collapsed');
+    }
+
+    // Toggle sidebar (desktop: collapse, mobile: open/close)
+    sidebarToggle.addEventListener('click', () => {
+      if (window.innerWidth > 768) {
+        // Desktop: toggle collapsed state
+        sidebar.classList.toggle('collapsed');
+        const collapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem('sidebarCollapsed', collapsed);
+      } else {
+        // Mobile: toggle open state
+        sidebar.classList.toggle('open');
+        sidebarBackdrop.classList.toggle('active');
+      }
+    });
+
+    sidebarBackdrop.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      sidebarBackdrop.classList.remove('active');
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        sidebar.classList.remove('open');
+        sidebarBackdrop.classList.remove('active');
+
+        // Restore collapsed state from localStorage
+        const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (isCollapsed) {
+          sidebar.classList.add('collapsed');
+        }
+      } else {
+        sidebar.classList.remove('collapsed');
+      }
+    });
+
+    // Search functionality
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+
+      lessonItems.forEach(item => {
+        const title = item.querySelector('.lesson-title').textContent.toLowerCase();
+        const number = item.querySelector('.lesson-number').textContent.toLowerCase();
+
+        if (title.includes(searchTerm) || number.includes(searchTerm)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+
+    // Load lesson content
+    function loadLesson(lessonId) {
+      // Show loading
+      mainContent.innerHTML = `
+        <div class="loading">
+          <div class="loading-spinner"></div>
+        </div>
+      `;
+
+      // Create iframe
+      const iframe = document.createElement('iframe');
+      iframe.className = 'lesson-frame';
+
+      // Handle different lesson path structures (internal pages)
+      let lessonPath;
+      if (lessonId === 'ps-10-02-2026') {
+        lessonPath = `../interno/${lessonId}/index.html`;
+      } else if (lessonId.startsWith('ps-')) {
+        lessonPath = `../interno/${lessonId}/index.html`;
+      } else if (lessonId === '20260203-2100') {
+        lessonPath = `../interno/aula-${lessonId}/index.html`;
+      } else {
+        lessonPath = `../interno/aula-${lessonId}/index.html`;
+      }
+
+      iframe.src = lessonPath;
+
+      iframe.onload = function() {
+        // Try to adjust iframe height to content
+        try {
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+          const height = iframeDoc.documentElement.scrollHeight;
+          iframe.style.height = height + 'px';
+        } catch (e) {
+          // Cross-origin or other error, keep default height
+          console.log('Could not adjust iframe height:', e);
+        }
+
+        // Scroll to top
+        window.scrollTo(0, 0);
+
+        // Close mobile sidebar
+        if (window.innerWidth <= 768) {
+          sidebar.classList.remove('open');
+          sidebarBackdrop.classList.remove('active');
+        }
+      };
+
+      iframe.onerror = function() {
+        mainContent.innerHTML = '<div class="loading">Erro ao carregar aula</div>';
+      };
+
+      // Replace loading with iframe
+      setTimeout(() => {
+        mainContent.innerHTML = '';
+        mainContent.appendChild(iframe);
+      }, 300);
+    }
+
+    // Lesson click handlers
+    lessonItems.forEach(item => {
+      item.addEventListener('click', () => {
+        // Remove active class from all items
+        lessonItems.forEach(i => i.classList.remove('active'));
+
+        // Add active class to clicked item
+        item.classList.add('active');
+
+        // Load lesson content
+        const lessonId = item.getAttribute('data-lesson');
+        loadLesson(lessonId);
+      });
+    });
+
+    // Set first lesson as active on load
+    document.addEventListener('DOMContentLoaded', () => {
+      const firstLesson = document.querySelector('[data-lesson="preparatorio"]');
+      if (firstLesson) {
+        firstLesson.classList.add('active');
+      }
+
+      // Initialize Lucide icons
+      lucide.createIcons();
+    });
+  </script>
+
+</body>
+</html>
