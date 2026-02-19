@@ -1569,7 +1569,7 @@
             </span>
             <span class="lesson-badge-date">18 Fev 2026</span>
           </div>
-          <h2 class="lesson-headline">Squad Creator: Como Criar Squads no AIOS</h2>
+          <h2 class="lesson-headline">Squad Creator Pro: Como Criar Squads Efetivos com Tiers Estratégico, Tático e Operacional</h2>
 
           <!-- Resumo -->
           <div class="content-card">
@@ -1580,7 +1580,14 @@
               <span class="content-card-title">Resumo</span>
             </div>
             <div class="content-card-body">
-              <p>Terceira aula focada no Squad Creator Pro e como criar squads efetivos. Explorou a migração de commands/prompts para Agents &amp; Skills, filosofia CLI First vs UI First, e os 3 tiers de squads (Estratégico, Tático, Operacional). Demonstração ao vivo de dashboard visual e workflows renderizados como diagramas.</p>
+              <p>A Aula 03 do Cohort AIOS Avançado foi dedicada inteiramente ao Squad Creator Pro, a ferramenta central do AIOS para criação de times de agentes de IA. Com duração de aproximadamente 4 horas e 40 minutos, a aula combinou teoria profunda sobre arquitetura de squads com demonstrações práticas ao vivo.</p>
+              <p>Alan Nicolas abriu a aula mostrando o novo dashboard de observabilidade que está construindo, incluindo visualização de squads, agentes, Kanban de stories, monitor em tempo real e a nova funcionalidade de renderização visual de workflows como diagramas. Explicou a filosofia "CLI First" &mdash; quanto menos UI, mais poder a IA tem &mdash; e como a observabilidade é secundária em relação ao trabalho real feito via terminal.</p>
+              <p>O tema central foi a transição de Commands para Agents e Skills, um movimento que alinha o AIOS com a direção de todas as LLMs. Pedro Valério detalhou a importância do front matter nos agentes e como isso afeta carregamento de contexto e consumo de tokens. A migração levou 5 horas de processamento contínuo no Codex e prepara o sistema para o futuro Agent Teams do Claude Code.</p>
+              <p>Pedro introduziu o conceito revolucionário dos três Tiers de squads: Estratégico (C-levels, visão e regras), Tático (gestores, processos e templates) e Operacional (execução). Ele enfatizou que a maioria das empresas e usuários pula o tier tático, criando um gap de regras que impede consistência nos outputs. O Squad Creator Pro já define automaticamente os três tiers ao criar qualquer squad.</p>
+              <p>Alan demonstrou ao vivo a criação completa de um squad usando uma ideia do aluno Adriano: "Squad de extração de regras de negócios de sistemas legados". O processo incluiu pesquisa automática de especialistas, filtragem pelo advogado do diabo, definição de tiers, criação paralela de agentes, e validação com score numérico. Também mostrou como usa seu clone (Alan Nicolas) para pesquisar livros específicos dos especialistas selecionados, maximizando a qualidade do squad.</p>
+              <p>Um dos momentos mais impressionantes foi a demonstração do Advisory Board virtual, onde clones de Peter Thiel, Naval Ravikant, Derek Sivers, Charlie Munger, e os próprios clones de Alan e Pedro debateram sobre a estratégia de criação de um squad. O clone do Pedro reproduziu fielmente seu estilo de pensamento focado em processo e determinismo, enquanto o clone do Alan trouxe a visão de curadoria e exploração semântica.</p>
+              <p>Pedro apresentou uma visão sofisticada de squads como BUs (Business Units) independentes, cada uma com input e output claros, que podem ser produtizadas separadamente. Ele mostrou exemplos reais da sua empresa Uflows, onde squads de Copy, Produção, GenAI e Edição funcionam como BUs encadeadas, cada uma recebendo o output da anterior como input.</p>
+              <p>A aula encerrou com Alan mostrando funções avançadas como *discover-tools (que pesquisa na internet MCPs, APIs e projetos open source para cada agente), Tech Research (skill para deep research técnico), e a visão de futuro com LLM in Sandbox para serviços online. O dever de casa é criar squads, validar com *validate-squad, e usar *discover-tools para enriquecer os squads criados.</p>
             </div>
           </div>
 
@@ -1594,13 +1601,18 @@
             </div>
             <div class="content-card-body">
               <div class="topic-tags">
-                <span class="topic-tag"><i data-lucide="rocket"></i> Squad Creator Pro (nova versão)</span>
+                <span class="topic-tag"><i data-lucide="rocket"></i> Squad Creator Pro &mdash; Nova Versão com 67 Comandos</span>
                 <span class="topic-tag"><i data-lucide="arrow-right-left"></i> Migração para Agents &amp; Skills (@agent + /skill)</span>
-                <span class="topic-tag"><i data-lucide="terminal"></i> CLI First vs UI First philosophy</span>
-                <span class="topic-tag"><i data-lucide="layers"></i> Tiers de Squads (Estratégico/Tático/Operacional)</span>
-                <span class="topic-tag"><i data-lucide="monitor"></i> Dashboard visual e observabilidade</span>
-                <span class="topic-tag"><i data-lucide="git-branch"></i> Workflows como diagramas visuais</span>
-                <span class="topic-tag"><i data-lucide="message-square"></i> Advisory Board com clones AI</span>
+                <span class="topic-tag"><i data-lucide="terminal"></i> CLI First vs UI First &mdash; Filosofia de Design</span>
+                <span class="topic-tag"><i data-lucide="monitor"></i> Observabilidade &mdash; Dashboard, Monitor e Kanban</span>
+                <span class="topic-tag"><i data-lucide="layers"></i> Tiers de Squads &mdash; Estratégico, Tático e Operacional</span>
+                <span class="topic-tag"><i data-lucide="git-branch"></i> Workflows como Diagramas Visuais (Mermaid)</span>
+                <span class="topic-tag"><i data-lucide="users"></i> Advisory Board com Clones de Mentes (MMOS)</span>
+                <span class="topic-tag"><i data-lucide="shield-check"></i> Validação de Squads &mdash; *validate-squad e Score</span>
+                <span class="topic-tag"><i data-lucide="palette"></i> Design System e Abstração &mdash; Componentização</span>
+                <span class="topic-tag"><i data-lucide="briefcase"></i> Comercialização de Squads &mdash; Squad como BU/Serviço</span>
+                <span class="topic-tag"><i data-lucide="settings"></i> Configuração Correta do AIOS &mdash; Core Config e Caminhos</span>
+                <span class="topic-tag"><i data-lucide="infinity"></i> Codex como Alternativa Ilimitada de Tokens</span>
               </div>
             </div>
           </div>
@@ -1614,10 +1626,16 @@
               <span class="content-card-title">Pontos-Chave</span>
             </div>
             <div class="content-card-body">
-              <div class="placeholder-content">
-                <i data-lucide="clock"></i>
-                <span>Conteúdo será gerado na próxima análise</span>
-              </div>
+              <p><strong>[01:21]</strong> <em>"Squad não é um prompt, não é um agente, não é um workflow, não é uma task. O Squad é uma formação de tudo isso específico para cumprir um propósito."</em> &mdash; Alan Nicolas, explicando a definição fundamental de squad.</p>
+              <p><strong>[02:03]</strong> <em>"O Squad Creator segue um workflow de criação com 1.600+ linhas, cada linha com métricas, checklists, ações, ferramentas e heurísticas. Não é mágica &mdash; existe um documento estruturado governando tudo."</em> &mdash; Alan Nicolas, desmistificando o processo de criação automática de squads.</p>
+              <p><strong>[01:25]</strong> <em>"A maioria das empresas pula o tier tático, indo direto do estratégico ao operacional. Isso cria um gap de regras que impede consistência."</em> &mdash; Pedro Valério Lopez, apresentando o conceito dos três tiers de squads.</p>
+              <p><strong>[00:55]</strong> <em>"Quando um agente faz fork (Agent Teams), ele ignora o contexto atual e começa do zero. Isso economiza tokens de um lado, mas gasta 80 mil tokens só para dar start."</em> &mdash; Alan Nicolas e Pedro Valério, sobre o consumo de tokens com o novo modelo de Agents.</p>
+              <p><strong>[01:30]</strong> <em>"O Rodrigo Faerman está ensinando squads para seu time junior usando a metáfora de organizar um evento com estagiários: cada função recebe um bastão (input) e passa para o próximo (output)."</em> &mdash; Rodrigo Faerman, compartilhando sua experiência prática.</p>
+              <p><strong>[02:30]</strong> <em>"Pense em cada squad como uma BU (Business Unit). Input macro, output macro. A BU de Copy recebe briefing e entrega cópias. Cada BU pode virar um negócio independente."</em> &mdash; Pedro Valério Lopez, apresentando o framework de squads como unidades de negócio.</p>
+              <p><strong>[03:14]</strong> <em>"O comando *validate-squad roda scripts determinísticos que verificam se todos os arquivos estão nas pastas certas, se tem entry agent, pasta de output, e se já foi testado. Dá um score numérico e lista ajustes mínimos necessários."</em> &mdash; Alan Nicolas, demonstrando a validação do squad recém-criado.</p>
+              <p><strong>[03:22]</strong> <em>"O gargalo da criação não é mais o código &mdash; a IA cria código muito rápido. O gargalo agora é o humano: entender, conferir, analisar e decidir."</em> &mdash; Alan Nicolas, refletindo sobre o verdadeiro gargalo na era da IA.</p>
+              <p><strong>[03:50]</strong> <em>"Quantas vezes esse squad rodou em produção? Se a resposta é zero, vocês estão discutindo como expandir um carro que nunca ligou."</em> &mdash; Clone do Pedro Valério (Advisory Board), demonstrando o poder dos clones de mentes do MMOS.</p>
+              <p><strong>[02:43]</strong> <em>"Para normalizar dados de diferentes fontes (ClickUp, Notion, planilhas), crie uma interface de dados em YAML. Os squads conversam com essa interface, não com as ferramentas diretamente."</em> &mdash; Alan Nicolas, respondendo sobre como fazer squads agnósticos a ferramentas.</p>
             </div>
           </div>
 
@@ -1630,10 +1648,14 @@
               <span class="content-card-title">Takeaways</span>
             </div>
             <div class="content-card-body">
-              <div class="placeholder-content">
-                <i data-lucide="clock"></i>
-                <span>Conteúdo será gerado na próxima análise</span>
-              </div>
+              <p><strong>Crie seu primeiro squad a partir de uma única frase:</strong> Abra o Claude Code, chame /squad-tif, use *create-squad e descreva em uma frase o problema que quer resolver. O Squad Creator Pro com 67 comandos elimina a barreira de entrada para criação de squads complexos.</p>
+              <p><strong>Sempre valide seus squads com *validate-squad:</strong> Após criar um squad, abra uma nova aba e rode *validate-squad com o nome do squad para verificar score e ajustes. Evita usar squads com configurações quebradas ou incompletas que geram outputs ruins.</p>
+              <p><strong>Pense em squads como BUs (Business Units):</strong> Para cada squad que criar, defina: qual é o input macro? Qual é o output macro? Alguém compraria esse serviço? Isso permite produtizar squads e identificar oportunidades de negócio reais.</p>
+              <p><strong>Não pule o tier tático:</strong> Ao planejar seus squads, pergunte: tenho squads táticos que criam as regras que meus squads operacionais seguem? Isso garante consistência nos outputs e permite que operacionais sigam regras claras.</p>
+              <p><strong>Use Codex para processos longos e testes:</strong> Instale o app mobile do Codex. Use para rodar validações, testes longos e criação de squads pesados &mdash; tokens praticamente ilimitados eliminam a limitação que trava o trabalho no Claude Code CLI.</p>
+              <p><strong>Crie squads na área que você tem repertório:</strong> Comece criando squads na sua área de domínio. Para áreas desconhecidas, consulte especialistas reais para validar. Evita criar squads bonitos que parecem funcionar mas produzem outputs medíocres.</p>
+              <p><strong>Use *discover-tools para enriquecer seus squads:</strong> Após criar e validar um squad, rode *discover-tools com o nome de cada agente para encontrar MCPs, APIs e projetos open source complementares que amplificam enormemente as capacidades.</p>
+              <p><strong>Monte seu Advisory Board pessoal:</strong> Use o Squad Creator para criar um grupo de advisors personalizado ao seu perfil. Debate ideias com eles antes de executar &mdash; acesso a perspectivas diversas de grandes pensadores para tomar decisões melhores.</p>
             </div>
           </div>
 
@@ -1649,12 +1671,42 @@
               <div class="link-item">
                 <div class="link-item-icon"><i data-lucide="figma"></i></div>
                 <span class="link-item-label">Figma Board:</span>
-                <a href="https://www.figma.com/board/80ARIf53fw6EwPYXKNQXKc/Live---12-02" target="_blank" rel="noopener">https://www.figma.com/board/80ARIf53fw6EwPYXKNQXKc/Live---12-02</a>
+                <a href="https://www.figma.com/board/80ARIf53fw6EwPYXKNQXKc/Live---12-02?node-id=0-1&p=f" target="_blank" rel="noopener">Mapa visual da aula &mdash; estrutura de squads e fluxos</a>
               </div>
               <div class="link-item">
                 <div class="link-item-icon"><i data-lucide="globe"></i></div>
-                <span class="link-item-label">exa.ai:</span>
-                <a href="https://exa.ai" target="_blank" rel="noopener">Ferramenta de pesquisa</a>
+                <span class="link-item-label">Exa AI:</span>
+                <a href="https://exa.ai" target="_blank" rel="noopener">Ferramenta de pesquisa avançada com IA (MCP integrado ao AIOS)</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="key"></i></div>
+                <span class="link-item-label">Reset Senha AIOS Pro:</span>
+                <a href="https://aios-license-server.vercel.app/reset-password" target="_blank" rel="noopener">Página alternativa de reset de senha (Pedro Valério)</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="github"></i></div>
+                <span class="link-item-label">AIOS Core:</span>
+                <a href="https://github.com/skyndraai/aios-core" target="_blank" rel="noopener">Repositório público do AIOS Core</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="video"></i></div>
+                <span class="link-item-label">Remotion:</span>
+                <a href="https://www.remotion.dev" target="_blank" rel="noopener">Framework para criar vídeos programaticamente com React</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="terminal"></i></div>
+                <span class="link-item-label">FFmpeg:</span>
+                <a href="https://ffmpeg.org" target="_blank" rel="noopener">Processamento de áudio e vídeo via linha de comando</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="palette"></i></div>
+                <span class="link-item-label">PENCIL:</span>
+                <a href="https://pencil.li" target="_blank" rel="noopener">Ferramenta de IA para design (rodrigofaerman)</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="workflow"></i></div>
+                <span class="link-item-label">LangGraph:</span>
+                <a href="https://www.langchain.com/langgraph" target="_blank" rel="noopener">Framework de orquestração de agentes (LangChain)</a>
               </div>
             </div>
           </div>
@@ -1678,13 +1730,464 @@
             </div>
           </div>
 
-          <p class="kb-message">O glossário será populado automaticamente conforme as aulas forem processadas pelo pipeline de análise.</p>
+          <p class="kb-message">57 termos técnicos consolidados das Aulas 02 e 03, agrupados por categoria.</p>
 
-          <div class="kb-placeholder-card">
-            <div class="kb-placeholder-card-icon">
-              <i data-lucide="book-open"></i>
+          <style>
+            .glossary-group { margin-bottom: var(--spacing-xl); }
+            .glossary-group-title { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); color: var(--color-text-headline); margin-bottom: var(--spacing-md); display: flex; align-items: center; gap: var(--spacing-sm); }
+            .glossary-group-count { font-size: var(--font-size-xs); color: #888; font-weight: var(--font-weight-medium); }
+            .glossary-card { background: var(--color-bg-card); border: 1px solid var(--color-border-card); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-sm); transition: all var(--transition-normal); }
+            .glossary-card:hover { border-color: var(--color-border-hover); }
+            .glossary-term { font-size: var(--font-size-md); font-weight: var(--font-weight-bold); color: var(--color-text-headline); margin-bottom: 4px; }
+            .glossary-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: var(--spacing-sm); }
+            .glossary-badge { display: inline-flex; align-items: center; font-size: 10px; font-weight: var(--font-weight-bold); text-transform: uppercase; letter-spacing: var(--letter-spacing-wide); padding: 2px 8px; border-radius: var(--radius-pill); }
+            .glossary-badge--cat { background: rgba(59, 130, 246, 0.12); color: #3B82F6; }
+            .glossary-badge--aula { background: rgba(34, 197, 94, 0.12); color: #22C55E; }
+            .glossary-def { font-size: var(--font-size-sm); color: var(--color-text-body); line-height: var(--line-height-normal); margin-bottom: var(--spacing-xs); }
+            .glossary-example { font-size: var(--font-size-sm); color: #888; font-style: italic; margin-bottom: var(--spacing-xs); }
+            .glossary-related { font-size: var(--font-size-xs); color: #666; }
+            .glossary-related span { color: #3B82F6; }
+          </style>
+
+          <!-- Ferramentas -->
+          <div class="glossary-group" data-glossary-cat="Ferramenta">
+            <div class="glossary-group-title">Ferramentas <span class="glossary-group-count">(5 termos)</span></div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Squad Creator</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Ferramenta</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Sistema CLI para criar, configurar e gerenciar times de agentes AI que trabalham juntos para executar tarefas complexas. Versão 3.0-4.0 com dashboard interativo e otimização de custos.</div>
+              <div class="glossary-example">Ex: squad create my-team --agents analyst,dev,qa</div>
+              <div class="glossary-related">Relacionados: <span>Agent</span>, <span>Workflow</span>, <span>Dashboard</span></div>
             </div>
-            <p>Termos técnicos aparecerão aqui agrupados por categoria</p>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Squad Creator Pro</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Ferramenta</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Versão avançada do Squad Creator com funcionalidades extras: dashboard visual de squads, visualização de workflows como diagramas, monitor de agentes em tempo real, Finch (análise de negócios), e sistema de tiers (estratégico/tático/operacional). Versão 4.0 com ~67 comandos integrados.</div>
+              <div class="glossary-example">Ex: Alan compartilhou no WhatsApp a versão 4.0 com ~67 comandos</div>
+              <div class="glossary-related">Relacionados: <span>Squad Creator</span>, <span>Dashboard</span>, <span>Finch</span>, <span>Squad Tiers</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Dashboard</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Interface</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Interface web interativa do Squad Creator que mostra agentes, workflows, métricas de execução, custos em tempo real, e logs. Facilita debug e monitoramento.</div>
+              <div class="glossary-example">Ex: Abre automaticamente ao iniciar squad ou via squad dashboard</div>
+              <div class="glossary-related">Relacionados: <span>Squad Creator</span>, <span>Monitoring</span>, <span>Metrics</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Finch</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Ferramenta</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Módulo do Squad Creator Pro que faz análise de negócios sobre squads: quanto pode economizar, quanto pode faturar, viabilidade financeira. Integrado em algumas tasks do Squad Creator.</div>
+              <div class="glossary-related">Relacionados: <span>Squad Creator Pro</span>, <span>ROI</span>, <span>Validação</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">ffmpeg</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Ferramenta</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Ferramenta de linha de comando para processamento de áudio e vídeo. No contexto AIOS, usada para edição de vídeo via código dentro de squads de produção de conteúdo. Alternativa: Remotion.</div>
+              <div class="glossary-example">Ex: Talles identificou a ferramenta quando Alan demonstrou edição de vídeo.</div>
+              <div class="glossary-related">Relacionados: <span>Worker Online</span>, <span>Squad de Produção</span>, <span>Automação</span></div>
+            </div>
+          </div>
+
+          <!-- Modelos LLM -->
+          <div class="glossary-group" data-glossary-cat="Modelo LLM">
+            <div class="glossary-group-title">Modelos LLM <span class="glossary-group-count">(3 termos)</span></div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Haiku</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Modelo LLM</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Claude Haiku &mdash; modelo mais rápido e barato da Anthropic. Input: $0.25/1M tokens, Output: $1.25/1M tokens. Surpreendentemente capaz em muitas tarefas quando bem orientado.</div>
+              <div class="glossary-example">Ex: Tarefas estruturadas, parsing, classificação, resumos, 70-80% dos casos</div>
+              <div class="glossary-related">Relacionados: <span>Sonnet</span>, <span>Opus</span>, <span>Model Tier</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Sonnet</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Modelo LLM</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Claude Sonnet &mdash; modelo intermediário da Anthropic. Balanceado entre custo e capacidade. Input: $3/1M tokens, Output: $15/1M tokens.</div>
+              <div class="glossary-example">Ex: Tarefas de complexidade média, análises mais profundas, 15-20% dos casos</div>
+              <div class="glossary-related">Relacionados: <span>Haiku</span>, <span>Opus</span>, <span>Model Tier</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Opus</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Modelo LLM</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Claude Opus &mdash; modelo mais poderoso da Anthropic. Input: $15/1M tokens, Output: $75/1M tokens. Para tarefas complexas que realmente precisam de raciocínio avançado.</div>
+              <div class="glossary-example">Ex: Tarefas muito complexas, raciocínio multi-step, apenas 5-10% dos casos</div>
+              <div class="glossary-related">Relacionados: <span>Haiku</span>, <span>Sonnet</span>, <span>Model Tier</span></div>
+            </div>
+          </div>
+
+          <!-- Conceitos -->
+          <div class="glossary-group" data-glossary-cat="Conceito">
+            <div class="glossary-group-title">Conceitos <span class="glossary-group-count">(18 termos)</span></div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Agent</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Entidade AI com persona, expertise e ferramentas específicas. Pode ser desenvolvedor, QA, analista, PM, etc. Cada agente tem contexto e comandos próprios.</div>
+              <div class="glossary-example">Ex: @dev para ativar o agente desenvolvedor</div>
+              <div class="glossary-related">Relacionados: <span>Squad</span>, <span>Persona</span>, <span>Workflow</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Token</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Unidade de cobrança dos modelos LLM. Aproximadamente 4 caracteres = 1 token em inglês, 2-3 caracteres em português. Input tokens (leitura) e output tokens (geração) têm preços diferentes.</div>
+              <div class="glossary-related">Relacionados: <span>Token Economy</span>, <span>Model Tier</span>, <span>Custo</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Operação Determinística</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Tarefa que pode ser resolvida algoritmicamente sem precisar de raciocínio LLM. Ex: validar formato JSON, contar palavras, extrair timestamps, parsing com regex.</div>
+              <div class="glossary-example">Ex: Se pode ser um script, deve ser um script (zero custo vs $0.01-0.05 por operação)</div>
+              <div class="glossary-related">Relacionados: <span>Token Economy</span>, <span>Script</span>, <span>LLM Call</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Workflow</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Sequência de tarefas executadas por agentes em ordem específica. Pode ter paralelização, condicionais, loops. Definido em YAML ou código.</div>
+              <div class="glossary-example">Ex: Extract &rarr; Transform &rarr; Validate &rarr; Load (ETL pipeline)</div>
+              <div class="glossary-related">Relacionados: <span>Agent</span>, <span>Squad</span>, <span>Epic</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Epic</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Grande feature ou projeto dividido em múltiplas stories. No contexto AIOS, pode ser executado automaticamente por squads que criam e implementam stories.</div>
+              <div class="glossary-example">Ex: Epic: Sistema de autenticação &rarr; 5 stories &rarr; 20 tasks</div>
+              <div class="glossary-related">Relacionados: <span>Story</span>, <span>Workflow</span>, <span>Automation</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Story</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Unidade de trabalho implementável em 1-3 dias. Contém contexto, critérios de aceitação, tasks, testes. Base do story-driven development.</div>
+              <div class="glossary-related">Relacionados: <span>Epic</span>, <span>Task</span>, <span>Story-Driven Development</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Persona</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Identidade e comportamento definido para um agente. Inclui expertise, tom de voz, valores, restrições.</div>
+              <div class="glossary-related">Relacionados: <span>Agent</span>, <span>System Prompt</span>, <span>Voice DNA</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Voice DNA</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Assinatura linguística única de um agente: frases preferidas, metáforas recorrentes, estrutura de pensamento, vocabulário. Torna agente reconhecível.</div>
+              <div class="glossary-related">Relacionados: <span>Persona</span>, <span>Agent</span>, <span>Communication Style</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">System Prompt</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Instrução inicial que define comportamento, persona e regras de um agente AI. Permanece ativo durante toda a sessão. Base da consistência de agentes.</div>
+              <div class="glossary-related">Relacionados: <span>Agent</span>, <span>Persona</span>, <span>Context</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Context Window</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Limitação</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Número máximo de tokens que um modelo consegue processar de uma vez. Claude Opus: 200k tokens (~150k palavras). Limita tamanho de documentos.</div>
+              <div class="glossary-related">Relacionados: <span>Token</span>, <span>Chunking</span>, <span>LLM</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Observabilidade</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Capacidade de observar e monitorar o que os agentes estão fazendo em tempo real. No AIOS, é o segundo princípio (após CLI First). Pode ser via dashboard web, painel no terminal, ou skill /squad.</div>
+              <div class="glossary-related">Relacionados: <span>CLI First</span>, <span>Dashboard</span>, <span>Monitor</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Spawnar</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Criar e ativar um subagente ou subprocesso a partir de um agente principal. No Claude Code, quando um agente precisa executar uma task, ele "spawna" outro agente especializado que roda em paralelo.</div>
+              <div class="glossary-example">Ex: "Spawnar seria como mandar o filho comprar pão na padaria." &mdash; Adriano Rogowski</div>
+              <div class="glossary-related">Relacionados: <span>Agent</span>, <span>Fork</span>, <span>Workflow</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Worker Online</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Processo ou serviço que roda em segundo plano num servidor remoto (ex: Vercel, Railway), executando scripts ou tarefas de forma contínua. Permite operação 24/7.</div>
+              <div class="glossary-related">Relacionados: <span>Deploy</span>, <span>Infraestrutura</span>, <span>Squad</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Design System</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">No contexto AIOS, sistema visual padronizado para squads e aplicações. Inclui componentes reutilizáveis, padrões visuais, e hierarquia de elementos. Alan demonstrou criação de Design System para o dashboard de squads.</div>
+              <div class="glossary-related">Relacionados: <span>Componentização</span>, <span>Dashboard</span>, <span>Squad Creator Pro</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Repertório</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Estoque de referências, conhecimentos e experiências que uma pessoa consegue acessar e combinar. No contexto de squads, determina a capacidade de avaliar a qualidade dos outputs.</div>
+              <div class="glossary-example">Ex: "Crie o squad onde você tem repertório para avaliar se ele é bom." &mdash; Alan Nicolas</div>
+              <div class="glossary-related">Relacionados: <span>Squad Creator</span>, <span>Avaliação</span>, <span>Expertise</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Abstração</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Capacidade de simplificar complexidade, escondendo detalhes e expondo apenas o necessário. No AIOS: camadas de abstração em UI limitam poder da IA; abstração suficiente é necessária para debugar projetos complexos.</div>
+              <div class="glossary-related">Relacionados: <span>Componentização</span>, <span>CLI First</span>, <span>Infraestrutura</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Componentização</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Quebrar sistemas complexos em componentes menores, reutilizáveis e independentes. Aplica-se a squads (sub-squads), código (componentes visuais) e serviços (APIs compartilhadas).</div>
+              <div class="glossary-related">Relacionados: <span>Abstração</span>, <span>Design System</span>, <span>Arquitetura</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Kanban (contexto AIOS)</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Sistema de visualização do progresso no AIOS. O dashboard mostra colunas: Backlog, Em Progresso, Review, Humano Necessário, PR Criado, Done.</div>
+              <div class="glossary-related">Relacionados: <span>Dashboard</span>, <span>Story</span>, <span>Observabilidade</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Front Matter</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Metadados no topo de arquivos Markdown (entre --- e ---) que configuram comportamento de agentes e tasks. Define modelo a usar, permissões, registros de memória e arquivos que devem ser carregados.</div>
+              <div class="glossary-related">Relacionados: <span>Agents &amp; Skills</span>, <span>Token Economy</span>, <span>System Prompt</span></div>
+            </div>
+          </div>
+
+          <!-- Estratégias -->
+          <div class="glossary-group" data-glossary-cat="Estratégia">
+            <div class="glossary-group-title">Estratégias <span class="glossary-group-count">(3 termos)</span></div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Token Economy</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Estratégia</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Conjunto de técnicas para reduzir custos de LLM sem perder qualidade: usar modelos mais baratos quando possível, operações determinísticas com scripts, batch processing, caching, etc.</div>
+              <div class="glossary-example">Ex: Redução de 70-90% nos custos típicos</div>
+              <div class="glossary-related">Relacionados: <span>Haiku</span>, <span>Model Qualification</span>, <span>Operação Determinística</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Fallback</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Estratégia</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Mecanismo automático de contingência. Se provider A falhar ou atingir rate limit, sistema automaticamente tenta provider B, depois C.</div>
+              <div class="glossary-example">Ex: OpenAI rate limit &rarr; Anthropic &rarr; Cohere &rarr; Google</div>
+              <div class="glossary-related">Relacionados: <span>Open Router</span>, <span>Rate Limiting</span>, <span>Resiliência</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Rate Limiting</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Limite de requisições por minuto/hora imposto pelos provedores de API. Ex: OpenAI free tier = 3 req/min. Tier pago = 500 req/min.</div>
+              <div class="glossary-related">Relacionados: <span>Fallback</span>, <span>Open Router</span>, <span>Throttling</span></div>
+            </div>
+          </div>
+
+          <!-- Arquitetura & Filosofia -->
+          <div class="glossary-group" data-glossary-cat="Arquitetura">
+            <div class="glossary-group-title">Arquitetura &amp; Filosofia <span class="glossary-group-count">(4 termos)</span></div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Agents &amp; Skills</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Arquitetura</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Nova arquitetura do AIOS que substitui Commands e Prompts. Agents são chamados com @ (ex: @dev) e Skills com / (ex: /squad). Permite que agentes se chamem automaticamente entre si.</div>
+              <div class="glossary-related">Relacionados: <span>CLI First</span>, <span>Front Matter</span>, <span>Workflow</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Squad Tiers</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Arquitetura</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Classificação hierárquica de squads: Estratégico (Tier 0 &mdash; C-levels, visão), Tático (Tier 1 &mdash; gestores, processos), Operacional (Tier 2 &mdash; execução). Squads operacionais seguem regras criadas por squads táticos.</div>
+              <div class="glossary-related">Relacionados: <span>Squad Creator Pro</span>, <span>Advisory Board</span>, <span>Workflow</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">CLI First</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Filosofia</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Princípio arquitetural do AIOS: priorizar linha de comando sobre interface gráfica. Quanto mais UI, menos poder a IA tem. A IA trabalha melhor com Markdown, YAML e JSON do que com interfaces visuais.</div>
+              <div class="glossary-related">Relacionados: <span>UI First</span>, <span>Observabilidade</span>, <span>Markdown</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Advisory Board</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Conselho consultivo formado por clones de mentes (minds) que debatem entre si para tomada de decisão estratégica. No contexto AIOS, é um squad estratégico onde agentes-clones discutem e geram pareceres.</div>
+              <div class="glossary-related">Relacionados: <span>Squad Tiers</span>, <span>MMOS</span>, <span>Debate</span></div>
+            </div>
+          </div>
+
+          <!-- Comandos -->
+          <div class="glossary-group" data-glossary-cat="Comando">
+            <div class="glossary-group-title">Comandos CLI <span class="glossary-group-count">(6 termos)</span></div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Squad Validate</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Comando</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Comando que testa configuração e funcionamento de um squad com exemplos pequenos antes de escalar. Filosofia: validar barato antes de executar caro.</div>
+              <div class="glossary-example">Ex: squad validate --examples 10</div>
+              <div class="glossary-related">Relacionados: <span>Squad Creator</span>, <span>Testing</span>, <span>Cost Optimization</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">*validate-squad</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Comando</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Comando do Squad Creator que valida a qualidade e estrutura de um squad existente. Gera nota de 0-10 com relatório detalhado. Nota &gt; 8.5 = pronto para produção.</div>
+              <div class="glossary-related">Relacionados: <span>Squad Creator</span>, <span>*create-squad</span>, <span>Squad Optimize</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">*create-squad</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Comando</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Comando do Squad Creator para criar um novo squad do zero. Na versão 4.0, já define automaticamente os três tiers e verifica o registry para evitar duplicatas.</div>
+              <div class="glossary-related">Relacionados: <span>Squad Creator</span>, <span>*validate-squad</span>, <span>Registry</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">*sync commands</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Comando</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Comando para sincronizar/criar os comandos do Squad Creator no ambiente .claude/commands/. Necessário após atualizar a pasta do squad-creator com nova versão.</div>
+              <div class="glossary-related">Relacionados: <span>Squad Creator</span>, <span>DevOps</span>, <span>Atualização</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Discovery Tools</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Comando</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Comando (*discovery-tools) que pesquisa na Internet e descobre APIs, MCPs, projetos GitHub e Open Source relevantes para um determinado squad ou agente.</div>
+              <div class="glossary-related">Relacionados: <span>Squad Creator</span>, <span>MCP</span>, <span>Tools</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Squad Optimize</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Comando</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Comando que analisa uso de LLM em um squad e sugere otimizações: downgrade de modelos, conversão de LLM calls em scripts, caching, etc.</div>
+              <div class="glossary-related">Relacionados: <span>Token Economy</span>, <span>Optimization</span>, <span>Cost Analysis</span></div>
+            </div>
+          </div>
+
+          <!-- Técnicas -->
+          <div class="glossary-group" data-glossary-cat="Técnica">
+            <div class="glossary-group-title">Técnicas <span class="glossary-group-count">(5 termos)</span></div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Prompt Engineering</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Técnica</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Arte de construir prompts eficazes para LLMs. Inclui: contexto claro, exemplos, formato de output, constraints. Boa engenharia permite usar Haiku em vez de Opus.</div>
+              <div class="glossary-related">Relacionados: <span>Haiku</span>, <span>Model Qualification</span>, <span>LLM</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Batch Processing</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Técnica</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Processar múltiplos itens de uma vez em vez de um por um. Reduz overhead de API calls, aproveita paralelização.</div>
+              <div class="glossary-related">Relacionados: <span>Token Economy</span>, <span>Throughput</span>, <span>Paralelização</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Chunking</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Técnica</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Dividir documentos grandes em pedaços menores para processar. Essencial quando conteúdo excede context window ou para economizar tokens.</div>
+              <div class="glossary-related">Relacionados: <span>Context Window</span>, <span>Token Economy</span>, <span>Processing</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Caching</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Técnica</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Armazenar resultados de operações caras para reusar. Se mesma pergunta aparece 10x, processar 1x e cachear. Reduz custo e latência dramaticamente.</div>
+              <div class="glossary-related">Relacionados: <span>Token Economy</span>, <span>Performance</span>, <span>Cost</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Streaming</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Técnica</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Receber resposta do LLM incrementalmente (palavra por palavra) em vez de esperar resposta completa. Melhora perceived performance e permite early stopping.</div>
+              <div class="glossary-related">Relacionados: <span>LLM Call</span>, <span>Performance</span>, <span>UX</span></div>
+            </div>
+          </div>
+
+          <!-- Sistemas e Outros -->
+          <div class="glossary-group" data-glossary-cat="Sistema">
+            <div class="glossary-group-title">Sistemas, Serviços &amp; Outros <span class="glossary-group-count">(10 termos)</span></div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Model Tier Qualification</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Sistema</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Sistema automático que classifica tarefas em Tier 1 (Haiku), Tier 2 (Sonnet) ou Tier 3 (Opus) baseado em complexidade. Permite override manual.</div>
+              <div class="glossary-related">Relacionados: <span>Token Economy</span>, <span>Haiku</span>, <span>Opus</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Registry</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Sistema</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Documento central do Squad Creator que lista todos os squads existentes, suas ferramentas e capacidades. Usado para evitar duplicatas ao criar novos squads.</div>
+              <div class="glossary-related">Relacionados: <span>Squad Creator</span>, <span>*create-squad</span>, <span>Discovery Tools</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Open Router</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Serviço</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">API unificada que dá acesso a 20+ provedores de LLM. Uma API key, múltiplos modelos. Fallback automático entre provedores.</div>
+              <div class="glossary-related">Relacionados: <span>Fallback</span>, <span>Rate Limiting</span>, <span>Multi-Provider</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">MCP (Model Context Protocol)</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Protocolo</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Protocolo para conectar LLMs a ferramentas externas (APIs, bancos de dados, file system). Permite agentes interagirem com mundo real além de texto.</div>
+              <div class="glossary-related">Relacionados: <span>Agent</span>, <span>Tools</span>, <span>Integration</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">ETL Pipeline</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Padrão</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Extract Transform Load &mdash; padrão de processamento de dados. Extrair de fonte, transformar/enriquecer, carregar em destino. Muito usado com squads.</div>
+              <div class="glossary-related">Relacionados: <span>Workflow</span>, <span>Data Processing</span>, <span>Squad</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Bob (agente)</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Agente</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Agente autônomo avançado do AIOS que executa múltiplos passos sozinho, ativando e orquestrando outros agentes automaticamente. Não deve ser usado para criação de squads (modo YOLO).</div>
+              <div class="glossary-related">Relacionados: <span>Spawnar</span>, <span>Agents &amp; Skills</span>, <span>Observabilidade</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Domain Decoder</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Ferramenta</span><span class="glossary-badge glossary-badge--aula">Aula 03</span></div>
+              <div class="glossary-def">Ferramenta ou módulo do AIOS para decodificar e mapear domínios de conhecimento. Relacionado à capacidade de extrair estruturas de conhecimento de um domínio específico.</div>
+              <div class="glossary-related">Relacionados: <span>Repertório</span>, <span>MMOS</span>, <span>Knowledge Base</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">Temperature</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Parâmetro</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Controla aleatoriedade do LLM. 0 = determinístico/previsível, 1+ = criativo/variado. Para tarefas estruturadas use 0-0.3, para criativas use 0.7-1.0.</div>
+              <div class="glossary-related">Relacionados: <span>LLM</span>, <span>Configuração</span>, <span>Output Quality</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">ROI (Return on Investment)</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Métrica</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Retorno sobre investimento. Em contexto de token economy: quanto economiza vs esforço de otimizar. Se gasta $10/mês, não vale 40h otimizando.</div>
+              <div class="glossary-related">Relacionados: <span>Token Economy</span>, <span>Business</span>, <span>Optimization</span></div>
+            </div>
+
+            <div class="glossary-card">
+              <div class="glossary-term">LLM Call</div>
+              <div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Operação</span><span class="glossary-badge glossary-badge--aula">Aula 02</span></div>
+              <div class="glossary-def">Requisição a um modelo de linguagem. Tem custo por token processado e tempo de latência. Deve ser usado apenas quando raciocínio é necessário.</div>
+              <div class="glossary-related">Relacionados: <span>Token</span>, <span>Operação Determinística</span>, <span>API</span></div>
+            </div>
           </div>
         </section>
 
@@ -1706,13 +2209,227 @@
             </div>
           </div>
 
-          <p class="kb-message">O FAQ será populado automaticamente conforme as aulas forem processadas.</p>
+          <p class="kb-message">30 perguntas frequentes consolidadas das Aulas 02 e 03, agrupadas por categoria.</p>
 
-          <div class="kb-placeholder-card">
-            <div class="kb-placeholder-card-icon">
-              <i data-lucide="circle-help"></i>
-            </div>
-            <p>Perguntas frequentes aparecerão aqui</p>
+          <style>
+            .faq-group { margin-bottom: var(--spacing-xl); }
+            .faq-group-title { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); color: var(--color-text-headline); margin-bottom: var(--spacing-md); }
+            .faq-item { background: var(--color-bg-card); border: 1px solid var(--color-border-card); border-radius: var(--radius-lg); margin-bottom: var(--spacing-sm); overflow: hidden; }
+            .faq-question { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-md) var(--spacing-lg); cursor: pointer; transition: background var(--transition-fast); gap: var(--spacing-sm); }
+            .faq-question:hover { background: rgba(255,255,255,0.03); }
+            .faq-question-text { font-size: var(--font-size-md); font-weight: var(--font-weight-medium); color: var(--color-text-headline); flex: 1; }
+            .faq-chevron { width: 20px; height: 20px; color: #666; flex-shrink: 0; transition: transform var(--transition-fast); }
+            .faq-item.open .faq-chevron { transform: rotate(180deg); }
+            .faq-answer { display: none; padding: 0 var(--spacing-lg) var(--spacing-lg); }
+            .faq-item.open .faq-answer { display: block; }
+            .faq-answer-text { font-size: var(--font-size-sm); color: var(--color-text-body); line-height: var(--line-height-normal); white-space: pre-line; }
+            .faq-answer-text code { background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 3px; font-size: var(--font-size-xs); }
+            .faq-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--spacing-sm); }
+            .faq-tag { font-size: 10px; padding: 2px 8px; border-radius: var(--radius-pill); background: rgba(255,255,255,0.05); color: #888; }
+            .faq-nivel { font-size: 10px; padding: 2px 8px; border-radius: var(--radius-pill); font-weight: var(--font-weight-bold); text-transform: uppercase; }
+            .faq-nivel--basico { background: rgba(34,197,94,0.12); color: #22C55E; }
+            .faq-nivel--intermediario { background: rgba(245,158,11,0.12); color: #F59E0B; }
+            .faq-nivel--avancado { background: rgba(239,68,68,0.12); color: #EF4444; }
+            .faq-aula-badge { font-size: 10px; padding: 2px 8px; border-radius: var(--radius-pill); background: rgba(168,85,247,0.12); color: #A855F7; font-weight: var(--font-weight-bold); }
+          </style>
+
+          <!-- Instalação e Configuração -->
+          <div class="faq-group">
+            <div class="faq-group-title">Instalação e Configuração</div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Como instalo o Squad Creator?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Instale via npm globalmente:
+<code>npm install -g @aios/squad-creator</code>
+
+Após instalação, configure suas API keys:
+<code>squad config set ANTHROPIC_API_KEY=sua-key</code>
+<code>squad config set OPENROUTER_API_KEY=sua-key</code> (recomendado)
+
+Verifique: <code>squad --version</code></div><div class="faq-meta"><span class="faq-nivel faq-nivel--basico">Básico</span><span class="faq-aula-badge">Aula 02</span><span class="faq-tag">instalação</span><span class="faq-tag">setup</span></div></div></div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Preciso de todas as API keys ou só Anthropic basta?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Mínimo necessário: Apenas Anthropic (Claude).
+Recomendado: Anthropic + Open Router.
+
+Por que Open Router? Uma key dá acesso a 20+ provedores, fallback automático, rate limiting inteligente.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--basico">Básico</span><span class="faq-aula-badge">Aula 02</span><span class="faq-tag">api-key</span><span class="faq-tag">openrouter</span></div></div></div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Como atualizo o Squad Creator para a versão mais recente?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">8+ alunos perguntaram na aula 03. Passo a passo:
+
+1. Baixe a nova versão do grupo do WhatsApp
+2. Delete APENAS a pasta squad-creator dentro de /squads/:
+   <code>rm -rf /squads/squad-creator/</code>
+   CUIDADO: NÃO delete seus outros squads!
+3. Extraia a nova versão na mesma pasta
+4. Sincronize os comandos:
+   <code>*sync commands squad-creator</code>
+5. Verifique: <code>/squad-creator:agents:squad-chief</code>
+
+Erro comum (Fábio): Deletou toda a pasta /squads/ ao invés de só /squads/squad-creator/.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--basico">Básico</span><span class="faq-aula-badge">Aula 03</span><span class="faq-tag">atualização</span><span class="faq-tag">sync</span></div></div></div>
+          </div>
+
+          <!-- Token Economy e Custos -->
+          <div class="faq-group">
+            <div class="faq-group-title">Token Economy e Custos</div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Por que Haiku às vezes dá resultado melhor que Opus se é mais barato?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Não é mágica, é prompt engineering:
+
+1. Haiku é mais focado e direto para tarefas estruturadas
+2. Opus pode "overengenharia" em tarefas simples
+3. Prompts otimizados para Haiku são mais diretos e estruturados
+4. Haiku é excelente em seguir formatos (JSON, YAML, listas)
+
+Regra prática: Se sua tarefa é "transformar A em B" com regras claras, Haiku provavelmente é melhor E mais barato.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--intermediario">Intermediário</span><span class="faq-aula-badge">Aula 02</span><span class="faq-tag">haiku</span><span class="faq-tag">opus</span></div></div></div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Quanto posso economizar realmente usando essas técnicas?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Cenários reais demonstrados:
+
+Pipeline ETL (500 transcrições):
+  Antes (Opus): $720 | Depois (Haiku + scripts): $12 | Economia: 98.3%
+
+Projeto típico mensal:
+  Antes (Opus para tudo): $1000/mês | Depois (70% Haiku, 20% Sonnet, 10% Opus): $100-150/mês
+
+Resultado típico: 70-90% de redução mantendo ou melhorando qualidade.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--basico">Básico</span><span class="faq-aula-badge">Aula 02</span><span class="faq-tag">economia</span><span class="faq-tag">roi</span></div></div></div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">O Squad Creator Pro consome muitos tokens ao abrir?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Marcelo Matos reportou: "Meu squad-chief só para abrir já gasta 106k tokens"
+Wanderson: "35k aqui, considerando Messages e Skills"
+
+Por que Agents gastam mais tokens:
+- Fazem fork (ignoram contexto atual, começam do zero)
+- Precisam ler todo o contexto para descobrir o que fazer
+- Podem gastar 80k tokens só para dar o start
+
+Soluções: Front Matter otimizado, scripts de sinapse em background, Agents Context Document atualizado automaticamente.
+
+Use <code>/context</code> para ver quanto cada coisa está consumindo.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--intermediario">Intermediário</span><span class="faq-aula-badge">Aula 03</span><span class="faq-tag">tokens</span><span class="faq-tag">performance</span></div></div></div>
+          </div>
+
+          <!-- Estrutura e Organização -->
+          <div class="faq-group">
+            <div class="faq-group-title">Estrutura de Pastas e Organização</div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">A pasta dos squads fica dentro do .claude ou fora?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Fica FORA do .claude, na raiz do projeto:
+
+/meu-projeto/
+  .aios-core/        (Framework, read-only)
+  .claude/commands/   (Auto-gerado pelo sync)
+  squads/             (AQUI ficam os squads)
+    squad-creator/
+    meu-squad-1/
+  docs/
+
+Para os comandos aparecerem como /squad-creator:... rode *sync commands ou peça ao AIOS Master adicionar no config.json.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--basico">Básico</span><span class="faq-aula-badge">Aula 03</span><span class="faq-tag">estrutura</span><span class="faq-tag">pastas</span></div></div></div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Como organizar squads em múltiplos projetos?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Pergunta do Marcelo Matos (feita 2x na aula):
+
+1. Copiar squads para cada projeto (mais simples, zero dependência)
+2. Pasta raiz compartilhada (mais DRY, risco de afetar todos)
+3. Skill de sincronização (Torriani criou skill que busca do projeto principal no GitHub)
+
+Recomendação Pedro: AIOS deve ser instalado na pasta de cada projeto para manter contexto isolado (code standards, tech stack, etc).</div><div class="faq-meta"><span class="faq-nivel faq-nivel--intermediario">Intermediário</span><span class="faq-aula-badge">Aula 03</span><span class="faq-tag">organização</span><span class="faq-tag">múltiplos-projetos</span></div></div></div>
+          </div>
+
+          <!-- Conceitos de Squad -->
+          <div class="faq-group">
+            <div class="faq-group-title">Conceitos de Squad</div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Squad é a mesma coisa que um setor da empresa?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Pode ser, mas não é só isso. Squad pode ser:
+- Um setor da empresa (marketing, vendas, RH)
+- Um grupo de elite para missão específica
+- Uma área abstrata (ex: HybridOps)
+- Um time multidisciplinar autônomo
+
+O que um squad NÃO é: não é uma fase/etapa, não é uma tarefa isolada, não é um departamento isolado.
+
+Com Tiers (Pedro explicou):
+  Estratégico: decisões e visão
+  Tático: processos e regras
+  Operacional: execução</div><div class="faq-meta"><span class="faq-nivel faq-nivel--basico">Básico</span><span class="faq-aula-badge">Aula 03</span><span class="faq-tag">conceito</span><span class="faq-tag">tiers</span></div></div></div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Por que é melhor começar com Squad do que com uma aplicação web?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Pedro explicou com analogia Agile (skate &rarr; carro):
+
+Problema de começar com app: ciclo gigantesco (8-10 épicos), sem abstração para debugar, se apaixona pelo código sem gerar valor.
+
+Vantagem do Squad: valida task por task, sem latência de desenvolvimento, sem complexidade de APIs/banco.
+
+Fluxo recomendado:
+1. Criar squad com agentes e tasks
+2. Validar input/output de cada task
+3. Conectar em workflow
+4. Criar PRD para ferramentas necessárias
+5. Só então: app, database, APIs (se necessário)
+
+Alan: "O que sai do AIOS é commodity. O que NÃO é commodity é quando está inserido um framework/workflow muito bem pensado."</div><div class="faq-meta"><span class="faq-nivel faq-nivel--intermediario">Intermediário</span><span class="faq-aula-badge">Aula 03</span><span class="faq-tag">squad</span><span class="faq-tag">mvp</span></div></div></div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Qual squad devo criar primeiro?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Regra de ouro de Alan: "Crie o squad onde você tem REPERTÓRIO para avaliar se ele é bom."
+
+Por quê: IA é muito boa em fingir que as coisas estão certas. Sem repertório, você não sabe se o output é bom.
+
+Exemplo: Copy &mdash; "Eu manjo, consigo avaliar." Jurídico &mdash; "Precisei consultar meu advogado."
+
+Pedro complementou: "Normalmente, pessoas querem aquilo que falta nelas, ao invés de produtizar o que já sabem. Comece pelo que você domina."</div><div class="faq-meta"><span class="faq-nivel faq-nivel--basico">Básico</span><span class="faq-aula-badge">Aula 03</span><span class="faq-tag">repertório</span><span class="faq-tag">best-practices</span></div></div></div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Poucos agentes com workflows definidos ou muitos agentes sem workflows?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Felipe Piedade levantou e Alan/Pedro confirmaram:
+
+Squad NÃO é: um prompt, um agente isolado, um workflow sozinho, uma task.
+
+Squad É formado por: agentes (3 ou 24), tasks estruturadas, workflows automatizados, checklists.
+
+Exemplo DICop (Copy do Alan): 24 agentes, 59 tasks, 14 workflows, 32 checklists.
+AIOS: 12 agentes.
+
+Regra: Workflows definidos > quantidade de agentes.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--intermediario">Intermediário</span><span class="faq-aula-badge">Aula 03</span><span class="faq-tag">agentes</span><span class="faq-tag">workflows</span></div></div></div>
+          </div>
+
+          <!-- CLI First e Agents -->
+          <div class="faq-group">
+            <div class="faq-group-title">CLI First e Agents &amp; Skills</div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">O que muda com a migração de Commands para Agents &amp; Skills?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Antes (Commands): chamar com /, cada comando independente, processo manual.
+Depois (Agents &amp; Skills): Agents com @ (ex: @dev), Skills com / (ex: /squad), agentes se chamam automaticamente.
+
+Na prática: "Preciso desenvolver um épico sobre X" &rarr; Agent chama PM &rarr; SM &rarr; QA automaticamente.
+
+ATENÇÃO: NÃO migre ainda por conta própria. Continue usando Commands até Alan/Pedro liberarem.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--avancado">Avançado</span><span class="faq-aula-badge">Aula 03</span><span class="faq-tag">agents</span><span class="faq-tag">skills</span><span class="faq-tag">migração</span></div></div></div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Por que CLI First e não UI First?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">CLI First porque: IA trabalha melhor com Markdown, YAML, JSON. Menos camadas de abstração = mais poder. Cursor (UI) está perdendo para Claude Code (CLI).
+
+UI limita porque: cria camadas visuais, restringe opções do modelo, adiciona complexidade.
+
+Observabilidade (segundo princípio): Dashboard web para visualizar, Monitor de agentes em tempo real, Skill /squad para resumo textual. Mas tudo é READ-ONLY, não edita pela UI.
+
+Alan: "Se quiser criar UI editável, fique à vontade. Não é nosso foco."</div><div class="faq-meta"><span class="faq-nivel faq-nivel--intermediario">Intermediário</span><span class="faq-aula-badge">Aula 03</span><span class="faq-tag">cli-first</span><span class="faq-tag">filosofia</span></div></div></div>
+          </div>
+
+          <!-- Entrega e Deploy -->
+          <div class="faq-group">
+            <div class="faq-group-title">Entrega e Deploy de Squads</div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Como fazer deploy/entrega de squad para cliente?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Nível 1 &mdash; Consultoria/Documentação: Entregar squad desenhada + estrutura de agentes + .md de cada. Edu já validou: "Validei com testes e 100% com o cliente."
+
+Nível 2 &mdash; Squad como Serviço: Rodar no seu ambiente e entregar outputs. "Squads as a Service" (Talles cunhou).
+
+Nível 3 &mdash; Aplicação completa: Criar app/interface. Requer: banco de dados, APIs, deploy em servidor.
+
+Pedro explicou: Squad valida pequeno primeiro. Depois vai adicionando ferramentas. Só se necessário, criar aplicação completa com database.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--avancado">Avançado</span><span class="faq-aula-badge">Aula 03</span><span class="faq-tag">deploy</span><span class="faq-tag">cliente</span><span class="faq-tag">saas</span></div></div></div>
+          </div>
+
+          <!-- Operações Determinísticas -->
+          <div class="faq-group">
+            <div class="faq-group-title">Operações Determinísticas e Performance</div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Como sei se uma operação deve ser script ou LLM call?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Pergunte: "Isso precisa de raciocínio ou é algorítmico?"
+
+DEVE SER SCRIPT: Validar JSON/YAML, contar palavras, extrair timestamps, parsing com regex, conversões, ordenação.
+
+DEVE SER LLM: Entender contexto semântico, classificar sentimento, resumir, gerar texto.
+
+Regra de ouro: Se você consegue escrever if/else ou regex, deve ser script.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--intermediario">Intermediário</span><span class="faq-aula-badge">Aula 02</span><span class="faq-tag">determinístico</span><span class="faq-tag">otimização</span></div></div></div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Meu squad está lento, como acelero?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Gargalos comuns:
+1. Modelo muito pesado &rarr; Model Tier Qualification
+2. Sequencial demais &rarr; Parallelizar tasks
+3. Rate limiting &rarr; Open Router com múltiplos providers
+4. LLM calls desnecessárias &rarr; Converter em scripts
+5. Context window grande &rarr; Chunking
+6. Sem caching &rarr; Enable caching</div><div class="faq-meta"><span class="faq-nivel faq-nivel--avancado">Avançado</span><span class="faq-aula-badge">Aula 02</span><span class="faq-tag">performance</span><span class="faq-tag">troubleshooting</span></div></div></div>
           </div>
         </section>
 
@@ -1738,13 +2455,110 @@
             </select>
           </div>
 
-          <p class="kb-message">O Q&amp;A será populado automaticamente conforme as aulas forem processadas.</p>
+          <p class="kb-message">71 perguntas reais dos alunos durante as aulas, com respostas baseadas no contexto das discussões.</p>
 
-          <div class="kb-placeholder-card">
-            <div class="kb-placeholder-card-icon">
-              <i data-lucide="messages-square"></i>
-            </div>
-            <p>Perguntas reais dos alunos aparecerão aqui</p>
+          <style>
+            .qa-session { margin-bottom: var(--spacing-2xl); }
+            .qa-session-header { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); color: var(--color-text-headline); margin-bottom: var(--spacing-md); padding-bottom: var(--spacing-sm); border-bottom: 1px solid var(--color-border-separator); display: flex; align-items: center; gap: var(--spacing-sm); }
+            .qa-session-badge { font-size: 10px; padding: 2px 8px; border-radius: var(--radius-pill); font-weight: var(--font-weight-bold); }
+            .qa-session-badge--02 { background: rgba(34,197,94,0.12); color: #22C55E; }
+            .qa-session-badge--03 { background: rgba(239,68,68,0.12); color: #EF4444; }
+            .qa-card { background: var(--color-bg-card); border: 1px solid var(--color-border-card); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-sm); }
+            .qa-card-top { display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-xs); flex-wrap: wrap; }
+            .qa-student { font-size: var(--font-size-sm); font-weight: var(--font-weight-bold); color: #3B82F6; }
+            .qa-timestamp { font-size: 11px; color: #555; font-family: monospace; }
+            .qa-answered-by { font-size: 11px; color: #888; }
+            .qa-question-text { font-size: var(--font-size-md); font-weight: var(--font-weight-medium); color: var(--color-text-headline); margin-bottom: var(--spacing-xs); }
+            .qa-answer-text { font-size: var(--font-size-sm); color: var(--color-text-body); line-height: var(--line-height-normal); white-space: pre-line; }
+            .qa-hidden { display: none; }
+          </style>
+
+          <!-- Aula 02 Session -->
+          <div class="qa-session" data-qa-aula="aula-02">
+            <div class="qa-session-header"><span class="qa-session-badge qa-session-badge--02">Aula 02</span> 11 Fev 2026 &mdash; 36 perguntas</div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">josef</span><span class="qa-timestamp">00:09:04</span><span class="qa-answered-by">Resp: Alan</span></div><div class="qa-question-text">Quando enviam no grupo do WhatsApp um agente ou squad, como instalamos no nosso AIOS?</div><div class="qa-answer-text">1. Baixe o arquivo do grupo  2. Extraia para /squads/nome-do-squad/  3. Sincronize: @aios-master "crie os commands do squad-creator"  4. Verifique: /squad-creator:agents:squad-chief</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Helder</span><span class="qa-timestamp">00:11:50</span><span class="qa-answered-by">Resp: Alan</span></div><div class="qa-question-text">Vai ser possível usar outros modelos inferiores ao Claude Code?</div><div class="qa-answer-text">Sim! Model Tier Qualification permite usar Haiku (60x mais barato), Sonnet, GPT-4o mini via Open Router. 70-80% das tarefas funcionam com Haiku.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Edu</span><span class="qa-timestamp">00:19:11</span><span class="qa-answered-by">Resp: Alan</span></div><div class="qa-question-text">A gente pode acessar este organograma?</div><div class="qa-answer-text">Sim: https://www.figma.com/board/80ARIf53fw6EwPYXKNQXKc/Live---12-02</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Marcelo Matos</span><span class="qa-timestamp">00:34:30</span><span class="qa-answered-by">Resp: Alan</span></div><div class="qa-question-text">Quando substituímos as versões, precisa fazer alguma outra configuração?</div><div class="qa-answer-text">Substitua a pasta, ressincronize comandos, verifique. Os caminhos permanecem iguais. ESSENCIAL ressincronizar.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Fabio</span><span class="qa-timestamp">00:42:57</span><span class="qa-answered-by">Resp: Alan</span></div><div class="qa-question-text">A troca do LLM será automática?</div><div class="qa-answer-text">Sim, com Model Tier Qualification habilitado. Override manual sempre disponível: squad run --model haiku</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Wanderson</span><span class="qa-timestamp">00:45:35</span><span class="qa-answered-by">Resp: Rodrigo + Alan</span></div><div class="qa-question-text">3000 DÓLARES? sendo que pagamos 200 dólares</div><div class="qa-answer-text">Claude Code Pro ($20/mês) inclui $200 créditos. Melhor NÃO usar API direto. API direto só vale se gastar > $500/mês.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Thiago Otto</span><span class="qa-timestamp">00:51:04</span><span class="qa-answered-by">Resp: Contexto</span></div><div class="qa-question-text">O que é o 'pro'? Perdi contexto disso</div><div class="qa-answer-text">Claude Code Pro: $20/mês, $200 créditos, 500 req/min. Se usa AIOS diariamente, vale absolutamente a pena.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Edu</span><span class="qa-timestamp">00:55:33</span><span class="qa-answered-by">Resp: Alan + Pedro</span></div><div class="qa-question-text">Usa uma plataforma de Scraping ou o próprio agente faz isso?</div><div class="qa-answer-text">Firecrawl + MCP. Também: Puppeteer/Playwright para sites com auth, APIs diretas quando disponível.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">julianotorriani</span><span class="qa-timestamp">00:56:32</span><span class="qa-answered-by">Resp: Pedro</span></div><div class="qa-question-text">Como integrar uma squad em um sistema que roda na web em vercel?</div><div class="qa-answer-text">Frontend (Vercel) &rarr; API Gateway &rarr; Squad Runner (Docker/Railway). Squads não rodam direto no Vercel (stateless). Precisa de runner separado.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Fabiana</span><span class="qa-timestamp">01:04:55</span><span class="qa-answered-by">Resp: Alan + chat</span></div><div class="qa-question-text">Me perdi, depois de trazer a squad hormozi faz o que?</div><div class="qa-answer-text">1. Instalar squad &rarr; 2. Sincronizar &rarr; 3. *refresh-registry &rarr; 4. *validate-squad hormozi. Nota > 8 = bom. < 8 = otimizar.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Victor Pontes</span><span class="qa-timestamp">02:06:15</span><span class="qa-answered-by">Resp: Pedro</span></div><div class="qa-question-text">Usar tool é algo determinístico?</div><div class="qa-answer-text">Depende da tool. Dasel (parsing) = determinístico. LLM dentro da tool = não. Regra: Input X &rarr; sempre Output Y = determinístico.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">rodrigofaerman</span><span class="qa-timestamp">02:09:10</span><span class="qa-answered-by">Resp: Rodrigo + Alan + Pedro</span></div><div class="qa-question-text">Odeio os agentes do Alan e do Pedro. Eles detonaram meu projeto</div><div class="qa-answer-text">Agentes fizeram review brutal do código e sugeriram refatoração massiva. Lição: Agentes honestos > agentes simpáticos.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Renata</span><span class="qa-timestamp">00:02:18</span><span class="qa-answered-by">Resp: Pedro</span></div><div class="qa-question-text">Como consegue fazer eles conversar entre si?</div><div class="qa-answer-text">Handoff explícito, workflow automático (output de um &rarr; input do próximo), ou squad com orquestração via squad-chief. Comunicação sempre orquestrada.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Helder</span><span class="qa-timestamp">00:08:54</span><span class="qa-answered-by">Resp: rogeriochinen + Monica</span></div><div class="qa-question-text">É como se cada um estivesse em um terminal?</div><div class="qa-answer-text">Exatamente. Cada agente = sessão independente, contexto próprio. Comunicação via arquivos intermediários, não direto agente-a-agente.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Cleverson</span><span class="qa-timestamp">00:18:03</span><span class="qa-answered-by">Resp: Cleverson + Alan</span></div><div class="qa-question-text">Se durante a criação de squad começa ficar gigantesco, a opção seria criar um epic?</div><div class="qa-answer-text">Sim! /pm *create-epic "Criação do Squad X". Cada agent vira uma story, implementa incrementalmente. Alan confirmou: "Isso! Exatamente esse raciocínio."</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Edu</span><span class="qa-timestamp">00:54:19</span><span class="qa-answered-by">Resp: Wanderson + cálculos</span></div><div class="qa-question-text">Isso no Pro, né?</div><div class="qa-answer-text">Sim, Claude Code Pro ($20/mês) com $200 créditos. Com Haiku como default: ~800M tokens = usar Claude 8h/dia o mês todo.</div></div>
+          </div>
+
+          <!-- Aula 03 Session -->
+          <div class="qa-session" data-qa-aula="aula-03">
+            <div class="qa-session-header"><span class="qa-session-badge qa-session-badge--03">Aula 03</span> 18 Fev 2026 &mdash; 35 perguntas</div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Wanderson</span><span class="qa-timestamp">00:20:14</span><span class="qa-answered-by">Resp: Alan</span></div><div class="qa-question-text">Qual é a última versão do Squad Creator?</div><div class="qa-answer-text">Versão 3.0 era a última disponível. Na aula 03, Alan compartilhou a versão 4.0 (Squad Creator Pro) com ~67 comandos.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Renata</span><span class="qa-timestamp">00:34:52</span><span class="qa-answered-by">Resp: josecarlosamorim</span></div><div class="qa-question-text">A pasta de squad fica dentro do .claude ou fora em uma pasta squad no projeto root?</div><div class="qa-answer-text">Fica FORA do .claude, numa pasta /squads/ na raiz do projeto. José Carlos: "Fica fora. O / você ativa mudando no config.json."</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Tiago Guimarães</span><span class="qa-timestamp">00:37:46</span><span class="qa-answered-by">Resp: Torriani + Pedro</span></div><div class="qa-question-text">Depois da @qa vai para o @po então? Não estava fazendo isso também</div><div class="qa-answer-text">Sim, depois de @qa vai para @po. A cada story finalizada. Pedro: "Começa com PO fazendo validate-story, termina com PO fazendo close-story."</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Talles Souza</span><span class="qa-timestamp">00:47:34</span><span class="qa-answered-by">Resp: Talles + josecarlosamorim</span></div><div class="qa-question-text">Skills tá virando fundamento ao invés de feature né?</div><div class="qa-answer-text">Sim, Skills é o repertório da IA. Talles: "O taldo repertório da IA." José Carlos: "Ainda bem que aprendi bem no Claude."</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Renata</span><span class="qa-timestamp">00:55:31</span><span class="qa-answered-by">Resp: Alan + Pedro</span></div><div class="qa-question-text">Fala de novo sobre o comedor de tokens</div><div class="qa-answer-text">Agents &amp; Skills gastam mais tokens que Commands. Agents fazem fork (começam do zero, leem todo contexto). Podem gastar 80k tokens só para dar o start. Pedro está resolvendo via Front Matter otimizado.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Fabio</span><span class="qa-timestamp">00:57:45</span><span class="qa-answered-by">Resp: Pedro</span></div><div class="qa-question-text">Só me explica porque do Squad Creator ficar dentro do AIOS?</div><div class="qa-answer-text">Pedro: "O Squad Creator precisa estar dentro de uma estrutura que tenha toda a documentação do seu projeto. Se não tem os arquivos de framework, code standards, tech stack, é porque não fez o fluxo inicial de PRD." Squad Creator sem AIOS = sempre do zero, sem memória.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Fabio</span><span class="qa-timestamp">01:05:29</span><span class="qa-answered-by">Resp: Alan</span></div><div class="qa-question-text">Para atualizar o squad creator é remover tudo da pasta /squad e colar os arquivos novos?</div><div class="qa-answer-text">NÃO! Remova APENAS a pasta /squads/squad-creator/. NÃO delete seus outros squads! Fábio deletou tudo por engano e teve que fazer pull de novo.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Marcelo Matos</span><span class="qa-timestamp">01:06:31</span><span class="qa-answered-by">Resp: Pedro + Torriani</span></div><div class="qa-question-text">O melhor formato é instalar o AIOS na pasta de cada projeto diferente? Como gerenciar squads em vários projetos?</div><div class="qa-answer-text">Pedro recomenda AIOS na pasta de cada projeto (contexto isolado). Squads compartilhados: copiar para cada projeto OU pasta raiz compartilhada. Torriani criou skill que sincroniza do projeto principal no GitHub.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">@RenatoLHAMAS</span><span class="qa-timestamp">01:07:01</span><span class="qa-answered-by">Resp: AdrianoMarqui</span></div><div class="qa-question-text">Explica de novo como preciso falar para o Devops sobre o squad creator novo</div><div class="qa-answer-text">AdrianoMarqui respondeu: "*sync commands squad-creator" &mdash; esse é o comando para sincronizar os comandos do Squad Creator.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">josecarlosamorim</span><span class="qa-timestamp">01:22:08</span><span class="qa-answered-by">Resp: Alan + Pedro + rogeriochinen</span></div><div class="qa-question-text">Eu entendo squad como um setor da empresa. Seria isso?</div><div class="qa-answer-text">Pode ser, mas não é a única forma. Pedro definiu 3 Tiers: Estratégico (CEO/visão), Tático (Gestores/KPIs), Operacional (execução/KPIs).</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">torriani</span><span class="qa-timestamp">01:24:33</span><span class="qa-answered-by">Resp: Alan (demonstração)</span></div><div class="qa-question-text">Quando você acredita que o Squad precisa clonar mente versus quando não precisa?</div><div class="qa-answer-text">Depende se o repertório/heurísticas da pessoa são essenciais. Se precisa apenas de checklist, não precisa de clone completo. Alan demonstrou com copywriters famosos como tiers estratégicos com clones.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Flavio</span><span class="qa-timestamp">01:41:53</span><span class="qa-answered-by">Resp: Alan</span></div><div class="qa-question-text">E quando a sua skill é visual? Você é designer, como avaliar isso com linha de comando?</div><div class="qa-answer-text">Alan: "Avalie o output." O output visual (HTML, imagem) pode ser avaliado fora do CLI. CLI é para criação e orquestração. Avaliação visual é pelo resultado em si.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">torriani</span><span class="qa-timestamp">01:46:51</span><span class="qa-answered-by">Resp: Talles + josecarlosamorim</span></div><div class="qa-question-text">Qual a ferramenta? Não peguei o nome, alguém pegou</div><div class="qa-answer-text">Talles respondeu: "ffmpeg". José Carlos complementou: "Edição via código: ffmpeg / remotion"</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Victor S. Barboza</span><span class="qa-timestamp">02:00:21</span><span class="qa-answered-by">Resp: Alan</span></div><div class="qa-question-text">Na última aula vc disse pra jamais usar YOLO na criação de squad, isso permanece no caso do Bob?</div><div class="qa-answer-text">Sim, permanece. Jamais criar squad usando o Bob. Alan: "Vou liberar o Bob na décima aula, quando vocês já souberem os processos."</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Edu Garretano</span><span class="qa-timestamp">01:14:32</span><span class="qa-answered-by">Resp: Edu + Alan</span></div><div class="qa-question-text">Apareceu uma demanda para mim de eu vender apenas a squad desenhada com estrutura de agentes. Faz sentido?</div><div class="qa-answer-text">Sim, faz sentido como consultoria/protótipo. Alan: "Isso tem muita demanda pra vender como serviço de consultoria." Edu validou: "Validei com testes e 100% com o cliente."</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Renata</span><span class="qa-timestamp">02:31:16</span><span class="qa-answered-by">Resp: Cleverson</span></div><div class="qa-question-text">Depois de criar o squad que funciona, posso o squad implementar no cliente?</div><div class="qa-answer-text">Cleverson explicou: "Crio primeiro o processo, squad-creator faz pesquisas e apresenta melhores mentes. Depois pego cada mente e uso squad-creator para criar clones melhores." Para entrega ao cliente: múltiplos níveis (consultoria, SaaS, app completo).</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Marcelo Matos</span><span class="qa-timestamp">02:55:05</span><span class="qa-answered-by">Resp: Alan + Wanderson</span></div><div class="qa-question-text">O meu squad-chief só para abrir ele já gasta 106k tokens, tem algo errado?</div><div class="qa-answer-text">Alan pediu para verificar. Wanderson: "35k aqui". Alan: "Use /context para ver quanto cada coisa está usando." 106k pode indicar muitos arquivos carregados no contexto.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Felipe Gobbi</span><span class="qa-timestamp">03:01:06</span><span class="qa-answered-by">Resp: Alan</span></div><div class="qa-question-text">Com YAML e Claude evoluindo pra Teams, os frameworks tipo LangGraph vão perdendo a utilidade, né?</div><div class="qa-answer-text">Alan: "Eles também devem se atualizar, não vão querer ficar para trás, mas em resumo sim." A tendência é que funcionalidades nativas do Claude Teams absorvam orquestração.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Felipe Gobbi</span><span class="qa-timestamp">03:22:40</span><span class="qa-answered-by">Resp: rodrigofaerman</span></div><div class="qa-question-text">Na reconstrução das páginas partindo de um bom Design System, qual é o melhor processo?</div><div class="qa-answer-text">Rodrigo respondeu: "Tem novos modelos para isso, estou testando. Assim que validar, te passo." Conceito confirmado: componentização bottom-up (Elemento &rarr; Cards &rarr; Sections &rarr; Páginas).</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">rodrigofaerman</span><span class="qa-timestamp">03:37:52</span><span class="qa-answered-by">Resp: Pergunta em aberto</span></div><div class="qa-question-text">Como vocês fariam para pegar esse Advisory Board para se tornar um App ou Agente (via WhatsApp)?</div><div class="qa-answer-text">Requer: worker online, API, integração WhatsApp, banco de dados. Demonstrado que squads locais podem virar serviços online, mas requer infraestrutura adicional.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">torriani</span><span class="qa-timestamp">04:03:25</span><span class="qa-answered-by">Resp: Adriano Rogowski + AdrianoMarqui</span></div><div class="qa-question-text">O que significa um worker online?</div><div class="qa-answer-text">Adriano Rogowski: "É um cara que vai rodar em segundo plano no servidor, executar um script." Em resumo: processo que roda 24/7 num servidor, não depende do seu computador estar ligado.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Flavio</span><span class="qa-timestamp">04:35:37</span><span class="qa-answered-by">Resp: Adriano Rogowski + Pedro</span></div><div class="qa-question-text">Spawnar seria tipo morrer e nascer de novo? Em games seria isso?</div><div class="qa-answer-text">Adriano Rogowski: "Spawnar seria como mandar o filho comprar pão na padaria. Daqui a pouco o pão vai chegar quentinho." No AIOS: criar um subprocesso/subagente que roda em paralelo.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Felipe Gobbi</span><span class="qa-timestamp">04:45:57</span><span class="qa-answered-by">Resp: Felipe (contribuição)</span></div><div class="qa-question-text">Alan, tá usando qual modelo pro heavy lifting dessa busca toda?</div><div class="qa-answer-text">Felipe mencionou usar Qwen local para processos pesados. Alan demonstrou uso de exa.ai para pesquisas integradas ao AIOS.</div></div>
           </div>
         </section>
 
@@ -1864,6 +2678,64 @@
       sections.forEach(function(section) {
         observer.observe(section);
       });
+
+      // ========================================
+      // Q&A FILTER BY AULA
+      // ========================================
+      var qaFilterSelect = document.querySelector('#qa .filter-select');
+      if (qaFilterSelect) {
+        qaFilterSelect.addEventListener('change', function() {
+          var val = this.value;
+          var sessions = document.querySelectorAll('.qa-session');
+          sessions.forEach(function(s) {
+            if (val === 'all') {
+              s.style.display = '';
+            } else {
+              s.style.display = s.getAttribute('data-qa-aula') === val ? '' : 'none';
+            }
+          });
+        });
+      }
+
+      // ========================================
+      // GLOSSARY SEARCH
+      // ========================================
+      var glossarySearch = document.querySelector('#glossario .search-input');
+      if (glossarySearch) {
+        glossarySearch.addEventListener('input', function() {
+          var q = this.value.toLowerCase().trim();
+          var cards = document.querySelectorAll('#glossario .glossary-card');
+          var groups = document.querySelectorAll('#glossario .glossary-group');
+          cards.forEach(function(card) {
+            var text = card.textContent.toLowerCase();
+            card.style.display = (!q || text.includes(q)) ? '' : 'none';
+          });
+          groups.forEach(function(group) {
+            var visibleCards = group.querySelectorAll('.glossary-card:not([style*="display: none"])');
+            group.style.display = visibleCards.length > 0 ? '' : 'none';
+          });
+        });
+      }
+
+      // ========================================
+      // FAQ SEARCH
+      // ========================================
+      var faqSearch = document.querySelector('#faq .search-input');
+      if (faqSearch) {
+        faqSearch.addEventListener('input', function() {
+          var q = this.value.toLowerCase().trim();
+          var items = document.querySelectorAll('#faq .faq-item');
+          var groups = document.querySelectorAll('#faq .faq-group');
+          items.forEach(function(item) {
+            var text = item.textContent.toLowerCase();
+            item.style.display = (!q || text.includes(q)) ? '' : 'none';
+          });
+          groups.forEach(function(group) {
+            var visibleItems = group.querySelectorAll('.faq-item:not([style*="display: none"])');
+            group.style.display = visibleItems.length > 0 ? '' : 'none';
+          });
+        });
+      }
 
       // ========================================
       // INITIALIZE LUCIDE ICONS
