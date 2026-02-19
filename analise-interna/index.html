@@ -1044,6 +1044,13 @@
     .lesson-section:nth-child(3) { animation-delay: 0.1s; }
     .lesson-section:nth-child(4) { animation-delay: 0.15s; }
     .lesson-section:nth-child(5) { animation-delay: 0.2s; }
+
+    /* FAQ & Glossary details styling */
+    details summary::-webkit-details-marker { display: none; }
+    details[open] summary i[data-lucide="chevron-right"] { transform: rotate(90deg); }
+    details summary:hover { background: rgba(255,255,255,0.02); }
+    .glossary-card.hidden, details.hidden { display: none !important; }
+    .glossary-category.hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -1083,7 +1090,7 @@
           <div class="stat-item">
             <div class="stat-value accent">
               <i data-lucide="gauge" width="18" height="18"></i>
-              8.9
+              8.8
             </div>
             <div class="stat-label">Média GPS</div>
           </div>
@@ -1169,9 +1176,9 @@
                   <i data-lucide="calendar" width="12" height="12"></i>
                   18 Fev
                 </span>
-                <span class="nav-gps-score pending">
-                  <i data-lucide="clock" width="12" height="12"></i>
-                  Pendente
+                <span class="nav-gps-score">
+                  <i data-lucide="gauge" width="12" height="12"></i>
+                  GPS: 8.3
                 </span>
               </div>
             </div>
@@ -1644,35 +1651,116 @@
                 <i data-lucide="gauge" width="16" height="16"></i>
                 GPS
               </div>
-              <div class="score-value muted">&mdash;</div>
-              <div class="score-sublabel">Aguardando análise</div>
+              <div class="score-value green">8.4</div>
+              <div class="score-sublabel">Global Performance Score</div>
             </div>
             <div class="score-card">
               <div class="score-label">
                 <i data-lucide="brain" width="16" height="16"></i>
                 ML
               </div>
-              <div class="score-value muted">&mdash;</div>
-              <div class="score-sublabel">Aguardando análise</div>
+              <div class="score-value green">8.1</div>
+              <div class="score-sublabel">Metodologia Lendária</div>
             </div>
             <div class="score-card">
               <div class="score-label">
                 <i data-lucide="shield-check" width="16" height="16"></i>
                 Status
               </div>
-              <div class="status-badge pending">
-                <i data-lucide="clock" width="16" height="16"></i>
-                Pendente
+              <div class="status-badge approved">
+                <i data-lucide="check-circle" width="16" height="16"></i>
+                Aprovado
               </div>
             </div>
           </div>
 
-          <div class="pending-message">
-            <div class="pending-icon-wrap">
-              <i data-lucide="loader" width="28" height="28"></i>
+          <div class="analysis-grid">
+            <div class="analysis-card positive">
+              <div class="analysis-card-header">
+                <div class="analysis-card-icon positive">
+                  <i data-lucide="check-circle" width="20" height="20"></i>
+                </div>
+                <span class="analysis-card-title">Pontos Positivos</span>
+              </div>
+              <ul class="analysis-list">
+                <li class="analysis-list-item">
+                  <span class="item-icon green"><i data-lucide="check-circle" width="16" height="16"></i></span>
+                  <span>Engajamento excepcional por 4h30 &mdash; alunos ativos até 3:37 da manhã</span>
+                </li>
+                <li class="analysis-list-item">
+                  <span class="item-icon green"><i data-lucide="check-circle" width="16" height="16"></i></span>
+                  <span>Analogias diversificadas &mdash; militares, empresariais, cotidianas, meta-pedagógicas</span>
+                </li>
+                <li class="analysis-list-item">
+                  <span class="item-icon green"><i data-lucide="check-circle" width="16" height="16"></i></span>
+                  <span>Transparência total nas demos ao vivo &mdash; bugs viraram ensino</span>
+                </li>
+                <li class="analysis-list-item">
+                  <span class="item-icon green"><i data-lucide="check-circle" width="16" height="16"></i></span>
+                  <span>Conceito de Squad Tiers (Estratégico/Tático/Operacional) &mdash; framework imediatamente aplicável</span>
+                </li>
+                <li class="analysis-list-item">
+                  <span class="item-icon green"><i data-lucide="check-circle" width="16" height="16"></i></span>
+                  <span>&ldquo;Repertório como base&rdquo; &mdash; alerta crucial contra squads frágeis</span>
+                </li>
+                <li class="analysis-list-item">
+                  <span class="item-icon green"><i data-lucide="check-circle" width="16" height="16"></i></span>
+                  <span>Dupla Alan + Pedro &mdash; complementaridade pedagógica excepcional</span>
+                </li>
+              </ul>
             </div>
-            <div class="pending-title">Análise em andamento</div>
-            <p class="pending-text">Análise pedagógica será gerada quando o pipeline for executado para esta aula.</p>
+
+            <div class="analysis-card opportunity">
+              <div class="analysis-card-header">
+                <div class="analysis-card-icon opportunity">
+                  <i data-lucide="alert-circle" width="20" height="20"></i>
+                </div>
+                <span class="analysis-card-title">Oportunidades de Melhoria</span>
+              </div>
+              <ul class="analysis-list">
+                <li class="analysis-list-item">
+                  <span class="item-icon yellow"><i data-lucide="alert-circle" width="16" height="16"></i></span>
+                  <span>Hook inicial diluído por warmup de 13 minutos</span>
+                </li>
+                <li class="analysis-list-item">
+                  <span class="item-icon yellow"><i data-lucide="alert-circle" width="16" height="16"></i></span>
+                  <span>4h30 sem intervalo estruturado &mdash; risco de fadiga cognitiva</span>
+                </li>
+                <li class="analysis-list-item">
+                  <span class="item-icon yellow"><i data-lucide="alert-circle" width="16" height="16"></i></span>
+                  <span>Sem agenda visual no início nem recap final estruturado</span>
+                </li>
+                <li class="analysis-list-item">
+                  <span class="item-icon yellow"><i data-lucide="alert-circle" width="16" height="16"></i></span>
+                  <span>Conceitos técnicos avançados (spawnar, Task Tool) sem diagrama visual</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="action-plan-card">
+            <div class="action-plan-header">
+              <span class="action-plan-icon"><i data-lucide="target" width="18" height="18"></i></span>
+              <span class="action-plan-label">Plano de Ação</span>
+            </div>
+            <ul class="analysis-list" style="margin-top: 8px;">
+              <li class="analysis-list-item">
+                <span class="item-icon blue"><i data-lucide="target" width="16" height="16"></i></span>
+                <span>Adicionar recap estruturado final (5-10min)</span>
+              </li>
+              <li class="analysis-list-item">
+                <span class="item-icon blue"><i data-lucide="target" width="16" height="16"></i></span>
+                <span>Inserir intervalo na marca de 2h</span>
+              </li>
+              <li class="analysis-list-item">
+                <span class="item-icon blue"><i data-lucide="target" width="16" height="16"></i></span>
+                <span>Apresentar agenda visual no início</span>
+              </li>
+              <li class="analysis-list-item">
+                <span class="item-icon blue"><i data-lucide="target" width="16" height="16"></i></span>
+                <span>Criar diagrama de componentes (Agent/Task/Skill/Squad)</span>
+              </li>
+            </ul>
           </div>
         </section>
 
@@ -1696,15 +1784,507 @@
 
           <div class="kb-info-message">
             <span class="info-icon"><i data-lucide="info" width="16" height="16"></i></span>
-            <span>O glossário será populado automaticamente conforme as aulas forem processadas pelo pipeline de análise.</span>
+            <span>57 termos técnicos extraídos das Aulas 02 e 03, organizados por categoria.</span>
           </div>
 
-          <div class="kb-placeholder">
-            <div class="kb-placeholder-icon">
-              <i data-lucide="book-text" width="24" height="24"></i>
+          <div id="glossarioContent">
+
+            <!-- Ferramentas -->
+            <div class="glossary-category" style="margin-bottom: 24px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="wrench" width="16" height="16"></i> Ferramentas
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Squad Creator</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Sistema CLI para criar, configurar e gerenciar times de agentes AI que trabalham juntos para executar tarefas complexas. Versão 3.0-4.0 com dashboard interativo e otimização de custos.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Squad Creator Pro</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Versão avançada do Squad Creator com dashboard visual de squads, visualização de workflows como diagramas, monitor de agentes em tempo real, Finch (análise de negócios) e sistema de tiers. Versão 4.0 com ~67 comandos.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Domain Decoder</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Ferramenta ou módulo do AIOS para decodificar e mapear domínios de conhecimento. Relacionado à capacidade de extrair estruturas de conhecimento de um domínio específico.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Finch</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Módulo do Squad Creator Pro que faz análise de negócios sobre squads: quanto pode economizar, quanto pode faturar, viabilidade financeira.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">ffmpeg</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Ferramenta de linha de comando para processamento de áudio e vídeo. Usada para edição de vídeo via código dentro de squads de produção de conteúdo.</p>
+                </div>
+              </div>
             </div>
-            <div class="kb-placeholder-title">Termos técnicos aparecerão aqui agrupados por categoria</div>
-            <p class="kb-placeholder-text">Cada termo incluirá definição, contexto de uso e referências às aulas onde aparece.</p>
+
+            <!-- Modelos LLM -->
+            <div class="glossary-category" style="margin-bottom: 24px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="cpu" width="16" height="16"></i> Modelos LLM
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Haiku</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Claude Haiku &mdash; modelo mais rápido e barato da Anthropic. Input: $0.25/1M tokens, Output: $1.25/1M tokens. Surpreendentemente capaz em 70-80% das tarefas quando bem orientado.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Sonnet</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Claude Sonnet &mdash; modelo intermediário. Balanceado entre custo e capacidade. Input: $3/1M tokens, Output: $15/1M tokens. 15-20% dos casos.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Opus</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Claude Opus &mdash; modelo mais poderoso. Input: $15/1M tokens, Output: $75/1M tokens. Para raciocínio complexo, multi-step, apenas 5-10% dos casos.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Conceitos -->
+            <div class="glossary-category" style="margin-bottom: 24px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="lightbulb" width="16" height="16"></i> Conceitos
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Agent</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Entidade AI com persona, expertise e ferramentas específicas. Ativado com @agent-name (ex: @dev, @qa).</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Token</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Unidade de cobrança dos modelos LLM. ~4 caracteres = 1 token em inglês. Input e output tokens têm preços diferentes.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Operação Determinística</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Tarefa que pode ser resolvida algoritmicamente sem LLM. Ex: validar JSON, contar palavras, parsing com regex. Custo zero vs $0.01-0.05 por LLM call.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Workflow</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Sequência de tarefas executadas por agentes em ordem específica. Pode ter paralelização, condicionais, loops. Definido em YAML ou código.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Epic</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Grande feature dividida em múltiplas stories. No AIOS, pode ser executado automaticamente por squads.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Story</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Unidade de trabalho implementável em 1-3 dias. Contém contexto, critérios de aceitação, tasks e testes.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Context Window</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Número máximo de tokens que um modelo processa de uma vez. Claude: 200k tokens (~150k palavras).</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Persona</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Identidade e comportamento definido para um agente: expertise, tom de voz, valores, restrições.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Voice DNA</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Assinatura linguística única de um agente: frases preferidas, metáforas recorrentes, estrutura de pensamento.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">System Prompt</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Instrução inicial que define comportamento, persona e regras de um agente AI. Permanece ativo durante toda a sessão.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Idempotent Operation</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Operação que produz mesmo resultado se executada 1x ou N vezes. Importante para retry logic e confiabilidade.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Observabilidade</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Capacidade de monitorar o que agentes estão fazendo em tempo real. Segundo princípio do AIOS (após CLI First). Via dashboard, terminal ou skill /squad.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Advisory Board</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Conselho consultivo formado por clones de mentes (minds) que debatem entre si para tomada de decisão estratégica.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Spawnar</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Criar e ativar um subagente ou subprocesso a partir de um agente principal. O contexto atual é copiado (fork) para o novo processo.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Worker Online</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Processo ou serviço que roda em segundo plano num servidor remoto (ex: Vercel, Railway), executando tarefas de forma contínua 24/7.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Design System</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Sistema visual padronizado para squads e aplicações. Inclui componentes reutilizáveis, padrões visuais e hierarquia de elementos.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Repertório</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Estoque de referências e experiências que determina a capacidade de avaliar qualidade dos outputs. Criar squads na área de seu repertório gera resultados muito superiores.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Abstração</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Capacidade de simplificar complexidade, escondendo detalhes e expondo apenas o necessário. Camadas de abstração em UI limitam poder da IA.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Componentização</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Quebrar sistemas complexos em componentes menores, reutilizáveis e independentes. Aplica-se a squads, código e serviços.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Front Matter</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Metadados no topo de arquivos Markdown (entre --- e ---) que configuram comportamento de agentes e tasks. Define modelo a usar, permissões, registros de memória.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Kanban (contexto AIOS)</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Visualização do progresso no dashboard AIOS. Colunas: Backlog, Em Progresso, Review, Humano Necessário, PR Criado, Done.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Estratégias -->
+            <div class="glossary-category" style="margin-bottom: 24px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="compass" width="16" height="16"></i> Estratégias
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Token Economy</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Conjunto de técnicas para reduzir custos de LLM: modelos baratos quando possível, scripts determinísticos, batch processing, caching. Redução de 70-90%.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Fallback</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Mecanismo automático de contingência. Se provider A falhar, o sistema automaticamente tenta provider B, depois C, etc.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Prompt Engineering</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Arte de construir prompts eficazes para LLMs. Boa engenharia permite usar Haiku em vez de Opus. Pode melhorar qualidade em 50-200% e reduzir custo em 90%.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Técnicas -->
+            <div class="glossary-category" style="margin-bottom: 24px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="settings" width="16" height="16"></i> Técnicas
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Batch Processing</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Processar múltiplos itens de uma vez. Reduz overhead de API calls e melhora custo-benefício.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Chunking</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Dividir documentos grandes em pedaços menores para processar. Essencial quando conteúdo excede context window.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Caching</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Armazenar resultados de operações caras para reusar. 90-99% economia em cenários de uso repetitivo.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Streaming</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Receber resposta do LLM incrementalmente (palavra por palavra). Melhora perceived performance e permite early stopping.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Comandos -->
+            <div class="glossary-category" style="margin-bottom: 24px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="terminal" width="16" height="16"></i> Comandos
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Squad Validate</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Testa configuração e funcionamento de um squad com exemplos pequenos antes de escalar.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Squad Optimize</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Analisa uso de LLM e sugere otimizações: downgrade de modelos, conversão para scripts, caching.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">*create-squad</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Criar novo squad do zero. Na v4.0, define automaticamente os três tiers, verifica registry e sugere ferramentas via discovery-tools.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">*validate-squad</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Valida qualidade e estrutura de um squad. Gera nota de 0-10 com relatório detalhado. Nota &gt; 8.5 = pronto para produção.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Discovery Tools</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Pesquisa na Internet e descobre APIs, MCPs, projetos GitHub relevantes para um squad ou agente.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">*sync commands</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Sincroniza os comandos do Squad Creator no ambiente .claude/commands/. Necessário após atualizar versão.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Arquitetura -->
+            <div class="glossary-category" style="margin-bottom: 24px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="layers" width="16" height="16"></i> Arquitetura
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Agents &amp; Skills</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Nova arquitetura que substitui Commands e Prompts. Agents com @ (ex: @dev), Skills com / (ex: /squad). Agentes se chamam automaticamente entre si.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Squad Tiers</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Classificação hierárquica de squads: Estratégico (C-levels, visão), Tático (gestores, processos), Operacional (execução, entrega).</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Filosofia -->
+            <div class="glossary-category" style="margin-bottom: 24px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="sparkles" width="16" height="16"></i> Filosofia
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">CLI First</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Priorizar linha de comando sobre interface gráfica. Quanto mais UI, menos poder a IA tem. IA trabalha melhor com Markdown, YAML e JSON.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">UI First</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Abordagem oposta ao CLI First. Considerada limitante no AIOS porque camadas visuais reduzem poder da IA. Cursor (UI) vs Claude Code (CLI).</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Serviços, Interfaces, Padrões, Métricas, Parâmetros, Protocolo, Sistema, Agentes, etc. -->
+            <div class="glossary-category" style="margin-bottom: 24px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="server" width="16" height="16"></i> Serviços &amp; Infraestrutura
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Open Router</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">API unificada com acesso a 20+ provedores de LLM. Uma API key, múltiplos modelos, fallback automático entre provedores.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Dashboard</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Interface web interativa: agentes, workflows, métricas de execução, custos em tempo real e logs.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">ETL Pipeline</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Extract Transform Load &mdash; padrão de processamento de dados. Extrair de fonte, transformar/enriquecer, carregar em destino.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">MCP (Model Context Protocol)</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Protocolo para conectar LLMs a ferramentas externas (APIs, bancos de dados, file system). Permite agentes interagirem com o mundo real.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">LLM Call</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Requisição a um modelo de linguagem. Tem custo por token e latência. Deve ser usado apenas quando raciocínio é necessário.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Registry</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Documento central que lista todos os squads existentes, suas ferramentas e capacidades. Evita duplicatas ao criar novos squads.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sistemas e Métricas -->
+            <div class="glossary-category" style="margin-bottom: 24px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="bar-chart-3" width="16" height="16"></i> Sistemas, Métricas &amp; Parâmetros
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Model Tier Qualification</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Sistema automático que classifica tarefas em Tier 1 (Haiku), Tier 2 (Sonnet) ou Tier 3 (Opus) baseado em complexidade.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Rate Limiting</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Limite de requisições por minuto/hora imposto pelos provedores de API. Open Router com fallback resolve elegantemente.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">ROI</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Retorno sobre investimento. Se gasta $10/mês, não vale otimizar. Se gasta $10k/mês, vale muito.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Throughput / Latency</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Throughput: volume de trabalho por unidade de tempo. Latency: tempo entre requisição e resposta. Haiku ~1-3s, Sonnet ~3-8s, Opus ~8-20s.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Temperature / Top P / Max Tokens</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 02</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Parâmetros de LLM. Temperature: 0 = determinístico, 1+ = criativo. Top P: considera top N% de tokens mais prováveis. Max Tokens: limite de resposta.</p>
+                </div>
+                <div class="glossary-card" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px 20px;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <strong style="color: #FFF; font-size: 14px;">Bob (agente)</strong>
+                    <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">Aula 03</span>
+                  </div>
+                  <p style="font-size: 13px; color: #999; line-height: 1.5; margin: 0;">Agente autônomo avançado que executa múltiplos passos sozinho, orquestrando outros agentes automaticamente. Não usar para criação de squads. Previsto para a décima aula.</p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </section>
 
@@ -1728,15 +2308,318 @@
 
           <div class="kb-info-message">
             <span class="info-icon"><i data-lucide="info" width="16" height="16"></i></span>
-            <span>O FAQ será populado automaticamente conforme as aulas forem processadas.</span>
+            <span>30 perguntas frequentes extraídas das Aulas 02 e 03, organizadas por categoria.</span>
           </div>
 
-          <div class="kb-placeholder">
-            <div class="kb-placeholder-icon">
-              <i data-lucide="help-circle" width="24" height="24"></i>
+          <div id="faqContent" style="display: flex; flex-direction: column; gap: 8px;">
+
+            <!-- Instalação e Configuração -->
+            <div style="margin-bottom: 16px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="download" width="16" height="16"></i> Instalação e Configuração
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0; transition: transform 200ms;"></i>
+                    Como instalo o Squad Creator?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    Instale via npm globalmente: <code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">npm install -g @aios/squad-creator</code>. Depois configure API keys (Anthropic + Open Router recomendado) e verifique com <code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">squad --version</code>.
+                  </div>
+                </details>
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Preciso de todas as API keys ou só Anthropic basta?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    <strong>Mínimo:</strong> Apenas Anthropic. <strong>Recomendado:</strong> Anthropic + Open Router. Open Router dá acesso a 20+ provedores com fallback automático e billing unificado.
+                  </div>
+                </details>
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    O dashboard não abre automaticamente, como acesso?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    Use <code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">squad dashboard</code> ou acesse http://localhost:3000. Em WSL2, use IP do WSL.
+                  </div>
+                </details>
+              </div>
             </div>
-            <div class="kb-placeholder-title">Perguntas frequentes aparecerão aqui</div>
-            <p class="kb-placeholder-text">As perguntas mais comuns dos alunos serão organizadas por tema e aula.</p>
+
+            <!-- Atualização do Squad Creator -->
+            <div style="margin-bottom: 16px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="refresh-cw" width="16" height="16"></i> Atualização do Squad Creator
+                <span style="font-size: 10px; padding: 2px 8px; background: rgba(239,68,68,0.12); color: #EF4444; border-radius: 9999px; font-weight: 600;">8+ alunos perguntaram</span>
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Como atualizo o Squad Creator para a versão mais recente?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    1) Baixe a nova versão do WhatsApp. 2) Delete APENAS a pasta /squads/squad-creator/ (NÃO outros squads!). 3) Extraia a nova versão. 4) Sincronize: <code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">*sync commands squad-creator</code>. 5) Verifique. <strong>Erro comum (Fábio):</strong> Deletou toda a pasta /squads/ e teve que restaurar via git.
+                  </div>
+                </details>
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Como uso o comando *sync commands squad-creator?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    Lê os arquivos do /squads/squad-creator/ e cria/atualiza os comandos em .claude/commands/. Use após instalar nova versão ou quando comandos não aparecem com /. Alternativa: chamar @devops.
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <!-- Token Economy e Custos -->
+            <div style="margin-bottom: 16px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="coins" width="16" height="16"></i> Token Economy e Custos
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Por que Haiku às vezes dá resultado melhor que Opus?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    Haiku é mais focado e direto. Opus tende a adicionar complexidade desnecessária em tarefas simples. Com prompt engineering otimizado para Haiku, resultados são excelentes em 70-80% dos casos.
+                  </div>
+                </details>
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Quanto posso economizar realmente usando essas técnicas?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    <strong>Cenário real:</strong> 500 transcrições com Opus: $720. Com Haiku + scripts: $12 (economia de 98.3%). <strong>Resultado típico:</strong> 70-90% de redução mantendo ou melhorando qualidade.
+                  </div>
+                </details>
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Vale a pena otimizar se meu gasto mensal é pequeno?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    &lt; $10/mês: não vale. $10-50: otimizações simples. $50-500: vale MUITO, ROI em 1-4 semanas. &gt; $500: ESSENCIAL.
+                  </div>
+                </details>
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    O Squad Creator Pro consome muitos tokens ao abrir?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    Marcelo reportou 106k tokens; Wanderson teve 35k. Agents & Skills fazem fork e releem contexto. Use /context para verificar. Pedro está otimizando via Front Matter e scripts em background.
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <!-- Estrutura de Pastas -->
+            <div style="margin-bottom: 16px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="folder-tree" width="16" height="16"></i> Estrutura de Pastas e Organização
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    A pasta dos squads fica dentro do .claude ou fora?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    <strong>Fora do .claude</strong>, numa pasta /squads/ na raiz do projeto. Os comandos são sincronizados para .claude/commands/ via *sync commands. José Carlos: &ldquo;O / você ativa mudando no config.json.&rdquo;
+                  </div>
+                </details>
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Como organizar squads em múltiplos projetos?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    Opções: 1) Copiar squads para cada projeto (simples). 2) Pasta raiz compartilhada. 3) Skill de sync do GitHub (Torriani criou). Pedro recomenda AIOS na pasta de cada projeto para contexto isolado.
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <!-- Model Tier & Operações -->
+            <div style="margin-bottom: 16px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="layers" width="16" height="16"></i> Model Tier &amp; Operações
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Como o sistema decide qual modelo usar para cada tarefa?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    Model Tier Qualification classifica por complexidade, histórico, análise do prompt e output esperado. Override manual sempre permitido: <code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">squad run --model haiku</code>.
+                  </div>
+                </details>
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Como sei se uma operação deve ser script ou LLM call?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    <strong>Regra de ouro:</strong> Se consegue escrever if/else ou regex, deve ser script. Scripts = custo zero. LLM = quando precisa de raciocínio semântico, classificação, resumo, geração de texto.
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <!-- Entrega e Deploy -->
+            <div style="margin-bottom: 16px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="rocket" width="16" height="16"></i> Entrega e Deploy de Squads
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Como fazer deploy/entrega de squad para cliente?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    <strong>Nível 1 &mdash; Consultoria:</strong> Entregar squad desenhado + .md de cada agente (Edu já validou). <strong>Nível 2 &mdash; SaaS:</strong> Rodar o squad no seu ambiente e entregar outputs. <strong>Nível 3 &mdash; App completo:</strong> Criar interface com banco de dados, APIs e deploy em servidor.
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <!-- Conceitos de Squad -->
+            <div style="margin-bottom: 16px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="users" width="16" height="16"></i> Conceitos de Squad
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Squad é a mesma coisa que um setor da empresa?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    Pode ser, mas não é só isso. Squad pode ser setor, grupo de elite para missão específica, ou time multidisciplinar autônomo. Com Tiers: Estratégico (decisões), Tático (processos) e Operacional (execução).
+                  </div>
+                </details>
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Por que é melhor começar com Squad do que com aplicação web?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    Analogia Agile do Pedro (skate &rarr; carro): Squad valida task por task sem latência de desenvolvimento. Sem complexidade de APIs/banco. Depois só adiciona ferramentas. &ldquo;Código é commodity. Framework validado que gera valor é o que importa.&rdquo;
+                  </div>
+                </details>
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Poucos agentes com workflows ou muitos agentes sem workflows?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    Workflows definidos &gt; quantidade de agentes. Squad = agentes + tasks + workflows + checklists para cumprir um propósito. Exemplo real: DicOp tem 24 agentes, 59 tasks, 14 workflows, 32 checklists.
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <!-- CLI First e Agents & Skills -->
+            <div style="margin-bottom: 16px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="terminal" width="16" height="16"></i> CLI First e Agents &amp; Skills
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    O que muda com a migração de Commands para Agents &amp; Skills?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    Agents com @ (ex: @dev), Skills com / (ex: /squad). Agentes se chamam automaticamente entre si. Mais poder e velocidade. NÃO migre por conta própria &mdash; aguarde atualização oficial.
+                  </div>
+                </details>
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Por que CLI First e não UI First?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    IA trabalha melhor com Markdown, YAML, JSON. Menos camadas de abstração = mais poder. Cursor (UI) está perdendo para Claude Code (CLI). Dashboard é READ-ONLY para observabilidade.
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <!-- Repertório e Criação -->
+            <div style="margin-bottom: 16px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="star" width="16" height="16"></i> Repertório e Criação de Squads
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Qual squad devo criar primeiro?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    <strong>Regra de ouro:</strong> &ldquo;Crie o squad onde você tem REPERTÓRIO para avaliar se ele é bom.&rdquo; IA é muito boa em fingir que as coisas estão certas. Sem repertório, você não sabe se o output é bom. Comece pelo que você domina.
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <!-- Validation, Performance e Troubleshooting -->
+            <div style="margin-bottom: 16px;">
+              <h3 style="font-size: 13px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="shield-check" width="16" height="16"></i> Validação, Performance e Troubleshooting
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Por que validar com 10-20 exemplos antes de escalar?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    Evita: prompt mal configurado ($1 vs $100+), modelo errado (economia de 98%+), workflow com bug (30min vs 2 dias). 30 minutos de validação economizam dias de retrabalho.
+                  </div>
+                </details>
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Meu squad está lento, como acelero?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    Gargalos comuns: modelo pesado demais (use Model Tier), sequencial demais (paralelizar), rate limiting (Open Router), LLM calls desnecessárias (converter em scripts), context window grande (chunking), sem caching.
+                  </div>
+                </details>
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Meu squad falha aleatoriamente, como debugo?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    1) Debug mode: <code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">squad run --debug</code>. 2) Logs: <code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;">squad logs --filter error</code>. Falhas comuns: Rate Limiting (429), Timeout, API Key inválida, Context Too Long.
+                  </div>
+                </details>
+                <details class="faq-item" style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
+                  <summary style="padding: 16px 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #CCC; list-style: none; display: flex; align-items: center; gap: 10px;">
+                    <i data-lucide="chevron-right" width="16" height="16" style="flex-shrink:0;"></i>
+                    Open Router custa mais caro que APIs diretas?
+                  </summary>
+                  <div style="padding: 0 20px 16px; font-size: 13px; color: #999; line-height: 1.6;">
+                    Não, geralmente mais barato ou igual. Sem markup na maioria dos modelos. Vantagens extras: uma API key = 20+ providers, fallback automático, billing unificado. Desvantagem: ~50-100ms de latência adicional.
+                  </div>
+                </details>
+              </div>
+            </div>
+
           </div>
         </section>
 
@@ -1763,15 +2646,428 @@
 
           <div class="kb-info-message">
             <span class="info-icon"><i data-lucide="info" width="16" height="16"></i></span>
-            <span>O Q&A será populado automaticamente conforme as aulas forem processadas.</span>
+            <span>71 perguntas reais dos alunos durante as Aulas 02 e 03, com respostas baseadas no contexto das aulas.</span>
           </div>
 
-          <div class="kb-placeholder">
-            <div class="kb-placeholder-icon">
-              <i data-lucide="message-circle" width="24" height="24"></i>
+          <div id="qaContent">
+
+            <!-- SESSÃO 1 - Aula 02 (30 perguntas) -->
+            <div style="margin-bottom: 24px;" data-aula="02">
+              <h3 style="font-size: 13px; font-weight: 700; color: #EF4444; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="play-circle" width="16" height="16"></i> Aula 02 &mdash; Sessão 1
+                <span style="font-size: 10px; padding: 2px 8px; background: rgba(255,255,255,0.06); color: #888; border-radius: 9999px; font-weight: 600;">30 perguntas</span>
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:09:04] josef:</span> Quando enviam no grupo um agente ou squad, como instalamos?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Baixe o arquivo, extraia para /squads/nome-do-squad/, sincronize com @aios-master &ldquo;crie os commands do squad-creator&rdquo;, verifique com /squad-creator:agents:squad-chief.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:11:50] Helder:</span> Vai ser possível usar outros modelos inferiores ao Claude Code?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Sim! Model Tier Qualification permite usar Haiku (60x mais barato), Sonnet, GPT-4o mini via Open Router. 70-80% das tarefas funcionam com Haiku.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:19:11] Edu:</span> A gente pode acessar este organograma?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Sim, link do Figma compartilhado na aula.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:24:59] Edu:</span> Tem alguma garantia segura do tamanho da squad?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Pequeno (3-5), Médio (6-10), Grande (10+). Comece pequeno, valide, depois expanda. 20+ agentes = provavelmente mal desenhada.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:34:30] Marcelo:</span> Quando substituímos as versões, precisa outra configuração?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Substitua a pasta, ressincronize comandos, verifique. ESSENCIAL ressincronizar após qualquer atualização.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:42:57] Fabio:</span> A troca do LLM será automática?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Sim, com Model Tier Qualification habilitado. Override manual sempre disponível.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:45:35] Wanderson:</span> 3000 DÓLARES? Sendo que pagamos 200 dólares</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Claude Code Pro ($20/mês) inclui $200 créditos. API direto só vale se gastar &gt; $500/mês.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:55:33] Edu:</span> Usa uma plataforma de Scraping ou o próprio agente faz?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Firecrawl + MCP. Também: Puppeteer/Playwright para sites com auth, APIs diretas quando disponível.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:56:32] Torriani:</span> Como integrar uma squad em sistema web na Vercel?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Frontend (Vercel) &rarr; API Gateway &rarr; Squad Runner (Docker/Railway). Squads não rodam direto no Vercel (stateless).
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[01:04:55] Fabiana:</span> Me perdi, depois de trazer a squad hormozi faz o que?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Instalar &rarr; Sincronizar &rarr; *refresh-registry &rarr; *validate-squad. Nota &gt; 8 = bom.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[01:14:06] Fabio:</span> Qual a nota aceitável?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    9-10: Excelente. 8-9: Bom. 7-8: Aceitável. &lt;7: Precisa trabalho. Ex: Hormozi 8.7, Design System 9.04.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[01:21:30] Torriani:</span> Quero YouTube transcription, como achar a funcionalidade?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Use *discovery-tools squad-creator. Busca MCPs disponíveis e sugere ferramentas. Existe MCP de YouTube Transcript.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[01:31:19] Fabiana:</span> Como parar para limpar janela e passar info para próxima?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    /handoff cria resumo executivo. /compact comprime contexto sem perder info. Dica Cleverson: &ldquo;Faço handoff sempre e /clear&rdquo;.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[01:35:36] Artur:</span> Tools é diferente de skill?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Tools (MCP): integrações externas (Firecrawl, Puppeteer). Skills: comportamentos/workflows pré-definidos (.md). Analogia: &ldquo;Tools é ferramenta. Skills é como usar.&rdquo;
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[01:47:26] Thiago Otto:</span> Qual seu modelo mental para decidir quando parar de melhorar?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Pare quando: validate &gt; 8.5, custo/benefício não vale, já cumpre objetivo. Regra 80/20: 20% esforço = 80% melhoria.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[02:06:15] Victor:</span> Usar tool é algo determinístico?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Depende da tool. Dasel (parsing) = determinístico. LLM dentro da tool = não. Input X &rarr; sempre Output Y = determinístico.
+                  </div>
+                </details>
+              </div>
             </div>
-            <div class="kb-placeholder-title">Perguntas e respostas completas aparecerão aqui</div>
-            <p class="kb-placeholder-text">Todas as dúvidas dos alunos com respostas detalhadas, agrupadas por aula e categoria.</p>
+
+            <!-- SESSÃO 2 - Aula 02 (14 perguntas) -->
+            <div style="margin-bottom: 24px;" data-aula="02">
+              <h3 style="font-size: 13px; font-weight: 700; color: #EF4444; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="play-circle" width="16" height="16"></i> Aula 02 &mdash; Sessão 2
+                <span style="font-size: 10px; padding: 2px 8px; background: rgba(255,255,255,0.06); color: #888; border-radius: 9999px; font-weight: 600;">14 perguntas</span>
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:02:18] Renata:</span> Como consegue fazer eles conversar entre si?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Handoff explícito, workflow automático (output de um &rarr; input do próximo), ou squad com orquestração via squad-chief.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:08:54] Helder:</span> É como se cada um estivesse em um terminal?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Exatamente. Cada agente = sessão independente, contexto próprio. Comunicação via arquivos intermediários.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:18:03] Cleverson:</span> Se criação de squad fica gigantesca, a opção seria criar um epic?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Sim! /pm *create-epic &ldquo;Criação do Squad X&rdquo;. Cada agent vira uma story. Alan confirmou: &ldquo;Isso! Exatamente esse raciocínio.&rdquo;
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:22:18] Felipe Piedade:</span> Minha squad tinha 6 agentes. Agora o optimize sugeriu tasks, workflows...</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Evolução natural: v1 só agentes &rarr; v2 + Tasks &rarr; v3 + Workflows &rarr; v4 + Scripts. Não implemente tudo de uma vez. Top 3 primeiro.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:40:27] Torriani:</span> O openrouter é para escolher LLMs para tarefas específicas?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Sim, e também: multi-provider access (uma key = 20+ providers), intelligent routing e fallback automático.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:44:02] Renata:</span> Tem que ter squad que aceita outros modelos? Claude só aceita Anthropic.</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Claude Code: só Anthropic. Squad Creator via Open Router: qualquer modelo. São camadas diferentes.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:54:19] Edu:</span> Isso no Pro, né? Haiku como principal?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Sim, Claude Code Pro ($20/mês) com $200 créditos. Com Haiku como default: ~800M tokens. Wanderson: &ldquo;Haiku como principal aí é Claude 24h dia&rdquo;.
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <!-- SESSÃO 3 - Aula 03 (35 perguntas) -->
+            <div style="margin-bottom: 24px;" data-aula="03">
+              <h3 style="font-size: 13px; font-weight: 700; color: #EF4444; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="play-circle" width="16" height="16"></i> Aula 03 &mdash; Squad Creator: Como Criar Squads
+                <span style="font-size: 10px; padding: 2px 8px; background: rgba(255,255,255,0.06); color: #888; border-radius: 9999px; font-weight: 600;">35 perguntas</span>
+              </h3>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:20:14] Wanderson:</span> Qual é a última versão do Squad Creator?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Versão 4.0 (Squad Creator Pro) com ~67 comandos, compartilhada na aula 03.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:34:52] Renata:</span> A pasta de squad fica dentro do .claude ou fora?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Fica FORA do .claude, em /squads/ na raiz. Sincronize via config.json ou AIOS Master.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:37:46] Tiago:</span> Depois da @qa vai para o @po então?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Sim, a cada story finalizada. Close-story faz toda a atualização do backlog. Quem gerencia backlog é PO.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:47:34] Talles:</span> Skills tá virando fundamento ao invés de feature né?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Sim, Skills é o repertório da IA. &ldquo;O tal do repertório da IA.&rdquo;
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:55:31] Renata:</span> Fala de novo sobre o comedor de tokens</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Agents & Skills gastam mais tokens que Commands. Fazem fork e releem todo contexto. Podem gastar 80k tokens só para dar o start. Pedro otimizando via Front Matter.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[00:57:45] Fabio:</span> Por que o Squad Creator fica dentro do AIOS?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Precisa da documentação, code standards, tech stack do projeto. Sem AIOS = sempre do zero, sem memória. Com AIOS = contexto, consistência.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[01:05:29] Fabio:</span> Para atualizar é remover tudo da pasta /squad?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    NÃO! Remova APENAS /squads/squad-creator/. NÃO delete seus outros squads! Fábio deletou tudo por engano.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[01:06:31] Marcelo:</span> Melhor formato para AIOS em múltiplos projetos?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    AIOS na pasta de cada projeto (contexto isolado). Squads compartilhados via cópia ou skill de sync do GitHub (Torriani criou).
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[01:12:34] Marcos:</span> Na verdade a squad tem que ter um workflow definido.</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Sim! Workflows definidos &gt; quantidade de agentes. Helder reconheceu: &ldquo;É isso que eu estou errando...&rdquo;
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[01:14:32] Edu:</span> Faz sentido vender apenas a squad desenhada como consultoria?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Sim! Alan: &ldquo;Isso tem muita demanda pra vender como serviço de consultoria.&rdquo; Edu já validou com testes e 100% com o cliente.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[01:22:08] José Carlos:</span> Eu entendo squad como um setor da empresa. Seria isso?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Pode ser, mas não é a única forma. Pedro definiu 3 Tiers: Estratégico (CEO/visão), Tático (Gestores/KPIs), Operacional (execução).
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[01:24:33] Torriani:</span> Quando o Squad precisa clonar mente versus quando não?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Depende se o repertório/heurísticas da pessoa são essenciais. Se precisa apenas de checklist, não precisa de clone completo.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[01:46:51] Torriani:</span> Qual a ferramenta de edição de vídeo?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Talles respondeu: &ldquo;ffmpeg&rdquo;. José Carlos complementou: &ldquo;Edição via código: ffmpeg / remotion&rdquo;.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[02:00:21] Victor:</span> Jamais usar YOLO na criação de squad. Isso permanece com Bob?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Sim, permanece. Jamais criar squad com Bob. Alan: &ldquo;Vou liberar o Bob na décima aula, quando vocês já souberem os processos.&rdquo;
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[02:31:16] Renata:</span> Como implementar o que crio com agentes no cliente?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Cleverson: &ldquo;Crio primeiro o processo, squad-creator faz pesquisas e apresenta melhores mentes.&rdquo; Para entrega: consultoria, SaaS ou app completo.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[02:55:05] Marcelo:</span> Meu squad-chief gasta 106k tokens só para abrir. Algo errado?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Use /context para verificar. Wanderson teve 35k. 106k pode indicar muitos arquivos carregados. Pedro está otimizando.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[03:01:06] Felipe Gobbi:</span> Com YAML e Claude Teams, frameworks como LangGraph perdem utilidade?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Alan: &ldquo;Eles também devem se atualizar, mas em resumo sim.&rdquo; Funcionalidades nativas absorvem orquestração.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[03:37:52] Rodrigo:</span> Como transformar Advisory Board em App/WhatsApp?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Requer worker online, API, integração WhatsApp e banco de dados. Squads locais podem virar serviços online.
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[04:03:25] Torriani:</span> O que significa um worker online?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Processo que roda 24/7 num servidor (Vercel, Railway). Não depende do computador estar ligado. Adriano: &ldquo;Roda em segundo plano executando scripts.&rdquo;
+                  </div>
+                </details>
+                <details style="background: #141414; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+                  <summary style="padding: 14px 18px; cursor: pointer; font-size: 13px; color: #CCC; list-style: none; display: flex; align-items: flex-start; gap: 10px;">
+                    <i data-lucide="chevron-right" width="14" height="14" style="flex-shrink:0; margin-top: 2px;"></i>
+                    <div><span style="color: #666; font-size: 11px;">[04:35:37] Flavio:</span> Spawnar seria tipo morrer e nascer de novo em games?</div>
+                  </summary>
+                  <div style="padding: 0 18px 14px; font-size: 13px; color: #999; line-height: 1.5; margin-left: 24px;">
+                    Melhor analogia do Adriano: &ldquo;Spawnar seria como mandar o filho comprar pão na padaria. Daqui a pouco o pão vai chegar quentinho.&rdquo; Criar subprocesso que roda em paralelo.
+                  </div>
+                </details>
+              </div>
+            </div>
+
           </div>
         </section>
 
@@ -1888,6 +3184,70 @@
     allSections.forEach(section => {
       sectionObserver.observe(section);
     });
+
+    // ========================================
+    // GLOSSARY SEARCH
+    // ========================================
+    const glossarioSection = document.getElementById('glossario');
+    if (glossarioSection) {
+      const glossarioSearchInput = glossarioSection.querySelector('.kb-search-input');
+      if (glossarioSearchInput) {
+        glossarioSearchInput.addEventListener('input', (e) => {
+          const term = e.target.value.toLowerCase().trim();
+          const cards = document.querySelectorAll('#glossarioContent .glossary-card');
+          const categories = document.querySelectorAll('#glossarioContent .glossary-category');
+
+          cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.classList.toggle('hidden', term && !text.includes(term));
+          });
+
+          categories.forEach(cat => {
+            const visibleCards = cat.querySelectorAll('.glossary-card:not(.hidden)');
+            cat.classList.toggle('hidden', term && visibleCards.length === 0);
+          });
+        });
+      }
+    }
+
+    // ========================================
+    // FAQ SEARCH
+    // ========================================
+    const faqSection = document.getElementById('faq');
+    if (faqSection) {
+      const faqSearchInput = faqSection.querySelector('.kb-search-input');
+      if (faqSearchInput) {
+        faqSearchInput.addEventListener('input', (e) => {
+          const term = e.target.value.toLowerCase().trim();
+          const items = document.querySelectorAll('#faqContent details');
+          items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.classList.toggle('hidden', term && !text.includes(term));
+          });
+        });
+      }
+    }
+
+    // ========================================
+    // Q&A FILTER BY AULA
+    // ========================================
+    const qaSection = document.getElementById('qa');
+    if (qaSection) {
+      const qaFilter = qaSection.querySelector('.kb-filter-select');
+      if (qaFilter) {
+        qaFilter.addEventListener('change', (e) => {
+          const value = e.target.value;
+          const sessions = document.querySelectorAll('#qaContent > div[data-aula]');
+          sessions.forEach(session => {
+            if (!value) {
+              session.style.display = '';
+            } else {
+              session.style.display = session.getAttribute('data-aula') === value ? '' : 'none';
+            }
+          });
+        });
+      }
+    }
 
     // ========================================
     // INITIALIZE LUCIDE ICONS
