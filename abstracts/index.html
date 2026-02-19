@@ -1286,11 +1286,15 @@
             </div>
             <div class="content-card-body">
               <div class="topic-tags">
-                <span class="topic-tag"><i data-lucide="boxes"></i> Arquitetura AIOS (.aios-core vs expansion-packs)</span>
-                <span class="topic-tag"><i data-lucide="workflow"></i> Design de workflows multi-agente</span>
-                <span class="topic-tag"><i data-lucide="brain"></i> Mindset de automação com AI</span>
-                <span class="topic-tag"><i data-lucide="layers"></i> Separação de concerns em sistemas de agentes</span>
-                <span class="topic-tag"><i data-lucide="terminal"></i> CLI first philosophy</span>
+                <span class="topic-tag"><i data-lucide="coins"></i> Mindset sobre custo de tokens (investimento, não gasto)</span>
+                <span class="topic-tag"><i data-lucide="boxes"></i> Estrutura completa do AIOS (.aios-core, expansion-packs, claude.md)</span>
+                <span class="topic-tag"><i data-lucide="list-tree"></i> Hierarquia Epic &rarr; Story &rarr; Task &rarr; Workflow</span>
+                <span class="topic-tag"><i data-lucide="arrow-right-left"></i> Diferença entre @ (persona-switching) e / (spawn de agente)</span>
+                <span class="topic-tag"><i data-lucide="baby"></i> Agente BOB (Baby On Board) para iniciantes</span>
+                <span class="topic-tag"><i data-lucide="shield-check"></i> CodeRabbit, GitHub Actions, Environment Bootstrap</span>
+                <span class="topic-tag"><i data-lucide="file-text"></i> Documentação &gt; Conversa (determinismo)</span>
+                <span class="topic-tag"><i data-lucide="construction"></i> Brownfield vs Greenfield</span>
+                <span class="topic-tag"><i data-lucide="folder-tree"></i> Monorepo: múltiplos projetos na mesma pasta</span>
               </div>
             </div>
           </div>
@@ -1304,10 +1308,16 @@
               <span class="content-card-title">Pontos-Chave</span>
             </div>
             <div class="content-card-body">
-              <div class="placeholder-content">
-                <i data-lucide="clock"></i>
-                <span>Conteúdo será gerado na próxima análise</span>
-              </div>
+              <p><strong>[00:05]</strong> <em>"1 mês do meu trabalho com AIOS = equivalente a R$1M em time tradicional. Gastei R$500."</em> &mdash; Alan Nicolas, demonstrando ROI de tokens.</p>
+              <p><strong>[00:06]</strong> <em>"Tokens para empresa = energia elétrica. Não é gasto, é operação. Você não fica 3 meses sem luz para economizar."</em> &mdash; Alan Nicolas, desmistificando medo de gastar tokens.</p>
+              <p><strong>[01:16]</strong> <em>"@ = persona-switching (simula), / = spawn de agente (executa DE VERDADE)"</em> &mdash; Diferença crítica que determina se AIOS vai FAZER ou só SIMULAR. Reação: "Mind blowing" de múltiplos alunos.</p>
+              <p><strong>[01:16]</strong> <em>"AIOS é o que tangibiliza da forma mais impressionante que vi o porquê projetam unicórnios de 1 pessoa só em 2026."</em> &mdash; Thiago Otto, compreendendo o potencial transformador.</p>
+              <p><strong>[01:45]</strong> <em>Epic &rarr; Story &rarr; Task: decomposição que permite AIOS não perder contexto.</em> &mdash; Hierarquia modular que evita estouro de janela de contexto. Pedro mostrou diagrama que fez "entender 100%" (Paulo de Tarso).</p>
+              <p><strong>[01:49]</strong> <em>BOB (Baby On Board) = agente para iniciantes. Não é vergonha usar "rodinhas".</em> &mdash; Modo guiado que reduz fricção para novos usuários. Risadas e identificação imediata da turma.</p>
+              <p><strong>[02:16]</strong> <em>YOLO Mode = "modo foda-se". Vai fundo sem perguntar. Use quando tiver confiança.</em> &mdash; Modo que remove confirmações e vai direto à execução.</p>
+              <p><strong>[02:32]</strong> <em>Monorepo = tudo na mesma pasta. Compartilha configuração, simplifica gerenciamento.</em> &mdash; Alan traduzindo: "TUDO NA MESMA PASTA".</p>
+              <p><strong>[03:13]</strong> <em>"Quando tenho dúvida, pergunto para o Claude... quando o Claude tem dúvida, pergunta para o Pedro."</em> &mdash; rodrigofaerman, reconhecendo a profundidade técnica do Pedro.</p>
+              <p><strong>[03:25]</strong> <em>"Documentação estruturada &gt; Chat conversacional. Totalmente contra-intuitivo, mas é o que funciona."</em> &mdash; Pedro Valerio Lopez. Momento "aha!" coletivo da turma.</p>
             </div>
           </div>
 
@@ -1320,10 +1330,13 @@
               <span class="content-card-title">Takeaways</span>
             </div>
             <div class="content-card-body">
-              <div class="placeholder-content">
-                <i data-lucide="clock"></i>
-                <span>Conteúdo será gerado na próxima análise</span>
-              </div>
+              <p><strong>Mude sua mentalidade sobre tokens:</strong> Assine Claude Pro ou API. Trate como conta de luz, não como luxo. Sem infraestrutura adequada, você não pratica corretamente.</p>
+              <p><strong>Explore a estrutura do AIOS:</strong> Abra <code>.aios-core</code> e entenda as pastas (agents, tasks, workflows). Leia <code>claude.md</code> completo do seu projeto. Identifique expansion-packs que você usa.</p>
+              <p><strong>Pratique Epic &rarr; Story &rarr; Task no papel:</strong> Pegue um projeto real e quebre em 1 Epic, 3-5 Stories e 2-3 Tasks por Story. NÃO execute no AIOS ainda &mdash; apenas pratique PENSAR nessa estrutura.</p>
+              <p><strong>Use BOB:</strong> Chame /bob ou agente Baby On Board para criar algo simples. Deixe ele te guiar antes de ir pro modo avançado.</p>
+              <p><strong>Documente antes de executar:</strong> Crie brief.md ou prd.md com o que quer, estruture Epic &rarr; Stories no documento, só então chame AIOS para executar. Documentação &gt; Conversa = determinismo &gt; ambiguidade.</p>
+              <p><strong>Instale CodeRabbit e rode /devops:</strong> Crie conta gratuita, no seu projeto rode /devops e execute *environment-bootstrap. Conecte GitHub e rode primeiro code review.</p>
+              <p><strong>Contribua com a comunidade:</strong> Acesse os recursos criados por alunos e documente suas próprias descobertas.</p>
             </div>
           </div>
 
@@ -1336,9 +1349,75 @@
               <span class="content-card-title">Links Extraídos</span>
             </div>
             <div class="content-card-body">
-              <div class="placeholder-content">
-                <i data-lucide="link-2"></i>
-                <span>Nenhum link extraído para esta aula</span>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="globe"></i></div>
+                <span class="link-item-label">Site Cohort Avançado:</span>
+                <a href="https://aios-advanced-cohort.vercel.app/" target="_blank" rel="noopener">Documentação visual completa (José Carlos Amorim)</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="book-open"></i></div>
+                <span class="link-item-label">Bíblia AIOS Interativa:</span>
+                <a href="https://biblia-aios-interativa.vercel.app/" target="_blank" rel="noopener">Referência completa do framework (João Lozano)</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="rabbit"></i></div>
+                <span class="link-item-label">CodeRabbit:</span>
+                <a href="https://app.coderabbit.ai/" target="_blank" rel="noopener">Code review com IA &mdash; essencial para workflow AIOS</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="github"></i></div>
+                <span class="link-item-label">AIOS Core:</span>
+                <a href="https://github.com/SynkraAI/aios-core" target="_blank" rel="noopener">Repositório oficial no GitHub</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="github"></i></div>
+                <span class="link-item-label">ALMA Memory:</span>
+                <a href="https://github.com/RBKunnela/ALMA-memory.git" target="_blank" rel="noopener">Sistema de memória para agentes (Renata)</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="globe"></i></div>
+                <span class="link-item-label">ALMA Docs:</span>
+                <a href="https://alma-memory.pages.dev/" target="_blank" rel="noopener">Documentação do ALMA Memory</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="github"></i></div>
+                <span class="link-item-label">Veritas Framework:</span>
+                <a href="https://github.com/RBKunnela/veritas-framework" target="_blank" rel="noopener">Framework anti-alucinação (Renata)</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="layers"></i></div>
+                <span class="link-item-label">SAFe Framework:</span>
+                <a href="https://framework.scaledagile.com/#big-picture" target="_blank" rel="noopener">Scaled Agile Framework (Thiago Otto)</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="user"></i></div>
+                <span class="link-item-label">Andrew Ng:</span>
+                <a href="https://www.andrewng.org/" target="_blank" rel="noopener">Site oficial</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="video"></i></div>
+                <span class="link-item-label">WEF &mdash; Andrew Ng:</span>
+                <a href="https://www.youtube.com/watch?v=Y1BUaLo67ac" target="_blank" rel="noopener">Plenária do Fórum Econômico Mundial</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="graduation-cap"></i></div>
+                <span class="link-item-label">Imersão Vale do Silício:</span>
+                <a href="https://imersao.academialendaria.ai/vale-do-silicio" target="_blank" rel="noopener">Academia Lendária</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="git-branch"></i></div>
+                <span class="link-item-label">Git Submodules:</span>
+                <a href="https://git-scm.com/book/en/v2/Git-Tools-Submodules" target="_blank" rel="noopener">Documentação oficial (Adriano Rogowski)</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="figma"></i></div>
+                <span class="link-item-label">Figma OriginalAI:</span>
+                <a href="https://www.figma.com/board/lBAoDMkKedPwSq8NQfOUVs/PROJETO--ORIGINAI--com-IA" target="_blank" rel="noopener">Mapa visual de projeto com IA</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="globe"></i></div>
+                <span class="link-item-label">Read.ai:</span>
+                <a href="https://www.read.ai/pp" target="_blank" rel="noopener">Notas de meeting com IA</a>
               </div>
             </div>
           </div>
@@ -1355,7 +1434,7 @@
             </span>
             <span class="lesson-badge-date">11 Fev 2026</span>
           </div>
-          <h2 class="lesson-headline">Squad Creator &amp; Token Optimization</h2>
+          <h2 class="lesson-headline">Squad Creator: Construindo Sistemas de Agentes Inteligentes com Economia de Tokens</h2>
 
           <!-- Resumo -->
           <div class="content-card">
@@ -1366,7 +1445,10 @@
               <span class="content-card-title">Resumo</span>
             </div>
             <div class="content-card-body">
-              <p>Segunda aula focada no Squad Creator e estratégias de otimização de tokens. Aprofundou o conceito de Token Economy &mdash; como reduzir custos de LLM em 70-90% usando model tier qualification, operações determinísticas e roteamento inteligente entre modelos (Haiku/Sonnet/Opus).</p>
+              <p>Esta aula apresentou o Squad Creator v3.0-v4.0, uma ferramenta revolucionária para construir sistemas de agentes AI com economia de tokens dramática. O instrutor demonstrou como alcançar redução de 90% nos custos de LLM ao usar Haiku ($0.25 por 1M tokens) em vez de Opus ($15 por 1M tokens), mantendo ou até superando a qualidade dos outputs através de técnicas de prompt engineering e model qualification.</p>
+              <p>A sessão começou com instalação hands-on do Squad Creator via npm, seguida de demonstração do dashboard interativo onde é possível visualizar agentes, workflows e métricas de execução. Um dos conceitos mais poderosos apresentados foi o "validate squad" &mdash; filosofia de testar sistemas de agentes em escala pequena antes de construir aplicações completas, economizando tempo e dinheiro.</p>
+              <p>O instrutor enfatizou a importância de operações determinísticas: converter tarefas que não precisam de raciocínio LLM em scripts simples. Por exemplo, validação de formato YAML não precisa custar $0.03 por chamada quando um script Python pode fazer isso instantaneamente. Esta abordagem híbrida (scripts + LLM apenas quando necessário) foi demonstrada em pipelines ETL reais.</p>
+              <p>A integração com Open Router permite usar múltiplos provedores de LLM (OpenAI, Anthropic, Cohere, etc) com fallback automático e rate limiting inteligente. O sistema de Model Tier Qualification classifica automaticamente tarefas em Tier 1 (Haiku), Tier 2 (Sonnet) ou Tier 3 (Opus) baseado em complexidade, mas permite override manual quando o desenvolvedor conhece melhor o contexto.</p>
             </div>
           </div>
 
@@ -1380,12 +1462,14 @@
             </div>
             <div class="content-card-body">
               <div class="topic-tags">
-                <span class="topic-tag"><i data-lucide="users"></i> Squad Creator v3.0-4.0</span>
-                <span class="topic-tag"><i data-lucide="coins"></i> Token Economy (redução 70-90%)</span>
-                <span class="topic-tag"><i data-lucide="gauge"></i> Model Tier Qualification (Haiku/Sonnet/Opus)</span>
-                <span class="topic-tag"><i data-lucide="route"></i> Open Router e multi-provider</span>
-                <span class="topic-tag"><i data-lucide="calculator"></i> Operações determinísticas vs LLM calls</span>
-                <span class="topic-tag"><i data-lucide="monitor"></i> Dashboard e observabilidade</span>
+                <span class="topic-tag"><i data-lucide="download"></i> Squad Creator: Instalação e Configuração Inicial</span>
+                <span class="topic-tag"><i data-lucide="coins"></i> Token Economy: Estratégias para Reduzir Custos em 90%</span>
+                <span class="topic-tag"><i data-lucide="gauge"></i> Haiku vs Opus: Qualidade Superior com Modelos Mais Baratos</span>
+                <span class="topic-tag"><i data-lucide="shield-check"></i> Validação de Squads: Testando Agentes Antes de Implementar</span>
+                <span class="topic-tag"><i data-lucide="route"></i> Open Router: Integrando Múltiplos Provedores de LLM</span>
+                <span class="topic-tag"><i data-lucide="terminal"></i> Operações Determinísticas: Convertendo Tarefas LLM em Scripts</span>
+                <span class="topic-tag"><i data-lucide="workflow"></i> Workflow Automation: Execução de Epics e Stories</span>
+                <span class="topic-tag"><i data-lucide="layers"></i> Model Tier Qualification: Classificação de Tarefas</span>
               </div>
             </div>
           </div>
@@ -1399,10 +1483,14 @@
               <span class="content-card-title">Pontos-Chave</span>
             </div>
             <div class="content-card-body">
-              <div class="placeholder-content">
-                <i data-lucide="clock"></i>
-                <span>Conteúdo será gerado na próxima análise</span>
-              </div>
+              <p><strong>[00:23]</strong> <em>Haiku consegue qualidade superior ao Opus em muitas tarefas quando o prompt é bem construído, custando 60x menos.</em> &mdash; Demonstração comparativa de outputs com mesmos prompts em ambos modelos.</p>
+              <p><strong>[00:45]</strong> <em>"Valide seus squads antes de construir a aplicação. É muito mais barato testar com 10 exemplos do que descobrir problemas em produção."</em> &mdash; Alan Nicolas, filosofia de validação antes de escalar.</p>
+              <p><strong>[01:12]</strong> <em>Model Tier Qualification: Sistema automático que classifica tarefas por complexidade e atribui o modelo mais econômico capaz de resolver.</em> &mdash; Reduz custos em 70-90% sem perder qualidade.</p>
+              <p><strong>[01:34]</strong> <em>"Operações determinísticas devem SEMPRE ser scripts, não chamadas LLM. Ex: validar JSON, contar palavras, extrair timestamps."</em> &mdash; Alan Nicolas. Zero custo vs $0.01-0.05 por operação.</p>
+              <p><strong>[02:05]</strong> <em>"Open Router é como ter um seguro: se a OpenAI cair, você automaticamente faz fallback para Anthropic sem mudar uma linha de código."</em> &mdash; Rodrigo, sobre resiliência com multi-provider.</p>
+              <p><strong>[02:28]</strong> <em>Pipeline ETL de transcrições: 500 aulas processadas gastando $12 com Haiku vs $720 que gastaria com Opus.</em> &mdash; 98.7% de acurácia, 60x mais barato.</p>
+              <p><strong>[02:52]</strong> <em>Não otimize prematuramente. Comece com Opus se não souber a complexidade, depois faça downgrade quando validar que Haiku funciona.</em></p>
+              <p><strong>[03:15]</strong> <em>"Squad Creator não é sobre substituir desenvolvedores, é sobre multiplicar sua capacidade. Um dev com squads = time de 10."</em> &mdash; Pedro Valério, filosofia de Augmented Development.</p>
             </div>
           </div>
 
@@ -1415,10 +1503,10 @@
               <span class="content-card-title">Takeaways</span>
             </div>
             <div class="content-card-body">
-              <div class="placeholder-content">
-                <i data-lucide="clock"></i>
-                <span>Conteúdo será gerado na próxima análise</span>
-              </div>
+              <p><strong>Comece com Validação, Não com Implementação:</strong> Antes de construir uma aplicação com agentes, crie um squad mínimo, teste com 10-20 exemplos, meça qualidade e custo. Só escale quando validar. Ferramenta: <code>squad validate</code> + dashboard de métricas.</p>
+              <p><strong>Use Haiku como Default, Opus como Exception:</strong> Configure Haiku como modelo padrão para todas as tarefas. Identifique quais realmente precisam de Opus (normalmente &lt;10%). Meça a diferença de qualidade objetivamente. Economia esperada: 70-90%.</p>
+              <p><strong>Scripts &gt; LLM para Operações Determinísticas:</strong> Liste todas as operações do seu workflow. Para cada uma, pergunte: "isso precisa de raciocínio ou é algorítmico?" Converta algorítmicas em scripts Python/JS. Ex: validação de formato, parsing estruturado, contagens, extrações com regex.</p>
+              <p><strong>Integre Open Router para Resiliência:</strong> Configure fallback entre provedores. Uma API key do Open Router dá acesso a 20+ provedores. Configuração em 10 minutos que evita horas de downtime.</p>
             </div>
           </div>
 
@@ -1431,9 +1519,40 @@
               <span class="content-card-title">Links Extraídos</span>
             </div>
             <div class="content-card-body">
-              <div class="placeholder-content">
-                <i data-lucide="link-2"></i>
-                <span>Nenhum link extraído para esta aula</span>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="globe"></i></div>
+                <span class="link-item-label">Dashboard WhatsApp AIOS:</span>
+                <a href="https://ff-whatsapp-aios-intel.vercel.app/" target="_blank" rel="noopener">Projeto demonstrado na aula</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="figma"></i></div>
+                <span class="link-item-label">Figma Cashmiles:</span>
+                <a href="https://www.figma.com/board/80ARIf53fw6EwPYXKNQXKc/Live---12-02" target="_blank" rel="noopener">Organograma de arquitetura de squads</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="book-open"></i></div>
+                <span class="link-item-label">Squad Creator Docs:</span>
+                <a href="https://lesson-pages.vercel.app/squad-creator" target="_blank" rel="noopener">Documentação oficial</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="globe"></i></div>
+                <span class="link-item-label">Plano Cantor:</span>
+                <a href="https://www.planocantor.com/" target="_blank" rel="noopener">Projeto demonstrado</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="github"></i></div>
+                <span class="link-item-label">AIOS Core:</span>
+                <a href="https://github.com/SynkraAI/aios-core" target="_blank" rel="noopener">Repositório oficial</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="globe"></i></div>
+                <span class="link-item-label">Wisprflow:</span>
+                <a href="https://wisprflow.ai/" target="_blank" rel="noopener">Plataforma mencionada</a>
+              </div>
+              <div class="link-item">
+                <div class="link-item-icon"><i data-lucide="globe"></i></div>
+                <span class="link-item-label">Staging Lendário:</span>
+                <a href="https://stage.lendario.ai/jonas" target="_blank" rel="noopener">Ambiente de staging demonstrado</a>
               </div>
             </div>
           </div>
