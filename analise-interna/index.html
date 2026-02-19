@@ -1113,6 +1113,7 @@
     .gps-card-score.score-green { color: #22C55E; }
     .gps-card-score.score-yellow { color: #EAB308; }
     .gps-card-score.score-orange { color: #F97316; }
+    .gps-card-score.score-red { color: #EF4444; }
     .gps-card-category {
       font-size: 10px;
       font-weight: 700;
@@ -1132,6 +1133,10 @@
     .gps-card-category.cat-orange {
       background: rgba(249,115,22,0.12);
       color: #F97316;
+    }
+    .gps-card-category.cat-red {
+      background: rgba(239,68,68,0.12);
+      color: #EF4444;
     }
     .gps-evidence-cols {
       display: grid;
@@ -1354,6 +1359,10 @@
     .gap-priority.media {
       background: rgba(234,179,8,0.12);
       color: #EAB308;
+    }
+    .gap-priority.baixa {
+      background: rgba(34,197,94,0.12);
+      color: #22C55E;
     }
     .gap-title {
       font-size: 13px;
@@ -1776,140 +1785,600 @@
             </ul>
           </div>
 
-          <!-- GPS SCORES TABLE - Aula Preparatória -->
-          <div style="margin-top: 32px;">
-            <div class="gps-section-title" style="font-size: 17px;">
-              <i data-lucide="radar" width="18" height="18" style="color: #22C55E;"></i>
-              Framework GPS &mdash; Notas por Aspecto
+          <!-- ==========================================
+               GPS FRAMEWORK BREAKDOWN - 10 Aspectos - Aula Preparatória
+               ========================================== -->
+          <div style="margin-top: 40px;">
+            <div class="gps-section-title">
+              <i data-lucide="radar" width="22" height="22" style="color: #22C55E;"></i>
+              Framework GPS &mdash; 10 Aspectos Detalhados
             </div>
-            <table class="gps-scores-table">
-              <thead>
-                <tr>
-                  <th>Aspecto</th>
-                  <th>Nota</th>
-                  <th>Categoria</th>
-                  <th>Destaque</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>1. Goal / Destino / Motivação</td>
-                  <td class="score-cell sc-green">8.5</td>
-                  <td>Muito Bom</td>
-                  <td>Promessa clara: preparar para cohort avançado</td>
-                </tr>
-                <tr>
-                  <td>2. Position / Origem / Empatia</td>
-                  <td class="score-cell sc-green">9.5</td>
-                  <td>Excepcional</td>
-                  <td>&ldquo;Não vamos deixar ninguém para trás&rdquo;</td>
-                </tr>
-                <tr>
-                  <td>3. Steps / Rota / Execução</td>
-                  <td class="score-cell sc-yellow">7.5</td>
-                  <td>Bom</td>
-                  <td>Demonstração passo a passo, faltou exercício prático</td>
-                </tr>
-                <tr>
-                  <td>4. Semiótica / Elementos Visuais</td>
-                  <td class="score-cell sc-yellow">8.0</td>
-                  <td>Muito Bom</td>
-                  <td>&ldquo;Github = Control+Z pra sua vida&rdquo;</td>
-                </tr>
-                <tr>
-                  <td>5. Clareza / Linguagem Acessível</td>
-                  <td class="score-cell sc-green">8.5</td>
-                  <td>Muito Bom</td>
-                  <td>&ldquo;Merge é mesclar. Tu pega e mistura&rdquo;</td>
-                </tr>
-                <tr>
-                  <td>6. Ritmo / Gestão de Tempo</td>
-                  <td class="score-cell sc-orange">7.0</td>
-                  <td>Bom</td>
-                  <td>2h20 sem intervalos, acelerou no final</td>
-                </tr>
-                <tr>
-                  <td>7. Engajamento / Interação</td>
-                  <td class="score-cell sc-green">9.0</td>
-                  <td>Muito Bom</td>
-                  <td>48 participantes ativos, chamou alunos pelo nome</td>
-                </tr>
-                <tr>
-                  <td>8. Organização / Estrutura</td>
-                  <td class="score-cell sc-yellow">7.5</td>
-                  <td>Bom</td>
-                  <td>Transições presentes mas nem sempre explícitas</td>
-                </tr>
-                <tr>
-                  <td>9. Domínio / Expertise</td>
-                  <td class="score-cell sc-green">9.5</td>
-                  <td>Excepcional</td>
-                  <td>Integrou Matriz RICE ao vivo com feedback do Pedro</td>
-                </tr>
-                <tr>
-                  <td>10. Técnico / Setup</td>
-                  <td class="score-cell sc-green">8.5</td>
-                  <td>Muito Bom</td>
-                  <td>Setup profissional, 1 incidente resolvido em &lt;1min</td>
-                </tr>
-              </tbody>
-            </table>
+            <p class="gps-section-subtitle">Avaliação individual de cada aspecto do Global Performance Score com evidências e oportunidades</p>
 
-            <div class="gps-section-title" style="font-size: 17px; margin-top: 24px;">
-              <i data-lucide="flame" width="18" height="18" style="color: #F59E0B;"></i>
-              Metodologia Lendária &mdash; Notas por Pilar
+            <div class="gps-grid">
+              <!-- 1. Goal/Destino/Motivação: 8.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">1. Goal / Destino / Motivação</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">8.5</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Promessa clara nos primeiros minutos: preparar para cohort avançado</li>
+                      <li>Objetivo tangível: atualização automática do AIOS + Tool Discovery</li>
+                      <li>Motivação explícita: &ldquo;Não deixar ninguém para trás&rdquo;</li>
+                      <li>Benefício concreto: sistemas que se auto-melhoram</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Poderia ter conectado mais ao &ldquo;por quê&rdquo; emocional (Nível 5 dos 5 Porquês)</li>
+                      <li>Hook inicial foi mais técnico que aspiracional</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="gps-improve-box">
+                  <strong>O que melhorar</strong>
+                  Conectar explicitamente ao impacto de vida/carreira: &ldquo;Isso significa você nunca mais vai ficar obsoleto enquanto o mercado avança&rdquo;
+                </div>
+              </div>
+
+              <!-- 2. Position/Origem/Empatia: 9.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">2. Position / Origem / Empatia</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">9.5</span>
+                    <span class="gps-card-category cat-green">Excepcional</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Reconheceu múltiplos níveis: &ldquo;Muitos de vocês não sabem nada de código&rdquo;</li>
+                      <li>Validou medos: &ldquo;Sei que vocês estão com muitas dúvidas&rdquo;</li>
+                      <li>Empatia genuína: &ldquo;Não vamos deixar ninguém para trás&rdquo;</li>
+                      <li>Múltiplos caminhos oferecidos para diferentes níveis</li>
+                      <li>Linguagem inclusiva: &ldquo;Até o Zé não entende algumas coisas ainda&rdquo;</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Destaque</h4>
+                    <ul>
+                      <li>Alan desmistificou continuamente &mdash; mostrou que ele mesmo ainda aprende e pergunta pra IA. Criou segurança psicológica rara.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. Steps/Rota/Execução: 7.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">3. Steps / Rota / Execução</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow">7.5</span>
+                    <span class="gps-card-category cat-yellow">Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Demonstrou instalação passo a passo</li>
+                      <li>Mostrou estrutura de pastas concretamente</li>
+                      <li>Hands-on: criou Squad Creator ao vivo</li>
+                      <li>Sequência lógica presente (setup &rarr; customização &rarr; uso)</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Alguns passos não numerados explicitamente</li>
+                      <li>Faltou exercício prático IMEDIATO para alunos fazerem</li>
+                      <li>Muito conteúdo para absorver sem pausas estruturadas</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="gps-improve-box">
+                  <strong>O que melhorar</strong>
+                  Criar checkpoints: &ldquo;Agora peguem 5min e façam X. Quem conseguir, dê um joinha no chat.&rdquo; Numerar passos: &ldquo;Passo 1: ... Passo 2: ... Passo 3: ...&rdquo;
+                </div>
+              </div>
+
+              <!-- 4. Semiótica/Elementos Visuais: 8.0 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">4. Semiótica / Elementos Visuais</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow">8.0</span>
+                    <span class="gps-card-category cat-yellow">Muito Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Analogia poderosa: &ldquo;Fonte da verdade = mocinho do shopping onde criança perdida vai&rdquo;</li>
+                      <li>Metáforas visuais: &ldquo;Alfred do Batman trabalhando nos bastidores&rdquo;</li>
+                      <li>Compartilhou tela o tempo todo (visual forte)</li>
+                      <li>Perguntas reflexivas: &ldquo;Vocês percebem o tanto de negócios milionários dá pra seguir?&rdquo;</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Poderia ter desenhado diagrama explícito da estrutura Upstream</li>
+                      <li>Metáfora do &ldquo;copo&rdquo; (do Pedro) poderia ter visual complementar</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 5. Clareza/Linguagem Acessível: 8.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">5. Clareza / Linguagem Acessível</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">8.5</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Jargões explicados: &ldquo;Merge é mesclar. Tu pega e mistura&rdquo;</li>
+                      <li>Traduziu termos técnicos: &ldquo;Fork, Upstream... calma que vou explicar&rdquo;</li>
+                      <li>Linguagem coloquial: &ldquo;Putz&rdquo;, &ldquo;Cara&rdquo;, &ldquo;Beleza&rdquo; (proximidade)</li>
+                      <li>Auto-crítica saudável: &ldquo;Eu nem sei os nomes técnicos pessoal&rdquo;</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Algumas siglas passaram sem explicação (MCP = Model Context Protocol foi assumido)</li>
+                      <li>Tool Discovery ficou um pouco abstrato (múltiplos alunos perguntaram)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 6. Ritmo/Gestão de Tempo: 7.0 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">6. Ritmo / Gestão de Tempo</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-orange">7.0</span>
+                    <span class="gps-card-category cat-orange">Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Conceitos complexos tiveram tempo adequado (Upstream, Tool Discovery)</li>
+                      <li>Pausou para perguntas do chat várias vezes</li>
+                      <li>Demonstrações ao vivo permitiram absorção</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Aula longa (2h20) sem intervalos estruturados</li>
+                      <li>Alguns tópicos apressados no final (Dashboard, MCPs)</li>
+                      <li>Acelerou muito na última meia hora</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="gps-improve-box">
+                  <strong>O que melhorar</strong>
+                  Inserir intervalo de 5-10min na marca de 1h. Reservar 10min finais para recap ao invés de correr.
+                </div>
+              </div>
+
+              <!-- 7. Engajamento/Interação: 9.0 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">7. Engajamento / Interação</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">9.0</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Respondeu &gt;30 perguntas do chat ativamente</li>
+                      <li>Chamou alunos pelo nome: Flávio, Marcos, José, Thales</li>
+                      <li>Energia alta mantida por 2h+</li>
+                      <li>Trouxe Pedro como convidado (variedade)</li>
+                      <li>Reconheceu conquistas: &ldquo;Renata criou ALMA&rdquo;, &ldquo;Thales fez PR&rdquo;</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Destaque</h4>
+                    <ul>
+                      <li>48 participantes ativos (muito alto). Clima de comunidade forte &mdash; alunos ajudando alunos.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 8. Organização/Estrutura: 7.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">8. Organização / Estrutura</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow">7.5</span>
+                    <span class="gps-card-category cat-yellow">Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Transições presentes: &ldquo;Bom, agora vou mostrar...&rdquo;</li>
+                      <li>Preview dado: &ldquo;Vamos revisar algumas coisas + pontos novos&rdquo;</li>
+                      <li>Contextualizou aula: &ldquo;Essa é extra, não é parte do programático&rdquo;</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Faltou recap estruturado no final</li>
+                      <li>Transições às vezes abruptas (saltou entre tópicos)</li>
+                      <li>Não apresentou agenda explícita no início</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="gps-improve-box">
+                  <strong>O que melhorar</strong>
+                  Slide/momento inicial: &ldquo;Hoje vamos cobrir 5 tópicos: 1) ..., 2) ..., 3) ...&rdquo;. Recap final: &ldquo;Revisando &mdash; hoje vocês aprenderam: A, B, C&rdquo;
+                </div>
+              </div>
+
+              <!-- 9. Domínio/Expertise: 9.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">9. Domínio / Expertise</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">9.5</span>
+                    <span class="gps-card-category cat-green">Excepcional</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Expertise evidente em AIOS/arquitetura</li>
+                      <li>Respondeu todas perguntas com precisão</li>
+                      <li>Demonstrou profundidade quando desafiado</li>
+                      <li>Antecipou dúvidas: &ldquo;Sei que vão perguntar sobre...&rdquo;</li>
+                      <li>Trouxe exemplos além do óbvio (clonagem de mentes, Upstream)</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Destaque</h4>
+                    <ul>
+                      <li>Pegou feedback do Pedro em tempo real e integrou no Squad Creator ao vivo (Matriz RICE). Domínio não apenas técnico, mas FILOSÓFICO.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 10. Técnico/Setup: 8.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">10. Técnico / Setup</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">8.5</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Áudio claro na maior parte do tempo</li>
+                      <li>Compartilhamento de tela funcional</li>
+                      <li>Sem travamentos ou interrupções técnicas</li>
+                      <li>Problema de áudio no início resolvido rapidamente</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Incidentes</h4>
+                    <ul>
+                      <li>1 relato de áudio mudo (00:26) &mdash; resolvido em &lt;1min</li>
+                      <li>Setup profissional &mdash; gravação + chat sincronizados</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
-            <table class="gps-scores-table">
+          </div>
+
+          <!-- ==========================================
+               METODOLOGIA LENDÁRIA - 7 Pilares - Aula Preparatória
+               ========================================== -->
+          <div style="margin-top: 20px;">
+            <div class="gps-section-title">
+              <i data-lucide="flame" width="22" height="22" style="color: #F59E0B;"></i>
+              Metodologia Lendária &mdash; 7 Pilares Detalhados
+            </div>
+            <p class="gps-section-subtitle">Avaliação da profundidade pedagógica segundo a metodologia proprietária</p>
+
+            <div class="ml-grid">
+              <!-- Pilar 1: 5 Porquês - 7.5 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 1: 5 Porquês</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow" style="font-size: 28px;">7.5</span>
+                    <span class="gps-card-category cat-yellow">Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Nível atingido:</strong> Nível 4 (Propósito)</p>
+                <ul class="ml-checklist">
+                  <li><span class="check-pass">&#10003;</span> <strong>N1 Técnico:</strong> Aprender Upstream, Tool Discovery</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>N2 Produtividade:</strong> Manter AIOS atualizado automaticamente</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>N3 Pessoal:</strong> Estar sempre na vanguarda</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>N4 Propósito:</strong> Não ficar obsoleto enquanto mercado avança</li>
+                  <li><span class="check-fail">&#10007;</span> <strong>N5 Essência:</strong> (NÃO EXPLÍCITO) Segurança, autonomia, liberdade</li>
+                </ul>
+                <div class="gps-improve-box" style="margin-top: 14px;">
+                  <strong>O que faltou</strong>
+                  Conectar ao Nível 5: &ldquo;Isso significa LIBERDADE &mdash; escolher projetos que te motivam, dizer não para trabalho ruim, ter autonomia financeira porque você sempre tem as skills mais valiosas do mercado.&rdquo;
+                </div>
+              </div>
+
+              <!-- Pilar 2: Semiótica/Filme Mental - 8.5 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 2: Semiótica / Filme Mental</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green" style="font-size: 28px;">8.5</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Analogias presentes:</strong></p>
+                <ul class="ml-checklist">
+                  <li><span class="check-pass">&#10003;</span> Fonte da verdade = mocinho amarelo do shopping</li>
+                  <li><span class="check-pass">&#10003;</span> Github = Control+Z pra sua vida</li>
+                  <li><span class="check-pass">&#10003;</span> Upstream = clone do projeto que você compara</li>
+                  <li><span class="check-pass">&#10003;</span> Furadeira que te responde enquanto trabalha (IA)</li>
+                  <li><span class="check-pass">&#10003;</span> Pedro: Fazer 5000 copos vs planejar 1 copo perfeito</li>
+                </ul>
+                <p class="ml-card-detail" style="margin-top: 10px;"><strong>Destaque:</strong> Múltiplas analogias universais (shopping, Batman, copos) &mdash; brasileiros se identificam</p>
+              </div>
+
+              <!-- Pilar 3: Regra de Ouro - 6.0 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 3: Regra de Ouro (2-3 conceitos)</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-orange" style="font-size: 28px;">6.0</span>
+                    <span class="gps-card-category cat-orange">Aceitável</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Status:</strong> ATENÇÃO &mdash; Risco de sobrecarga</p>
+                <p class="ml-card-detail"><strong>7 conceitos em 2h20 (3.4x o limite recomendado):</strong></p>
+                <ul class="ml-checklist">
+                  <li><span style="color: #818CF8; flex-shrink: 0; font-weight: 700;">1.</span> Upstream (atualização automática)</li>
+                  <li><span style="color: #818CF8; flex-shrink: 0; font-weight: 700;">2.</span> Estrutura de projetos (monorepo vs multi)</li>
+                  <li><span style="color: #818CF8; flex-shrink: 0; font-weight: 700;">3.</span> Tool Discovery (pesquisa automática)</li>
+                  <li><span style="color: #818CF8; flex-shrink: 0; font-weight: 700;">4.</span> Matriz RICE (priorização)</li>
+                  <li><span style="color: #818CF8; flex-shrink: 0; font-weight: 700;">5.</span> Modelos Mentais (frameworks de decisão)</li>
+                  <li><span style="color: #818CF8; flex-shrink: 0; font-weight: 700;">6.</span> Clonagem de Mentes</li>
+                  <li><span style="color: #818CF8; flex-shrink: 0; font-weight: 700;">7.</span> MCPs essenciais (context7, desktop-commander, browser)</li>
+                </ul>
+                <div class="gps-improve-box" style="margin-top: 14px;">
+                  <strong>Recomendação</strong>
+                  Dividir em 2 aulas: <strong>Aula 1:</strong> Setup Avançado (Upstream + Monorepo + MCPs). <strong>Aula 2:</strong> Automação Inteligente (Tool Discovery + RICE + Clones).
+                </div>
+              </div>
+
+              <!-- Pilar 4: 5 Erros Fatais - 7.5 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 4: 5 Erros Fatais</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow" style="font-size: 28px;">7.5</span>
+                    <span class="gps-card-category cat-yellow">Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>2 erros parciais detectados:</strong></p>
+                <ul class="ml-checklist">
+                  <li><span class="check-pass">&#10003;</span> <strong>Inibição:</strong> PASS &mdash; Jargões explicados (merge, rebase, upstream)</li>
+                  <li><span class="check-partial">&#9679;</span> <strong>Desconexão:</strong> PARCIAL &mdash; Transições presentes mas não explícitas</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Prolixidade:</strong> PASS &mdash; Linguagem concisa, sem muros de texto</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Monotonia:</strong> PASS &mdash; Demo ao vivo + explicação + Pedro + chat</li>
+                  <li><span class="check-partial">&#9679;</span> <strong>Falta de Imagem:</strong> PARCIAL &mdash; Tool Discovery ficou abstrato demais</li>
+                </ul>
+              </div>
+
+              <!-- Pilar 5: Hooks Estilo Novela - 8.0 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 5: Hooks Estilo Novela</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow" style="font-size: 28px;">8.0</span>
+                    <span class="gps-card-category cat-yellow">Muito Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Tipo:</strong> Promessa com Antecipação</p>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                  <p style="font-size: 12px; color: #CCC; line-height: 1.5; font-style: italic;">&ldquo;Amanhã tem mais... vocês vão ver o cohort de verdade começar. Isso aqui foi só esquenta.&rdquo;</p>
+                </div>
+                <p class="ml-card-detail"><strong>Força:</strong> Criou expectativa para o cohort oficial. Poderia ser mais específico sobre O QUÊ vem amanhã para gerar curiosidade ardente.</p>
+              </div>
+
+              <!-- Pilar 6: Estrutura 7 Elementos - 7.0 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 6: Estrutura 7 Elementos</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-orange" style="font-size: 28px;">7.0</span>
+                    <span class="gps-card-category cat-orange">Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Elementos presentes: 5/7</strong></p>
+                <ul class="ml-checklist">
+                  <li><span class="check-pass">&#10003;</span> <strong>GPS:</strong> PRESENTE &mdash; Goal-Position-Steps estruturados</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Conceito 1:</strong> PRESENTE &mdash; Upstream com contexto</li>
+                  <li><span class="check-fail">&#10007;</span> <strong>Link/Transição:</strong> AUSENTE &mdash; transições implícitas, não explícitas</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Conceitos Adicionais:</strong> PRESENTE &mdash; múltiplos conceitos (embora muitos)</li>
+                  <li><span class="check-fail">&#10007;</span> <strong>Revisão Estruturada:</strong> PARCIAL &mdash; sem recap explícito com &ldquo;antes &rarr; depois&rdquo;</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Hook:</strong> PRESENTE &mdash; antecipação para amanhã</li>
+                  <li><span class="check-fail">&#10007;</span> <strong>Ação Rápida 2min:</strong> AUSENTE &mdash; não deu micro-exercício de 2min</li>
+                </ul>
+              </div>
+
+              <!-- Pilar 7: Adaptação ao Arquétipo - 8.5 -->
+              <div class="ml-card" style="grid-column: 1 / -1;">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 7: Adaptação ao Arquétipo</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green" style="font-size: 28px;">8.5</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Arquétipo primário:</strong> Empreendedor Travado / Técnico Ávido</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 10px;">
+                  <div style="background: rgba(34,197,94,0.04); border: 1px solid rgba(34,197,94,0.15); border-radius: 10px; padding: 14px;">
+                    <p style="font-size: 10px; font-weight: 700; color: #22C55E; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">Para Empreendedor Travado</p>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 4px;">
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Foco em EXECUÇÃO rápida vs planejamento perfeito</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">&ldquo;Diferença é executar rapidamente, não conhecimento&rdquo;</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Múltiplos exemplos de criação rápida (irmã, alunos)</li>
+                    </ul>
+                  </div>
+                  <div style="background: rgba(99,102,241,0.04); border: 1px solid rgba(99,102,241,0.15); border-radius: 10px; padding: 14px;">
+                    <p style="font-size: 10px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">Para Técnico Ávido</p>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 4px;">
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Profundidade técnica presente (Upstream, estruturas)</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Best practices mencionadas (monorepo, RICE)</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Pedro compartilhou detalhes técnicos avançados</li>
+                    </ul>
+                  </div>
+                  <div style="background: rgba(245,158,11,0.04); border: 1px solid rgba(245,158,11,0.15); border-radius: 10px; padding: 14px;">
+                    <p style="font-size: 10px; font-weight: 700; color: #F59E0B; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">Para Executivo Exausto</p>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 4px;">
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">ROI mencionado: economizar tokens, tempo</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Automação como tema central</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Serviu bem 3 arquétipos simultaneamente</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               FEEDBACK PARA O PROFESSOR - Aula Preparatória
+               ========================================== -->
+          <div class="feedback-professor-wrap">
+            <div class="feedback-professor-inner">
+              <div class="feedback-professor-title">
+                <i data-lucide="message-circle-heart" width="22" height="22"></i>
+                Mensagem para o Professor
+              </div>
+              <div class="feedback-professor-text">
+                <p>Alan, sua aula foi <strong>MUITO BOA (8.2/10)</strong> &mdash; você domina conteúdo, cria comunidade, e inspira ação.</p>
+                <br>
+                <p><strong>Seu maior ponto forte:</strong> Você desmistifica continuamente. <em>&ldquo;Eu também não sei&rdquo;</em> + <em>&ldquo;Pergunta pra IA&rdquo;</em> cria segurança psicológica rara. Isso vale OURO &mdash; alunos se sentem seguros para perguntar sem medo de julgamento.</p>
+                <br>
+                <p><strong>Uma mudança que multiplica impacto:</strong> Dividir este conteúdo em 2 aulas. Você ensinou 7 conceitos &mdash; isso é 3.4x o limite cognitivo recomendado. Não porque você explica mal (você explica BEM) &mdash; mas porque o cérebro humano tem limites de absorção. Com 3 conceitos, eles dominariam 100%. Com 7, dominam 40-50%.</p>
+                <br>
+                <p><strong>Sugestão de evolução:</strong> Insira micro-exercícios práticos de 2-5 minutos após cada conceito principal. &ldquo;Agora vocês &mdash; abram terminal, rodem git remote -v, colem resultado no chat&rdquo;. Isso transforma observadores em praticantes imediatamente.</p>
+                <br>
+                <p><strong>Você já é excepcional. Essa mudança te leva de 8.2 para 9.5.</strong></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               GAPS E MELHORIAS - Aula Preparatória
+               ========================================== -->
+          <div style="margin-top: 8px;">
+            <div class="gps-section-title">
+              <i data-lucide="alert-triangle" width="22" height="22" style="color: #EAB308;"></i>
+              Gaps e Melhorias Detalhados
+            </div>
+            <p class="gps-section-subtitle">3 lacunas identificadas com ações específicas e prioridades</p>
+
+            <div class="gaps-grid">
+              <div class="gap-card">
+                <span class="gap-priority alta">Alta</span>
+                <div class="gap-title">Sobrecarga Cognitiva: 7 conceitos em 2h20</div>
+                <div class="gap-desc">
+                  <p style="margin-bottom: 6px;">Regra de Ouro violada &mdash; 3.4x o limite recomendado. Chat evidenciou: Tool Discovery não ficou 100% claro.</p>
+                  <p><strong style="color: #60A5FA;">Ação:</strong> Dividir conteúdo em 2 aulas: Setup Avançado (Upstream, Monorepo, MCPs) + Automação Inteligente (Tool Discovery, RICE, Clones).</p>
+                </div>
+              </div>
+              <div class="gap-card">
+                <span class="gap-priority media">Média</span>
+                <div class="gap-title">Links de Transição Implícitos entre Conceitos</div>
+                <div class="gap-desc">
+                  <p style="margin-bottom: 6px;">Transições presentes mas não explícitas. Alunos podem não ver conexão entre Upstream e Tool Discovery.</p>
+                  <p><strong style="color: #60A5FA;">Ação:</strong> Usar fórmula: &ldquo;CONECTANDO &mdash; Agora que você domina [Conceito A], surge a questão: [Pergunta]. É aí que entra [Conceito B]...&rdquo;</p>
+                </div>
+              </div>
+              <div class="gap-card">
+                <span class="gap-priority media">Média</span>
+                <div class="gap-title">Ausência de Ação Rápida de 2min e Recap Final</div>
+                <div class="gap-desc">
+                  <p style="margin-bottom: 6px;">Alunos não fizeram exercício imediato hands-on. Aula terminou sem revisão estruturada.</p>
+                  <p><strong style="color: #60A5FA;">Ação:</strong> Inserir micro-exercício após cada conceito + recap obrigatório nos últimos 5min: &ldquo;Hoje vocês aprenderam 3 coisas críticas: A, B, C.&rdquo;</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               RESUMO DE AÇÕES COM ROI - Aula Preparatória
+               ========================================== -->
+          <div style="margin-top: 8px;">
+            <div class="gps-section-title">
+              <i data-lucide="trending-up" width="22" height="22" style="color: #22C55E;"></i>
+              Resumo de Ações com ROI
+            </div>
+            <p class="gps-section-subtitle">3 ações priorizadas por impacto, esforço e retorno sobre investimento</p>
+
+            <table class="actions-table">
               <thead>
                 <tr>
-                  <th>Pilar</th>
-                  <th>Nota</th>
-                  <th>Categoria</th>
-                  <th>Destaque</th>
+                  <th>Ação</th>
+                  <th>Impacto</th>
+                  <th>Esforço</th>
+                  <th>ROI</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>1. 5 Porquês</td>
-                  <td class="score-cell sc-yellow">7.5</td>
-                  <td>Bom</td>
-                  <td>Atingiu Nível 4, faltou conexão com essência (N5)</td>
+                  <td><strong style="color: #FFF;">Dividir Conteúdo em 2 Aulas</strong></td>
+                  <td>+1.3 pontos na média</td>
+                  <td>Médio (replanejamento)</td>
+                  <td><span class="roi-badge alto">Altíssimo</span></td>
                 </tr>
                 <tr>
-                  <td>2. Semiótica / Filme Mental</td>
-                  <td class="score-cell sc-green">8.5</td>
-                  <td>Muito Bom</td>
-                  <td>Analogias universais: mocinho do shopping, 5000 copos</td>
+                  <td><strong style="color: #FFF;">Adicionar Links de Transição Explícitos</strong></td>
+                  <td>+0.5 pontos</td>
+                  <td>Baixo (30seg por transição)</td>
+                  <td><span class="roi-badge alto">Alto</span></td>
                 </tr>
                 <tr>
-                  <td>3. Regra de Ouro (2-3 conceitos)</td>
-                  <td class="score-cell sc-orange">6.0</td>
-                  <td>Aceitável</td>
-                  <td>7 conceitos em 2h20 = 3.4x o limite recomendado</td>
-                </tr>
-                <tr>
-                  <td>4. 5 Erros Fatais</td>
-                  <td class="score-cell sc-yellow">7.5</td>
-                  <td>Bom</td>
-                  <td>2 erros parciais (desconexão e falta de imagem)</td>
-                </tr>
-                <tr>
-                  <td>5. Hooks Estilo Novela</td>
-                  <td class="score-cell sc-yellow">8.0</td>
-                  <td>Muito Bom</td>
-                  <td>&ldquo;Isso aqui foi só esquenta&rdquo;</td>
-                </tr>
-                <tr>
-                  <td>6. Estrutura 7 Elementos</td>
-                  <td class="score-cell sc-orange">7.0</td>
-                  <td>Bom</td>
-                  <td>5/7 elementos presentes, faltou ação rápida de 2min</td>
-                </tr>
-                <tr>
-                  <td>7. Adaptação ao Arquétipo</td>
-                  <td class="score-cell sc-green">8.5</td>
-                  <td>Muito Bom</td>
-                  <td>Serviu 3 arquétipos simultaneamente</td>
+                  <td><strong style="color: #FFF;">Recap Final Estruturado (5min)</strong></td>
+                  <td>+0.4 pontos</td>
+                  <td>Baixo (5min finais)</td>
+                  <td><span class="roi-badge medio-alto">Médio-Alto</span></td>
                 </tr>
               </tbody>
             </table>
@@ -2043,140 +2512,602 @@
             </ul>
           </div>
 
-          <!-- GPS SCORES TABLE - Aula 01 -->
-          <div style="margin-top: 32px;">
-            <div class="gps-section-title" style="font-size: 17px;">
-              <i data-lucide="radar" width="18" height="18" style="color: #22C55E;"></i>
-              Framework GPS &mdash; Notas por Aspecto
+          <!-- ==========================================
+               GPS FRAMEWORK BREAKDOWN - 10 Aspectos - Aula 01
+               ========================================== -->
+          <div style="margin-top: 40px;">
+            <div class="gps-section-title">
+              <i data-lucide="radar" width="22" height="22" style="color: #22C55E;"></i>
+              Framework GPS &mdash; 10 Aspectos Detalhados
             </div>
-            <table class="gps-scores-table">
-              <thead>
-                <tr>
-                  <th>Aspecto</th>
-                  <th>Nota</th>
-                  <th>Categoria</th>
-                  <th>Destaque</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>1. Goal / Destino / Motivação</td>
-                  <td class="score-cell sc-green">9.5</td>
-                  <td>Excepcional</td>
-                  <td>Mentalidade ANTES de técnica: tokens = energia elétrica</td>
-                </tr>
-                <tr>
-                  <td>2. Position / Origem / Empatia</td>
-                  <td class="score-cell sc-green">8.5</td>
-                  <td>Muito Bom</td>
-                  <td>Validação profunda de medos: Pedro como exemplo (nunca programou até mai/2024)</td>
-                </tr>
-                <tr>
-                  <td>3. Steps / Rota / Execução</td>
-                  <td class="score-cell sc-yellow">7.8</td>
-                  <td>Bom</td>
-                  <td>Mapa visual Epic &rarr; Story &rarr; Task elogiado, mas sem exercício prático guiado</td>
-                </tr>
-                <tr>
-                  <td>4. Semiótica / Elementos Visuais</td>
-                  <td class="score-cell sc-green">9.0</td>
-                  <td>Excepcional</td>
-                  <td>&ldquo;Tokens = energia elétrica&rdquo;, &ldquo;Impressora de sistemas na mochila&rdquo;</td>
-                </tr>
-                <tr>
-                  <td>5. Clareza / Linguagem Acessível</td>
-                  <td class="score-cell sc-yellow">8.0</td>
-                  <td>Muito Bom</td>
-                  <td>Sistema Alan traduz + Pedro técnico. Monorepo &rarr; &ldquo;tudo na mesma pasta&rdquo;</td>
-                </tr>
-                <tr>
-                  <td>6. Ritmo / Gestão de Tempo</td>
-                  <td class="score-cell sc-orange">7.0</td>
-                  <td>Bom</td>
-                  <td>3h10min sem pausas formais. Memory Layer e CI/CD apressados</td>
-                </tr>
-                <tr>
-                  <td>7. Engajamento / Interação</td>
-                  <td class="score-cell sc-green">9.5</td>
-                  <td>Excepcional</td>
-                  <td>100% participação (48/48), 1310 mensagens no chat, ~7msg/min</td>
-                </tr>
-                <tr>
-                  <td>8. Organização / Estrutura</td>
-                  <td class="score-cell sc-yellow">7.5</td>
-                  <td>Bom</td>
-                  <td>Fluxo mentalidade &rarr; estrutura &rarr; execução. Transições 70% explícitas</td>
-                </tr>
-                <tr>
-                  <td>9. Domínio / Expertise</td>
-                  <td class="score-cell sc-green">9.5</td>
-                  <td>Excepcional</td>
-                  <td>Pedro (8 meses) impressionou turma. Zero questionamento de autoridade</td>
-                </tr>
-                <tr>
-                  <td>10. Técnico / Setup</td>
-                  <td class="score-cell sc-green">8.5</td>
-                  <td>Muito Bom</td>
-                  <td>Problemas mínimos (&lt;5min de 190min = 2.6% da aula)</td>
-                </tr>
-              </tbody>
-            </table>
+            <p class="gps-section-subtitle">Avaliação individual de cada aspecto do Global Performance Score com evidências e oportunidades</p>
 
-            <div class="gps-section-title" style="font-size: 17px; margin-top: 24px;">
-              <i data-lucide="flame" width="18" height="18" style="color: #F59E0B;"></i>
-              Metodologia Lendária &mdash; Notas por Pilar
+            <div class="gps-grid">
+              <!-- 1. Goal/Destino/Motivação: 9.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">1. Goal / Destino / Motivação</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">9.5</span>
+                    <span class="gps-card-category cat-green">Excepcional</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li><span class="timestamp">[00:02:30]</span> Choque de mentalidade: tokens como infraestrutura, não luxo</li>
+                      <li><span class="timestamp">[00:06:00]</span> Objetivo claro: &ldquo;Hoje vocês vão VER por baixo do capô do AIOS&rdquo;</li>
+                      <li>Números reais: 1 mês de trabalho = R$1M em time tradicional vs R$500 em tokens</li>
+                      <li>Motivação emocional: &ldquo;Viajo o mundo com impressora de sistemas na mochila&rdquo;</li>
+                      <li>Futuro: &ldquo;Unicórnios de 1 pessoa só em 2026&rdquo;</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Promessa técnica poderia ser mais específica nos primeiros 60s</li>
+                      <li>Faltou antecipar QUANTOS conceitos seriam cobertos (expectativa de complexidade)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Position/Origem/Empatia: 8.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">2. Position / Origem / Empatia</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">8.5</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Pedro como exemplo: nunca programou até mai/2024, hoje ensina seniors</li>
+                      <li>Validou medo de custo de tokens: 15min dedicados com ROI concreto</li>
+                      <li>Múltiplos caminhos: BOB (rodinhas), Brownfield, Greenfield Avançado</li>
+                      <li>Linguagem empática: &ldquo;Eu sei que parece muito, mas...&rdquo;</li>
+                      <li><span class="timestamp">[02:39]</span> Helder: &ldquo;Estou igual surdo em bingo!&rdquo; &mdash; normalizado por Pedro</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Poderia ter enquadrado níveis no início (mapa de arquétipos)</li>
+                      <li>Faltou checkpoint explícito de &ldquo;onde você está agora?&rdquo;</li>
+                      <li>Alguns conceitos Git assumiram familiaridade (push, pull, branch)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. Steps/Rota/Execução: 7.8 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">3. Steps / Rota / Execução</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow">7.8</span>
+                    <span class="gps-card-category cat-yellow">Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li><span class="timestamp">[01:15:00]</span> @ vs /: explicou &ldquo;por quê&rdquo; antes de &ldquo;o quê&rdquo;</li>
+                      <li><span class="timestamp">[01:45:00]</span> Mapa visual Epic &rarr; Story &rarr; Task (muito elogiado)</li>
+                      <li>Passos numerados para instalação CodeRabbit</li>
+                      <li><span class="timestamp">[01:47:00]</span> &ldquo;Cara eu entendi 100%&rdquo; &mdash; Paulo de Tarso</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Aula 100% EXPLICAÇÃO + DEMONSTRAÇÃO, 0% HANDS-ON guiado</li>
+                      <li>Instalação squad-creator gerou confusão em múltiplos alunos</li>
+                      <li>Alunos tentaram aplicar em paralelo sem guia, gerando confusão</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="gps-improve-box">
+                  <strong>O que melhorar</strong>
+                  Inserir 2-3 pausas de 10min para prática guiada: &ldquo;Agora vocês fazem enquanto eu monitoro.&rdquo; Demonstrar 1 workflow completo do início ao fim.
+                </div>
+              </div>
+
+              <!-- 4. Semiótica/Elementos Visuais: 9.0 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">4. Semiótica / Elementos Visuais</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">9.0</span>
+                    <span class="gps-card-category cat-green">Excepcional</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li><span class="timestamp">[00:06:00]</span> &ldquo;Tokens = Energia Elétrica&rdquo; &mdash; experiência universal brasileira</li>
+                      <li><span class="timestamp">[01:06:00]</span> &ldquo;AIOS = Impressora de Sistemas na mochila&rdquo;</li>
+                      <li><span class="timestamp">[00:38:19]</span> josecarlosamorim: &ldquo;claude.md = Terra, AIOS = Continente&rdquo;</li>
+                      <li><span class="timestamp">[02:16:00]</span> &ldquo;YOLO Mode = Modo Foda-se&rdquo; &mdash; humor + precisão técnica</li>
+                      <li>Mapa visual Epic &rarr; Story &rarr; Task = MOMENTO DE MAIOR CLAREZA</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Conceitos avançados (Memory Layer, CI/CD) ficaram abstratos</li>
+                      <li>Poderia ter mais diagramas para conceitos complexos</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 5. Clareza/Linguagem Acessível: 8.0 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">5. Clareza / Linguagem Acessível</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow">8.0</span>
+                    <span class="gps-card-category cat-yellow">Muito Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Sistema natural: Alan traduz, Pedro fala técnico. Funcionou muito bem.</li>
+                      <li>85% do jargão explicado: Monorepo &rarr; &ldquo;tudo na mesma pasta&rdquo;</li>
+                      <li>Brownfield &rarr; &ldquo;projeto existente&rdquo;, Greenfield &rarr; &ldquo;do zero&rdquo;</li>
+                      <li>Chat como &ldquo;tradutor coletivo&rdquo; &mdash; José Carlos explicando para outros</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>15% não explicado: Submodules, Turbopack, SAFe</li>
+                      <li>Conceitos Git assumidos (push, pull, branch)</li>
+                      <li>Poderia ter glossário compartilhado em tempo real</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 6. Ritmo/Gestão de Tempo: 7.0 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">6. Ritmo / Gestão de Tempo</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-orange">7.0</span>
+                    <span class="gps-card-category cat-orange">Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li><span class="timestamp">[00:02:00]</span> Mentalidade tokens: 15min &mdash; perfeito (conceito fundamental)</li>
+                      <li><span class="timestamp">[01:45:00]</span> Epic &rarr; Story &rarr; Task: 15min &mdash; bom (conceito central)</li>
+                      <li>Ritmo energético mantido por 3h10min (impressionante)</li>
+                      <li>Dupla Alan+Pedro variou ritmo naturalmente</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>3h10min SEM pausas formais de absorção</li>
+                      <li><span class="timestamp">[02:22:00]</span> Memory Layer: apenas 3min (insuficiente)</li>
+                      <li><span class="timestamp">[02:41:00]</span> CI/CD: 5min (apressado, alunos pediram repetição)</li>
+                      <li>Densidade: 14 tópicos = 1 a cada 13min</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="gps-improve-box">
+                  <strong>O que melhorar</strong>
+                  Inserir 2-3 pausas formais de 10min para absorção. Checkpoint de &ldquo;estão acompanhando?&rdquo; a cada 30min. Conceitos avançados precisam mais tempo.
+                </div>
+              </div>
+
+              <!-- 7. Engajamento/Interação: 9.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">7. Engajamento / Interação</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">9.5</span>
+                    <span class="gps-card-category cat-green">Excepcional</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>100% participação: 48/48 alunos ativos</li>
+                      <li>Chat EXTREMAMENTE ativo: 1310 mensagens (~7 msg/min)</li>
+                      <li>67 perguntas técnicas profundas</li>
+                      <li>Alan chamou alunos pelo nome, reconheceu trabalhos (site do José, frameworks da Renata)</li>
+                      <li>Comunidade educando comunidade: José Carlos respondendo dúvidas de outros</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Destaque</h4>
+                    <ul>
+                      <li>Participação de 100% é RARA para aula de 3h10min. Energia de ambos (Alan + Pedro) foi consistente. Chat funcionou como segunda camada de aprendizado.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 8. Organização/Estrutura: 7.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">8. Organização / Estrutura</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow">7.5</span>
+                    <span class="gps-card-category cat-yellow">Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Fluxo lógico: mentalidade &rarr; estrutura &rarr; execução (faz sentido)</li>
+                      <li>Transições explícitas em 70% dos casos</li>
+                      <li><span class="timestamp">[03:00:00]</span> Pedro resumiu structure de development</li>
+                      <li>Preview de próxima aula dado (Design System)</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Mudança de Memory Layer para Design System sem transição</li>
+                      <li>Pulo de CI/CD para monorepo sem link claro</li>
+                      <li>Recap orgânico mas não estruturado (&ldquo;3 principais insights&rdquo;)</li>
+                      <li>Sem agenda visual no início</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="gps-improve-box">
+                  <strong>O que melhorar</strong>
+                  Agenda visual no início: &ldquo;Hoje temos 4 blocos: 1) Mentalidade, 2) Arquitetura, 3) Workflows, 4) Ferramentas.&rdquo; Recap estruturado nos últimos 5min.
+                </div>
+              </div>
+
+              <!-- 9. Domínio/Expertise: 9.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">9. Domínio / Expertise</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">9.5</span>
+                    <span class="gps-card-category cat-green">Excepcional</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Diferença @ vs / explicada com precisão técnica</li>
+                      <li>Detalhes de Git workflows, CodeRabbit, GitHub Actions</li>
+                      <li>Pedro (8 meses experiência) impressionou turma inteira</li>
+                      <li>Antecipou dúvidas: &ldquo;Vocês devem estar pensando: vou gastar muito?&rdquo;</li>
+                      <li><span class="timestamp">[03:13:00]</span> &ldquo;Quando Claude tem dúvida, pergunta para o Pedro&rdquo; &mdash; rodrigofaerman</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Destaque</h4>
+                    <ul>
+                      <li>Dupla perfeita: Alan = visão + estratégia, Pedro = execução + detalhes técnicos. Zero questionamento de autoridade pela turma.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 10. Técnico/Setup: 8.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">10. Técnico / Setup</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">8.5</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Áudio claro: Alan e Pedro audíveis durante toda aula</li>
+                      <li>Zoom funcionou com 48+ participantes</li>
+                      <li>Problemas mínimos: &lt;5min de 190min (2.6% da aula)</li>
+                      <li>Alunos colaboraram apontando problemas (comunidade ativa)</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Incidentes</h4>
+                    <ul>
+                      <li><span class="timestamp">[01:22:00]</span> Tela travou no Figma (1min para corrigir)</li>
+                      <li>Zoom em código pequeno (2 ocorrências)</li>
+                      <li>Compartilhamento pausado (3 ocorrências, &lt;30s cada)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
-            <table class="gps-scores-table">
+          </div>
+
+          <!-- ==========================================
+               METODOLOGIA LENDÁRIA - 7 Pilares - Aula 01
+               ========================================== -->
+          <div style="margin-top: 20px;">
+            <div class="gps-section-title">
+              <i data-lucide="flame" width="22" height="22" style="color: #F59E0B;"></i>
+              Metodologia Lendária &mdash; 7 Pilares Detalhados
+            </div>
+            <p class="gps-section-subtitle">Avaliação da profundidade pedagógica segundo a metodologia proprietária</p>
+
+            <div class="ml-grid">
+              <!-- Pilar 1: 5 Porquês - 9.0 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 1: 5 Porquês</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green" style="font-size: 28px;">9.0</span>
+                    <span class="gps-card-category cat-green">Excepcional</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Nível atingido:</strong> Nível 4-5 (Propósito + Essência)</p>
+                <ul class="ml-checklist">
+                  <li><span class="check-pass">&#10003;</span> <strong>N1 Técnico:</strong> Aprender AIOS Framework para criar sistemas</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>N2 Produtividade:</strong> Desenvolver 10x mais rápido</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>N3 Pessoal:</strong> Produtividade de time inteiro sozinho</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>N4 Propósito:</strong> AUTONOMIA e poder de escolha</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>N5 Essência:</strong> LIBERDADE &mdash; &ldquo;Viajo o mundo com impressora de sistemas na mochila&rdquo;</li>
+                </ul>
+                <p class="ml-card-detail" style="margin-top: 10px;"><strong>Destaque:</strong> Alan domina os 5 Porquês intuitivamente. Começou com essência (liberdade, autonomia) e DEPOIS desceu para técnica. Ordem inversa da maioria. Thiago Otto capturou: &ldquo;Unicórnios de 1 pessoa só em 2026&rdquo;.</p>
+              </div>
+
+              <!-- Pilar 2: Semiótica/Filme Mental - 9.5 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 2: Semiótica / Filme Mental</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green" style="font-size: 28px;">9.5</span>
+                    <span class="gps-card-category cat-green">Excepcional</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Analogias presentes:</strong></p>
+                <ul class="ml-checklist">
+                  <li><span class="check-pass">&#10003;</span> Tokens = Energia Elétrica &mdash; experiência universal brasileira</li>
+                  <li><span class="check-pass">&#10003;</span> AIOS = Impressora de Sistemas &mdash; tangível, poderoso</li>
+                  <li><span class="check-pass">&#10003;</span> claude.md = Terra, AIOS = Continente &mdash; hierarquia geográfica (aluno!)</li>
+                  <li><span class="check-pass">&#10003;</span> YOLO Mode = &ldquo;Modo Foda-se&rdquo; &mdash; humor + precisão</li>
+                  <li><span class="check-pass">&#10003;</span> Jornada do Pedro: nunca programou &rarr; ensina seniors (herói)</li>
+                </ul>
+                <p class="ml-card-detail" style="margin-top: 10px;"><strong>Prova:</strong> Alunos pediram para compartilhar diagramas para estudar. Isso só acontece quando o visual é poderoso.</p>
+              </div>
+
+              <!-- Pilar 3: Regra de Ouro - 4.0 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 3: Regra de Ouro (2-3 conceitos)</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-red" style="font-size: 28px;">4.0</span>
+                    <span class="gps-card-category cat-red">Fraco</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Status:</strong> FALHA CRÍTICA &mdash; Sobrecarga cognitiva</p>
+                <p class="ml-card-detail"><strong>14 conceitos em 3h10min (máximo recomendado: 2-3):</strong></p>
+                <ul class="ml-checklist">
+                  <li><span style="color: #EF4444; flex-shrink: 0; font-weight: 700;">1.</span> Mentalidade tokens = infraestrutura</li>
+                  <li><span style="color: #EF4444; flex-shrink: 0; font-weight: 700;">2.</span> Estrutura AIOS (.aios-core, expansion-packs, claude.md)</li>
+                  <li><span style="color: #EF4444; flex-shrink: 0; font-weight: 700;">3.</span> Monorepo vs multi-repo</li>
+                  <li><span style="color: #EF4444; flex-shrink: 0; font-weight: 700;">4.</span> Epic &rarr; Story &rarr; Task</li>
+                  <li><span style="color: #EF4444; flex-shrink: 0; font-weight: 700;">5.</span> Workflows e orquestração</li>
+                  <li><span style="color: #EF4444; flex-shrink: 0; font-weight: 700;">6.</span> @ vs / (persona-switching vs spawn)</li>
+                  <li><span style="color: #EF4444; flex-shrink: 0; font-weight: 700;">7.</span> Agente BOB</li>
+                  <li><span style="color: #818CF8; flex-shrink: 0; font-weight: 700;">+7</span> CodeRabbit, Documentação &gt; Conversa, Brownfield vs Greenfield, CI/CD, Memory Layer, Design System, SAFe</li>
+                </ul>
+                <div class="gps-improve-box" style="margin-top: 14px;">
+                  <strong>Evidência no chat</strong>
+                  Helder: &ldquo;Estou igual surdo em bingo!&rdquo; Felipe Piedade: &ldquo;Nunca me senti tão burro. É tudo novo.&rdquo; <strong>Recomendação:</strong> Dividir em 4-5 aulas de 60-90min com 3 conceitos cada.
+                </div>
+              </div>
+
+              <!-- Pilar 4: 5 Erros Fatais - 7.0 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 4: 5 Erros Fatais</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-orange" style="font-size: 28px;">7.0</span>
+                    <span class="gps-card-category cat-orange">Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>1 erro detectado:</strong></p>
+                <ul class="ml-checklist">
+                  <li><span class="check-pass">&#10003;</span> <strong>Inibição:</strong> PASS &mdash; 85% do jargão explicado</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Desconexão:</strong> PASS &mdash; Transições em 70% dos casos</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Prolixidade:</strong> PASS &mdash; Pedro bom em sínteses</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Monotonia:</strong> PASS &mdash; Dupla Alan+Pedro criou ritmo natural</li>
+                  <li><span class="check-fail">&#10007;</span> <strong>Falta de Imagem:</strong> FAIL &mdash; Memory Layer, CI/CD e Git submodules ficaram abstratos</li>
+                </ul>
+              </div>
+
+              <!-- Pilar 5: Hooks Estilo Novela - 6.5 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 5: Hooks Estilo Novela</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-orange" style="font-size: 28px;">6.5</span>
+                    <span class="gps-card-category cat-orange">Aceitável</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Tipo:</strong> Promessa com FOMO (fraco)</p>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                  <p style="font-size: 12px; color: #CCC; line-height: 1.5; font-style: italic;">&ldquo;Próxima aula vamos ver Design System, que vocês pediram muito.&rdquo;</p>
+                </div>
+                <p class="ml-card-detail"><strong>Problema:</strong> Hook foi apenas ANÚNCIO de tópico, sem tensão ou gancho emocional. Não criou &ldquo;preciso ver isso AGORA&rdquo;. Ideal seria: &ldquo;90% dos devs React fazem ERRADO e acabam com 47 versões do mesmo botão. Você quer ser o 10% que faz certo?&rdquo;</p>
+              </div>
+
+              <!-- Pilar 6: Estrutura 7 Elementos - 7.0 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 6: Estrutura 7 Elementos</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-orange" style="font-size: 28px;">7.0</span>
+                    <span class="gps-card-category cat-orange">Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Elementos presentes: 5/7</strong></p>
+                <ul class="ml-checklist">
+                  <li><span class="check-pass">&#10003;</span> <strong>GPS:</strong> PRESENTE &mdash; Goal excepcional (8.48)</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Conceito 1:</strong> PRESENTE &mdash; Tokens = infraestrutura</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Link/Transição:</strong> PRESENTE (70%) &mdash; &ldquo;Agora que entendemos estrutura, vamos para agentes...&rdquo;</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Conceitos Adicionais:</strong> PRESENTE &mdash; EXCESSO (14)</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Revisão:</strong> BOA &mdash; Pedro resumiu, mas não estruturada (&ldquo;3 insights&rdquo;)</li>
+                  <li><span class="check-partial">&#9679;</span> <strong>Hook:</strong> FRACO &mdash; apenas anúncio, sem gancho emocional</li>
+                  <li><span class="check-fail">&#10007;</span> <strong>Ação Rápida 2min:</strong> AUSENTE &mdash; sem exercício imediato</li>
+                </ul>
+              </div>
+
+              <!-- Pilar 7: Adaptação ao Arquétipo - 8.5 -->
+              <div class="ml-card" style="grid-column: 1 / -1;">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 7: Adaptação ao Arquétipo</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green" style="font-size: 28px;">8.5</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Arquétipo primário:</strong> Técnico Ávido + Empreendedor Travado (híbrido)</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px;">
+                  <div style="background: rgba(99,102,241,0.04); border: 1px solid rgba(99,102,241,0.15); border-radius: 10px; padding: 14px;">
+                    <p style="font-size: 10px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">Para Técnico Ávido</p>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 4px;">
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Profundidade: Epic &rarr; Story &rarr; Task, @ vs /, workflows</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Best practices: documentação &gt; conversa, estrutura modular</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Arquitetura revelada (&ldquo;por baixo do capô&rdquo;)</li>
+                    </ul>
+                  </div>
+                  <div style="background: rgba(34,197,94,0.04); border: 1px solid rgba(34,197,94,0.15); border-radius: 10px; padding: 14px;">
+                    <p style="font-size: 10px; font-weight: 700; color: #22C55E; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">Para Empreendedor Travado</p>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 4px;">
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Mentalidade de foco: tokens = infraestrutura</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">BOB para evitar paralisia de escolha</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">ROI: R$1M vs R$500, produtividade 10x</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               FEEDBACK PARA O PROFESSOR - Aula 01
+               ========================================== -->
+          <div class="feedback-professor-wrap">
+            <div class="feedback-professor-inner">
+              <div class="feedback-professor-title">
+                <i data-lucide="message-circle-heart" width="22" height="22"></i>
+                Mensagem para o Professor
+              </div>
+              <div class="feedback-professor-text">
+                <p>Alan, esta foi uma aula <strong>EXCEPCIONAL (9.3 GPS / 9.0 ML)</strong> &mdash; as notas mais altas do cohort até agora.</p>
+                <br>
+                <p><strong>Seu maior ponto forte:</strong> Você começou com MENTALIDADE (tokens = infraestrutura) antes de técnica. Essa ordem é contra-intuitiva mas MUITO eficaz &mdash; criou frame mental poderoso. Cada conceito técnico foi visto através da lente de <em>&ldquo;isso me dá mais liberdade&rdquo;</em>. Alunos pediram para compartilhar seus diagramas para estudar &mdash; prova definitiva de que o visual funcionou.</p>
+                <br>
+                <p><strong>Área chave para melhorar:</strong> 14 conceitos é demais &mdash; mesmo para público avançado. Helder ficou &ldquo;surdo em bingo&rdquo;, Felipe se sentiu &ldquo;burro&rdquo;. Para cohort avançado é aceitável (maioria acompanhou), mas para curso vendido, DIVIDIR em 4-5 módulos é obrigatório. Limite a 2-3 conceitos por bloco de 60min.</p>
+                <br>
+                <p><strong>Sugestão de evolução:</strong> Mantenha a dupla com Pedro (está cada vez mais afinada). Adicione 2-3 pausas de 10min com exercícios guiados e um hook emocional no final &mdash; não apenas &ldquo;próxima aula: Design System&rdquo;, mas algo que crie tensão e curiosidade ardente.</p>
+                <br>
+                <p><strong>A dupla Alan+Pedro é OURO. Com pausas e exercícios práticos, vocês vão de 9.3 para 9.8+.</strong></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               GAPS E MELHORIAS - Aula 01
+               ========================================== -->
+          <div style="margin-top: 8px;">
+            <div class="gps-section-title">
+              <i data-lucide="alert-triangle" width="22" height="22" style="color: #EAB308;"></i>
+              Gaps e Melhorias Detalhados
+            </div>
+            <p class="gps-section-subtitle">3 lacunas identificadas com ações específicas e prioridades</p>
+
+            <div class="gaps-grid">
+              <div class="gap-card">
+                <span class="gap-priority alta">Alta</span>
+                <div class="gap-title">Regra de Ouro Violada: 14 conceitos (máx 2-3)</div>
+                <div class="gap-desc">
+                  <p style="margin-bottom: 6px;">Sobrecarga cognitiva GARANTIDA para alunos não-técnicos. Alunos reportaram &ldquo;surdo em bingo&rdquo; e &ldquo;nunca me senti tão burro&rdquo;.</p>
+                  <p><strong style="color: #60A5FA;">Ação:</strong> Dividir em 4-5 aulas de 60-90min: Mentalidade+Estrutura | Agentes+Comandos | Ferramentas+CI/CD | Documentação | Conceitos Avançados.</p>
+                </div>
+              </div>
+              <div class="gap-card">
+                <span class="gap-priority alta">Alta</span>
+                <div class="gap-title">Zero Exercícios Práticos Guiados em 3h10min</div>
+                <div class="gap-desc">
+                  <p style="margin-bottom: 6px;">Aula foi 100% explicação + demonstração, 0% hands-on. Alunos tentaram aplicar em paralelo sem guia, gerando confusão em instalações.</p>
+                  <p><strong style="color: #60A5FA;">Ação:</strong> Inserir 2-3 pausas de 10min: &ldquo;FAÇA AGORA &mdash; abram terminal, rodem este comando, colem resultado no chat.&rdquo;</p>
+                </div>
+              </div>
+              <div class="gap-card">
+                <span class="gap-priority media">Média</span>
+                <div class="gap-title">Hook Final Fraco: Anúncio sem Gancho Emocional</div>
+                <div class="gap-desc">
+                  <p style="margin-bottom: 6px;">Apenas anunciou &ldquo;Design System na próxima&rdquo;. Não criou tensão, curiosidade ou FOMO.</p>
+                  <p><strong style="color: #60A5FA;">Ação:</strong> Usar fórmula de curiosidade: &ldquo;Existe um recurso que separa hobbyists de pros. 99% dos users não sabem. Próxima aula: Memory Layer.&rdquo;</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               RESUMO DE AÇÕES COM ROI - Aula 01
+               ========================================== -->
+          <div style="margin-top: 8px;">
+            <div class="gps-section-title">
+              <i data-lucide="trending-up" width="22" height="22" style="color: #22C55E;"></i>
+              Resumo de Ações com ROI
+            </div>
+            <p class="gps-section-subtitle">4 ações priorizadas por impacto, esforço e retorno sobre investimento</p>
+
+            <table class="actions-table">
               <thead>
                 <tr>
-                  <th>Pilar</th>
-                  <th>Nota</th>
-                  <th>Categoria</th>
-                  <th>Destaque</th>
+                  <th>Ação</th>
+                  <th>Impacto</th>
+                  <th>Esforço</th>
+                  <th>ROI</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>1. 5 Porquês</td>
-                  <td class="score-cell sc-green">9.0</td>
-                  <td>Excepcional</td>
-                  <td>Conectou DIRETO ao N5: liberdade, autonomia, &ldquo;impressora de sistemas&rdquo;</td>
+                  <td><strong style="color: #FFF;">Dividir em 4-5 Módulos (curso vendido)</strong></td>
+                  <td>+2.0 pontos na ML</td>
+                  <td>Alto (replanejamento)</td>
+                  <td><span class="roi-badge alto">Altíssimo</span></td>
                 </tr>
                 <tr>
-                  <td>2. Semiótica / Filme Mental</td>
-                  <td class="score-cell sc-green">9.5</td>
-                  <td>Excepcional</td>
-                  <td>Tokens = luz, impressora de sistemas, Epic &rarr; Story &rarr; Task visual</td>
+                  <td><strong style="color: #FFF;">Inserir Exercícios Práticos Guiados</strong></td>
+                  <td>+1.0 ponto (Steps)</td>
+                  <td>Médio (preparar exercícios)</td>
+                  <td><span class="roi-badge alto">Alto</span></td>
                 </tr>
                 <tr>
-                  <td>3. Regra de Ouro (2-3 conceitos)</td>
-                  <td class="score-cell sc-orange">4.0</td>
-                  <td>Fraco</td>
-                  <td>FALHA CRÍTICA: 14 conceitos em 3h10min (máx 2-3 por aula)</td>
+                  <td><strong style="color: #FFF;">Melhorar Hook Final (gancho emocional)</strong></td>
+                  <td>+0.5 pontos</td>
+                  <td>Baixo (1min de preparo)</td>
+                  <td><span class="roi-badge alto">Alto</span></td>
                 </tr>
                 <tr>
-                  <td>4. 5 Erros Fatais</td>
-                  <td class="score-cell sc-orange">7.0</td>
-                  <td>Bom</td>
-                  <td>1 erro: Memory Layer e CI/CD ficaram sem âncora visual</td>
-                </tr>
-                <tr>
-                  <td>5. Hooks Estilo Novela</td>
-                  <td class="score-cell sc-orange">6.5</td>
-                  <td>Aceitável</td>
-                  <td>Hook fraco: apenas anúncio de Design System, sem gancho emocional</td>
-                </tr>
-                <tr>
-                  <td>6. Estrutura 7 Elementos</td>
-                  <td class="score-cell sc-orange">7.0</td>
-                  <td>Bom</td>
-                  <td>5/7 presentes. Faltou: Ação Rápida 2min e Hook forte</td>
-                </tr>
-                <tr>
-                  <td>7. Adaptação ao Arquétipo</td>
-                  <td class="score-cell sc-green">8.5</td>
-                  <td>Muito Bom</td>
-                  <td>Serviu Técnico Ávido + Empreendedor Travado com exemplos relevantes</td>
+                  <td><strong style="color: #FFF;">Analogias para Conceitos Avançados</strong></td>
+                  <td>+0.3 pontos (clareza)</td>
+                  <td>Baixo (pensar antes da aula)</td>
+                  <td><span class="roi-badge medio-alto">Médio-Alto</span></td>
                 </tr>
               </tbody>
             </table>
@@ -2309,6 +3240,594 @@
               </li>
             </ul>
           </div>
+
+          <!-- ==========================================
+               GPS FRAMEWORK BREAKDOWN - 10 Aspectos - Aula 02
+               ========================================== -->
+          <div style="margin-top: 40px;">
+            <div class="gps-section-title">
+              <i data-lucide="radar" width="22" height="22" style="color: #22C55E;"></i>
+              Framework GPS &mdash; 10 Aspectos Detalhados
+            </div>
+            <p class="gps-section-subtitle">Avaliação individual de cada aspecto do Global Performance Score com evidências e oportunidades</p>
+
+            <div class="gps-grid">
+              <!-- 1. Goal/Destino/Motivação: 9.0 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">1. Goal / Destino / Motivação</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">9.0</span>
+                    <span class="gps-card-category cat-green">Excepcional</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Objetivo claro: dominar Token Economy e otimização de custos com IA</li>
+                      <li>Promessa tangível: &ldquo;Haiku supera Opus em muitas tarefas custando 60x menos&rdquo;</li>
+                      <li>Caso real: 500 transcrições por $12 vs $720 (98.7% acurácia)</li>
+                      <li>Benefício imediato: reduzir custos sem perder qualidade</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Problemas de áudio nos primeiros minutos diluíram o hook inicial</li>
+                      <li>Poderia ter conectado economia de tokens ao impacto na liberdade financeira</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. Position/Origem/Empatia: 8.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">2. Position / Origem / Empatia</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">8.5</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Reconheceu medo de custo: mostrou como otimizar ao invés de gastar mais</li>
+                      <li>Validou diferentes níveis: desde quem nunca usou API até avançados</li>
+                      <li>Exemplos práticos de economia que qualquer aluno pode aplicar</li>
+                      <li>Continuou padrão de dupla empática Alan+Pedro</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Conceito de Model Tier Qualification foi rápido para alguns</li>
+                      <li>Poderia ter criado checkpoint de nível antes do conteúdo técnico</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. Steps/Rota/Execução: 8.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">3. Steps / Rota / Execução</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">8.5</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Model Tier Qualification: sistema automático para classificar tarefas por complexidade</li>
+                      <li>Operações determinísticas: validar JSON, contar palavras = custo zero (script, não LLM)</li>
+                      <li>Comparação lado a lado Haiku vs Opus com números reais</li>
+                      <li>Organograma no Figma: arquitetura de squads visualizada</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Faltou exercício prático: &ldquo;Agora vocês classifiquem estas 5 tarefas por tier&rdquo;</li>
+                      <li>Alguns alunos pediram mais tempo para absorver Model Tier</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="gps-improve-box">
+                  <strong>O que melhorar</strong>
+                  Inserir exercício guiado: dar 5 tarefas e pedir aos alunos que classifiquem em Haiku/Sonnet/Opus. Validar coletivamente no chat.
+                </div>
+              </div>
+
+              <!-- 4. Semiótica/Elementos Visuais: 9.0 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">4. Semiótica / Elementos Visuais</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">9.0</span>
+                    <span class="gps-card-category cat-green">Excepcional</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Organograma do Figma: visualização clara e completa da arquitetura de squads</li>
+                      <li>Comparação numérica: $12 vs $720 (impacto visual forte)</li>
+                      <li>Analogia de Tiers como &ldquo;escalas de complexidade&rdquo; &mdash; acessível</li>
+                      <li>Demonstração ao vivo de Token Economy em ação</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Poderia ter gráfico visual de economia (antes vs depois)</li>
+                      <li>Diagrama de fluxo de decisão para escolha de modelo</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 5. Clareza/Linguagem Acessível: 8.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">5. Clareza / Linguagem Acessível</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">8.5</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Token Economy explicado em linguagem acessível com exemplos do dia a dia</li>
+                      <li>Comparação direta: &ldquo;É como escolher carro popular vs SUV &mdash; para ir ao mercado, não precisa de SUV&rdquo;</li>
+                      <li>Operações determinísticas traduzidas: &ldquo;coisas que não precisam de IA&rdquo;</li>
+                      <li>Dupla Alan+Pedro manteve padrão de tradução simultânea</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Model Tier Qualification é nome complexo &mdash; poderia ter apelido mais acessível</li>
+                      <li>Alguns termos de API (embeddings, batch processing) passaram rápido</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 6. Ritmo/Gestão de Tempo: 7.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">6. Ritmo / Gestão de Tempo</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow">7.5</span>
+                    <span class="gps-card-category cat-yellow">Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Conteúdo bem distribuído entre as 2 sessões</li>
+                      <li>Conceitos centrais receberam tempo adequado</li>
+                      <li>Demonstrações ao vivo no ritmo certo</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>~9 horas total (2 sessões) demanda intervalos mais estruturados</li>
+                      <li>Problemas de áudio no início queimaram tempo precioso</li>
+                      <li>Model Tier Qualification passou rápido demais</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="gps-improve-box">
+                  <strong>O que melhorar</strong>
+                  Testar áudio 15min antes. Reservar 20min extras para Model Tier com exercício prático. Intervalos a cada 90min no mínimo.
+                </div>
+              </div>
+
+              <!-- 7. Engajamento/Interação: 9.0 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">7. Engajamento / Interação</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">9.0</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Chat ativo com múltiplas perguntas técnicas sobre economia de tokens</li>
+                      <li>Alunos compartilharam seus próprios exemplos de economia</li>
+                      <li>Reações fortes ao caso de $12 vs $720</li>
+                      <li>Comunidade continuou ativa e colaborativa</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Destaque</h4>
+                    <ul>
+                      <li>Tema de Token Economy gerou engajamento alto &mdash; impacto financeiro direto motiva participação.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 8. Organização/Estrutura: 8.0 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">8. Organização / Estrutura</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow">8.0</span>
+                    <span class="gps-card-category cat-yellow">Muito Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Fluxo lógico: economia &rarr; Model Tiers &rarr; operações determinísticas &rarr; squads</li>
+                      <li>Organograma visual como âncora estrutural</li>
+                      <li>Duas sessões permitiram aprofundamento</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Oportunidades</h4>
+                    <ul>
+                      <li>Transição entre sessões poderia ter recap mais explícito</li>
+                      <li>Problemas de áudio quebraram estrutura do início</li>
+                      <li>Agenda visual no início de cada sessão ajudaria</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 9. Domínio/Expertise: 9.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">9. Domínio / Expertise</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green">9.5</span>
+                    <span class="gps-card-category cat-green">Excepcional</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Conhecimento profundo de Token Economy com dados reais</li>
+                      <li>Caso prático: 500 transcrições com métricas de acurácia precisas</li>
+                      <li>Model Tier Qualification desenvolvido internamente</li>
+                      <li>Demonstração ao vivo de otimização com números concretos</li>
+                      <li>Pedro: detalhes técnicos avançados de implementação</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Destaque</h4>
+                    <ul>
+                      <li>Domínio prático evidente &mdash; não é teoria, são resultados reais de produção com dados verificáveis.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 10. Técnico/Setup: 7.5 -->
+              <div class="gps-card">
+                <div class="gps-card-header">
+                  <span class="gps-card-name">10. Técnico / Setup</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow">7.5</span>
+                    <span class="gps-card-category cat-yellow">Bom</span>
+                  </div>
+                </div>
+                <div class="gps-evidence-cols">
+                  <div class="gps-evidence-col positive">
+                    <h4>Evidências Positivas</h4>
+                    <ul>
+                      <li>Compartilhamento de tela funcional</li>
+                      <li>Organograma no Figma carregou corretamente</li>
+                      <li>Gravação e chat sincronizados</li>
+                    </ul>
+                  </div>
+                  <div class="gps-evidence-col opportunity">
+                    <h4>Incidentes</h4>
+                    <ul>
+                      <li>Problemas de áudio nos primeiros minutos &mdash; impactaram início</li>
+                      <li>Tempo perdido resolvendo setup técnico</li>
+                      <li>Resolução foi transparente mas consumiu tempo de conteúdo</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="gps-improve-box">
+                  <strong>O que melhorar</strong>
+                  Testar setup de áudio 15 minutos antes da aula. Ter backup de configuração pronto para troca rápida.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               METODOLOGIA LENDÁRIA - 7 Pilares - Aula 02
+               ========================================== -->
+          <div style="margin-top: 20px;">
+            <div class="gps-section-title">
+              <i data-lucide="flame" width="22" height="22" style="color: #F59E0B;"></i>
+              Metodologia Lendária &mdash; 7 Pilares Detalhados
+            </div>
+            <p class="gps-section-subtitle">Avaliação da profundidade pedagógica segundo a metodologia proprietária</p>
+
+            <div class="ml-grid">
+              <!-- Pilar 1: 5 Porquês - 8.5 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 1: 5 Porquês</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green" style="font-size: 28px;">8.5</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Nível atingido:</strong> Nível 4 (Propósito)</p>
+                <ul class="ml-checklist">
+                  <li><span class="check-pass">&#10003;</span> <strong>N1 Técnico:</strong> Dominar Token Economy e Model Tier Qualification</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>N2 Produtividade:</strong> Reduzir custos de 60x sem perder qualidade</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>N3 Pessoal:</strong> Otimizar operações inteligentemente</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>N4 Propósito:</strong> Escalar com eficiência &mdash; fazer mais com menos</li>
+                  <li><span class="check-partial">&#9679;</span> <strong>N5 Essência:</strong> (PARCIAL) Implícito: autonomia financeira via otimização</li>
+                </ul>
+                <div class="gps-improve-box" style="margin-top: 14px;">
+                  <strong>O que faltou</strong>
+                  Explicitar: &ldquo;Quando você domina Token Economy, seus custos caem, seu lucro sobe, e você tem LIBERDADE para experimentar sem medo de gastar. Isso é autonomia real.&rdquo;
+                </div>
+              </div>
+
+              <!-- Pilar 2: Semiótica/Filme Mental - 9.0 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 2: Semiótica / Filme Mental</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green" style="font-size: 28px;">9.0</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Analogias presentes:</strong></p>
+                <ul class="ml-checklist">
+                  <li><span class="check-pass">&#10003;</span> $12 vs $720 &mdash; impacto numérico como &ldquo;imagem mental&rdquo;</li>
+                  <li><span class="check-pass">&#10003;</span> SUV vs carro popular &mdash; escolher modelo adequado para a tarefa</li>
+                  <li><span class="check-pass">&#10003;</span> Organograma Figma &mdash; visual estrutural completo</li>
+                  <li><span class="check-pass">&#10003;</span> Operações determinísticas = &ldquo;coisas que não precisam de IA&rdquo;</li>
+                  <li><span class="check-pass">&#10003;</span> 98.7% acurácia &mdash; número preciso gera confiança</li>
+                </ul>
+                <p class="ml-card-detail" style="margin-top: 10px;"><strong>Destaque:</strong> Números concretos funcionaram como &ldquo;imagens mentais&rdquo; poderosas. $12 vs $720 é uma imagem que fica.</p>
+              </div>
+
+              <!-- Pilar 3: Regra de Ouro - 8.0 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 3: Regra de Ouro (2-3 conceitos)</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow" style="font-size: 28px;">8.0</span>
+                    <span class="gps-card-category cat-yellow">Muito Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Status:</strong> BOM &mdash; Melhor distribuição que aulas anteriores</p>
+                <p class="ml-card-detail"><strong>4 conceitos principais bem distribuídos:</strong></p>
+                <ul class="ml-checklist">
+                  <li><span style="color: #818CF8; flex-shrink: 0; font-weight: 700;">1.</span> Token Economy (otimização de custos)</li>
+                  <li><span style="color: #818CF8; flex-shrink: 0; font-weight: 700;">2.</span> Model Tier Qualification (classificação automática)</li>
+                  <li><span style="color: #818CF8; flex-shrink: 0; font-weight: 700;">3.</span> Operações Determinísticas (script, não LLM)</li>
+                  <li><span style="color: #818CF8; flex-shrink: 0; font-weight: 700;">4.</span> Arquitetura de Squads (organograma Figma)</li>
+                </ul>
+                <p class="ml-card-detail" style="margin-top: 10px;"><strong>Evolução:</strong> De 7 conceitos (Prep) e 14 (Aula 01) para 4 &mdash; melhoria significativa na gestão de carga cognitiva.</p>
+              </div>
+
+              <!-- Pilar 4: 5 Erros Fatais - 8.5 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 4: 5 Erros Fatais</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green" style="font-size: 28px;">8.5</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>0 erros fatais detectados:</strong></p>
+                <ul class="ml-checklist">
+                  <li><span class="check-pass">&#10003;</span> <strong>Inibição:</strong> PASS &mdash; Token Economy explicado em linguagem acessível</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Desconexão:</strong> PASS &mdash; Conceitos conectados: economia &rarr; tiers &rarr; scripts</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Prolixidade:</strong> PASS &mdash; Exemplos concisos e diretos</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Monotonia:</strong> PASS &mdash; Variou entre números, demos, Figma, chat</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Falta de Imagem:</strong> PASS &mdash; Organograma + números concretos como âncoras</li>
+                </ul>
+              </div>
+
+              <!-- Pilar 5: Hooks Estilo Novela - 8.0 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 5: Hooks Estilo Novela</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow" style="font-size: 28px;">8.0</span>
+                    <span class="gps-card-category cat-yellow">Muito Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Tipo:</strong> Promessa com Antecipação de Prática</p>
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                  <p style="font-size: 12px; color: #CCC; line-height: 1.5; font-style: italic;">&ldquo;Na próxima aula vocês vão criar seus próprios squads do zero &mdash; trazendo repertório real de cada um. Validar 10-20 exemplos antes de escalar.&rdquo;</p>
+                </div>
+                <p class="ml-card-detail"><strong>Análise:</strong> Hook melhor que Aula 01 (mais específico), mas ainda poderia ter tensão emocional. Evolução positiva na técnica de antecipação.</p>
+              </div>
+
+              <!-- Pilar 6: Estrutura 7 Elementos - 8.0 -->
+              <div class="ml-card">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 6: Estrutura 7 Elementos</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-yellow" style="font-size: 28px;">8.0</span>
+                    <span class="gps-card-category cat-yellow">Muito Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Elementos presentes: 6/7</strong></p>
+                <ul class="ml-checklist">
+                  <li><span class="check-pass">&#10003;</span> <strong>GPS:</strong> PRESENTE &mdash; Objetivo, empatia e passos claros</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Conceito 1:</strong> PRESENTE &mdash; Token Economy com caso real</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Link/Transição:</strong> PRESENTE &mdash; Economia &rarr; Tiers &rarr; Scripts conectados</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Conceitos Adicionais:</strong> PRESENTE &mdash; 4 conceitos (bom equilíbrio)</li>
+                  <li><span class="check-partial">&#9679;</span> <strong>Revisão:</strong> PARCIAL &mdash; recap presente mas informal</li>
+                  <li><span class="check-pass">&#10003;</span> <strong>Hook:</strong> PRESENTE &mdash; promessa de prática na próxima</li>
+                  <li><span class="check-fail">&#10007;</span> <strong>Ação Rápida 2min:</strong> AUSENTE &mdash; sem micro-exercício imediato</li>
+                </ul>
+              </div>
+
+              <!-- Pilar 7: Adaptação ao Arquétipo - 8.5 -->
+              <div class="ml-card" style="grid-column: 1 / -1;">
+                <div class="ml-card-header">
+                  <span class="ml-card-name">Pilar 7: Adaptação ao Arquétipo</span>
+                  <div class="gps-card-score-wrap">
+                    <span class="gps-card-score score-green" style="font-size: 28px;">8.5</span>
+                    <span class="gps-card-category cat-green">Muito Bom</span>
+                  </div>
+                </div>
+                <p class="ml-card-detail"><strong>Arquétipo primário:</strong> Empreendedor que quer otimizar / Técnico que quer eficiência</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 10px;">
+                  <div style="background: rgba(34,197,94,0.04); border: 1px solid rgba(34,197,94,0.15); border-radius: 10px; padding: 14px;">
+                    <p style="font-size: 10px; font-weight: 700; color: #22C55E; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">Para Empreendedor</p>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 4px;">
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">ROI direto: $12 vs $720 (98.7% qualidade)</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Escalar com custos previsíveis</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Squads otimizados = margem maior</li>
+                    </ul>
+                  </div>
+                  <div style="background: rgba(99,102,241,0.04); border: 1px solid rgba(99,102,241,0.15); border-radius: 10px; padding: 14px;">
+                    <p style="font-size: 10px; font-weight: 700; color: #818CF8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">Para Técnico Ávido</p>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 4px;">
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Model Tier Qualification como sistema</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Operações determinísticas (sem LLM)</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Arquitetura de squads avançada</li>
+                    </ul>
+                  </div>
+                  <div style="background: rgba(245,158,11,0.04); border: 1px solid rgba(245,158,11,0.15); border-radius: 10px; padding: 14px;">
+                    <p style="font-size: 10px; font-weight: 700; color: #F59E0B; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">Para Executivo</p>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 4px;">
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Dashboard de custos e eficiência</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Validação antes de escalar (10-20 exemplos)</li>
+                      <li style="font-size: 12px; color: #AAA; line-height: 1.4;">Organograma como gestão visual</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               FEEDBACK PARA O PROFESSOR - Aula 02
+               ========================================== -->
+          <div class="feedback-professor-wrap">
+            <div class="feedback-professor-inner">
+              <div class="feedback-professor-title">
+                <i data-lucide="message-circle-heart" width="22" height="22"></i>
+                Mensagem para o Professor
+              </div>
+              <div class="feedback-professor-text">
+                <p>Alan, esta aula foi <strong>MUITO BOA (8.8 GPS / 8.5 ML)</strong> &mdash; evolução clara na gestão de conceitos.</p>
+                <br>
+                <p><strong>Seu maior ponto forte nesta aula:</strong> Token Economy com dados reais. O caso de <em>500 transcrições por $12 vs $720 com 98.7% de acurácia</em> é o tipo de exemplo que muda mentalidade instantaneamente. Alunos saíram da aula sabendo EXATAMENTE como economizar &mdash; isso é impacto direto no bolso deles.</p>
+                <br>
+                <p><strong>Evolução importante:</strong> De 7 conceitos (Preparatória) e 14 (Aula 01) para 4 conceitos nesta aula &mdash; a carga cognitiva está muito melhor distribuída. A Regra de Ouro subiu de 6.0 para 8.0. Continue nessa direção.</p>
+                <br>
+                <p><strong>Área para melhorar:</strong> Os problemas de áudio nos primeiros minutos impactaram o início. Solução simples: testar setup 15min antes com Pedro, ter plano B de configuração pronto. Também faltou micro-exercício de 2min ao final &mdash; &ldquo;classifiquem estas 5 tarefas por tier no chat&rdquo; consolidaria o aprendizado imediatamente.</p>
+                <br>
+                <p><strong>A evolução é visível. Continue refinando o ritmo e adicione exercícios práticos &mdash; o caminho para 9.5+ está claro.</strong></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               GAPS E MELHORIAS - Aula 02
+               ========================================== -->
+          <div style="margin-top: 8px;">
+            <div class="gps-section-title">
+              <i data-lucide="alert-triangle" width="22" height="22" style="color: #EAB308;"></i>
+              Gaps e Melhorias Detalhados
+            </div>
+            <p class="gps-section-subtitle">3 lacunas identificadas com ações específicas e prioridades</p>
+
+            <div class="gaps-grid">
+              <div class="gap-card">
+                <span class="gap-priority media">Média</span>
+                <div class="gap-title">Setup Técnico de Áudio no Início</div>
+                <div class="gap-desc">
+                  <p style="margin-bottom: 6px;">Problemas de áudio nos primeiros minutos impactaram o hook inicial e consumiram tempo de conteúdo.</p>
+                  <p><strong style="color: #60A5FA;">Ação:</strong> Checklist pré-aula: testar áudio 15min antes, ter configuração backup, Pedro como monitor técnico nos primeiros 5min.</p>
+                </div>
+              </div>
+              <div class="gap-card">
+                <span class="gap-priority media">Média</span>
+                <div class="gap-title">Model Tier Qualification Precisa Mais Tempo</div>
+                <div class="gap-desc">
+                  <p style="margin-bottom: 6px;">Conceito central passou rápido para alguns alunos. É complexo demais para absorver sem prática.</p>
+                  <p><strong style="color: #60A5FA;">Ação:</strong> Dedicar 20min extras com exercício prático: dar 10 tarefas e pedir classificação coletiva no chat. Validar entendimento ao vivo.</p>
+                </div>
+              </div>
+              <div class="gap-card">
+                <span class="gap-priority baixa">Baixa</span>
+                <div class="gap-title">Intervalos em Sessão Longa (~9h total)</div>
+                <div class="gap-desc">
+                  <p style="margin-bottom: 6px;">Duas sessões longas demandaram mais intervalos estruturados para manter absorção.</p>
+                  <p><strong style="color: #60A5FA;">Ação:</strong> Intervalo obrigatório de 10min a cada 90min. Usar intervalo para exercício assíncrono: &ldquo;durante o break, classifiquem 3 tarefas.&rdquo;</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==========================================
+               RESUMO DE AÇÕES COM ROI - Aula 02
+               ========================================== -->
+          <div style="margin-top: 8px;">
+            <div class="gps-section-title">
+              <i data-lucide="trending-up" width="22" height="22" style="color: #22C55E;"></i>
+              Resumo de Ações com ROI
+            </div>
+            <p class="gps-section-subtitle">3 ações priorizadas por impacto, esforço e retorno sobre investimento</p>
+
+            <table class="actions-table">
+              <thead>
+                <tr>
+                  <th>Ação</th>
+                  <th>Impacto</th>
+                  <th>Esforço</th>
+                  <th>ROI</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong style="color: #FFF;">Exercício Prático de Model Tier (20min)</strong></td>
+                  <td>+0.5 pontos (Steps + ML)</td>
+                  <td>Médio (preparar tarefas)</td>
+                  <td><span class="roi-badge alto">Alto</span></td>
+                </tr>
+                <tr>
+                  <td><strong style="color: #FFF;">Checklist Pré-Aula de Áudio</strong></td>
+                  <td>+0.5 pontos (Técnico)</td>
+                  <td>Baixo (15min antes)</td>
+                  <td><span class="roi-badge alto">Alto</span></td>
+                </tr>
+                <tr>
+                  <td><strong style="color: #FFF;">Intervalos Estruturados a cada 90min</strong></td>
+                  <td>+0.3 pontos (Ritmo)</td>
+                  <td>Baixo (apenas pausar)</td>
+                  <td><span class="roi-badge medio-alto">Médio-Alto</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
         </section>
 
         <div class="section-divider"></div>
