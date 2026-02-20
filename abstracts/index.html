@@ -990,7 +990,7 @@
         </span>
         <div class="sidebar-stats">
           <div class="sidebar-stat">
-            <span class="sidebar-stat-value">5</span>
+            <span class="sidebar-stat-value">6</span>
             <span class="sidebar-stat-label">Sessões</span>
           </div>
           <div class="sidebar-stat">
@@ -1047,6 +1047,14 @@
           <div class="nav-item-content">
             <div class="nav-item-title" style="display:flex;align-items:center;gap:6px;">PS - Pronto Socorro <span style="font-size:9px;padding:1px 6px;border-radius:99px;background:rgba(168,85,247,0.15);color:#A855F7;font-weight:700;white-space:nowrap;">3 salas</span></div>
             <div class="nav-item-date">17 Fev 2026</div>
+          </div>
+        </div>
+
+        <div class="nav-item" data-target="ps-13-02-2026">
+          <span class="nav-item-number" style="font-size:9px;"><i data-lucide="heart-pulse" style="width:14px;height:14px;"></i></span>
+          <div class="nav-item-content">
+            <div class="nav-item-title" style="display:flex;align-items:center;gap:6px;">PS - Pronto Socorro <span style="font-size:9px;padding:1px 6px;border-radius:99px;background:rgba(168,85,247,0.15);color:#A855F7;font-weight:700;white-space:nowrap;">3 salas</span></div>
+            <div class="nav-item-date">13 Fev 2026</div>
           </div>
         </div>
 
@@ -2498,6 +2506,190 @@
         </section>
 
         <!-- ============================================
+             PS - PRONTO SOCORRO 13/02/2026
+             ============================================ -->
+        <section class="lesson-section" id="ps-13-02-2026">
+          <div class="lesson-badge-row">
+            <span class="lesson-badge lesson-badge--purple">
+              <i data-lucide="heart-pulse" style="width:12px;height:12px;"></i>
+              PS - PRONTO SOCORRO
+            </span>
+            <span class="lesson-badge-date">13 Fev 2026</span>
+          </div>
+          <h2 class="lesson-headline">PS 13/02: MCP vs API, Orquestração de Squads Autônomos e a Filosofia KISS do AIOS</h2>
+
+          <!-- Resumo -->
+          <div class="content-card">
+            <div class="content-card-header">
+              <div class="content-card-icon content-card-icon--blue">
+                <i data-lucide="file-text"></i>
+              </div>
+              <span class="content-card-title">Resumo</span>
+            </div>
+            <div class="content-card-body">
+              <p style="font-size:15px;color:#ccc;line-height:1.8;margin-bottom:20px;">O PS de 13 de fevereiro começou com um clima de entusiasmo elevado na sala principal. Vários alunos compartilharam que estavam dormindo pouco por causa da intensidade do curso &mdash; alguns relataram dormir às 6h da manhã, com o AIOS &ldquo;buzinando na cabeça&rdquo; 24 horas por dia. O facilitador principal organizou a divisão em <strong style="color:#fff;">três salas</strong>: Advanced (para quem queria aprofundar em banco de dados, RAG, vetorização), Business (para quem já tinha ou queria amadurecer ideias de projeto) e Fundamentos (para quem ainda estava com dificuldade em workflows e entendimento de agentes).</p>
+
+              <h4 style="font-size:16px;font-weight:700;color:#EF4444;margin:28px 0 12px;display:flex;align-items:center;gap:8px;">
+                <i data-lucide="zap" style="width:18px;height:18px;"></i>
+                Sala Advanced: MCP vs API e Economia de Tokens
+              </h4>
+              <p style="font-size:15px;color:#ccc;line-height:1.8;margin-bottom:12px;">A sessão abriu com um caso prático fascinante: Renato havia passado o dia inteiro tentando integrar o Open Router ao Claude Code via MCP Server &mdash; e queimou milhões de tokens no processo. O erro fundamental era conceitual: <strong style="color:#fff;">confundia MCP com API</strong>. Os facilitadores explicaram a diferença crucial:</p>
+              <ul style="margin:0 0 20px 20px;color:#ccc;line-height:1.8;">
+                <li><strong style="color:#fff;">MCP</strong> &mdash; como um &ldquo;manual completo&rdquo; de todas as rotas e ações possíveis de um serviço (ex: Supabase)</li>
+                <li><strong style="color:#fff;">API</strong> &mdash; simplesmente uma rota de conexão individual para cada ação</li>
+              </ul>
+              <blockquote style="border-left:3px solid #A855F7;padding:12px 16px;margin:0 0 20px;background:rgba(168,85,247,0.06);border-radius:0 8px 8px 0;font-style:italic;color:#bbb;">
+                &ldquo;O que me fez perder milhões de tokens e meu dia inteiro de vida foi ter colocado na cabeça que era MCP e não API.&rdquo; &mdash; Renato
+              </blockquote>
+              <p style="font-size:15px;color:#ccc;line-height:1.8;margin-bottom:20px;">A solução recomendada: usar o <strong style="color:#fff;">AntiGravity com modelos gratuitos</strong> para tarefas de execução, e reservar o Claude Code (Opus) para tarefas de orquestração e inteligência.</p>
+
+              <h4 style="font-size:16px;font-weight:700;color:#3B82F6;margin:28px 0 12px;display:flex;align-items:center;gap:8px;">
+                <i data-lucide="network" style="width:18px;height:18px;"></i>
+                Sala Advanced: Orquestração de Squads e One Person Business
+              </h4>
+              <p style="font-size:15px;color:#ccc;line-height:1.8;margin-bottom:12px;">Thiago trouxe uma discussão estratégica sobre orquestração de squads para construir um &ldquo;One Person Business&rdquo;. A questão central: como fazer os agentes conversarem entre si e tomarem decisões automaticamente. As soluções apresentadas:</p>
+              <ul style="margin:0 0 20px 20px;color:#ccc;line-height:1.8;">
+                <li><strong style="color:#fff;">Webhooks</strong> &mdash; um agente entrega via webhook para o outro, que valida e decide o próximo passo</li>
+                <li><strong style="color:#fff;">Cron jobs</strong> &mdash; acionamento por tempo (ex: todo dia às 7h aciona o primeiro agente)</li>
+                <li><strong style="color:#fff;">Output parse</strong> &mdash; retorno estruturado com campo sim/não para validação automática</li>
+              </ul>
+              <p style="font-size:15px;color:#ccc;line-height:1.8;margin-bottom:20px;">O conceito-chave: o squad é para <strong style="color:#fff;">validar e formatar um serviço</strong>; depois de validado, o serviço roda de forma autônoma via automação.</p>
+
+              <h4 style="font-size:16px;font-weight:700;color:#22C55E;margin:28px 0 12px;display:flex;align-items:center;gap:8px;">
+                <i data-lucide="palette" style="width:18px;height:18px;"></i>
+                Sala Advanced: Design System e Componentização com IA
+              </h4>
+              <p style="font-size:15px;color:#ccc;line-height:1.8;margin-bottom:20px;">A consistência visual em projetos com IA foi tema quente. Edivar mostrou como criou um design system completo usando referências visuais (screenshots em pasta de referência), pedindo ao arquiteto do AIOS para analisar foto por foto e criar um PRD de design. Thales complementou com o conceito de <strong style="color:#fff;">&ldquo;design atômico&rdquo; de Brad Frost</strong> &mdash; começar por átomos (primitivos), subir para moléculas, células e organismos. A palavra-chave para ativar na IA: <em>&ldquo;criar primitivos&rdquo;</em>.</p>
+
+              <h4 style="font-size:16px;font-weight:700;color:#F59E0B;margin:28px 0 12px;display:flex;align-items:center;gap:8px;">
+                <i data-lucide="brain" style="width:18px;height:18px;"></i>
+                Sala Fundamentos: AIOS como Framework Cognitivo e KISS
+              </h4>
+              <p style="font-size:15px;color:#ccc;line-height:1.8;margin-bottom:12px;">João fez uma explicação fundamental sobre a natureza do AIOS: não é uma ferramenta, é um <strong style="color:#fff;">meta-framework</strong> &mdash; uma software house virtual. O terminal dá acesso ao computador, o Cloud Code coloca IA no terminal, e o AIOS configura essa IA para seguir metodologias e processos validados. Para transformar squads em produtos vendáveis, é preciso criar um software separado com interface própria.</p>
+              <blockquote style="border-left:3px solid #22C55E;padding:12px 16px;margin:0 0 20px;background:rgba(34,197,94,0.06);border-radius:0 8px 8px 0;font-style:italic;color:#bbb;">
+                &ldquo;O pensamento crítico é a coisa mais valiosa que a gente não pode delegar pra IA. A gente tem que ser o julgador mais crítico.&rdquo; &mdash; João
+              </blockquote>
+              <p style="font-size:15px;color:#ccc;line-height:1.8;margin-bottom:20px;">O mantra <strong style="color:#fff;">KISS (Keep It Stupid Simple)</strong> foi destacado como filosofia central: simplicidade com clareza supera sofisticação, e prompts curtos já superaram sistemas elaborados. Klaus demonstrou ao vivo como criar uma skill personalizada de atualização, reforçando: <em>&ldquo;se repete 3-4 vezes, cria um processo&rdquo;</em>.</p>
+            </div>
+          </div>
+
+          <!-- Temas Abordados -->
+          <div class="content-card">
+            <div class="content-card-header">
+              <div class="content-card-icon content-card-icon--purple">
+                <i data-lucide="layers"></i>
+              </div>
+              <span class="content-card-title">Temas Abordados</span>
+              <span class="content-card-count">6 temas</span>
+            </div>
+            <div class="content-card-body">
+              <div class="tema-card" style="border-left: 3px solid #EF4444;">
+                <div class="tema-titulo">MCP vs API: Entendendo a Diferença Crucial</div>
+                <div class="tema-desc">Aluno gastou milhões de tokens tentando conectar Open Router via MCP, quando precisava apenas de API. MCP é um manual completo de rotas; API é uma rota individual. Usar MCP para chamar outra LLM resulta em consumo duplo de tokens.</div>
+              </div>
+              <div class="tema-card" style="border-left: 3px solid #3B82F6;">
+                <div class="tema-titulo">Orquestração de Squads e Automação de Workflows</div>
+                <div class="tema-desc">Squads ainda dependem de ativação manual. Para automação real: webhooks, cron jobs e HTTP requests via N8N. O squad valida e formata; depois o serviço roda autônomo via automação.</div>
+              </div>
+              <div class="tema-card" style="border-left: 3px solid #22C55E;">
+                <div class="tema-titulo">AIOS como Meta-Framework: Terminal, Cloud Code e Agentes</div>
+                <div class="tema-desc">Explicação didática: terminal é o portal; Cloud Code coloca IA no terminal; AIOS configura o Cloud Code com metodologias validadas. Squads são funcionários virtuais. Para vender, criar aplicação separada.</div>
+              </div>
+              <div class="tema-card" style="border-left: 3px solid #A855F7;">
+                <div class="tema-titulo">Design System e Componentização com IA</div>
+                <div class="tema-desc">Criar pasta de referências visuais, pedir ao arquiteto AIOS para gerar Design System completo. Design atômico de Brad Frost: primitivos com tipo, variante e função. Mudar um componente altera todas as instâncias.</div>
+              </div>
+              <div class="tema-card" style="border-left: 3px solid #F59E0B;">
+                <div class="tema-titulo">Criação de Agentes Poderosos: Pesquisa e Pensamento Crítico</div>
+                <div class="tema-desc">Tudo começa com pesquisa de frameworks de humanos com skin in the game. O segredo não está na sofisticação, mas na clareza das etapas. Prompts de dois parágrafos já superaram sistemas elaborados.</div>
+              </div>
+              <div class="tema-card" style="border-left: 3px solid #06B6D4;">
+                <div class="tema-titulo">Gerenciamento de Atualizações e Fork Pessoal do AIOS</div>
+                <div class="tema-desc">Fork pessoal do AIOS no GitHub para manter squads e configurações em múltiplos projetos. Regras locais sobrescrevem globais. Criar skill personalizada de atualização para economizar tokens.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Melhores Soluções -->
+          <div class="content-card">
+            <div class="content-card-header">
+              <div class="content-card-icon content-card-icon--green">
+                <i data-lucide="lightbulb"></i>
+              </div>
+              <span class="content-card-title">Melhores Soluções</span>
+              <span class="content-card-count">6 soluções</span>
+            </div>
+            <div class="content-card-body">
+              <div class="ponto-card"><span class="ponto-icon" style="background:rgba(239,68,68,0.12);color:#EF4444;"><i data-lucide="cpu" style="width:16px;height:16px;"></i></span><div class="ponto-content"><strong class="ponto-title">Economia de Tokens com Motor Híbrido</strong><p class="ponto-desc">AIOS/Cloud Code (Opus) para planejamento e inteligência; AntiGravity com modelos gratuitos (Gemini) para execução de código e tarefas repetitivas. Basta instalar o AIOS no AntiGravity e chamar os comandos via barra (/).</p></div></div>
+              <div class="ponto-card"><span class="ponto-icon" style="background:rgba(59,130,246,0.12);color:#3B82F6;"><i data-lucide="webhook" style="width:16px;height:16px;"></i></span><div class="ponto-content"><strong class="ponto-title">Automação de Squads via Webhooks e Cron</strong><p class="ponto-desc">Cron dispara às 7h para o primeiro agente (gera imagem), segundo agente recebe via webhook (cria copy), retorno estruturado indica se é válido. Às 8h, resultado final vai para Telegram com botão aceitar/rejeitar.</p></div></div>
+              <div class="ponto-card"><span class="ponto-icon" style="background:rgba(34,197,94,0.12);color:#22C55E;"><i data-lucide="figma" style="width:16px;height:16px;"></i></span><div class="ponto-content"><strong class="ponto-title">Design System via Pasta de Referências Visuais</strong><p class="ponto-desc">Criar pasta &lsquo;design-reference&rsquo; com screenshots de sites. Chamar arquiteto AIOS para analisar e gerar Design System completo com tokens de design, componentes e classes reutilizáveis. Design atômico: átomos &rarr; moléculas &rarr; organismos.</p></div></div>
+              <div class="ponto-card"><span class="ponto-icon" style="background:rgba(168,85,247,0.12);color:#A855F7;"><i data-lucide="git-fork" style="width:16px;height:16px;"></i></span><div class="ponto-content"><strong class="ponto-title">Fork Pessoal do AIOS para Múltiplos Projetos</strong><p class="ponto-desc">Fazer fork do AIOS no GitHub. Personalizar com seus squads. Para cada projeto novo, instalar a partir do fork pessoal (npx install aios-core fork-url). Quando atualizar, git pull do original e push para seu fork.</p></div></div>
+              <div class="ponto-card"><span class="ponto-icon" style="background:rgba(245,158,11,0.12);color:#F59E0B;"><i data-lucide="wand-2" style="width:16px;height:16px;"></i></span><div class="ponto-content"><strong class="ponto-title">Skill Personalizada de Atualização do AIOS</strong><p class="ponto-desc">Criar skill usando o Skill Creator que padroniza atualização. Dar o comando &lsquo;/update&rsquo; seguido do caminho, e a skill verifica versão, compara, instala sem quebrar. Scripts determinísticos em vez de IA para economia de tokens.</p></div></div>
+              <div class="ponto-card"><span class="ponto-icon" style="background:rgba(6,182,212,0.12);color:#06B6D4;"><i data-lucide="users" style="width:16px;height:16px;"></i></span><div class="ponto-content"><strong class="ponto-title">Criação de Agentes Individuais Antes de Montar o Squad</strong><p class="ponto-desc">Em vez de criar o squad completo de uma vez, usar o Squad Creator para criar cada agente individualmente &mdash; assim cada um recebe 100% do foco. Depois montar o squad final apontando para os agentes já criados.</p></div></div>
+            </div>
+          </div>
+
+          <!-- Takeaways -->
+          <div class="content-card">
+            <div class="content-card-header">
+              <div class="content-card-icon content-card-icon--amber">
+                <i data-lucide="zap"></i>
+              </div>
+              <span class="content-card-title">Takeaways</span>
+              <span class="content-card-count">12 insights</span>
+            </div>
+            <div class="content-card-body">
+              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--red">conceito-chave</span><span class="takeaway-text">MCP não é API. MCP é um manual completo de rotas para o agente. API é uma conexão individual. Confundir os dois custa tokens e tempo.</span></div>
+              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--purple">mindset</span><span class="takeaway-text">O AIOS não é uma ferramenta &mdash; é um meta-framework cognitivo. Ferramentas ficam obsoletas; o modo de pensar e orquestrar agentes é o que permanece.</span></div>
+              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--blue">arquitetura</span><span class="takeaway-text">Squads são para validar e formatar um serviço. Depois de validado, o serviço roda autonomamente via automação. O squad é a incubadora, não a fábrica.</span></div>
+              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--green">produtividade</span><span class="takeaway-text">Se você repete um processo 3-4 vezes, crie uma skill ou workflow para ele. Isso é pensar AIOS: padronizar, automatizar, não repetir.</span></div>
+              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--amber">KISS</span><span class="takeaway-text">Simplicidade vence sofisticação. Prompts de dois parágrafos já superaram sistemas extremamente elaborados. Clareza nas etapas importa mais que arquitetura complexa.</span></div>
+              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--red">human-in-the-loop</span><span class="takeaway-text">O pensamento crítico é a coisa mais valiosa que não se pode delegar à IA. Você precisa ser o julgador mais crítico dos outputs dos seus agentes.</span></div>
+              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--purple">engenharia-de-contexto</span><span class="takeaway-text">Para criar agentes poderosos: comece com pesquisa profunda, abstraia conhecimento de pessoas com skin in the game, e transforme frameworks humanos em processos operacionais.</span></div>
+              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--blue">frontend</span><span class="takeaway-text">Para consistência visual com IA: crie um Design System com primitivos (átomos) e componentize tudo. Mudar um componente altera todas as instâncias no projeto.</span></div>
+              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--green">workflow</span><span class="takeaway-text">Use fork pessoal do AIOS no GitHub para gerenciar squads e configurações em múltiplos projetos. Instale a partir do seu fork, não do repositório oficial.</span></div>
+              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--amber">economia-tokens</span><span class="takeaway-text">Motor híbrido: Claude Code (Opus) para orquestração e inteligência; AntiGravity com modelos gratuitos para execução. Não gaste tokens caros em tarefas baratas.</span></div>
+              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--red">modelo-mental</span><span class="takeaway-text">O AIOS é uma software house virtual. Os agentes são seus funcionários. Para vender o que eles produzem, crie um produto separado &mdash; não envia os funcionários junto com a entrega.</span></div>
+              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--purple">personalização</span><span class="takeaway-text">Cada AIOS é único. Não se apegue à ferramenta &mdash; domine o processo. Quem domina o processo faz qualquer projeto parecer fácil.</span></div>
+            </div>
+          </div>
+
+          <!-- Ferramentas Mencionadas -->
+          <div class="content-card">
+            <div class="content-card-header">
+              <div class="content-card-icon content-card-icon--cyan">
+                <i data-lucide="wrench"></i>
+              </div>
+              <span class="content-card-title">Ferramentas Mencionadas</span>
+            </div>
+            <div class="content-card-body">
+              <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                <span class="tool-tag">Open Router</span>
+                <span class="tool-tag">Claude Code</span>
+                <span class="tool-tag">AntiGravity (Windsurf)</span>
+                <span class="tool-tag">Supabase</span>
+                <span class="tool-tag">N8N</span>
+                <span class="tool-tag">ClickUp</span>
+                <span class="tool-tag">Cursor IDE</span>
+                <span class="tool-tag">Xcode</span>
+                <span class="tool-tag">Swift</span>
+                <span class="tool-tag">Playwright</span>
+                <span class="tool-tag">Puppeteer</span>
+                <span class="tool-tag">Selenium</span>
+                <span class="tool-tag">AI Studio (Bolt/v0)</span>
+                <span class="tool-tag">GitHub</span>
+                <span class="tool-tag">DevTools (F12)</span>
+                <span class="tool-tag">Telegram</span>
+                <span class="tool-tag">Squad Creator</span>
+                <span class="tool-tag">Skill Creator</span>
+                <span class="tool-tag">AIOS Master</span>
+                <span class="tool-tag">DeepMine</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+                <!-- ============================================
              GLOSSÁRIO TÉCNICO
              ============================================ -->
         <section class="kb-section" id="glossario">
@@ -2515,7 +2707,7 @@
             </div>
           </div>
 
-          <p class="kb-message">69 termos técnicos consolidados das Aulas 02, 03 e PS 17/02, agrupados por categoria.</p>
+          <p class="kb-message">83 termos técnicos consolidados das Aulas 02, 03, PS 17/02 e PS 13/02, agrupados por categoria.</p>
 
           <style>
             .glossary-group { margin-bottom: var(--spacing-xl); }
@@ -3224,7 +3416,40 @@
 
           </div>
 
-        </section>
+        
+          <!-- PS 13/02 New Terms -->
+          <div class="glossary-group">
+            <div class="glossary-group-title"><i data-lucide="sparkles" style="width:18px;height:18px;color:#A855F7;"></i> Termos do PS 13/02 <span class="glossary-group-count">(14)</span></div>
+
+            <div class="glossary-card"><div class="glossary-card-header"><strong class="glossary-term">MCP vs API</strong></div><p class="glossary-def">Distinção fundamental: MCP é como um manual completo de rotas que o agente recebe de uma vez. API é uma conexão rota por rota. Confundir os dois leva a desperdício de tokens e arquiteturas erradas.</p><div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">PS 13/02</span></div></div>
+
+            <div class="glossary-card"><div class="glossary-card-header"><strong class="glossary-term">Task First</strong></div><p class="glossary-def">Mentalidade do Pedro Valério: tudo é orientado a tarefas. Cada tarefa tem critérios de aceite, definições de pronto e escopo definido. Até a cultura da empresa é orientada à tarefa.</p><div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Filosofia</span><span class="glossary-badge glossary-badge--aula">PS 13/02</span></div></div>
+
+            <div class="glossary-card"><div class="glossary-card-header"><strong class="glossary-term">One Person Business</strong></div><p class="glossary-def">Modelo de negócio onde uma única pessoa opera toda a empresa usando squads e agentes de IA como substitutos de equipe humana.</p><div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">PS 13/02</span></div></div>
+
+            <div class="glossary-card"><div class="glossary-card-header"><strong class="glossary-term">Auto-Handoff</strong></div><p class="glossary-def">Capacidade de agentes passarem tarefas entre si automaticamente. No AIOS atual, requer serviços externos (webhooks, cron jobs, APIs).</p><div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">PS 13/02</span></div></div>
+
+            <div class="glossary-card"><div class="glossary-card-header"><strong class="glossary-term">Cron Job</strong></div><p class="glossary-def">Agendamento de tarefas baseado em tempo. No contexto AIOS, usado para acionar squads ou agentes automaticamente em horários pré-definidos.</p><div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">PS 13/02</span></div></div>
+
+            <div class="glossary-card"><div class="glossary-card-header"><strong class="glossary-term">Webhook</strong></div><p class="glossary-def">Mecanismo de comunicação onde um sistema notifica outro automaticamente quando um evento acontece. Usado para automação ida-e-vinda entre agentes.</p><div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">PS 13/02</span></div></div>
+
+            <div class="glossary-card"><div class="glossary-card-header"><strong class="glossary-term">Software House (meta-framework)</strong></div><p class="glossary-def">Conceito do AIOS como uma software house — um framework que cria qualquer sistema. Configura o Claude Code para seguir processos validados como uma empresa de desenvolvimento completa.</p><div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Conceito</span><span class="glossary-badge glossary-badge--aula">PS 13/02</span></div></div>
+
+            <div class="glossary-card"><div class="glossary-card-header"><strong class="glossary-term">KISS (Keep It Stupid Simple)</strong></div><p class="glossary-def">Manter sistemas estupidamente simples. Overengineering causa overload cognitivo na LLM. Existe um sweet spot entre sofisticação e eficiência.</p><div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Filosofia</span><span class="glossary-badge glossary-badge--aula">PS 13/02</span></div></div>
+
+            <div class="glossary-card"><div class="glossary-card-header"><strong class="glossary-term">Querify</strong></div><p class="glossary-def">Módulo de criação de queries inteligentes para agentes de pesquisa. Usa heurísticas para pesquisar de forma mais eficaz em vez de queries genéricas.</p><div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Técnica</span><span class="glossary-badge glossary-badge--aula">PS 13/02</span></div></div>
+
+            <div class="glossary-card"><div class="glossary-card-header"><strong class="glossary-term">DeepMine</strong></div><p class="glossary-def">Módulo de mineração de conhecimento que roda em modo YOLO extraindo frameworks e novidades da internet usando MCPs. Pode ficar rodando a noite inteira sem supervisão.</p><div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Ferramenta</span><span class="glossary-badge glossary-badge--aula">PS 13/02</span></div></div>
+
+            <div class="glossary-card"><div class="glossary-card-header"><strong class="glossary-term">Skill Creator</strong></div><p class="glossary-def">Ferramenta do AIOS para criar skills personalizadas que padronizam processos repetitivos. Se faz algo 3-4 vezes, deve criar uma skill para automatizar.</p><div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Ferramenta</span><span class="glossary-badge glossary-badge--aula">PS 13/02</span></div></div>
+
+            <div class="glossary-card"><div class="glossary-card-header"><strong class="glossary-term">Fork (Git para AIOS)</strong></div><p class="glossary-def">Estratégia de criar fork do AIOS no GitHub para manter versão personalizada com squads e configurações. Melhor solução para múltiplos projetos.</p><div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Técnica</span><span class="glossary-badge glossary-badge--aula">PS 13/02</span></div></div>
+
+            <div class="glossary-card"><div class="glossary-card-header"><strong class="glossary-term">Design Reference</strong></div><p class="glossary-def">Pasta com screenshots visuais de referência para guiar criação de design systems. Arquiteto do AIOS analisa e cria PRD de design baseado nas referências.</p><div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Técnica</span><span class="glossary-badge glossary-badge--aula">PS 13/02</span></div></div>
+
+            <div class="glossary-card"><div class="glossary-card-header"><strong class="glossary-term">Status Line (Cloud Code)</strong></div><p class="glossary-def">Barra personalizada no terminal do Claude Code que mostra tokens in/out, sessão ativa e métricas relevantes. Configurável via prompt simples.</p><div class="glossary-badges"><span class="glossary-badge glossary-badge--cat">Customização</span><span class="glossary-badge glossary-badge--aula">PS 13/02</span></div></div>
+          </div>
+</section>
 
         <!-- ============================================
              FAQ
@@ -3244,7 +3469,7 @@
             </div>
           </div>
 
-          <p class="kb-message">41 perguntas frequentes consolidadas das Aulas 02, 03 e PS 17/02, agrupadas por categoria.</p>
+          <p class="kb-message">52 perguntas frequentes consolidadas das Aulas 02, 03, PS 17/02 e PS 13/02, agrupadas por categoria.</p>
 
           <style>
             .faq-group { margin-bottom: var(--spacing-xl); }
@@ -4038,6 +4263,37 @@ Thales alertou:
 
 Fluxo completo: Pesquisa com analista → Refinamento com arquiteto → Construir PRD → Criar stories → Executar com dev → QA → PO</div><div class="faq-meta"><span class="faq-nivel faq-nivel--avancado">Avançado</span><span class="faq-aula-badge">PS 17/02</span><span class="faq-tag">workflow</span><span class="faq-tag">agentes</span><span class="faq-tag">sequencia</span><span class="faq-tag">brownfield</span></div></div></div>
 
+            <!-- PS 13/02 FAQs -->
+            <h3 class="faq-category-title"><i data-lucide="heart-pulse" style="width:18px;height:18px;color:#A855F7;"></i> MCP vs API (Conceitual) <span class="faq-category-count">PS 13/02</span></h3>
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Qual é a diferença entre MCP e API? Posso usar Open Router como MCP?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">MCP (Model Context Protocol) é como dar um manual completo para o agente de uma vez (ex: Supabase MCP dá acesso a inserir, deletar, atualizar, tudo de uma vez). API é uma rota para cada ação. Open Router é API, NÃO é MCP. Criar MCP para Open Router dentro do Claude Code consome tokens de DUAS LLMs ao mesmo tempo. Solução: mudar configurações do Claude Code para usar motor do Open Router, ou usar AntiGravity com modelos gratuitos.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--intermediario">Intermediário</span><span class="faq-aula-badge">PS 13/02</span><span class="faq-tag">mcp</span><span class="faq-tag">api</span><span class="faq-tag">open-router</span></div></div></div>
+
+            <h3 class="faq-category-title"><i data-lucide="heart-pulse" style="width:18px;height:18px;color:#A855F7;"></i> Automação e Orquestração de Squads <span class="faq-category-count">PS 13/02</span></h3>
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Como fazer squads conversarem entre si automaticamente?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Squads dependem de você iniciar. Para automatizar: Cron Job (acionamento por tempo), Webhook (acionamento por evento), HTTP Request API (acionamento externo). Exemplo: cron às 7h aciona primeiro agente, webhook comunica entre agentes, output parse define se segue ou refaz. Para escalar, precisa de serviço externo (Vercel, Railway) com banco de dados escutando webhooks.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--avancado">Avançado</span><span class="faq-aula-badge">PS 13/02</span><span class="faq-tag">automacao</span><span class="faq-tag">webhook</span><span class="faq-tag">cron</span></div></div></div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Posso deixar agentes rodando 24 horas sem supervisão?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Sim, usando o modo YOLO do AIOS. O agente executa todas as etapas sem confirmação. Exemplo: módulo DeepMine roda a noite inteira minerando frameworks e novidades. Pré-requisito: processo refinado e testado. Não use YOLO para criação de squads (risco alto). Use para processos repetitivos já validados.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--avancado">Avançado</span><span class="faq-aula-badge">PS 13/02</span><span class="faq-tag">yolo</span><span class="faq-tag">autonomo</span><span class="faq-tag">deepmine</span></div></div></div>
+
+            <h3 class="faq-category-title"><i data-lucide="heart-pulse" style="width:18px;height:18px;color:#A855F7;"></i> Criação de Agentes (Estratégia) <span class="faq-category-count">PS 13/02</span></h3>
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Devo criar agentes individuais ou squads completos de uma vez?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Agentes individuais ficam mais potentes quando criados separados (100% do foco do Squad Creator). Depois, montar o squad apontando para os agentes já criados. Squad direto é melhor para conhecimento generalista sobre um assunto. Quando cria individual, cada agente traz &ldquo;pensamentos muito individuais&rdquo; e conhecimento profundo.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--intermediario">Intermediário</span><span class="faq-aula-badge">PS 13/02</span><span class="faq-tag">agentes</span><span class="faq-tag">squad-creator</span><span class="faq-tag">estrategia</span></div></div></div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Como criar agentes realmente bons? O que diferencia um medíocre de um excelente?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">O segredo NÃO é sofisticação excessiva. João: prompts de dois parágrafos já superaram sistemas meticulosamente pensados. O que importa: fundamentos e pesquisa de frameworks de humanos com skin in the game, clareza nas etapas (input/output), tools (acessos), heurísticas (if/then). KISS: overengineering causa overload cognitivo na LLM.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--avancado">Avançado</span><span class="faq-aula-badge">PS 13/02</span><span class="faq-tag">qualidade</span><span class="faq-tag">engenharia-contexto</span><span class="faq-tag">pesquisa</span></div></div></div>
+
+            <h3 class="faq-category-title"><i data-lucide="heart-pulse" style="width:18px;height:18px;color:#A855F7;"></i> Squads como Produto/Serviço <span class="faq-category-count">PS 13/02</span></h3>
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Posso vender squads ou transformá-los em produtos para clientes?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">AIOS é workspace, NÃO é o produto. 3 formas de monetizar: (1) Vender consultoria/squad desenhado; (2) Usar AIOS para CRIAR o produto independente; (3) Implementar AIOS na empresa do cliente. João: &ldquo;Seus funcionários desenvolveram, você vende o produto, não manda os funcionários junto.&rdquo;</div><div class="faq-meta"><span class="faq-nivel faq-nivel--intermediario">Intermediário</span><span class="faq-aula-badge">PS 13/02</span><span class="faq-tag">produto</span><span class="faq-tag">monetizacao</span><span class="faq-tag">negocio</span></div></div></div>
+
+            <h3 class="faq-category-title"><i data-lucide="heart-pulse" style="width:18px;height:18px;color:#A855F7;"></i> Gerenciamento de Múltiplos Projetos <span class="faq-category-count">PS 13/02</span></h3>
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Como compartilhar squads entre vários projetos de forma eficiente?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">NÃO recomendado: instalação global (regras locais sobrescrevem globais). Solução 1 (RECOMENDADA): Fork no GitHub — personalizar com seus squads e instalar a partir do fork. Solução 2: Links simbólicos (não funciona no Windows). Solução 3: Skill de atualização automatizada com scripts determinísticos.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--intermediario">Intermediário</span><span class="faq-aula-badge">PS 13/02</span><span class="faq-tag">fork</span><span class="faq-tag">github</span><span class="faq-tag">multiplos-projetos</span></div></div></div>
+
+            <h3 class="faq-category-title"><i data-lucide="heart-pulse" style="width:18px;height:18px;color:#A855F7;"></i> Design e Consistência Visual <span class="faq-category-count">PS 13/02</span></h3>
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Como manter consistência visual no frontend usando AIOS?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Bolt/v0/AI Studio perdem consistência com 6-7 telas. Solução em 3 passos: (1) Criar pasta &ldquo;design_reference&rdquo; com screenshots inspiradores; (2) Chamar arquiteto AIOS para gerar Design System com tokens, componentes e temas; (3) Componentizar tudo — cada botão = uma classe CSS reutilizável. Design atômico (Brad Frost) como fundamento.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--intermediario">Intermediário</span><span class="faq-aula-badge">PS 13/02</span><span class="faq-tag">design</span><span class="faq-tag">componentizacao</span><span class="faq-tag">frontend</span></div></div></div>
+
+            <h3 class="faq-category-title"><i data-lucide="heart-pulse" style="width:18px;height:18px;color:#A855F7;"></i> Atualização do AIOS (Prático) <span class="faq-category-count">PS 13/02</span></h3>
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Qual é o método mais eficiente de atualizar o AIOS?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">AIOS Core: comando no terminal (sem Cloud Code), sem gastar tokens. Squad Creator: pegar último .zip do grupo, substituir apenas pasta squad-creator, ressincronizar. Mentalidade: se faz 3-4 vezes, crie uma skill (/update). Usar scripts determinísticos para economia.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--basico">Básico</span><span class="faq-aula-badge">PS 13/02</span><span class="faq-tag">atualizacao</span><span class="faq-tag">skill</span><span class="faq-tag">automatizacao</span></div></div></div>
+
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Dá para instalar o AIOS globalmente para não atualizar projeto por projeto?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Tecnicamente possível, mas NÃO recomendado. Regras locais (.claude) sobrescrevem globais. O AIOS ao instalar modifica o cloud local, não puxa squads do global. Thales já testou: dá conflito. Alternativa: Fork no GitHub com squads personalizados.</div><div class="faq-meta"><span class="faq-nivel faq-nivel--intermediario">Intermediário</span><span class="faq-aula-badge">PS 13/02</span><span class="faq-tag">global</span><span class="faq-tag">fork</span><span class="faq-tag">projetos</span></div></div></div>
+
+            <h3 class="faq-category-title"><i data-lucide="heart-pulse" style="width:18px;height:18px;color:#A855F7;"></i> Scraping e Automação Web <span class="faq-category-count">PS 13/02</span></h3>
+            <div class="faq-item"><div class="faq-question" onclick="this.parentElement.classList.toggle('open')"><span class="faq-question-text">Como fazer scraping de sites com proteção anti-bot (como Booking)?</span><i data-lucide="chevron-down" class="faq-chevron"></i></div><div class="faq-answer"><div class="faq-answer-text">Booking detecta Playwright, Puppeteer e Selenium. IP diferente entre VPS e local piora o problema. Soluções: (1) Proxy no mesmo país; (2) Channel Manager com API oficial (custo mensal); (3) Aceitar limitação de 3-4 operações por sessão. Thales: &ldquo;Não é culpa do Playwright. É o Booking que está te barrando.&rdquo;</div><div class="faq-meta"><span class="faq-nivel faq-nivel--avancado">Avançado</span><span class="faq-aula-badge">PS 13/02</span><span class="faq-tag">scraping</span><span class="faq-tag">booking</span><span class="faq-tag">captcha</span></div></div></div>
+
           </div>
 
         </section>
@@ -4064,10 +4320,13 @@ Fluxo completo: Pesquisa com analista → Refinamento com arquiteto → Construi
               <option value="ps-17-02-principal">PS 17/02 — Sala Principal</option>
               <option value="ps-17-02-avancada">PS 17/02 — Sala Avançada</option>
               <option value="ps-17-02-fundamentos">PS 17/02 — Sala Fundamentos</option>
+              <option value="ps-13-02-principal">PS 13/02 — Sala Principal</option>
+              <option value="ps-13-02-avancada">PS 13/02 — Sala Avançada</option>
+              <option value="ps-13-02-fundamentos">PS 13/02 — Sala Fundamentos</option>
             </select>
           </div>
 
-          <p class="kb-message">109 perguntas reais dos alunos durante as aulas e PS, com respostas baseadas no contexto das discussões.</p>
+          <p class="kb-message">145 perguntas reais dos alunos durante as aulas e PS, com respostas baseadas no contexto das discussões.</p>
 
           <style>
             .qa-session { margin-bottom: var(--spacing-2xl); }
@@ -4338,7 +4597,100 @@ Fluxo completo: Pesquisa com analista → Refinamento com arquiteto → Construi
 
             <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Pedro (aluno)</span><span class="qa-timestamp">00:32:56</span><span class="qa-answered-by">Resp: Klaus</span></div><div class="qa-question-text">Eu também não recebi a senha do PRO. Não consigo instalar.</div><div class="qa-answer-text">Mesmo problema da Renata. Klaus pediu para enviar o e-mail. Problema a ser escalado para o suporte/Pedro (instrutor).</div></div>
 
+          
+
+          <!-- PS 13/02 - Sala Principal -->
+          <div class="qa-session" data-qa-aula="ps-13-02-principal">
+            <div class="qa-session-header"><span class="qa-session-badge qa-session-badge--ps">PS 13/02 &mdash; Sala Principal</span> 2026-02-13 &mdash; 3 perguntas</div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Klaus</span><span class="qa-timestamp">00:01:57</span><span class="qa-answered-by">Resp: Klaus + comunidade</span></div><div class="qa-question-text">Vocês estão conseguindo dormir?</div><div class="qa-answer-text">Conversa informal sobre insônia causada pelo AIOS. Múltiplos alunos relataram não conseguir dormir. Renata: &ldquo;Esse negócio está buzinando na minha cabeça.&rdquo; Klaus chamou de &ldquo;insônia dolosa&rdquo; &mdash; quando há intenção de não dormir.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Renata</span><span class="qa-timestamp">00:05:36</span><span class="qa-answered-by">Resp: Fábio</span></div><div class="qa-question-text">Eu me perco no WhatsApp, muita mensagem. Não sei o que é novo, o que é velho.</div><div class="qa-answer-text">Sugestão: usar busca do WhatsApp para filtrar só links e só arquivos. Squad Creator está na versão 6. Tiago está fazendo resumo diário do WhatsApp para a turma.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Klaus</span><span class="qa-timestamp">00:06:49</span><span class="qa-answered-by">Resp: Klaus</span></div><div class="qa-question-text">Divisão das salas do PS &mdash; Advanced, Business, Fundamentos.</div><div class="qa-answer-text">Advanced: banco de dados, RAG, vetorização, infraestrutura. Business: quem já tem ideia de projeto. Fundamentos: dificuldade com workflows e agentes.</div></div>
+
           </div>
+
+          <!-- PS 13/02 - Sala Avançada -->
+          <div class="qa-session" data-qa-aula="ps-13-02-avancada">
+            <div class="qa-session-header"><span class="qa-session-badge qa-session-badge--ps">PS 13/02 &mdash; Sala Avançada</span> 2026-02-13 &mdash; 18 perguntas</div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Renato</span><span class="qa-timestamp">00:00:00</span><span class="qa-answered-by">Resp: Thales + Adabo</span></div><div class="qa-question-text">Criei um MCP do Open Router, mas deu Failed. O que fiz errado?</div><div class="qa-answer-text">O erro foi confundir MCP com API. Open Router é consumido via API, não via MCP. Se fizer via MCP dentro do Cloud Code, gasta tokens de DUAS LLMs ao mesmo tempo. Solução: mudar configurações do Cloud Code ou usar AntiGravity com modelos gratuitos.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Renato</span><span class="qa-timestamp">00:13:00</span><span class="qa-answered-by">Resp: Thales</span></div><div class="qa-question-text">O grande lance é trocar o motor de geração do Cloud Code?</div><div class="qa-answer-text">Sim. Mudar configuração do Cloud Code para usar Open Router como motor, ou usar AntiGravity com modelos gratuitos. Renato: &ldquo;Deixo a parte de inteligência do AIOS com o Cloud, na hora de executar pulo para o AntiGravity.&rdquo;</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Thiago</span><span class="qa-timestamp">00:19:23</span><span class="qa-answered-by">Resp: Thales</span></div><div class="qa-question-text">Quero discutir sobre orquestração de squads automatizada para One Person Business.</div><div class="qa-answer-text">Thales compartilhou experiência da agência: transcrição de reunião &rarr; EPIC &rarr; Stories no ClickUp. Squads não têm auto-handoff nativo. Para escalar: webhooks, cron jobs, serviço externo.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Thiago</span><span class="qa-timestamp">00:28:00</span><span class="qa-answered-by">Resp: Thales</span></div><div class="qa-question-text">Quero que os agentes tenham round table, discussão, ida e vinda automática.</div><div class="qa-answer-text">Mecanismo via webhooks: Agente A entrega resultado &rarr; Agente B analisa e retorna sim/não &rarr; Se &ldquo;não&rdquo;, volta para refazer. Acionamento: cron (por tempo), webhook (por evento), HTTP Request API (externo).</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Galego</span><span class="qa-timestamp">00:38:00</span><span class="qa-answered-by">Resp: Thales + Klaus</span></div><div class="qa-question-text">Estou a tentar automatizar scraping do Booking. Playwright não consegue ultrapassar o CAPTCHA.</div><div class="qa-answer-text">Booking tem proteção anti-bot sofisticada. IP diferente entre VPS (EUA) e local (Portugal) piora. Sugestões: proxy no mesmo país, Channel Manager com API oficial, aceitar limitação de 3-4 operações por sessão.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Galego</span><span class="qa-timestamp">00:44:00</span><span class="qa-answered-by">Resp: Klaus</span></div><div class="qa-question-text">Existem 3 caminhos para criar um projeto: Greenfield, Brownfield ou Squad Creator direto?</div><div class="qa-answer-text">Confirmado. Greenfield: do zero. Brownfield com layout: já tem frontend. Squad Creator direto: tem ideia, quer criar agentes. Se já tem projeto no AI Studio, brownfield é o caminho.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Lúcio</span><span class="qa-timestamp">00:48:00</span><span class="qa-answered-by">Resp: Thales + Klaus</span></div><div class="qa-question-text">Se eu instalar squads na pasta raiz global da máquina, o AIOS pega de qualquer projeto?</div><div class="qa-answer-text">Squads no global NÃO funciona bem. Regras locais sobrescrevem globais. Thales: &ldquo;Já testei isso.&rdquo; Melhor solução: fork no GitHub.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Edgar</span><span class="qa-timestamp">00:52:00</span><span class="qa-answered-by">Resp: Thales + Klaus</span></div><div class="qa-question-text">Tenho 5-6 projetos. Como compartilhar squad entre projetos?</div><div class="qa-answer-text">Fork no Git (recomendado): adicionar squads customizados, instalar a partir do fork. Links simbólicos: pasta central com link em cada projeto. NÃO recomendado: instalação global.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Edgar</span><span class="qa-timestamp">01:01:00</span><span class="qa-answered-by">Resp: Klaus</span></div><div class="qa-question-text">Criando app em Swift para monitorar tokens. Dúvidas sobre publicar na App Store.</div><div class="qa-answer-text">Conta developer $100/ano, review ~14 dias, certificado digital via Xcode. Modelo freemium com trial e pré-autorização de cartão.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Galego</span><span class="qa-timestamp">01:06:00</span><span class="qa-answered-by">Resp: Edgar + Klaus</span></div><div class="qa-question-text">Como manter consistência visual no frontend? AI Studio perde consistência com muitas telas.</div><div class="qa-answer-text">Criar pasta design_reference com screenshots, chamar arquiteto AIOS para gerar Design System, depois componentizar tudo. Cada tipo de botão = classe CSS reutilizável. Design atômico (Brad Frost) como fundamento.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Edgar</span><span class="qa-timestamp">01:09:00</span><span class="qa-answered-by">Resp: Edgar (demonstração)</span></div><div class="qa-question-text">Demonstração do Design System com componentes.</div><div class="qa-answer-text">Pasta Design System com botões, ícones, charts, temas (dark/light). Átomos, moléculas, organismos seguindo Atomic Design. Componentizar APÓS criar telas.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Renato</span><span class="qa-timestamp">00:05:07</span><span class="qa-answered-by">Resp: Thales</span></div><div class="qa-question-text">Passei a página de modelos do Open Router para classificar modelos free, baratos e caros.</div><div class="qa-answer-text">Abordagem válida para classificar, mas não precisa de MCP. Usar via API direta ou mudar motor do Cloud Code.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Renato</span><span class="qa-timestamp">00:13:00</span><span class="qa-answered-by">Resp: Thales</span></div><div class="qa-question-text">Posso usar AIOS no AntiGravity com modelos gratuitos para executar enquanto mantenho Cloud Code para inteligência?</div><div class="qa-answer-text">Sim, boa estratégia híbrida. Cloud Code: inteligência. AntiGravity: execução com modelos gratuitos. Mesma pasta do projeto, dois motores diferentes.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Thiago</span><span class="qa-timestamp">00:25:00</span><span class="qa-answered-by">Resp: Thales</span></div><div class="qa-question-text">Transcrição de reunião com cliente &rarr; PM cria EPIC &rarr; stories no ClickUp. Vocês já fazem isso?</div><div class="qa-answer-text">Thales confirmou: transcrição vira brief &rarr; EPIC &rarr; stories. Usa modo interativo do PM. ClickUp recebe stories automaticamente. Task First: tudo orientado a tarefa.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Thales</span><span class="qa-timestamp">00:36:00</span><span class="qa-answered-by">Resp: Thales</span></div><div class="qa-question-text">O mais difícil do AIOS é o abstrato. O mais avançado é o abstrato também.</div><div class="qa-answer-text">A parte técnica o Claude Code resolve. O valor dos PS é trocar experiência sobre o ABSTRATO: como operar, por que tomar tal decisão. O &ldquo;porquê&rdquo; é mais importante que o &ldquo;como&rdquo;.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Thales</span><span class="qa-timestamp">00:37:00</span><span class="qa-answered-by">Resp: Thales + Thiago</span></div><div class="qa-question-text">Pode usar agentes do AIOS para conversar, não só para executar.</div><div class="qa-answer-text">Chamar AIOS Master e perguntar &ldquo;para quem eu pergunto?&rdquo;. Chamar o agente para trocar ideia, não só executar. Thiago usa clones do Alan e Pedro para conversar.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Galego</span><span class="qa-timestamp">01:11:00</span><span class="qa-answered-by">Resp: Klaus + Edgar</span></div><div class="qa-question-text">Como pedir para componentizar as telas no AntiGravity/Cloud Code?</div><div class="qa-answer-text">Dar nome para os containers, cada um com componentes com classes CSS. Alterar a classe muda em todos os lugares. Quem trabalha com WordPress/Elementor já conhece o conceito.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Renato</span><span class="qa-timestamp">00:08:00</span><span class="qa-answered-by">Resp: Thales + grupo</span></div><div class="qa-question-text">O que me fez perder milhões de tokens foi ter colocado na cabeça que era MCP e não API.</div><div class="qa-answer-text">Renato reconheceu que ignorou orientação do Alan na noite anterior. Thales e o grupo esclareceram a diferença conceitual. Renato saiu com clareza do caminho correto.</div></div>
+
+          </div>
+
+          <!-- PS 13/02 - Sala Fundamentos -->
+          <div class="qa-session" data-qa-aula="ps-13-02-fundamentos">
+            <div class="qa-session-header"><span class="qa-session-badge qa-session-badge--ps">PS 13/02 &mdash; Sala Fundamentos</span> 2026-02-13 &mdash; 16 perguntas</div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Cleverson</span><span class="qa-timestamp">00:04:05</span><span class="qa-answered-by">Resp: João + Klaus</span></div><div class="qa-question-text">Fiz instalação nova do AIOS em outro projeto e ficou muito mais lento.</div><div class="qa-answer-text">Possíveis causas: muitas abas na IDE, latência de rede, cache DNS. Sugestões: reiniciar, flush DNS, copiar AIOS de outra pasta que funciona para testar.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Gaston</span><span class="qa-timestamp">00:10:40</span><span class="qa-answered-by">Resp: João</span></div><div class="qa-question-text">Preciso criar workflow da minha metodologia de branding?</div><div class="qa-answer-text">NÃO precisa se já tem PRD. O PRD já foi feito para ser quebrado em EPICs, stories e tasks. Técnica de João: vários mini PRDs focados &rarr; depois sintetizar em PRD grande.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Gaston</span><span class="qa-timestamp">00:15:00</span><span class="qa-answered-by">Resp: João + Cleverson + Klaus</span></div><div class="qa-question-text">O Squad Creator cria agente por agente ou squad direto?</div><div class="qa-answer-text">Ambas as funções. Dica do Cleverson: criar agentes individuais separadamente &rarr; resultado mais robusto. Depois montar squad apontando para os agentes já criados.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Beth</span><span class="qa-timestamp">00:30:06</span><span class="qa-answered-by">Resp: Klaus</span></div><div class="qa-question-text">Tem atualizações no grupo. Devo baixar tudo ou selecionar?</div><div class="qa-answer-text">Pegar ÚLTIMO e descartar anteriores. Não baixar indiscriminadamente. Filtrar por links e arquivos. Se baixou antigo e saiu novo, apagar o antigo.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Gaston</span><span class="qa-timestamp">00:32:32</span><span class="qa-answered-by">Resp: João + Klaus</span></div><div class="qa-question-text">Tenho projetos em diferentes estágios. Qual método mais eficiente para atualizar?</div><div class="qa-answer-text">João demonstrou ao vivo: criar skill de atualização. Prompt: &ldquo;barra update + caminho da pasta, verifica versão, compara, instala sem quebrar, usa operações determinísticas.&rdquo; Se faz algo 3-4 vezes, cria skill.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Gaston</span><span class="qa-timestamp">00:47:00</span><span class="qa-answered-by">Resp: João + Klaus</span></div><div class="qa-question-text">Quero criar agente de análise de big ideas. Será suficientemente bom?</div><div class="qa-answer-text">Prompts de dois parágrafos já superaram sistemas elaborados. Importa: fundamentos + pesquisa + clareza nas etapas. Módulo Querify para pesquisas inteligentes. Sweet spot: clareza &gt; sofisticação.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Gaston</span><span class="qa-timestamp">00:47:08</span><span class="qa-answered-by">Resp: João + Klaus</span></div><div class="qa-question-text">Existe um equilíbrio entre sofisticação e eficiência?</div><div class="qa-answer-text">KISS (Keep It Stupid Simple). Sofisticação grande faz a IA ficar perdida. Simplicidade e genialidade: fazer coisa simples e eficiente é mais difícil que sofisticar. Alan usa KISS como framework.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Beth</span><span class="qa-timestamp">00:52:00</span><span class="qa-answered-by">Resp: Klaus</span></div><div class="qa-question-text">Se eu baixar arquivo atualizado, simplesmente apago o antigo?</div><div class="qa-answer-text">Sim, simplesmente apaga o antigo e usa o novo. Sempre manter apenas a versão mais recente de cada recurso.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Beth</span><span class="qa-timestamp">00:52:19</span><span class="qa-answered-by">Resp: Comunidade</span></div><div class="qa-question-text">Como abrir duas janelas/abas no terminal do Mac?</div><div class="qa-answer-text">Barra do menu &rarr; Terminal &rarr; Shell &rarr; Nova Janela. Dica dos dois terminais: um para AIOS Master (conversar), outro para agentes (executar).</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Beth</span><span class="qa-timestamp">00:53:01</span><span class="qa-answered-by">Resp: João</span></div><div class="qa-question-text">O Alan tem uma barrinha que mostra consumo de tokens. Como faço?</div><div class="qa-answer-text">Prompt: &ldquo;Quero configurar minha status line do Cloud Code para visualizar tokens in, tokens out. Deixe bem bonito e use emojis.&rdquo;</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Rafael</span><span class="qa-timestamp">00:57:00</span><span class="qa-answered-by">Resp: João (diagrama ao vivo)</span></div><div class="qa-question-text">Não consigo conceber o conceito de usar squads como trabalhos autônomos.</div><div class="qa-answer-text">Terminal &rarr; Cloud Code (CLI+IA) &rarr; AIOS (framework). Squads rodam DENTRO do terminal. Para externalizar: criar produto separado (UI, APIs, banco). AIOS é workspace, não é o produto.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">João</span><span class="qa-timestamp">01:06:00</span><span class="qa-answered-by">Resp: João (demonstração)</span></div><div class="qa-question-text">Demonstração do DeepMine &mdash; módulo de mineração de conhecimento.</div><div class="qa-answer-text">Refinaria cognitiva = segundo cérebro. DeepMine roda em YOLO minerando frameworks e novidades via MCPs a noite inteira. Alimenta base de conhecimento compartilhável.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Beth</span><span class="qa-timestamp">01:10:00</span><span class="qa-answered-by">Resp: Klaus</span></div><div class="qa-question-text">O Alan já criou dentro da academia lendária todos os departamentos com o AIOS?</div><div class="qa-answer-text">Sim, cada pessoa do time usa AIOS. Squads de marketing, copy, etc. Plataforma de cursos e CRM sendo desenvolvidos. Processo de ~6 meses com Pedro Valério.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Beth</span><span class="qa-timestamp">01:17:00</span><span class="qa-answered-by">Resp: João</span></div><div class="qa-question-text">Vamos poder pedir ajuda no PS daqui a 2-3 meses?</div><div class="qa-answer-text">João alertou: &ldquo;Esse pensamento é de apego ao processo. A ideia é que você já esteja implementando seu próprio AIOS.&rdquo; Dominar o processo é mais importante que qualquer projeto.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Klaus</span><span class="qa-timestamp">01:20:00</span><span class="qa-answered-by">Resp: Klaus (demonstração)</span></div><div class="qa-question-text">Demonstração ao vivo do aplicativo de transcrição (Klaus Transcripter).</div><div class="qa-answer-text">Aplicação feita com AIOS que funciona independentemente. Transcreve em tempo real, múltiplos idiomas, tradução. Prova de que o AIOS gera produtos reais e independentes.</div></div>
+
+            <div class="qa-card"><div class="qa-card-top"><span class="qa-student">Gaston</span><span class="qa-timestamp">01:25:00</span><span class="qa-answered-by">Resp: Gaston</span></div><div class="qa-question-text">Dominar o processo é mais importante que qualquer projeto.</div><div class="qa-answer-text">Reflexão final: &ldquo;Se você domina o processo, qualquer projeto começa a se tornar muito fácil de executar. Vai dar certo.&rdquo;</div></div>
+
+          </div>
+</div>
 
         </section>
 
