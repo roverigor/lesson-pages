@@ -2576,81 +2576,176 @@
           <!-- Temas Abordados -->
           <div class="content-card">
             <div class="content-card-header">
-              <div class="content-card-icon content-card-icon--purple">
-                <i data-lucide="layers"></i>
+              <div class="content-card-icon content-card-icon--green">
+                <i data-lucide="list-checks"></i>
               </div>
               <span class="content-card-title">Temas Abordados</span>
-              <span class="content-card-count">6 temas</span>
             </div>
             <div class="content-card-body">
-              <div class="tema-card" style="border-left: 3px solid #EF4444;">
-                <div class="tema-titulo">MCP vs API: Entendendo a Diferença Crucial</div>
-                <div class="tema-desc">Aluno gastou milhões de tokens tentando conectar Open Router via MCP, quando precisava apenas de API. MCP é um manual completo de rotas; API é uma rota individual. Usar MCP para chamar outra LLM resulta em consumo duplo de tokens.</div>
-              </div>
-              <div class="tema-card" style="border-left: 3px solid #3B82F6;">
-                <div class="tema-titulo">Orquestração de Squads e Automação de Workflows</div>
-                <div class="tema-desc">Squads ainda dependem de ativação manual. Para automação real: webhooks, cron jobs e HTTP requests via N8N. O squad valida e formata; depois o serviço roda autônomo via automação.</div>
-              </div>
-              <div class="tema-card" style="border-left: 3px solid #22C55E;">
-                <div class="tema-titulo">AIOS como Meta-Framework: Terminal, Cloud Code e Agentes</div>
-                <div class="tema-desc">Explicação didática: terminal é o portal; Cloud Code coloca IA no terminal; AIOS configura o Cloud Code com metodologias validadas. Squads são funcionários virtuais. Para vender, criar aplicação separada.</div>
-              </div>
-              <div class="tema-card" style="border-left: 3px solid #A855F7;">
-                <div class="tema-titulo">Design System e Componentização com IA</div>
-                <div class="tema-desc">Criar pasta de referências visuais, pedir ao arquiteto AIOS para gerar Design System completo. Design atômico de Brad Frost: primitivos com tipo, variante e função. Mudar um componente altera todas as instâncias.</div>
-              </div>
-              <div class="tema-card" style="border-left: 3px solid #F59E0B;">
-                <div class="tema-titulo">Criação de Agentes Poderosos: Pesquisa e Pensamento Crítico</div>
-                <div class="tema-desc">Tudo começa com pesquisa de frameworks de humanos com skin in the game. O segredo não está na sofisticação, mas na clareza das etapas. Prompts de dois parágrafos já superaram sistemas elaborados.</div>
-              </div>
-              <div class="tema-card" style="border-left: 3px solid #06B6D4;">
-                <div class="tema-titulo">Gerenciamento de Atualizações e Fork Pessoal do AIOS</div>
-                <div class="tema-desc">Fork pessoal do AIOS no GitHub para manter squads e configurações em múltiplos projetos. Regras locais sobrescrevem globais. Criar skill personalizada de atualização para economizar tokens.</div>
+              <div style="display:grid;gap:10px;">
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.12);border-radius:8px;">
+                  <span style="color:#EF4444;font-weight:700;font-size:13px;flex-shrink:0;margin-top:1px;">01</span>
+                  <div><strong style="color:#fff;font-size:14px;">MCP vs API: Entendendo a Diferença Crucial</strong><p style="font-size:13px;color:#999;margin:4px 0 0;line-height:1.6;">Aluno gastou milhões de tokens tentando conectar Open Router via MCP, quando precisava apenas de API. MCP é um manual completo de rotas; API é uma rota individual. Usar MCP para chamar outra LLM resulta em consumo duplo de tokens.</p></div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;background:rgba(59,130,246,0.04);border:1px solid rgba(59,130,246,0.12);border-radius:8px;">
+                  <span style="color:#3B82F6;font-weight:700;font-size:13px;flex-shrink:0;margin-top:1px;">02</span>
+                  <div><strong style="color:#fff;font-size:14px;">Orquestração de Squads e Automação de Workflows</strong><p style="font-size:13px;color:#999;margin:4px 0 0;line-height:1.6;">Squads ainda dependem de ativação manual. Para automação real: webhooks, cron jobs e HTTP requests via N8N. O squad valida e formata; depois o serviço roda autônomo via automação.</p></div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;background:rgba(34,197,94,0.04);border:1px solid rgba(34,197,94,0.12);border-radius:8px;">
+                  <span style="color:#22C55E;font-weight:700;font-size:13px;flex-shrink:0;margin-top:1px;">03</span>
+                  <div><strong style="color:#fff;font-size:14px;">AIOS como Meta-Framework: Terminal, Cloud Code e Agentes</strong><p style="font-size:13px;color:#999;margin:4px 0 0;line-height:1.6;">Explicação didática: terminal é o portal; Cloud Code coloca IA no terminal; AIOS configura o Cloud Code com metodologias validadas. Squads são funcionários virtuais. Para vender, criar aplicação separada.</p></div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;background:rgba(168,85,247,0.04);border:1px solid rgba(168,85,247,0.12);border-radius:8px;">
+                  <span style="color:#A855F7;font-weight:700;font-size:13px;flex-shrink:0;margin-top:1px;">04</span>
+                  <div><strong style="color:#fff;font-size:14px;">Design System e Componentização com IA</strong><p style="font-size:13px;color:#999;margin:4px 0 0;line-height:1.6;">Criar pasta de referências visuais, pedir ao arquiteto AIOS para gerar Design System completo. Design atômico de Brad Frost: primitivos com tipo, variante e função. Mudar um componente altera todas as instâncias.</p></div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.12);border-radius:8px;">
+                  <span style="color:#F59E0B;font-weight:700;font-size:13px;flex-shrink:0;margin-top:1px;">05</span>
+                  <div><strong style="color:#fff;font-size:14px;">Criação de Agentes Poderosos: Pesquisa e Pensamento Crítico</strong><p style="font-size:13px;color:#999;margin:4px 0 0;line-height:1.6;">Tudo começa com pesquisa de frameworks de humanos com skin in the game. O segredo não está na sofisticação, mas na clareza das etapas. Prompts de dois parágrafos já superaram sistemas elaborados.</p></div>
+                </div>
+                <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;background:rgba(6,182,212,0.04);border:1px solid rgba(6,182,212,0.12);border-radius:8px;">
+                  <span style="color:#06B6D4;font-weight:700;font-size:13px;flex-shrink:0;margin-top:1px;">06</span>
+                  <div><strong style="color:#fff;font-size:14px;">Gerenciamento de Atualizações e Fork Pessoal do AIOS</strong><p style="font-size:13px;color:#999;margin:4px 0 0;line-height:1.6;">Fork pessoal do AIOS no GitHub para manter squads e configurações em múltiplos projetos. Regras locais sobrescrevem globais. Criar skill personalizada de atualização para economizar tokens.</p></div>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Melhores Soluções -->
+          <!-- Melhores Soluções / Pontos-Chave -->
           <div class="content-card">
             <div class="content-card-header">
-              <div class="content-card-icon content-card-icon--green">
-                <i data-lucide="lightbulb"></i>
+              <div class="content-card-icon content-card-icon--amber">
+                <i data-lucide="trophy"></i>
               </div>
               <span class="content-card-title">Melhores Soluções</span>
-              <span class="content-card-count">6 soluções</span>
             </div>
             <div class="content-card-body">
-              <div class="ponto-card"><span class="ponto-icon" style="background:rgba(239,68,68,0.12);color:#EF4444;"><i data-lucide="cpu" style="width:16px;height:16px;"></i></span><div class="ponto-content"><strong class="ponto-title">Economia de Tokens com Motor Híbrido</strong><p class="ponto-desc">AIOS/Cloud Code (Opus) para planejamento e inteligência; AntiGravity com modelos gratuitos (Gemini) para execução de código e tarefas repetitivas. Basta instalar o AIOS no AntiGravity e chamar os comandos via barra (/).</p></div></div>
-              <div class="ponto-card"><span class="ponto-icon" style="background:rgba(59,130,246,0.12);color:#3B82F6;"><i data-lucide="webhook" style="width:16px;height:16px;"></i></span><div class="ponto-content"><strong class="ponto-title">Automação de Squads via Webhooks e Cron</strong><p class="ponto-desc">Cron dispara às 7h para o primeiro agente (gera imagem), segundo agente recebe via webhook (cria copy), retorno estruturado indica se é válido. Às 8h, resultado final vai para Telegram com botão aceitar/rejeitar.</p></div></div>
-              <div class="ponto-card"><span class="ponto-icon" style="background:rgba(34,197,94,0.12);color:#22C55E;"><i data-lucide="figma" style="width:16px;height:16px;"></i></span><div class="ponto-content"><strong class="ponto-title">Design System via Pasta de Referências Visuais</strong><p class="ponto-desc">Criar pasta &lsquo;design-reference&rsquo; com screenshots de sites. Chamar arquiteto AIOS para analisar e gerar Design System completo com tokens de design, componentes e classes reutilizáveis. Design atômico: átomos &rarr; moléculas &rarr; organismos.</p></div></div>
-              <div class="ponto-card"><span class="ponto-icon" style="background:rgba(168,85,247,0.12);color:#A855F7;"><i data-lucide="git-fork" style="width:16px;height:16px;"></i></span><div class="ponto-content"><strong class="ponto-title">Fork Pessoal do AIOS para Múltiplos Projetos</strong><p class="ponto-desc">Fazer fork do AIOS no GitHub. Personalizar com seus squads. Para cada projeto novo, instalar a partir do fork pessoal (npx install aios-core fork-url). Quando atualizar, git pull do original e push para seu fork.</p></div></div>
-              <div class="ponto-card"><span class="ponto-icon" style="background:rgba(245,158,11,0.12);color:#F59E0B;"><i data-lucide="wand-2" style="width:16px;height:16px;"></i></span><div class="ponto-content"><strong class="ponto-title">Skill Personalizada de Atualização do AIOS</strong><p class="ponto-desc">Criar skill usando o Skill Creator que padroniza atualização. Dar o comando &lsquo;/update&rsquo; seguido do caminho, e a skill verifica versão, compara, instala sem quebrar. Scripts determinísticos em vez de IA para economia de tokens.</p></div></div>
-              <div class="ponto-card"><span class="ponto-icon" style="background:rgba(6,182,212,0.12);color:#06B6D4;"><i data-lucide="users" style="width:16px;height:16px;"></i></span><div class="ponto-content"><strong class="ponto-title">Criação de Agentes Individuais Antes de Montar o Squad</strong><p class="ponto-desc">Em vez de criar o squad completo de uma vez, usar o Squad Creator para criar cada agente individualmente &mdash; assim cada um recebe 100% do foco. Depois montar o squad final apontando para os agentes já criados.</p></div></div>
+              <div style="border-left:3px solid #EF4444;padding:14px 18px;margin-bottom:14px;background:rgba(239,68,68,0.04);border-radius:0 8px 8px 0;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(239,68,68,0.15);color:#EF4444;">Técnica</span><span style="font-size:12px;color:#777;">Thales + Facilitadores</span></div>
+                <p style="font-size:15px;color:#ddd;line-height:1.7;margin:0 0 8px;"><strong style="color:#fff;">Economia de Tokens com Motor Híbrido.</strong> AIOS/Cloud Code (Opus) para planejamento e inteligência; AntiGravity com modelos gratuitos (Gemini) para execução de código e tarefas repetitivas. Basta instalar o AIOS no AntiGravity e chamar os comandos via barra (/).</p>
+                <p style="font-size:12px;color:#777;margin:0;">Renato gastou milhões de tokens no dia tentando integrar Open Router como MCP em vez de API.</p>
+              </div>
+              <div style="border-left:3px solid #3B82F6;padding:14px 18px;margin-bottom:14px;background:rgba(59,130,246,0.04);border-radius:0 8px 8px 0;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(59,130,246,0.15);color:#3B82F6;">Solução</span><span style="font-size:12px;color:#777;">Thiago + Thales</span></div>
+                <p style="font-size:15px;color:#ddd;line-height:1.7;margin:0 0 8px;"><strong style="color:#fff;">Automação de Squads via Webhooks e Cron.</strong> Cron dispara às 7h para o primeiro agente (gera imagem), segundo agente recebe via webhook (cria copy), retorno estruturado indica se é válido. Às 8h, resultado final vai para Telegram com botão aceitar/rejeitar.</p>
+                <p style="font-size:12px;color:#777;margin:0;">Squads ainda dependem de ativação manual; esta solução cria autonomia real.</p>
+              </div>
+              <div style="border-left:3px solid #22C55E;padding:14px 18px;margin-bottom:14px;background:rgba(34,197,94,0.04);border-radius:0 8px 8px 0;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(34,197,94,0.15);color:#22C55E;">Solução</span><span style="font-size:12px;color:#777;">Edivar + Thales</span></div>
+                <p style="font-size:15px;color:#ddd;line-height:1.7;margin:0 0 8px;"><strong style="color:#fff;">Design System via Pasta de Referências Visuais.</strong> Criar pasta &lsquo;design-reference&rsquo; com screenshots de sites. Chamar arquiteto AIOS para analisar e gerar Design System completo com tokens de design, componentes e classes reutilizáveis. Design atômico: átomos &rarr; moléculas &rarr; organismos.</p>
+                <p style="font-size:12px;color:#777;margin:0;">Edivar mostrou como criou um design system completo usando referências visuais.</p>
+              </div>
+              <div style="border-left:3px solid #A855F7;padding:14px 18px;margin-bottom:14px;background:rgba(168,85,247,0.04);border-radius:0 8px 8px 0;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(168,85,247,0.15);color:#A855F7;">Técnica</span><span style="font-size:12px;color:#777;">Facilitadores</span></div>
+                <p style="font-size:15px;color:#ddd;line-height:1.7;margin:0 0 8px;"><strong style="color:#fff;">Fork Pessoal do AIOS para Múltiplos Projetos.</strong> Fazer fork do AIOS no GitHub. Personalizar com seus squads. Para cada projeto novo, instalar a partir do fork pessoal (npx install aios-core fork-url). Quando atualizar, git pull do original e push para seu fork.</p>
+                <p style="font-size:12px;color:#777;margin:0;">Mantém squads e configurações sincronizados em múltiplos projetos via GitHub.</p>
+              </div>
+              <div style="border-left:3px solid #F59E0B;padding:14px 18px;margin-bottom:14px;background:rgba(245,158,11,0.04);border-radius:0 8px 8px 0;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(245,158,11,0.15);color:#F59E0B;">Solução</span><span style="font-size:12px;color:#777;">Klaus</span></div>
+                <p style="font-size:15px;color:#ddd;line-height:1.7;margin:0 0 8px;"><strong style="color:#fff;">Skill Personalizada de Atualização do AIOS.</strong> Criar skill usando o Skill Creator que padroniza atualização. Dar o comando &lsquo;/update&rsquo; seguido do caminho, e a skill verifica versão, compara, instala sem quebrar. Scripts determinísticos em vez de IA para economia de tokens.</p>
+                <p style="font-size:12px;color:#777;margin:0;">Klaus demonstrou ao vivo como criar a skill personalizada de atualização.</p>
+              </div>
+              <div style="border-left:3px solid #06B6D4;padding:14px 18px;margin-bottom:14px;background:rgba(6,182,212,0.04);border-radius:0 8px 8px 0;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(6,182,212,0.15);color:#06B6D4;">Técnica</span><span style="font-size:12px;color:#777;">João + Klaus</span></div>
+                <p style="font-size:15px;color:#ddd;line-height:1.7;margin:0 0 8px;"><strong style="color:#fff;">Criação de Agentes Individuais Antes de Montar o Squad.</strong> Em vez de criar o squad completo de uma vez, usar o Squad Creator para criar cada agente individualmente &mdash; assim cada um recebe 100% do foco. Depois montar o squad final apontando para os agentes já criados.</p>
+                <p style="font-size:12px;color:#777;margin:0;">Agentes individuais ficam mais potentes quando criados separadamente com foco total.</p>
+              </div>
             </div>
           </div>
 
           <!-- Takeaways -->
           <div class="content-card">
             <div class="content-card-header">
-              <div class="content-card-icon content-card-icon--amber">
-                <i data-lucide="zap"></i>
+              <div class="content-card-icon content-card-icon--purple">
+                <i data-lucide="lightbulb"></i>
               </div>
               <span class="content-card-title">Takeaways</span>
-              <span class="content-card-count">12 insights</span>
             </div>
             <div class="content-card-body">
-              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--red">conceito-chave</span><span class="takeaway-text">MCP não é API. MCP é um manual completo de rotas para o agente. API é uma conexão individual. Confundir os dois custa tokens e tempo.</span></div>
-              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--purple">mindset</span><span class="takeaway-text">O AIOS não é uma ferramenta &mdash; é um meta-framework cognitivo. Ferramentas ficam obsoletas; o modo de pensar e orquestrar agentes é o que permanece.</span></div>
-              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--blue">arquitetura</span><span class="takeaway-text">Squads são para validar e formatar um serviço. Depois de validado, o serviço roda autonomamente via automação. O squad é a incubadora, não a fábrica.</span></div>
-              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--green">produtividade</span><span class="takeaway-text">Se você repete um processo 3-4 vezes, crie uma skill ou workflow para ele. Isso é pensar AIOS: padronizar, automatizar, não repetir.</span></div>
-              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--amber">KISS</span><span class="takeaway-text">Simplicidade vence sofisticação. Prompts de dois parágrafos já superaram sistemas extremamente elaborados. Clareza nas etapas importa mais que arquitetura complexa.</span></div>
-              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--red">human-in-the-loop</span><span class="takeaway-text">O pensamento crítico é a coisa mais valiosa que não se pode delegar à IA. Você precisa ser o julgador mais crítico dos outputs dos seus agentes.</span></div>
-              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--purple">engenharia-de-contexto</span><span class="takeaway-text">Para criar agentes poderosos: comece com pesquisa profunda, abstraia conhecimento de pessoas com skin in the game, e transforme frameworks humanos em processos operacionais.</span></div>
-              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--blue">frontend</span><span class="takeaway-text">Para consistência visual com IA: crie um Design System com primitivos (átomos) e componentize tudo. Mudar um componente altera todas as instâncias no projeto.</span></div>
-              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--green">workflow</span><span class="takeaway-text">Use fork pessoal do AIOS no GitHub para gerenciar squads e configurações em múltiplos projetos. Instale a partir do seu fork, não do repositório oficial.</span></div>
-              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--amber">economia-tokens</span><span class="takeaway-text">Motor híbrido: Claude Code (Opus) para orquestração e inteligência; AntiGravity com modelos gratuitos para execução. Não gaste tokens caros em tarefas baratas.</span></div>
-              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--red">modelo-mental</span><span class="takeaway-text">O AIOS é uma software house virtual. Os agentes são seus funcionários. Para vender o que eles produzem, crie um produto separado &mdash; não envia os funcionários junto com a entrega.</span></div>
-              <div class="takeaway-item"><span class="takeaway-badge takeaway-badge--purple">personalização</span><span class="takeaway-text">Cada AIOS é único. Não se apegue à ferramenta &mdash; domine o processo. Quem domina o processo faz qualquer projeto parecer fácil.</span></div>
+              <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <strong style="font-size:15px;color:#fff;">MCP não é API &mdash; confundir os dois custa tokens e tempo</strong>
+                  <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(239,68,68,0.15);color:#EF4444;">Conceito-Chave</span>
+                </div>
+                <p style="font-size:14px;color:#aaa;line-height:1.7;margin:0;">MCP é um manual completo de rotas para o agente. API é uma conexão individual. Usar MCP para chamar outra LLM resulta em consumo duplo de tokens.</p>
+              </div>
+              <div style="background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.15);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <strong style="font-size:15px;color:#fff;">O AIOS é um meta-framework cognitivo, não uma ferramenta</strong>
+                  <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(168,85,247,0.15);color:#A855F7;">Mindset</span>
+                </div>
+                <p style="font-size:14px;color:#aaa;line-height:1.7;margin:0;">Ferramentas ficam obsoletas; o modo de pensar e orquestrar agentes é o que permanece.</p>
+              </div>
+              <div style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.15);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <strong style="font-size:15px;color:#fff;">Squads são incubadoras, não fábricas</strong>
+                  <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(59,130,246,0.15);color:#3B82F6;">Arquitetura</span>
+                </div>
+                <p style="font-size:14px;color:#aaa;line-height:1.7;margin:0;">Squads são para validar e formatar um serviço. Depois de validado, o serviço roda autonomamente via automação.</p>
+              </div>
+              <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.15);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <strong style="font-size:15px;color:#fff;">Se repete 3-4 vezes, crie uma skill ou workflow</strong>
+                  <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(34,197,94,0.15);color:#22C55E;">Produtividade</span>
+                </div>
+                <p style="font-size:14px;color:#aaa;line-height:1.7;margin:0;">Isso é pensar AIOS: padronizar, automatizar, não repetir.</p>
+              </div>
+              <div style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.15);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <strong style="font-size:15px;color:#fff;">KISS: simplicidade vence sofisticação</strong>
+                  <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(245,158,11,0.15);color:#F59E0B;">KISS</span>
+                </div>
+                <p style="font-size:14px;color:#aaa;line-height:1.7;margin:0;">Prompts de dois parágrafos já superaram sistemas extremamente elaborados. Clareza nas etapas importa mais que arquitetura complexa.</p>
+              </div>
+              <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <strong style="font-size:15px;color:#fff;">O pensamento crítico não se delega à IA</strong>
+                  <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(239,68,68,0.15);color:#EF4444;">Human-in-the-Loop</span>
+                </div>
+                <p style="font-size:14px;color:#aaa;line-height:1.7;margin:0;">Você precisa ser o julgador mais crítico dos outputs dos seus agentes.</p>
+              </div>
+              <div style="background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.15);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <strong style="font-size:15px;color:#fff;">Agentes poderosos nascem de pesquisa profunda</strong>
+                  <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(168,85,247,0.15);color:#A855F7;">Engenharia de Contexto</span>
+                </div>
+                <p style="font-size:14px;color:#aaa;line-height:1.7;margin:0;">Comece com pesquisa profunda, abstraia conhecimento de pessoas com skin in the game, e transforme frameworks humanos em processos operacionais.</p>
+              </div>
+              <div style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.15);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <strong style="font-size:15px;color:#fff;">Design System com primitivos e componentização total</strong>
+                  <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(59,130,246,0.15);color:#3B82F6;">Frontend</span>
+                </div>
+                <p style="font-size:14px;color:#aaa;line-height:1.7;margin:0;">Para consistência visual com IA: crie um Design System com primitivos (átomos) e componentize tudo. Mudar um componente altera todas as instâncias no projeto.</p>
+              </div>
+              <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.15);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <strong style="font-size:15px;color:#fff;">Fork pessoal do AIOS para múltiplos projetos</strong>
+                  <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(34,197,94,0.15);color:#22C55E;">Workflow</span>
+                </div>
+                <p style="font-size:14px;color:#aaa;line-height:1.7;margin:0;">Use fork pessoal do AIOS no GitHub para gerenciar squads e configurações em múltiplos projetos. Instale a partir do seu fork, não do repositório oficial.</p>
+              </div>
+              <div style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.15);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <strong style="font-size:15px;color:#fff;">Motor híbrido para economia de tokens</strong>
+                  <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(245,158,11,0.15);color:#F59E0B;">Economia</span>
+                </div>
+                <p style="font-size:14px;color:#aaa;line-height:1.7;margin:0;">Claude Code (Opus) para orquestração e inteligência; AntiGravity com modelos gratuitos para execução. Não gaste tokens caros em tarefas baratas.</p>
+              </div>
+              <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <strong style="font-size:15px;color:#fff;">AIOS é uma software house virtual</strong>
+                  <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(239,68,68,0.15);color:#EF4444;">Modelo Mental</span>
+                </div>
+                <p style="font-size:14px;color:#aaa;line-height:1.7;margin:0;">Os agentes são seus funcionários. Para vender o que eles produzem, crie um produto separado &mdash; não envia os funcionários junto com a entrega.</p>
+              </div>
+              <div style="background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.15);border-radius:10px;padding:18px 20px;margin-bottom:14px;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <strong style="font-size:15px;color:#fff;">Domine o processo, não a ferramenta</strong>
+                  <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding:2px 8px;border-radius:99px;background:rgba(168,85,247,0.15);color:#A855F7;">Personalização</span>
+                </div>
+                <p style="font-size:14px;color:#aaa;line-height:1.7;margin:0;">Cada AIOS é único. Não se apegue à ferramenta &mdash; domine o processo. Quem domina o processo faz qualquer projeto parecer fácil.</p>
+              </div>
             </div>
           </div>
 
@@ -2664,26 +2759,26 @@
             </div>
             <div class="content-card-body">
               <div style="display:flex;flex-wrap:wrap;gap:8px;">
-                <span class="tool-tag">Open Router</span>
-                <span class="tool-tag">Claude Code</span>
-                <span class="tool-tag">AntiGravity (Windsurf)</span>
-                <span class="tool-tag">Supabase</span>
-                <span class="tool-tag">N8N</span>
-                <span class="tool-tag">ClickUp</span>
-                <span class="tool-tag">Cursor IDE</span>
-                <span class="tool-tag">Xcode</span>
-                <span class="tool-tag">Swift</span>
-                <span class="tool-tag">Playwright</span>
-                <span class="tool-tag">Puppeteer</span>
-                <span class="tool-tag">Selenium</span>
-                <span class="tool-tag">AI Studio (Bolt/v0)</span>
-                <span class="tool-tag">GitHub</span>
-                <span class="tool-tag">DevTools (F12)</span>
-                <span class="tool-tag">Telegram</span>
-                <span class="tool-tag">Squad Creator</span>
-                <span class="tool-tag">Skill Creator</span>
-                <span class="tool-tag">AIOS Master</span>
-                <span class="tool-tag">DeepMine</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(168,85,247,0.1);color:#C084FC;border:1px solid rgba(168,85,247,0.2);">Open Router</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(34,197,94,0.1);color:#4ADE80;border:1px solid rgba(34,197,94,0.2);">Claude Code</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(59,130,246,0.1);color:#60A5FA;border:1px solid rgba(59,130,246,0.2);">AntiGravity (Windsurf)</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(245,158,11,0.1);color:#FBBF24;border:1px solid rgba(245,158,11,0.2);">Supabase</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(239,68,68,0.1);color:#F87171;border:1px solid rgba(239,68,68,0.2);">N8N</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(6,182,212,0.1);color:#22D3EE;border:1px solid rgba(6,182,212,0.2);">ClickUp</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(168,85,247,0.1);color:#C084FC;border:1px solid rgba(168,85,247,0.2);">Cursor IDE</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(34,197,94,0.1);color:#4ADE80;border:1px solid rgba(34,197,94,0.2);">Xcode</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(59,130,246,0.1);color:#60A5FA;border:1px solid rgba(59,130,246,0.2);">Swift</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(245,158,11,0.1);color:#FBBF24;border:1px solid rgba(245,158,11,0.2);">Playwright</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(239,68,68,0.1);color:#F87171;border:1px solid rgba(239,68,68,0.2);">Puppeteer</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(6,182,212,0.1);color:#22D3EE;border:1px solid rgba(6,182,212,0.2);">Selenium</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(168,85,247,0.1);color:#C084FC;border:1px solid rgba(168,85,247,0.2);">AI Studio (Bolt/v0)</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(34,197,94,0.1);color:#4ADE80;border:1px solid rgba(34,197,94,0.2);">GitHub</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(59,130,246,0.1);color:#60A5FA;border:1px solid rgba(59,130,246,0.2);">DevTools (F12)</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(245,158,11,0.1);color:#FBBF24;border:1px solid rgba(245,158,11,0.2);">Telegram</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(239,68,68,0.1);color:#F87171;border:1px solid rgba(239,68,68,0.2);">Squad Creator</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(6,182,212,0.1);color:#22D3EE;border:1px solid rgba(6,182,212,0.2);">Skill Creator</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(168,85,247,0.1);color:#C084FC;border:1px solid rgba(168,85,247,0.2);">AIOS Master</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(34,197,94,0.1);color:#4ADE80;border:1px solid rgba(34,197,94,0.2);">DeepMine</span>
               </div>
             </div>
           </div>
