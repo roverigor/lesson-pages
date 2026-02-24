@@ -254,10 +254,10 @@
     <span class="legend-label">Mentores</span>
     <div id="mentor-pills"></div>
     <div class="course-legend">
-      <div class="course-legend-item"><div class="course-dot" style="background:#6366f1"></div>PS Advanced</div>
-      <div class="course-legend-item"><div class="course-dot" style="background:#f59e0b"></div>PS Fundamentals</div>
-      <div class="course-legend-item"><div class="course-dot" style="background:#10b981"></div>Aulas Advanced</div>
-      <div class="course-legend-item"><div class="course-dot" style="background:#06b6d4"></div>Aulas Fund</div>
+      <div class="course-legend-item"><div class="course-dot" style="background:#6366f1"></div>PS Adv</div>
+      <div class="course-legend-item"><div class="course-dot" style="background:#f59e0b"></div>PS Fund</div>
+      <div class="course-legend-item"><div class="course-dot" style="background:#10b981"></div>Adv T1/T2</div>
+      <div class="course-legend-item"><div class="course-dot" style="background:#06b6d4"></div>Fund T1/T2/T3</div>
       <div class="course-legend-item"><div class="course-dot" style="background:#ec4899"></div>AIOS Fund</div>
     </div>
   </div>
@@ -365,13 +365,14 @@ const COURSE_CFG = {
   'PS Advanced T2':    {color:'#818cf8', bg:'rgba(129,140,248,0.08)', short:'PS Adv T2'},
   'PS Advanced T1+T2': {color:'#6366f1', bg:'rgba(99,102,241,0.08)',  short:'PS Adv'},
   'PS Fundamentals':   {color:'#f59e0b', bg:'rgba(245,158,11,0.08)',  short:'PS Fund'},
-  'Aulas Advanced T1': {color:'#10b981', bg:'rgba(16,185,129,0.08)',  short:'Aulas Adv T1'},
-  'Aulas Advanced T2': {color:'#34d399', bg:'rgba(52,211,153,0.08)',  short:'Aulas Adv T2'},
-  'Aulas Fund T1':     {color:'#06b6d4', bg:'rgba(6,182,212,0.08)',   short:'Aulas Fund T1'},
-  'Aulas Fund T3':     {color:'#22d3ee', bg:'rgba(34,211,238,0.08)',  short:'Aulas Fund T3'},
+  'Aulas Advanced T1': {color:'#10b981', bg:'rgba(16,185,129,0.08)',  short:'Adv T1'},
+  'Aulas Advanced T2': {color:'#34d399', bg:'rgba(52,211,153,0.08)',  short:'Adv T2'},
+  'Aulas Fund T1':     {color:'#06b6d4', bg:'rgba(6,182,212,0.08)',   short:'Fund T1'},
+  'Aulas Fund T2':     {color:'#0ea5e9', bg:'rgba(14,165,233,0.08)',  short:'Fund T2'},
+  'Aulas Fund T3':     {color:'#22d3ee', bg:'rgba(34,211,238,0.08)',  short:'Fund T3'},
   'AIOS Fundamentals': {color:'#ec4899', bg:'rgba(236,72,153,0.08)',  short:'AIOS Fund'},
-  'AIOS Fund (Manhã)': {color:'#ec4899', bg:'rgba(236,72,153,0.08)',  short:'AIOS Fund Manhã'},
-  'AIOS Fund (Tarde)': {color:'#f472b6', bg:'rgba(244,114,182,0.08)', short:'AIOS Fund Tarde'},
+  'AIOS Fund (Manhã)': {color:'#ec4899', bg:'rgba(236,72,153,0.08)',  short:'AIOS Manhã'},
+  'AIOS Fund (Tarde)': {color:'#f472b6', bg:'rgba(244,114,182,0.08)', short:'AIOS Tarde'},
 };
 function getCfg(course) {
   return COURSE_CFG[course] || {color:'#666', bg:'rgba(102,102,102,0.08)', short: course};

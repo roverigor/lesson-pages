@@ -392,10 +392,26 @@
 const COURSE_CONFIG = {
   'ps-advanced':    { color: '#6366f1', label: 'PS Advanced' },
   'ps-fund':        { color: '#f59e0b', label: 'PS Fundamentals' },
-  'aulas-advanced': { color: '#10b981', label: 'Aulas Advanced' },
-  'aulas-fund':     { color: '#06b6d4', label: 'Aulas Fund' },
+  'aulas-advanced': { color: '#10b981', label: 'Adv T1/T2' },
+  'aulas-fund':     { color: '#06b6d4', label: 'Fund T1/T2/T3' },
   'aios-fund':      { color: '#ec4899', label: 'AIOS Fund' },
 };
+
+const COURSE_SHORT = {
+  'PS Advanced T1':    'PS Adv T1',
+  'PS Advanced T2':    'PS Adv T2',
+  'PS Advanced T1+T2': 'PS Adv',
+  'PS Fundamentals':   'PS Fund',
+  'Aulas Advanced T1': 'Adv T1',
+  'Aulas Advanced T2': 'Adv T2',
+  'Aulas Fund T1':     'Fund T1',
+  'Aulas Fund T2':     'Fund T2',
+  'Aulas Fund T3':     'Fund T3',
+  'AIOS Fundamentals': 'AIOS Fund',
+  'AIOS Fund (Manhã)': 'AIOS Manhã',
+  'AIOS Fund (Tarde)': 'AIOS Tarde',
+};
+function shortName(course) { return COURSE_SHORT[course] || course; }
 
 function getCourseType(courseName) {
   const c = courseName.toLowerCase();
@@ -679,7 +695,7 @@ function renderAssignment(a) {
   return `
   <div class="assignment" style="border-left-color:${cfg.color}">
     <div class="assignment-header">
-      <span class="assignment-course">${a.course}</span>
+      <span class="assignment-course">${shortName(a.course)}</span>
       ${roleBadge}
     </div>
     <div class="assignment-schedule">${a.schedule}</div>
