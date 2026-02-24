@@ -36,6 +36,16 @@
        MONTH TABS
     ═══════════════════════════════════════ */
     .month-tabs { display: flex; gap: 4px; background: #0d0d0d; padding: 4px; border-radius: 10px; border: 1px solid #1a1a1a; }
+    .link-pill {
+      background: rgba(99,102,241,0.12);
+      border: 1px solid rgba(99,102,241,0.25);
+      border-radius: 999px; padding: 8px 16px;
+      font-size: 12px; font-weight: 600;
+      color: #a5b4fc; text-decoration: none;
+      display: flex; align-items: center; gap: 6px;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .link-pill:hover { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.4); }
     .month-tab {
       padding: 8px 20px; border-radius: 7px; font-size: 13px; font-weight: 600;
       color: #444; cursor: pointer; transition: all 0.15s; border: none; background: transparent;
@@ -239,6 +249,7 @@
         <p>Escala completa de professores e hosts — Fev-Mai 2026</p>
       </div>
     </div>
+    <a href="/escala" class="link-pill">📋 Ver Escala</a>
     <div class="month-tabs" id="month-tabs">
       <button class="month-tab active" onclick="goToMonth(2026,2)">Fevereiro</button>
       <button class="month-tab" onclick="goToMonth(2026,3)">Março</button>
