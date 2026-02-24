@@ -372,9 +372,7 @@ const TEACHERS = [
 // COURSE CONFIG
 // ═══════════════════════════════════════
 const COURSE_CFG = {
-  'PS Advanced T1':    {color:'#6366f1', bg:'rgba(99,102,241,0.08)',  short:'PS Adv T1'},
-  'PS Advanced T2':    {color:'#818cf8', bg:'rgba(129,140,248,0.08)', short:'PS Adv T2'},
-  'PS Advanced T1+T2': {color:'#6366f1', bg:'rgba(99,102,241,0.08)',  short:'PS Adv'},
+  'PS Advanced':       {color:'#6366f1', bg:'rgba(99,102,241,0.08)',  short:'PS Adv'},
   'PS Fundamentals':   {color:'#f59e0b', bg:'rgba(245,158,11,0.08)',  short:'PS Fund'},
   'Aulas Advanced T1': {color:'#10b981', bg:'rgba(16,185,129,0.08)',  short:'Adv T1'},
   'Aulas Advanced T2': {color:'#34d399', bg:'rgba(52,211,153,0.08)',  short:'Adv T2'},
@@ -387,6 +385,12 @@ const COURSE_CFG = {
 };
 function getCfg(course) {
   return COURSE_CFG[course] || {color:'#666', bg:'rgba(102,102,102,0.08)', short: course};
+}
+
+// Normaliza nomes de curso: PS Advanced T1/T2/T1+T2 → PS Advanced (mesma sessão)
+function normalizeCourse(course) {
+  if (course.startsWith('PS Advanced')) return 'PS Advanced';
+  return course;
 }
 
 // ═══════════════════════════════════════
@@ -406,12 +410,15 @@ function buildEventsMap() {
   const map = {};
   for (const teacher of TEACHERS) {
     for (const a of teacher.assignments) {
+      const courseKey = normalizeCourse(a.course);
       for (const date of a.dates) {
         if (!map[date]) map[date] = {};
-        if (!map[date][a.course]) {
-          map[date][a.course] = { course: a.course, mentors: [] };
+        if (!map[date][courseKey]) {
+          map[date][courseKey] = { course: courseKey, mentors: [] };
         }
-        map[date][a.course].mentors.push({ name: teacher.name, role: a.role });
+        // Avoid duplicate mentor entries (e.g. same person in T1 and T1+T2)
+        const already = map[date][courseKey].mentors.some(m => m.name === teacher.name);
+        if (!already) map[date][courseKey].mentors.push({ name: teacher.name, role: a.role });
       }
     }
   }
