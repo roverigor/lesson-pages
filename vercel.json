@@ -3,6 +3,10 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/calendario",
+      "destination": "/calendario/index.html"
+    },
+    {
       "source": "/escala",
       "destination": "/escala/index.html"
     },

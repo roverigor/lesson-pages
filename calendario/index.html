@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendário de Encontros — Fev-Mai 2026</title>
+  <link rel="stylesheet" href="../templates/design-tokens-dark-premium.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-sans); background: #080808; color: #888; min-height: 100vh; }
+
+    /* ═══════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════ */
+    .header {
+      background: #101010;
+      border-bottom: 1px solid #1a1a1a;
+      padding: 20px 32px;
+      position: sticky; top: 0; z-index: 200;
+    }
+    .header-inner { max-width: 1600px; margin: 0 auto; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .header-title { display: flex; align-items: center; gap: 12px; flex: 1; }
+    .header-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .header-title h1 { font-size: 18px; font-weight: 800; color: #fff; }
+    .header-title p  { font-size: 12px; color: #444; margin-top: 1px; }
+
+    /* ═══════════════════════════════════════
+       MONTH TABS
+    ═══════════════════════════════════════ */
+    .month-tabs { display: flex; gap: 4px; background: #0d0d0d; padding: 4px; border-radius: 10px; border: 1px solid #1a1a1a; }
+    .month-tab {
+      padding: 8px 20px; border-radius: 7px; font-size: 13px; font-weight: 600;
+      color: #444; cursor: pointer; transition: all 0.15s; border: none; background: transparent;
+      font-family: var(--font-sans);
+    }
+    .month-tab:hover { color: #888; background: #151515; }
+    .month-tab.active { background: #1e1e2e; color: #a5b4fc; border: 1px solid #2e2e4e; }
+
+    /* ═══════════════════════════════════════
+       MENTOR LEGEND
+    ═══════════════════════════════════════ */
+    .legend-strip {
+      background: #0c0c0c;
+      border-bottom: 1px solid #161616;
+      padding: 12px 32px;
+    }
+    .legend-inner { max-width: 1600px; margin: 0 auto; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .legend-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #333; margin-right: 4px; }
+    .mentor-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      border: 1px solid #1e1e1e; background: #111; color: #555;
+      transition: all 0.15s;
+    }
+    .mentor-pill .avatar {
+      width: 16px; height: 16px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 8px; font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .mentor-pill.active { color: #ddd; border-color: #333; background: #161616; }
+    .mentor-pill.dimmed { opacity: 0.3; }
+    .course-legend { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-left: auto; }
+    .course-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #444; }
+    .course-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+    /* ═══════════════════════════════════════
+       CALENDAR CONTAINER
+    ═══════════════════════════════════════ */
+    .cal-wrap { max-width: 1600px; margin: 0 auto; padding: 24px 32px 64px; }
+
+    /* ═══════════════════════════════════════
+       STATS BAR
+    ═══════════════════════════════════════ */
+    .stats-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .stat-card {
+      background: #101010; border: 1px solid #1a1a1a; border-radius: 10px;
+      padding: 12px 18px; display: flex; align-items: center; gap: 10px;
+    }
+    .stat-num { font-size: 22px; font-weight: 800; color: #fff; line-height: 1; }
+    .stat-label { font-size: 11px; color: #444; margin-top: 2px; }
+    .stat-icon { font-size: 20px; }
+
+    /* ═══════════════════════════════════════
+       WEEK HEADER
+    ═══════════════════════════════════════ */
+    .weekday-header {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 3px; margin-bottom: 3px;
+    }
+    .weekday-label {
+      text-align: center; font-size: 10px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: #2a2a2a; padding: 8px 0;
+    }
+    .weekday-label.weekend { color: #222; }
+
+    /* ═══════════════════════════════════════
+       CALENDAR GRID
+    ═══════════════════════════════════════ */
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+    .cal-cell {
+      min-height: 120px; border-radius: 8px;
+      background: #0d0d0d; border: 1px solid #141414;
+      padding: 10px 8px; position: relative;
+      transition: all 0.2s;
+    }
+    .cal-cell.empty { background: transparent; border-color: transparent; }
+    .cal-cell.has-events { background: #0f0f0f; border-color: #1a1a1a; }
+    .cal-cell.has-events:hover { background: #121212; border-color: #222; }
+    .cal-cell.is-today {
+      background: #0d0d1a !important;
+      border-color: #2e2e5e !important;
+      box-shadow: 0 0 0 1px #3730a3 inset, 0 0 20px rgba(99,102,241,0.08);
+    }
+    .cal-cell.is-past { opacity: 0.45; }
+    .cal-cell.is-weekend .day-num { color: #2a2a2a; }
+
+    .day-num {
+      font-size: 13px; font-weight: 700; color: #2e2e2e;
+      margin-bottom: 6px; line-height: 1;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .day-num.has-events { color: #555; }
+    .today-badge {
+      font-size: 9px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.1em; background: #6366f1; color: #fff;
+      padding: 2px 6px; border-radius: 4px;
+    }
+
+    /* ═══════════════════════════════════════
+       EVENT PILL
+    ═══════════════════════════════════════ */
+    .event {
+      border-radius: 5px; padding: 5px 7px;
+      margin-bottom: 4px; border-left: 2px solid;
+      background: rgba(255,255,255,0.03);
+      cursor: pointer; transition: all 0.15s;
+      position: relative;
+    }
+    .event:hover { background: rgba(255,255,255,0.06); transform: translateX(1px); }
+    .event-course {
+      font-size: 10px; font-weight: 700; line-height: 1.2;
+      margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .event-mentors { display: flex; flex-wrap: wrap; gap: 2px; }
+    .event-mentor {
+      font-size: 9px; font-weight: 600; padding: 1px 5px;
+      border-radius: 3px; white-space: nowrap;
+      opacity: 0.9;
+    }
+    .event-mentor.prof { background: rgba(255,255,255,0.08); }
+    .event-mentor.host { background: rgba(255,255,255,0.04); color: #444; }
+
+    /* ═══════════════════════════════════════
+       MODAL / TOOLTIP
+    ═══════════════════════════════════════ */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75); z-index: 1000;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: #111; border: 1px solid #222; border-radius: 16px;
+      padding: 28px; max-width: 480px; width: 90%; max-height: 80vh;
+      overflow-y: auto; position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      background: #1a1a1a; border: 1px solid #222; border-radius: 6px;
+      color: #666; cursor: pointer; padding: 4px 10px; font-size: 12px;
+      font-family: var(--font-sans);
+    }
+    .modal-date { font-size: 13px; color: #555; margin-bottom: 4px; }
+    .modal-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 20px; }
+    .modal-session { background: #161616; border: 1px solid #1e1e1e; border-radius: 10px; padding: 14px; margin-bottom: 10px; border-left: 3px solid; }
+    .modal-session-course { font-size: 14px; font-weight: 700; color: #ddd; margin-bottom: 8px; }
+    .modal-mentor-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px solid #1a1a1a; }
+    .modal-mentor-row:last-child { border-bottom: none; }
+    .modal-mentor-name { font-size: 13px; color: #bbb; flex: 1; }
+    .modal-role-badge {
+      font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .modal-role-prof { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+    .modal-role-host { background: rgba(255,255,255,0.06); color: #555; }
+
+    /* ═══════════════════════════════════════
+       MONTH TITLE
+    ═══════════════════════════════════════ */
+    .month-header {
+      display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px;
+    }
+    .month-name { font-size: 28px; font-weight: 900; color: #fff; }
+    .month-year { font-size: 16px; font-weight: 400; color: #333; }
+    .month-sessions { font-size: 12px; color: #444; background: #141414; border: 1px solid #1e1e1e; border-radius: 999px; padding: 4px 12px; }
+
+    /* ═══════════════════════════════════════
+       FILTER HIGHLIGHT
+    ═══════════════════════════════════════ */
+    .event.dimmed { opacity: 0.1 !important; }
+    .cal-cell.all-dimmed { opacity: 0.4; }
+
+    @media (max-width: 1100px) {
+      .cal-cell { min-height: 100px; }
+      .cal-wrap { padding: 16px; }
+    }
+    @media (max-width: 768px) {
+      .header { padding: 14px 16px; }
+      .legend-strip { padding: 10px 16px; }
+      .cal-wrap { padding: 12px 10px; }
+      .cal-cell { min-height: 80px; padding: 6px 4px; }
+      .event-mentor { display: none; }
+      .event-course { font-size: 9px; }
+      .month-name { font-size: 22px; }
+      .course-legend { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-title">
+      <div class="header-icon">📅</div>
+      <div>
+        <h1>Calendário de Encontros</h1>
+        <p>Escala completa de professores e hosts — Fev-Mai 2026</p>
+      </div>
+    </div>
+    <div class="month-tabs" id="month-tabs">
+      <button class="month-tab active" onclick="goToMonth(2026,1)">Fevereiro</button>
+      <button class="month-tab" onclick="goToMonth(2026,2)">Março</button>
+      <button class="month-tab" onclick="goToMonth(2026,3)">Abril</button>
+      <button class="month-tab" onclick="goToMonth(2026,4)">Maio</button>
+    </div>
+  </div>
+</header>
+
+<!-- MENTOR LEGEND -->
+<div class="legend-strip">
+  <div class="legend-inner">
+    <span class="legend-label">Mentores</span>
+    <div id="mentor-pills"></div>
+    <div class="course-legend">
+      <div class="course-legend-item"><div class="course-dot" style="background:#6366f1"></div>PS Advanced</div>
+      <div class="course-legend-item"><div class="course-dot" style="background:#f59e0b"></div>PS Fundamentals</div>
+      <div class="course-legend-item"><div class="course-dot" style="background:#10b981"></div>Aulas Advanced</div>
+      <div class="course-legend-item"><div class="course-dot" style="background:#06b6d4"></div>Aulas Fund</div>
+      <div class="course-legend-item"><div class="course-dot" style="background:#ec4899"></div>AIOS Fund</div>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDAR -->
+<div class="cal-wrap">
+  <div class="stats-bar" id="stats-bar"></div>
+  <div class="month-header">
+    <span class="month-name" id="month-name-label"></span>
+    <span class="month-year">2026</span>
+    <span class="month-sessions" id="month-sessions-count"></span>
+  </div>
+  <div class="weekday-header">
+    <div class="weekday-label">Seg</div>
+    <div class="weekday-label">Ter</div>
+    <div class="weekday-label">Qua</div>
+    <div class="weekday-label">Qui</div>
+    <div class="weekday-label">Sex</div>
+    <div class="weekday-label weekend">Sáb</div>
+    <div class="weekday-label weekend">Dom</div>
+  </div>
+  <div class="cal-grid" id="cal-grid"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal" id="modal-body">
+    <button class="modal-close" onclick="closeModal()">✕ fechar</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+const TEACHERS = [
+  { name:"Talles", total:45, assignments:[
+    {course:"PS Advanced T1",  role:"Professor", dates:["24/02","27/02","03/03","06/03","10/03","13/03","17/03","20/03","24/03","27/03","31/03","03/04"]},
+    {course:"PS Advanced T2",  role:"Professor", dates:["07/04","10/04","14/04","17/04","21/04","24/04","28/04","01/05","05/05","08/05","12/05","15/05","19/05","22/05","26/05","29/05"]},
+    {course:"Aulas Advanced T1",role:"Host",     dates:["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"]},
+    {course:"Aulas Advanced T2",role:"Host",     dates:["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"]},
+  ]},
+  { name:"José Amorim", total:33, assignments:[
+    {course:"PS Advanced T1",   role:"Professor", dates:["27/02","06/03","13/03","20/03","27/03","03/04"]},
+    {course:"PS Advanced T2",   role:"Professor", dates:["10/04","17/04","24/04","01/05","08/05","15/05","22/05","29/05"]},
+    {course:"Aulas Fund T1",    role:"Professor", dates:["12/02","16/02","19/02","23/02","26/02","02/03","05/03"]},
+    {course:"Aulas Fund T3",    role:"Professor", dates:["03/03","05/03","10/03","12/03","17/03","19/03","24/03","26/03"]},
+    {course:"AIOS Fundamentals",role:"Professor", dates:["21/02","28/02","07/03","14/03"]},
+  ]},
+  { name:"Klaus", total:14, assignments:[
+    {course:"PS Advanced T1+T2",role:"Professor", dates:["24/02","03/03","10/03","17/03","24/03","31/03","07/04","14/04","21/04","28/04","05/05","12/05","19/05","26/05"]},
+  ]},
+  { name:"Day", total:14, assignments:[
+    {course:"PS Advanced T1+T2",role:"Professor", dates:["24/02","03/03","10/03","17/03","24/03","31/03","07/04","14/04","21/04","28/04","05/05","12/05","19/05","26/05"]},
+  ]},
+  { name:"Sidney", total:11, assignments:[
+    {course:"PS Fundamentals",    role:"Professor", dates:["17/02","20/02","03/03","06/03","13/03","20/03","27/03"]},
+    {course:"AIOS Fund (Manhã)",  role:"Host",      dates:["21/02","28/02","07/03","14/03"]},
+  ]},
+  { name:"Feldman", total:6, assignments:[
+    {course:"PS Fundamentals",role:"Professor", dates:["13/02","24/02","27/02","10/03","17/03","24/03"]},
+  ]},
+  { name:"Bruno Gentil", total:17, assignments:[
+    {course:"PS Fundamentals",  role:"Professor", dates:["13/02","17/02","20/02","24/02","27/02","03/03","06/03","10/03","13/03","17/03","20/03","24/03","27/03"]},
+    {course:"AIOS Fund (Tarde)",role:"Host",      dates:["21/02","28/02","07/03","14/03"]},
+  ]},
+  { name:"Diego", total:14, assignments:[
+    {course:"PS Fundamentals",role:"Professor", dates:["17/02","24/02","03/03","10/03","17/03","24/03"]},
+    {course:"Aulas Fund T1",  role:"Host",      dates:["12/02","19/02","26/02","05/03"]},
+    {course:"Aulas Fund T3",  role:"Host",      dates:["05/03","12/03","19/03","26/03"]},
+  ]},
+  { name:"Daniel", total:11, assignments:[
+    {course:"PS Fundamentals",role:"Professor", dates:["13/02","20/02","27/02","06/03","13/03","20/03","27/03"]},
+    {course:"Aulas Fund T3",  role:"Host",      dates:["03/03","10/03","17/03","24/03"]},
+  ]},
+  { name:"Adavio", total:22, assignments:[
+    {course:"PS Advanced T1+T2",role:"Professor", dates:["27/02","06/03","13/03","20/03","27/03","03/04","10/04","17/04","24/04","01/05","08/05","15/05","22/05","29/05"]},
+    {course:"Aulas Advanced T2",role:"Host",      dates:["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"]},
+  ]},
+  { name:"Alan Nicolas", total:9, assignments:[
+    {course:"Aulas Advanced T1",role:"Professor", dates:["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"]},
+  ]},
+  { name:"Adriano", total:17, assignments:[
+    {course:"Aulas Advanced T1",role:"Host",      dates:["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"]},
+    {course:"Aulas Advanced T2",role:"Professor", dates:["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"]},
+  ]},
+  { name:"Fran", total:3, assignments:[
+    {course:"Aulas Fund T1",role:"Host", dates:["16/02","23/02","02/03"]},
+  ]},
+  { name:"Douglas", total:8, assignments:[
+    {course:"Aulas Fund T3",role:"Host", dates:["03/03","05/03","10/03","12/03","17/03","19/03","24/03","26/03"]},
+  ]},
+  { name:"Lucas Charão", total:7, assignments:[
+    {course:"Aulas Fund T1",role:"Host", dates:["12/02","16/02","19/02","23/02","26/02","02/03","05/03"]},
+  ]},
+];
+
+// ═══════════════════════════════════════
+// COURSE CONFIG
+// ═══════════════════════════════════════
+const COURSE_CFG = {
+  'PS Advanced T1':    {color:'#6366f1', bg:'rgba(99,102,241,0.08)',  short:'PS Adv T1'},
+  'PS Advanced T2':    {color:'#818cf8', bg:'rgba(129,140,248,0.08)', short:'PS Adv T2'},
+  'PS Advanced T1+T2': {color:'#6366f1', bg:'rgba(99,102,241,0.08)',  short:'PS Adv'},
+  'PS Fundamentals':   {color:'#f59e0b', bg:'rgba(245,158,11,0.08)',  short:'PS Fund'},
+  'Aulas Advanced T1': {color:'#10b981', bg:'rgba(16,185,129,0.08)',  short:'Aulas Adv T1'},
+  'Aulas Advanced T2': {color:'#34d399', bg:'rgba(52,211,153,0.08)',  short:'Aulas Adv T2'},
+  'Aulas Fund T1':     {color:'#06b6d4', bg:'rgba(6,182,212,0.08)',   short:'Aulas Fund T1'},
+  'Aulas Fund T3':     {color:'#22d3ee', bg:'rgba(34,211,238,0.08)',  short:'Aulas Fund T3'},
+  'AIOS Fundamentals': {color:'#ec4899', bg:'rgba(236,72,153,0.08)',  short:'AIOS Fund'},
+  'AIOS Fund (Manhã)': {color:'#ec4899', bg:'rgba(236,72,153,0.08)',  short:'AIOS Fund Manhã'},
+  'AIOS Fund (Tarde)': {color:'#f472b6', bg:'rgba(244,114,182,0.08)', short:'AIOS Fund Tarde'},
+};
+function getCfg(course) {
+  return COURSE_CFG[course] || {color:'#666', bg:'rgba(102,102,102,0.08)', short: course};
+}
+
+// ═══════════════════════════════════════
+// MENTOR COLORS
+// ═══════════════════════════════════════
+const MENTOR_COLORS = ['#6366f1','#10b981','#f59e0b','#ec4899','#06b6d4','#8b5cf6','#ef4444','#14b8a6','#f97316','#a855f7','#22c55e','#3b82f6','#e11d48','#7c3aed','#0891b2'];
+function mentorColor(name) {
+  let h = 0; for (const c of name) h = (h*31+c.charCodeAt(0))%MENTOR_COLORS.length;
+  return MENTOR_COLORS[h];
+}
+function initials(name) { return name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
+
+// ═══════════════════════════════════════
+// BUILD EVENT MAP
+// ═══════════════════════════════════════
+function buildEventsMap() {
+  const map = {};
+  for (const teacher of TEACHERS) {
+    for (const a of teacher.assignments) {
+      for (const date of a.dates) {
+        if (!map[date]) map[date] = {};
+        if (!map[date][a.course]) {
+          map[date][a.course] = { course: a.course, mentors: [] };
+        }
+        map[date][a.course].mentors.push({ name: teacher.name, role: a.role });
+      }
+    }
+  }
+  // Sort mentors: Professors first
+  for (const date in map) {
+    for (const course in map[date]) {
+      map[date][course].mentors.sort((a,b) => a.role==='Professor'?-1:1);
+    }
+  }
+  return map;
+}
+const EVENTS = buildEventsMap();
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let currentMonth = new Date().getMonth(); // 0-indexed
+let currentYear  = new Date().getFullYear();
+let activeMentor = null;
+
+// Clamp to Feb-May 2026
+const MONTHS = [{y:2026,m:1},{y:2026,m:2},{y:2026,m:3},{y:2026,m:4}];
+const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+// ═══════════════════════════════════════
+// DATE UTILS
+// ═══════════════════════════════════════
+function today() { const d=new Date(); d.setHours(0,0,0,0); return d; }
+function parseDate(dd_mm) {
+  const [d,m] = dd_mm.split('/').map(Number);
+  const dt = new Date(2026, m-1, d); dt.setHours(0,0,0,0); return dt;
+}
+function dateStr(day, month1) { // month1 = 1-indexed
+  return `${String(day).padStart(2,'0')}/${String(month1).padStart(2,'0')}`;
+}
+
+// ═══════════════════════════════════════
+// RENDER MENTOR PILLS
+// ═══════════════════════════════════════
+function renderMentorPills() {
+  const el = document.getElementById('mentor-pills');
+  el.style.display = 'flex'; el.style.flexWrap = 'wrap'; el.style.gap = '6px';
+  el.innerHTML = TEACHERS.map(t => `
+    <button class="mentor-pill" data-name="${t.name}" onclick="toggleMentor('${t.name.replace(/'/g,"\\'")}')">
+      <span class="avatar" style="background:${mentorColor(t.name)}">${initials(t.name)}</span>
+      ${t.name}
+    </button>
+  `).join('');
+}
+
+function toggleMentor(name) {
+  activeMentor = (activeMentor === name) ? null : name;
+  document.querySelectorAll('.mentor-pill').forEach(p => {
+    if (!activeMentor) {
+      p.classList.remove('active','dimmed');
+    } else if (p.dataset.name === activeMentor) {
+      p.classList.add('active'); p.classList.remove('dimmed');
+    } else {
+      p.classList.remove('active'); p.classList.add('dimmed');
+    }
+  });
+  renderGrid(currentYear, currentMonth);
+}
+
+// ═══════════════════════════════════════
+// RENDER STATS
+// ═══════════════════════════════════════
+function renderStats() {
+  const t = today();
+  const todayKey = dateStr(t.getDate(), t.getMonth()+1);
+  const todaySessions = EVENTS[todayKey] ? Object.values(EVENTS[todayKey]) : [];
+  const totalSessions = Object.keys(EVENTS).length;
+  const totalMentors  = TEACHERS.length;
+
+  let todayHTML = '';
+  if (todaySessions.length) {
+    const names = [...new Set(todaySessions.flatMap(s => s.mentors.map(m => m.name)))];
+    todayHTML = `<div class="stat-card">
+      <span class="stat-icon">⚡</span>
+      <div><div class="stat-num" style="font-size:14px;color:#a5b4fc">${names.slice(0,3).join(', ')}${names.length>3?'…':''}</div><div class="stat-label">Em sessão hoje</div></div>
+    </div>`;
+  }
+
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat-card">
+      <span class="stat-icon">👥</span>
+      <div><div class="stat-num">${totalMentors}</div><div class="stat-label">Mentores</div></div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">📆</span>
+      <div><div class="stat-num">${totalSessions}</div><div class="stat-label">Dias com sessão</div></div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">🎯</span>
+      <div><div class="stat-num">${TEACHERS.reduce((s,t)=>s+t.total,0)}</div><div class="stat-label">Total encontros</div></div>
+    </div>
+    ${todayHTML}
+  `;
+}
+
+// ═══════════════════════════════════════
+// RENDER GRID
+// ═══════════════════════════════════════
+function renderGrid(year, month1) { // month1 = 1-indexed
+  currentYear  = year;
+  currentMonth = month1;
+
+  document.getElementById('month-name-label').textContent = MONTH_NAMES[month1-1];
+
+  const firstDay = new Date(year, month1-1, 1).getDay(); // Sun=0
+  const startOffset = (firstDay + 6) % 7; // Mon=0
+  const daysInMonth = new Date(year, month1, 0).getDate();
+  const t = today();
+
+  // Count sessions this month
+  let monthSessions = 0;
+  for (let d=1; d<=daysInMonth; d++) {
+    const key = dateStr(d, month1);
+    if (EVENTS[key]) monthSessions += Object.keys(EVENTS[key]).length;
+  }
+  document.getElementById('month-sessions-count').textContent = `${monthSessions} sessões no mês`;
+
+  const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+  let html = '';
+
+  for (let i=0; i<totalCells; i++) {
+    const dayNum = i - startOffset + 1;
+    if (dayNum < 1 || dayNum > daysInMonth) {
+      html += '<div class="cal-cell empty"></div>'; continue;
+    }
+
+    const key    = dateStr(dayNum, month1);
+    const events = EVENTS[key] ? Object.values(EVENTS[key]) : [];
+    const dow    = (i % 7); // 0=Mon,6=Sun
+    const isWkd  = dow >= 5;
+    const cellDate = new Date(year, month1-1, dayNum); cellDate.setHours(0,0,0,0);
+    const isPast    = cellDate < t;
+    const isToday   = cellDate.getTime() === t.getTime();
+
+    let classes = 'cal-cell';
+    if (!events.length) classes += '';
+    else classes += ' has-events';
+    if (isToday) classes += ' is-today';
+    else if (isPast) classes += ' is-past';
+    if (isWkd) classes += ' is-weekend';
+
+    // Filter events by active mentor
+    let displayEvents = events;
+    let allDimmed = false;
+    if (activeMentor) {
+      const hasActive = events.some(e => e.mentors.some(m => m.name === activeMentor));
+      if (!hasActive && events.length) allDimmed = true;
+    }
+    if (allDimmed) classes += ' all-dimmed';
+
+    const dayNumHTML = `<div class="day-num ${events.length?'has-events':''}">
+      ${dayNum}
+      ${isToday ? '<span class="today-badge">Hoje</span>' : ''}
+    </div>`;
+
+    const eventsHTML = events.map(ev => {
+      const cfg = getCfg(ev.course);
+      const mentorActive = activeMentor && ev.mentors.some(m=>m.name===activeMentor);
+      const dimmed = activeMentor && !mentorActive;
+      const mentorsHTML = ev.mentors.map(m => {
+        const isActive = !activeMentor || m.name===activeMentor;
+        return `<span class="event-mentor ${m.role==='Professor'?'prof':'host'}"
+          style="color:${isActive?mentorColor(m.name):'#333'}">${m.name.split(' ')[0]}</span>`;
+      }).join('');
+      return `<div class="event ${dimmed?'dimmed':''}"
+        style="border-left-color:${cfg.color};background:${cfg.bg}"
+        onclick="openModal('${key}')">
+        <div class="event-course" style="color:${cfg.color}">${cfg.short}</div>
+        <div class="event-mentors">${mentorsHTML}</div>
+      </div>`;
+    }).join('');
+
+    html += `<div class="${classes}">${dayNumHTML}${eventsHTML}</div>`;
+  }
+
+  document.getElementById('cal-grid').innerHTML = html;
+
+  // Update month tab active state
+  document.querySelectorAll('.month-tab').forEach((btn,i) => {
+    btn.classList.toggle('active', MONTHS[i].m === month1);
+  });
+}
+
+// ═══════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════
+function openModal(key) {
+  const events = EVENTS[key] ? Object.values(EVENTS[key]) : [];
+  if (!events.length) return;
+
+  const [dd,mm] = key.split('/');
+  const date = new Date(2026, parseInt(mm)-1, parseInt(dd));
+  const weekday = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'][date.getDay()];
+
+  const sessionsHTML = events.map(ev => {
+    const cfg = getCfg(ev.course);
+    const mentorsHTML = ev.mentors.map(m => `
+      <div class="modal-mentor-row">
+        <span style="display:inline-flex;align-items:center;gap:6px">
+          <span style="width:20px;height:20px;border-radius:50%;background:${mentorColor(m.name)};display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#fff;flex-shrink:0">${initials(m.name)}</span>
+          <span class="modal-mentor-name">${m.name}</span>
+        </span>
+        <span class="modal-role-badge ${m.role==='Professor'?'modal-role-prof':'modal-role-host'}">${m.role}</span>
+      </div>
+    `).join('');
+    return `<div class="modal-session" style="border-left-color:${cfg.color}">
+      <div class="modal-session-course" style="color:${cfg.color}">${ev.course}</div>
+      ${mentorsHTML}
+    </div>`;
+  }).join('');
+
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-date">${weekday}, ${dd}/${mm}/2026</div>
+    <div class="modal-title">${events.length} sessão${events.length>1?'ões':''} neste dia</div>
+    ${sessionsHTML}
+  `;
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal') || e.target.classList.contains('modal-close')) {
+    document.getElementById('modal').classList.remove('show');
+  }
+}
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal({target:document.getElementById('modal')}); });
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function goToMonth(year, month1) {
+  renderGrid(year, month1);
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+renderMentorPills();
+renderStats();
+
+// Go to current month or Feb 2026 if before
+const now = new Date();
+const initMonth = (now.getFullYear()===2026 && now.getMonth()>=1 && now.getMonth()<=4)
+  ? now.getMonth()+1 : 2;
+renderGrid(2026, initMonth);
+</script>
+</body>
+</html>
