@@ -46,6 +46,7 @@
       transition: all 0.15s; white-space: nowrap;
     }
     .link-pill:hover { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.4); }
+    .link-pill i { width: 14px; height: 14px; }
     .month-tab {
       padding: 8px 20px; border-radius: 7px; font-size: 13px; font-weight: 600;
       color: #444; cursor: pointer; transition: all 0.15s; border: none; background: transparent;
@@ -243,14 +244,14 @@
 <header class="header">
   <div class="header-inner">
     <div class="header-title">
-      <div class="header-icon">📅</div>
+      <div class="header-icon"><i data-lucide="calendar" style="width:20px;height:20px;color:#fff"></i></div>
       <div>
         <h1>Calendário de Encontros</h1>
         <p>Escala completa de professores e hosts — Fev-Mai 2026</p>
       </div>
     </div>
-    <a href="/" class="link-pill">🏠 Home</a>
-    <a href="/escala" class="link-pill">📋 Ver Escala</a>
+    <a href="/" class="link-pill"><i data-lucide="home"></i> Home</a>
+    <a href="/escala" class="link-pill"><i data-lucide="clipboard-list"></i> Ver Escala</a>
     <div class="month-tabs" id="month-tabs">
       <button class="month-tab active" onclick="goToMonth(2026,2)">Fevereiro</button>
       <button class="month-tab" onclick="goToMonth(2026,3)">Março</button>
@@ -674,5 +675,7 @@ const initMonth = (now.getFullYear()===2026 && now.getMonth()>=1 && now.getMonth
   ? now.getMonth()+1 : 2;
 renderGrid(2026, initMonth);
 </script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>

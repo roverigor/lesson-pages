@@ -79,6 +79,7 @@
       text-decoration: none; transition: all 0.15s;
     }
     .link-pill:hover { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.4); }
+    .link-pill i { width: 14px; height: 14px; }
 
     /* ── LAYOUT ── */
     .layout {
@@ -331,7 +332,7 @@
 <header class="page-header">
   <div class="header-inner">
     <div class="header-title">
-      <div class="header-icon">📅</div>
+      <div class="header-icon"><i data-lucide="clipboard-list" style="width:20px;height:20px;color:#fff"></i></div>
       <div class="header-text">
         <h1>Escala de Professores e Hosts</h1>
         <p>Cronograma individual por mentor — Fevereiro a Maio 2026</p>
@@ -341,8 +342,8 @@
       <div class="stat-pill"><strong>15</strong> mentores</div>
       <div class="stat-pill" id="total-sessions-pill">calculando...</div>
       <div class="stat-pill" id="today-pill">calculando...</div>
-      <a href="/" class="link-pill">🏠 Home</a>
-      <a href="/calendario" class="link-pill">📅 Ver Calendário</a>
+      <a href="/" class="link-pill"><i data-lucide="home"></i> Home</a>
+      <a href="/calendario" class="link-pill"><i data-lucide="calendar"></i> Ver Calendário</a>
     </div>
   </div>
 </header>
@@ -753,5 +754,7 @@ setTimeout(() => {
   document.querySelectorAll('.teacher-card').forEach(c => observer.observe(c));
 }, 100);
 </script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>lucide.createIcons();</script>
 </body>
 </html>

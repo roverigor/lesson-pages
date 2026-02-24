@@ -136,7 +136,9 @@
       background: linear-gradient(135deg, #0d0d1a, #101010);
     }
     .card-featured .card-content { flex: 1; }
-    .card-featured .card-icon { width: 56px; height: 56px; font-size: 26px; flex-shrink: 0; }
+    .card-featured .card-icon { width: 56px; height: 56px; flex-shrink: 0; }
+    .card-icon i { width: 22px; height: 22px; }
+    .card-featured .card-icon i { width: 26px; height: 26px; }
     .card-featured .card-title { font-size: 20px; }
     .card-featured:hover { box-shadow: 0 12px 40px rgba(99,102,241,0.1); }
     @media (max-width: 600px) {
@@ -157,7 +159,7 @@
 
     <!-- CALENDÁRIO — destaque -->
     <a href="/calendario" class="card card-purple card-featured">
-      <div class="card-icon">📅</div>
+      <div class="card-icon"><i data-lucide="calendar"></i></div>
       <div class="card-content">
         <div class="card-label">Professores &amp; Hosts</div>
         <div class="card-title">Calendário de Encontros</div>
@@ -168,7 +170,7 @@
 
     <!-- ESCALA -->
     <a href="/escala" class="card card-purple">
-      <div class="card-icon">📋</div>
+      <div class="card-icon"><i data-lucide="clipboard-list"></i></div>
       <div class="card-label">Cronograma Individual</div>
       <div class="card-title">Escala de Professores</div>
       <div class="card-desc">Todas as datas de cada mentor, com próximos encontros e contagem total.</div>
@@ -177,7 +179,7 @@
 
     <!-- ABSTRACTS -->
     <a href="/abstracts" class="card card-amber">
-      <div class="card-icon">📝</div>
+      <div class="card-icon"><i data-lucide="file-text"></i></div>
       <div class="card-label">Resumos das Aulas</div>
       <div class="card-title">Abstracts &amp; Glossário</div>
       <div class="card-desc">Resumos, pontos-chave, takeaways, links, glossário, FAQ e Q&A acumulativos.</div>
@@ -186,7 +188,7 @@
 
     <!-- ANÁLISE INTERNA -->
     <a href="/analise-interna" class="card card-green">
-      <div class="card-icon">📊</div>
+      <div class="card-icon"><i data-lucide="bar-chart-2"></i></div>
       <div class="card-label">GPS &amp; Metodologia Lendária</div>
       <div class="card-title">Análise Interna</div>
       <div class="card-desc">Score GPS/ML, pontos positivos, oportunidades, plano de ação e feedback ao professor.</div>
@@ -195,5 +197,7 @@
 
   </div>
 
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>lucide.createIcons();</script>
 </body>
 </html>
