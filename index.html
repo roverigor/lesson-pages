@@ -126,6 +126,12 @@
     .card-cyan:hover { box-shadow: 0 8px 32px rgba(6,182,212,0.06); }
     .card-cyan::before { background: radial-gradient(ellipse at top left, rgba(6,182,212,0.04), transparent 70%); }
 
+    .card-red .card-icon { background: rgba(248,81,73,0.12); }
+    .card-red .card-label { color: #f85149; }
+    .card-red .card-arrow { color: #f85149; }
+    .card-red:hover { box-shadow: 0 8px 32px rgba(248,81,73,0.06); }
+    .card-red::before { background: radial-gradient(ellipse at top left, rgba(248,81,73,0.04), transparent 70%); }
+
     /* Card destaque (calendário) */
     .card-featured {
       grid-column: 1 / -1;
@@ -193,6 +199,15 @@
       <div class="card-title">Análise Interna</div>
       <div class="card-desc">Score GPS/ML, pontos positivos, oportunidades, plano de ação e feedback ao professor.</div>
       <div class="card-arrow">Ver análise →</div>
+    </a>
+
+    <!-- OPENCLAW -->
+    <a href="/openclaw" class="card card-red">
+      <div class="card-icon"><i data-lucide="server"></i></div>
+      <div class="card-label">Guia Técnico</div>
+      <div class="card-title">OpenClaw VPS Stack</div>
+      <div class="card-desc">Passo a passo completo para instalar e configurar o OpenClaw em uma VPS — Tailscale, WhatsApp, Dashboard e modelos LLM.</div>
+      <div class="card-arrow">Ver guia →</div>
     </a>
 
   </div>

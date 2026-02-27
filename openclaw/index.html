@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia de Instalação — OpenClaw VPS Stack</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0d1117;
+            --bg-card: #161b22;
+            --bg-code: #1c2128;
+            --border: #30363d;
+            --text: #e6edf3;
+            --text-muted: #8b949e;
+            --accent: #f85149;
+            --accent-green: #3fb950;
+            --accent-blue: #58a6ff;
+            --accent-yellow: #d29922;
+            --accent-purple: #bc8cff;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            padding: 0;
+        }
+
+        /* Back nav */
+        .back-nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 200;
+            background: rgba(13,17,23,0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .back-nav a {
+            display: flex; align-items: center; gap: 6px;
+            color: var(--text-muted); text-decoration: none;
+            font-size: 13px; font-weight: 500;
+            transition: color 0.15s;
+        }
+        .back-nav a:hover { color: var(--text); }
+        .back-nav .divider { color: var(--border); }
+        .back-nav .current { color: var(--text); font-size: 13px; }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            padding: 80px 40px 60px;
+            text-align: center;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #fff;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+        }
+
+        .header .lobster {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1em;
+        }
+
+        .header .badge {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin: 5px;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .progress-bar {
+            position: sticky;
+            top: 41px;
+            z-index: 100;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 20px;
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .progress-bar .step {
+            width: 60px;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border);
+            transition: background 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        .progress-bar .step::after {
+            content: attr(title);
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 11px;
+            font-weight: 500;
+            padding: 3px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s;
+        }
+        .progress-bar .step:hover::after { opacity: 1; }
+        .progress-bar .step.active { background: var(--accent); }
+        .progress-bar .step.done { background: var(--accent-green); }
+
+        .toc {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .toc h2 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .toc ol {
+            list-style: none;
+            counter-reset: toc;
+        }
+
+        .toc ol li {
+            counter-increment: toc;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .toc ol li:last-child { border-bottom: none; }
+
+        .toc ol li a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: color 0.15s;
+        }
+
+        .toc ol li a:hover { color: var(--accent); }
+
+        .toc ol li a::before {
+            content: counter(toc);
+            background: var(--border);
+            color: var(--text);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .phase {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 35px;
+            margin-bottom: 30px;
+            scroll-margin-top: 110px;
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .phase-number {
+            background: var(--accent);
+            color: #fff;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .phase-title {
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .phase-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+
+        h3 {
+            font-size: 1.15em;
+            margin: 25px 0 12px;
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        p { margin-bottom: 12px; }
+
+        pre {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 20px;
+            overflow-x: auto;
+            margin: 12px 0 18px;
+            font-size: 0.9em;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        pre .comment { color: var(--text-muted); }
+        code { font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; }
+
+        .inline-code {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.9em;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        .warning {
+            background: rgba(210, 153, 34, 0.1);
+            border-left: 4px solid var(--accent-yellow);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+        }
+
+        .warning::before {
+            content: "⚠️ ";
+            font-weight: bold;
+        }
+
+        .tip {
+            background: rgba(63, 185, 80, 0.1);
+            border-left: 4px solid var(--accent-green);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+        }
+
+        .tip::before {
+            content: "💡 ";
+            font-weight: bold;
+        }
+
+        .danger {
+            background: rgba(248, 81, 73, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+        }
+
+        .danger::before {
+            content: "🚨 ";
+            font-weight: bold;
+        }
+
+        .checkpoint {
+            background: rgba(188, 140, 255, 0.1);
+            border: 1px solid var(--accent-purple);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .checkpoint::before {
+            content: "✅ Checkpoint: ";
+            font-weight: bold;
+            color: var(--accent-green);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.9em;
+        }
+
+        th, td {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        th {
+            background: var(--bg-code);
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        td { background: var(--bg-card); }
+
+        ul, ol {
+            margin: 10px 0 15px 20px;
+        }
+
+        li { margin-bottom: 6px; }
+
+        a { color: var(--accent-blue); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .step-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .step-list li {
+            padding: 12px 15px;
+            border-left: 3px solid var(--border);
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 0 6px 6px 0;
+        }
+
+        .step-list li strong {
+            color: var(--accent-blue);
+        }
+
+        .config-field {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: var(--bg-code);
+            border-radius: 6px;
+            margin: 6px 0;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .config-field .field-name {
+            color: var(--accent-yellow);
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-weight: bold;
+        }
+
+        .config-field .field-desc {
+            color: var(--text-muted);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 72px 20px 40px; }
+            .header h1 { font-size: 1.8em; }
+            .phase { padding: 20px; }
+            .config-field { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Back Navigation -->
+<nav class="back-nav">
+    <a href="/">← Central de Páginas</a>
+    <span class="divider">/</span>
+    <span class="current">Guia OpenClaw</span>
+</nav>
+
+<div class="header">
+    <div class="lobster">🦞</div>
+    <h1>Guia de Instalação — OpenClaw VPS Stack</h1>
+    <p>Passo a passo completo para instalar e configurar o OpenClaw em uma VPS</p>
+    <div style="margin-top: 15px">
+        <span class="badge">OpenClaw 2026.2.x</span>
+        <span class="badge">Ubuntu 24.04</span>
+        <span class="badge">Node.js 22+</span>
+        <span class="badge">Tailscale VPN</span>
+    </div>
+</div>
+
+<div class="progress-bar">
+    <div class="step" title="Pré-Requisitos"></div>
+    <div class="step" title="VPS"></div>
+    <div class="step" title="Tailscale"></div>
+    <div class="step" title="OpenClaw"></div>
+    <div class="step" title="Setup Wizard"></div>
+    <div class="step" title="Enviar Configs"></div>
+    <div class="step" title="Install Script"></div>
+    <div class="step" title="Gateway + WhatsApp"></div>
+    <div class="step" title="Dashboard"></div>
+    <div class="step" title="Modelo LLM"></div>
+    <div class="step" title="Serviço Permanente"></div>
+    <div class="step" title="Troubleshooting"></div>
+</div>
+
+<div class="container">
+
+    <!-- TOC -->
+    <div class="toc">
+        <h2>Índice</h2>
+        <ol>
+            <li><a href="#fase0">Pré-Requisitos e Contas</a></li>
+            <li><a href="#fase1">Criar e Configurar VPS (Hetzner)</a></li>
+            <li><a href="#fase2">Instalar Tailscale (VPS + Desktop)</a></li>
+            <li><a href="#fase3">Instalar OpenClaw na VPS</a></li>
+            <li><a href="#fase4">Rodar o Setup Wizard</a></li>
+            <li><a href="#fase5">Enviar Configs para a VPS</a></li>
+            <li><a href="#fase6">Executar Install Script na VPS</a></li>
+            <li><a href="#fase7">Configurar Gateway e WhatsApp</a></li>
+            <li><a href="#fase8">Acessar o Dashboard (Control UI)</a></li>
+            <li><a href="#fase9">Configurar Modelo LLM</a></li>
+            <li><a href="#fase10">Configurar como Serviço Permanente</a></li>
+            <li><a href="#troubleshooting">Troubleshooting</a></li>
+        </ol>
+    </div>
+
+    <!-- FASE 0 -->
+    <div class="phase" id="fase0">
+        <div class="phase-header">
+            <div class="phase-number">0</div>
+            <div>
+                <div class="phase-title">Pré-Requisitos e Contas</div>
+                <div class="phase-subtitle">Prepare tudo antes de começar</div>
+            </div>
+        </div>
+
+        <h3>Software no seu computador (local)</h3>
+        <ul>
+            <li><strong>Node.js 22+</strong> — <a href="https://nodejs.org/" target="_blank">nodejs.org</a></li>
+            <li><strong>Git</strong></li>
+            <li><strong>Tailscale</strong> — <a href="https://tailscale.com/download" target="_blank">tailscale.com/download</a></li>
+        </ul>
+
+        <h3>Contas necessárias</h3>
+        <table>
+            <tr><th>Serviço</th><th>Link</th><th>Para quê</th></tr>
+            <tr><td>Hetzner Cloud</td><td><a href="https://console.hetzner.cloud/" target="_blank">console.hetzner.cloud</a></td><td>VPS (servidor)</td></tr>
+            <tr><td>Tailscale</td><td><a href="https://tailscale.com/" target="_blank">tailscale.com</a></td><td>VPN mesh segura</td></tr>
+            <tr><td>Supabase</td><td><a href="https://supabase.com/" target="_blank">supabase.com</a></td><td>Database</td></tr>
+            <tr><td>OpenRouter</td><td><a href="https://openrouter.ai/" target="_blank">openrouter.ai</a></td><td>LLM routing (opcional)</td></tr>
+            <tr><td>Anthropic</td><td><a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a></td><td>Claude API (opcional)</td></tr>
+            <tr><td>OpenAI</td><td><a href="https://platform.openai.com/" target="_blank">platform.openai.com</a></td><td>GPT API (opcional)</td></tr>
+            <tr><td>AssemblyAI</td><td><a href="https://www.assemblyai.com/" target="_blank">assemblyai.com</a></td><td>Transcrição de áudio (opcional)</td></tr>
+            <tr><td>ClickUp</td><td><a href="https://clickup.com/" target="_blank">clickup.com</a></td><td>Project management (opcional)</td></tr>
+        </table>
+
+        <h3>API Keys para preparar</h3>
+        <p>Obtenha <strong>antes</strong> de iniciar a instalação:</p>
+        <div class="config-field"><span class="field-name">OPENROUTER_API_KEY</span><span class="field-desc">OpenRouter → Dashboard → API Keys</span></div>
+        <div class="config-field"><span class="field-name">ANTHROPIC_API_KEY</span><span class="field-desc">Anthropic Console → API Keys</span></div>
+        <div class="config-field"><span class="field-name">OPENAI_API_KEY</span><span class="field-desc">OpenAI Platform → API Keys</span></div>
+        <div class="config-field"><span class="field-name">SUPABASE_URL</span><span class="field-desc">Supabase → Project Settings → API → URL</span></div>
+        <div class="config-field"><span class="field-name">SUPABASE_ANON_KEY</span><span class="field-desc">Supabase → Project Settings → API → anon key</span></div>
+        <div class="config-field"><span class="field-name">SUPABASE_SERVICE_ROLE_KEY</span><span class="field-desc">Supabase → Project Settings → API → service_role key</span></div>
+        <div class="config-field"><span class="field-name">SUPABASE_PROJECT_REF</span><span class="field-desc">Supabase → Project Settings → General → Reference ID</span></div>
+        <div class="config-field"><span class="field-name">SUPABASE_DB_PASSWORD</span><span class="field-desc">A senha que você definiu ao criar o projeto</span></div>
+        <div class="config-field"><span class="field-name">POSTGRES_HOST</span><span class="field-desc">Supabase → Project Settings → Database → Host (db.xxx.supabase.co)</span></div>
+
+        <div class="tip">Organize todas as keys num arquivo de texto temporário antes de começar. Vai facilitar muito o setup.</div>
+    </div>
+
+    <!-- FASE 1 -->
+    <div class="phase" id="fase1">
+        <div class="phase-header">
+            <div class="phase-number">1</div>
+            <div>
+                <div class="phase-title">Criar e Configurar VPS (Hetzner)</div>
+                <div class="phase-subtitle">Seu servidor na nuvem</div>
+            </div>
+        </div>
+
+        <ol class="step-list">
+            <li><strong>Acessar</strong> <a href="https://console.hetzner.cloud/" target="_blank">Hetzner Console</a></li>
+            <li><strong>Criar servidor</strong> com:
+                <ul>
+                    <li>Localização: Helsinki (ou mais próximo)</li>
+                    <li>Imagem: <strong>Ubuntu 24.04</strong></li>
+                    <li>Tipo: <strong>CX21</strong> ou superior (2 vCPU, 4GB RAM)</li>
+                    <li>SSH Key: adicionar sua chave pública</li>
+                </ul>
+            </li>
+            <li><strong>Anotar o IP</strong> do servidor criado</li>
+        </ol>
+
+        <h3>Conectar e preparar o sistema</h3>
+<pre><code><span class="comment"># Conectar via SSH</span>
+ssh root@SEU_IP_DO_SERVIDOR
+
+<span class="comment"># Atualizar sistema</span>
+apt update && apt upgrade -y
+
+<span class="comment"># Instalar Node.js 22</span>
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt-get install -y nodejs
+
+<span class="comment"># Instalar ferramentas essenciais</span>
+apt install -y git build-essential screen jq curl ffmpeg</code></pre>
+
+        <div class="checkpoint">Node.js 22+ instalado — verificar com <code>node --version</code></div>
+    </div>
+
+    <!-- FASE 2 -->
+    <div class="phase" id="fase2">
+        <div class="phase-header">
+            <div class="phase-number">2</div>
+            <div>
+                <div class="phase-title">Instalar Tailscale (VPS + Desktop)</div>
+                <div class="phase-subtitle">VPN mesh para conexão segura</div>
+            </div>
+        </div>
+
+        <h3>Na VPS</h3>
+<pre><code><span class="comment"># Instalar Tailscale</span>
+curl -fsSL https://tailscale.com/install.sh | sh
+
+<span class="comment"># Autenticar (abre link no browser)</span>
+tailscale up --hostname=openclaw
+
+<span class="comment"># Verificar</span>
+tailscale status</code></pre>
+
+        <h3>No seu computador (macOS/Windows/Linux)</h3>
+        <p>Baixe e instale o Tailscale de <a href="https://tailscale.com/download" target="_blank">tailscale.com/download</a>. Autentique com a <strong>mesma conta</strong> usada na VPS.</p>
+
+<pre><code><span class="comment"># Verificar conectividade</span>
+tailscale ping openclaw</code></pre>
+
+        <div class="checkpoint">Ambos os dispositivos aparecem como "Connected" no <a href="https://login.tailscale.com/admin/machines" target="_blank">painel Tailscale</a></div>
+    </div>
+
+    <!-- FASE 3 -->
+    <div class="phase" id="fase3">
+        <div class="phase-header">
+            <div class="phase-number">3</div>
+            <div>
+                <div class="phase-title">Instalar OpenClaw na VPS</div>
+                <div class="phase-subtitle">O gateway de IA</div>
+            </div>
+        </div>
+
+        <p>Conecte na VPS via SSH e instale o OpenClaw:</p>
+
+<pre><code><span class="comment"># Conectar na VPS (use IP Tailscale ou IP público)</span>
+ssh root@IP_DA_VPS
+
+<span class="comment"># Instalar OpenClaw globalmente</span>
+npm install -g openclaw@latest
+
+<span class="comment"># Verificar instalação</span>
+openclaw --version</code></pre>
+
+        <div class="warning">O OpenClaw requer <strong>Node.js 22+</strong>. Se instalou versão anterior, atualize antes.</div>
+
+        <div class="checkpoint">Comando <code>openclaw --version</code> retorna a versão (ex: 2026.2.19-2)</div>
+    </div>
+
+    <!-- FASE 4 -->
+    <div class="phase" id="fase4">
+        <div class="phase-header">
+            <div class="phase-number">4</div>
+            <div>
+                <div class="phase-title">Rodar o Setup Wizard (Onboard)</div>
+                <div class="phase-subtitle">Configuração interativa do OpenClaw</div>
+            </div>
+        </div>
+
+<pre><code>openclaw onboard --install-daemon</code></pre>
+
+        <p>O wizard vai pedir várias configurações. Aqui está o que cada campo significa:</p>
+
+        <h3>Anthropic Setup Token</h3>
+        <p>No seu <strong>computador local</strong> (não na VPS), abra um terminal e rode:</p>
+<pre><code>claude setup-token</code></pre>
+        <p>Copie o token gerado (formato <code>sk-ant-oat01-...</code>) e cole na VPS.</p>
+
+        <div class="tip">Se usa assinatura mensal do Claude (Pro/Max), primeiro faça <code>claude login</code> no seu computador, depois <code>claude setup-token</code>.</div>
+
+        <h3>WhatsApp</h3>
+        <p>Quando perguntar sobre o telefone, selecione se é pessoal ou dedicado ao bot.</p>
+
+        <h3>Gateway Service</h3>
+        <p>Selecione <strong>"Restart"</strong> se já estiver instalado, ou instale normalmente.</p>
+
+        <h3>Hatch</h3>
+        <p>Quando perguntar "How do you want to hatch your bot?", pode pular por enquanto (vamos configurar manualmente).</p>
+
+        <div class="checkpoint">Onboard completo sem erros</div>
+    </div>
+
+    <!-- FASE 5 -->
+    <div class="phase" id="fase5">
+        <div class="phase-header">
+            <div class="phase-number">5</div>
+            <div>
+                <div class="phase-title">Enviar Configs para a VPS</div>
+                <div class="phase-subtitle">Se tiver config local (aiosbot-vps-stack)</div>
+            </div>
+        </div>
+
+        <p>Se você gerou configs localmente com o <code>setup.sh</code>, precisa enviá-las para a VPS.</p>
+
+        <div class="danger"><strong>Bug macOS:</strong> O <code>sed -i</code> do setup.sh não funciona no macOS. Se der erro <code>"extra characters at the end of l command"</code>, troque todos os <code>sed -i "s|</code> por <code>sed -i '' "s|</code> no script.</div>
+
+        <div class="danger"><strong>Bug macOS:</strong> Arquivos com extended attributes (o <code>@</code> no <code>ls -la</code>) travam scp/rsync/tar/zip. Solução: limpar com <code>xattr -cr ~/caminho/</code> antes de transferir.</div>
+
+        <h3>Método recomendado: Deploy via SSH</h3>
+        <p>Se scp/rsync travarem, use redirecionamento via SSH (funciona sempre):</p>
+
+<pre><code><span class="comment"># 1. Criar estrutura na VPS</span>
+ssh root@IP_VPS 'mkdir -p /opt/aiosbot/vps/{config,mcps,skills,workspace}'
+
+<span class="comment"># 2. Enviar arquivo por arquivo</span>
+ssh root@IP_VPS 'cat > /opt/aiosbot/.env' < .env
+ssh root@IP_VPS 'cat > /opt/aiosbot/vps/install.sh' < vps/install.sh
+ssh root@IP_VPS 'chmod +x /opt/aiosbot/vps/install.sh'
+
+<span class="comment"># Repetir para cada arquivo necessário</span></code></pre>
+
+        <div class="tip">Se tiver muitos arquivos, crie um script bash que faz todos os <code>ssh cat</code> automaticamente.</div>
+    </div>
+
+    <!-- FASE 6 -->
+    <div class="phase" id="fase6">
+        <div class="phase-header">
+            <div class="phase-number">6</div>
+            <div>
+                <div class="phase-title">Executar Install Script na VPS</div>
+                <div class="phase-subtitle">Instalar dependências e configurar ambiente</div>
+            </div>
+        </div>
+
+<pre><code><span class="comment"># Na VPS</span>
+cd /opt/aiosbot
+chmod +x vps/install.sh
+./vps/install.sh</code></pre>
+
+        <p>O script instala:</p>
+        <ul>
+            <li>Dependências do sistema (curl, git, build-essential, jq, screen)</li>
+            <li>Node.js 22 (se não tiver)</li>
+            <li>Cria usuário <code>aiosbot</code></li>
+            <li>Copia configs e skills</li>
+            <li>Configura Tailscale (se não tiver)</li>
+        </ul>
+
+        <div class="warning">Se aparecer erro <code>@synkra/aiosbot - Not found</code>, o pacote correto é <code>openclaw</code>. Instale com: <code>npm install -g openclaw@latest</code></div>
+
+        <div class="warning">Se pedir instalação de <code>ffmpeg</code> via brew, no Linux use: <code>apt-get install -y ffmpeg</code></div>
+
+        <div class="checkpoint">Install script completo — <code>openclaw --version</code> funciona</div>
+    </div>
+
+    <!-- FASE 7 -->
+    <div class="phase" id="fase7">
+        <div class="phase-header">
+            <div class="phase-number">7</div>
+            <div>
+                <div class="phase-title">Configurar Gateway e WhatsApp</div>
+                <div class="phase-subtitle">Conectar o bot ao mundo</div>
+            </div>
+        </div>
+
+        <h3>Configurar o Gateway</h3>
+<pre><code><span class="comment"># Configuração interativa</span>
+openclaw configure</code></pre>
+
+        <p>Selecione <strong>Gateway</strong> e configure:</p>
+        <table>
+            <tr><th>Campo</th><th>Valor Recomendado</th></tr>
+            <tr><td>Gateway port</td><td><code>18789</code> (padrão)</td></tr>
+            <tr><td>Gateway bind mode</td><td><code>Loopback</code> (pra começar, depois mude pra Tailnet)</td></tr>
+            <tr><td>Gateway auth</td><td><code>Password</code></td></tr>
+            <tr><td>Gateway password</td><td>Uma senha forte</td></tr>
+        </table>
+
+        <div class="warning">A senha precisa ser uma <strong>string</strong>. Se o OpenClaw recusar dizendo "expected string, received number", configure via CLI: <code>openclaw config set gateway.auth.password '"SUA_SENHA"'</code> (com aspas duplas dentro de simples).</div>
+
+        <h3>Iniciar o Gateway</h3>
+<pre><code><span class="comment"># Iniciar em modo verboso (primeiro teste)</span>
+openclaw gateway --force --verbose</code></pre>
+
+        <p>Deve mostrar:</p>
+        <ul>
+            <li><code>[gateway] listening on ws://127.0.0.1:18789</code></li>
+            <li><code>[whatsapp] Listening for personal WhatsApp inbound messages.</code></li>
+        </ul>
+
+        <h3>Conectar WhatsApp</h3>
+        <p>Abra <strong>outro terminal SSH</strong> na VPS e rode:</p>
+<pre><code>openclaw channels login --verbose</code></pre>
+        <p>Vai aparecer um <strong>QR code</strong>. Escaneie com o WhatsApp (Dispositivos Conectados → Conectar Dispositivo).</p>
+
+        <div class="tip">Se já conectou antes e precisa reconectar, use o mesmo comando <code>openclaw channels login --verbose</code>.</div>
+
+        <h3>Configurar Política de DMs</h3>
+        <p>Por padrão, o OpenClaw bloqueia mensagens de números não autorizados.</p>
+
+<pre><code><span class="comment"># Opção 1: Aceitar de qualquer número (mais fácil pra testar)</span>
+openclaw config set channels.whatsapp.dmPolicy open
+
+<span class="comment"># Opção 2: Allowlist (mais seguro - só números específicos)</span>
+openclaw config set channels.whatsapp.dmPolicy allowlist
+<span class="comment"># Adicionar números permitidos no config</span></code></pre>
+
+        <div class="danger">Se ver <code>Blocked unauthorized sender</code> nos logs, o número que mandou mensagem não está na allowlist. Mude pra <code>open</code> ou adicione o número.</div>
+
+        <div class="checkpoint">Gateway rodando + WhatsApp conectado + mensagens sendo recebidas nos logs</div>
+    </div>
+
+    <!-- FASE 8 -->
+    <div class="phase" id="fase8">
+        <div class="phase-header">
+            <div class="phase-number">8</div>
+            <div>
+                <div class="phase-title">Acessar o Dashboard (Control UI)</div>
+                <div class="phase-subtitle">Interface web de gerenciamento</div>
+            </div>
+        </div>
+
+        <h3>Criar túnel SSH</h3>
+        <p>No seu <strong>computador local</strong>, abra um terminal e rode:</p>
+<pre><code>ssh -N -L 18789:127.0.0.1:18789 root@IP_DA_VPS</code></pre>
+        <p>Deixe esse terminal aberto (não vai mostrar nada, é normal).</p>
+
+        <h3>Acessar no browser</h3>
+        <p>Abra no browser:</p>
+<pre><code>http://127.0.0.1:18789/</code></pre>
+
+        <div class="tip">Conexões localhost (127.0.0.1) são <strong>auto-aprovadas</strong> pelo gateway. Não precisa de token extra.</div>
+
+        <div class="warning">Se pedir token, gere com <code>openclaw dashboard</code> na VPS e use a URL tokenizada gerada.</div>
+
+        <p>O dashboard mostra:</p>
+        <ul>
+            <li><strong>Chat</strong> — conversar diretamente com o agente</li>
+            <li><strong>Overview</strong> — visão geral do sistema</li>
+            <li><strong>Channels</strong> — canais conectados (WhatsApp, Telegram, etc.)</li>
+            <li><strong>Sessions</strong> — sessões de conversa</li>
+            <li><strong>Skills</strong> — habilidades do agente</li>
+            <li><strong>Config</strong> — editar configurações</li>
+            <li><strong>Logs</strong> — logs em tempo real</li>
+        </ul>
+
+        <div class="checkpoint">Dashboard acessível com "Health OK" verde no canto superior direito</div>
+    </div>
+
+    <!-- FASE 9 -->
+    <div class="phase" id="fase9">
+        <div class="phase-header">
+            <div class="phase-number">9</div>
+            <div>
+                <div class="phase-title">Configurar Modelo LLM</div>
+                <div class="phase-subtitle">Escolher qual IA o bot usa</div>
+            </div>
+        </div>
+
+        <h3>Trocar o modelo padrão</h3>
+<pre><code><span class="comment"># Definir modelo principal</span>
+openclaw config set agents.defaults.model.primary openai/gpt-4.1-mini
+
+<span class="comment"># Outros exemplos:</span>
+<span class="comment"># openclaw config set agents.defaults.model.primary anthropic/claude-sonnet-4</span>
+<span class="comment"># openclaw config set agents.defaults.model.primary google/gemini-2.0-flash-001</span>
+<span class="comment"># openclaw config set agents.defaults.model.primary deepseek/deepseek-chat</span></code></pre>
+
+        <h3>Configurar API Keys</h3>
+<pre><code><span class="comment"># Configuração interativa (recomendado)</span>
+openclaw configure
+<span class="comment"># Selecione "Model" e siga o wizard</span></code></pre>
+
+        <h3>Modelos disponíveis por provedor</h3>
+        <table>
+            <tr><th>Provedor</th><th>Modelos Populares</th><th>Custo</th></tr>
+            <tr><td>OpenAI</td><td>gpt-4.1-mini, gpt-4o, gpt-4o-mini</td><td>$$</td></tr>
+            <tr><td>Anthropic</td><td>claude-sonnet-4, claude-haiku-4</td><td>$$</td></tr>
+            <tr><td>Google</td><td>gemini-2.0-flash, gemini-pro</td><td>$</td></tr>
+            <tr><td>DeepSeek</td><td>deepseek-chat, deepseek-v3</td><td>$</td></tr>
+            <tr><td>OpenRouter</td><td>Qualquer modelo via proxy</td><td>Varia</td></tr>
+        </table>
+
+        <div class="warning">Após trocar o modelo, <strong>sempre reinicie o gateway</strong>: <code>openclaw gateway --force</code> ou <code>Ctrl+C</code> + reiniciar.</div>
+
+        <div class="danger">Se aparecer <code>No API key found for provider</code>, rode <code>openclaw configure</code> → selecione <strong>Model</strong> → configure a API key do provedor escolhido.</div>
+
+        <div class="checkpoint">Mensagem enviada pelo WhatsApp recebe resposta do modelo configurado</div>
+    </div>
+
+    <!-- FASE 10 -->
+    <div class="phase" id="fase10">
+        <div class="phase-header">
+            <div class="phase-number">10</div>
+            <div>
+                <div class="phase-title">Configurar como Serviço Permanente</div>
+                <div class="phase-subtitle">Rodar 24/7 sem terminal aberto</div>
+            </div>
+        </div>
+
+        <h3>Instalar serviço systemd</h3>
+<pre><code><span class="comment"># Instalar o gateway como serviço</span>
+openclaw gateway install
+
+<span class="comment"># Se já estiver instalado:</span>
+openclaw gateway install --force</code></pre>
+
+        <h3>Gerenciar o serviço</h3>
+<pre><code><span class="comment"># Iniciar</span>
+openclaw gateway start
+
+<span class="comment"># Parar</span>
+openclaw gateway stop
+
+<span class="comment"># Ver status</span>
+openclaw health
+
+<span class="comment"># Ver logs</span>
+openclaw logs --follow</code></pre>
+
+        <p>Agora o gateway:</p>
+        <ul>
+            <li>Roda em background (sem terminal aberto)</li>
+            <li>Reinicia automaticamente se crashar</li>
+            <li>Inicia automaticamente no boot do servidor</li>
+        </ul>
+
+        <div class="checkpoint">Feche todos os terminais, mande mensagem pelo WhatsApp e confirme que o bot responde</div>
+    </div>
+
+    <!-- TROUBLESHOOTING -->
+    <div class="phase" id="troubleshooting">
+        <div class="phase-header">
+            <div class="phase-number" style="background: var(--accent-yellow)">?</div>
+            <div>
+                <div class="phase-title">Troubleshooting</div>
+                <div class="phase-subtitle">Problemas comuns e soluções</div>
+            </div>
+        </div>
+
+        <h3>Gateway não responde</h3>
+<pre><code>openclaw health
+openclaw gateway --force --verbose
+<span class="comment"># Ver logs detalhados</span>
+openclaw logs --follow</code></pre>
+
+        <h3>"pairing required" ao conectar TUI/Dashboard</h3>
+        <ul>
+            <li>Use <strong>túnel SSH</strong> (<code>ssh -N -L 18789:127.0.0.1:18789 root@VPS</code>) e acesse via <code>http://127.0.0.1:18789/</code></li>
+            <li>Conexões localhost são auto-aprovadas</li>
+            <li>Se persistir, faça <code>openclaw reset</code> → selecione "Config + credentials + sessions" → rode <code>openclaw onboard</code> de novo</li>
+        </ul>
+
+        <h3>"gateway password missing"</h3>
+<pre><code><span class="comment"># Definir variável de ambiente</span>
+OPENCLAW_GATEWAY_PASSWORD="SUA_SENHA" openclaw tui
+
+<span class="comment"># Ou configurar permanentemente</span>
+openclaw config set gateway.auth.password '"SUA_SENHA"'</code></pre>
+
+        <h3>"Blocked unauthorized sender"</h3>
+<pre><code><span class="comment"># Abrir pra todos (teste)</span>
+openclaw config set channels.whatsapp.dmPolicy open
+
+<span class="comment"># Reiniciar gateway após mudar config</span>
+openclaw gateway --force</code></pre>
+
+        <h3>"No API key found for provider"</h3>
+<pre><code><span class="comment"># Configurar API keys</span>
+openclaw configure
+<span class="comment"># Selecione "Model" e configure o provedor</span></code></pre>
+
+        <h3>API rate limit</h3>
+        <ul>
+            <li>Espere 30 segundos e tente de novo</li>
+            <li>Troque para um modelo mais barato/rápido</li>
+            <li>Verifique limites no dashboard do provedor</li>
+        </ul>
+
+        <h3>Bug macOS: sed "extra characters"</h3>
+        <p>No macOS, <code>sed -i</code> precisa de argumento extra. Troque:</p>
+<pre><code><span class="comment"># De (não funciona no macOS):</span>
+sed -i "s|algo|outro|g" arquivo
+
+<span class="comment"># Para (funciona no macOS):</span>
+sed -i '' "s|algo|outro|g" arquivo</code></pre>
+
+        <h3>Bug macOS: scp/rsync/tar travam</h3>
+        <p>Extended attributes do macOS quebram transferências. Limpe antes:</p>
+<pre><code>xattr -cr ~/caminho/do/projeto/</code></pre>
+        <p>Se ainda travar, use o método SSH com <code>cat</code>:</p>
+<pre><code>ssh root@VPS 'cat > /destino/arquivo' < arquivo_local</code></pre>
+
+        <h3>Comandos úteis</h3>
+        <table>
+            <tr><th>Comando</th><th>O que faz</th></tr>
+            <tr><td><code>openclaw doctor</code></td><td>Diagnóstico completo do sistema</td></tr>
+            <tr><td><code>openclaw health</code></td><td>Status rápido do gateway</td></tr>
+            <tr><td><code>openclaw status</code></td><td>Status dos canais e sessões</td></tr>
+            <tr><td><code>openclaw channels list</code></td><td>Listar canais conectados</td></tr>
+            <tr><td><code>openclaw models list</code></td><td>Listar modelos disponíveis</td></tr>
+            <tr><td><code>openclaw skills list</code></td><td>Listar skills instaladas</td></tr>
+            <tr><td><code>openclaw logs --follow</code></td><td>Logs em tempo real</td></tr>
+            <tr><td><code>openclaw configure</code></td><td>Wizard de configuração</td></tr>
+            <tr><td><code>openclaw reset</code></td><td>Reset de configuração</td></tr>
+            <tr><td><code>openclaw dashboard</code></td><td>Gerar URL tokenizada do dashboard</td></tr>
+        </table>
+    </div>
+
+</div>
+
+<div class="footer">
+    <p>🦞 Guia gerado com base na experiência real de instalação — Fevereiro 2026</p>
+    <p style="margin-top: 8px; font-size: 0.9em">OpenClaw VPS Stack • Tailscale • Node.js 22+</p>
+    <p style="margin-top: 16px"><a href="/">← Voltar para Central de Páginas</a></p>
+</div>
+
+<script>
+    // Progress bar interativa com IntersectionObserver
+    const phases = document.querySelectorAll('.phase[id]');
+    const steps = document.querySelectorAll('.progress-bar .step');
+    const phaseIds = ['fase0','fase1','fase2','fase3','fase4','fase5','fase6','fase7','fase8','fase9','fase10','troubleshooting'];
+
+    // Click nos steps para navegar
+    steps.forEach((step, i) => {
+        step.addEventListener('click', () => {
+            const target = document.getElementById(phaseIds[i]);
+            if (target) target.scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+
+    // Observer para marcar progresso
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const idx = phaseIds.indexOf(entry.target.id);
+                if (idx >= 0) {
+                    steps.forEach((s, i) => {
+                        s.className = 'step' + (i < idx ? ' done' : i === idx ? ' active' : '');
+                    });
+                }
+            }
+        });
+    }, { threshold: 0.3, rootMargin: '-120px 0px -50% 0px' });
+
+    phases.forEach(p => observer.observe(p));
+</script>
+
+</body>
+</html>
