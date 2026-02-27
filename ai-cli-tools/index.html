@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guia AI CLI Tools — Claude Code · Codex CLI · Gemini CLI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #080c10;
+      --bg-card: #0d1117;
+      --bg-code: #161b22;
+      --bg-hover: #1c2128;
+      --border: #21262d;
+      --border-light: #30363d;
+      --text: #e6edf3;
+      --text-muted: #7d8590;
+      --text-dim: #484f58;
+      --claude: #6366f1;
+      --claude-glow: rgba(99,102,241,0.15);
+      --openai: #10b981;
+      --openai-glow: rgba(16,185,129,0.15);
+      --google: #3b82f6;
+      --google-glow: rgba(59,130,246,0.15);
+      --mcp: #f59e0b;
+      --mcp-glow: rgba(245,158,11,0.12);
+      --skill: #a78bfa;
+      --skill-glow: rgba(167,139,250,0.12);
+      --danger: #f85149;
+      --success: #3fb950;
+      --warning: #d29922;
+    }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ── BACK NAV ── */
+    .back-nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+      background: rgba(8,12,16,0.92); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .back-nav a { display:flex; align-items:center; gap:6px; color:var(--text-muted); text-decoration:none; font-size:13px; font-weight:500; transition:color .15s; }
+    .back-nav a:hover { color:var(--text); }
+    .back-nav .sep { color:var(--border-light); }
+    .back-nav .cur { color:var(--text); font-size:13px; }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 100px 24px 60px;
+      text-align: center;
+      background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(99,102,241,0.08), transparent);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--claude); background: var(--claude-glow);
+      border: 1px solid rgba(99,102,241,0.25); border-radius: 999px; padding: 5px 14px;
+      margin-bottom: 24px;
+    }
+    .hero h1 { font-size: clamp(32px,5vw,56px); font-weight: 900; color: #fff; letter-spacing: -.03em; line-height: 1.05; margin-bottom: 16px; }
+    .hero h1 span { background: linear-gradient(135deg, #6366f1, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero-sub { font-size: 17px; color: var(--text-muted); max-width: 600px; margin: 0 auto 32px; line-height: 1.6; }
+    .hero-tools { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+    .tool-pill {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      border: 1px solid; text-decoration: none; transition: all .2s;
+    }
+    .tool-pill.claude { color: var(--claude); border-color: rgba(99,102,241,.3); background: var(--claude-glow); }
+    .tool-pill.openai { color: var(--openai); border-color: rgba(16,185,129,.3); background: var(--openai-glow); }
+    .tool-pill.google { color: var(--google); border-color: rgba(59,130,246,.3); background: var(--google-glow); }
+    .tool-pill:hover { transform: translateY(-1px); }
+    .hero-meta { font-size: 12px; color: var(--text-dim); }
+
+    /* ── PROGRESS BAR ── */
+    .progress-bar {
+      position: sticky; top: 41px; z-index: 200;
+      background: var(--bg-card); border-bottom: 1px solid var(--border);
+      padding: 10px 24px; display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;
+    }
+    .pstep {
+      height: 4px; border-radius: 2px; background: var(--border-light);
+      cursor: pointer; transition: all .25s; position: relative;
+      flex: 1; max-width: 48px; min-width: 24px;
+    }
+    .pstep::after {
+      content: attr(title);
+      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+      background: var(--bg-code); border: 1px solid var(--border-light);
+      color: var(--text); font-size: 11px; font-weight: 500;
+      padding: 3px 8px; border-radius: 4px;
+      white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s;
+    }
+    .pstep:hover::after { opacity: 1; }
+    .pstep.active { background: var(--claude); }
+    .pstep.done { background: var(--success); }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
+
+    /* ── TOC ── */
+    .toc {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 28px; margin-bottom: 40px;
+    }
+    .toc-title { font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px; }
+    .toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; }
+    @media (max-width: 600px) { .toc-grid { grid-template-columns: 1fr; } }
+    .toc-item { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+    .toc-item:last-child, .toc-item:nth-last-child(2):nth-child(odd) { border-bottom: none; }
+    .toc-num { background: var(--border-light); color: var(--text); width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .toc-link { color: var(--text-muted); text-decoration: none; font-size: 13px; transition: color .15s; }
+    .toc-link:hover { color: var(--text); }
+    .toc-new { font-size: 10px; font-weight: 700; background: var(--mcp-glow); color: var(--mcp); border: 1px solid rgba(245,158,11,.2); padding: 1px 6px; border-radius: 4px; margin-left: 4px; }
+
+    /* ── SECTION ── */
+    .section {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 32px; margin-bottom: 24px;
+      scroll-margin-top: 110px;
+    }
+    .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .section-num {
+      width: 42px; height: 42px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 16px; flex-shrink: 0;
+    }
+    .num-default { background: rgba(99,102,241,.15); color: var(--claude); }
+    .num-claude { background: var(--claude-glow); color: var(--claude); border: 1px solid rgba(99,102,241,.2); }
+    .num-openai { background: var(--openai-glow); color: var(--openai); border: 1px solid rgba(16,185,129,.2); }
+    .num-google { background: var(--google-glow); color: var(--google); border: 1px solid rgba(59,130,246,.2); }
+    .num-mcp { background: var(--mcp-glow); color: var(--mcp); border: 1px solid rgba(245,158,11,.2); }
+    .num-skill { background: var(--skill-glow); color: var(--skill); border: 1px solid rgba(167,139,250,.2); }
+    .num-aios { background: rgba(99,102,241,.1); color: var(--claude); border: 1px solid rgba(99,102,241,.2); }
+    .section-title { font-size: 1.5em; font-weight: 800; color: #fff; }
+    .section-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    h3 { font-size: 15px; font-weight: 700; color: #58a6ff; margin: 24px 0 10px; }
+    h4 { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; margin: 20px 0 8px; }
+    p { margin-bottom: 12px; font-size: 14px; color: #c9d1d9; line-height: 1.7; }
+
+    /* ── CODE ── */
+    pre {
+      background: var(--bg-code); border: 1px solid var(--border-light);
+      border-radius: 8px; padding: 14px 18px; overflow-x: auto;
+      margin: 10px 0 16px; font-size: 13px; line-height: 1.65; position: relative;
+    }
+    code { font-family: 'JetBrains Mono', 'SF Mono', monospace; color: #e6edf3; }
+    .cm { color: var(--text-dim); }
+    code.inline {
+      background: var(--bg-code); border: 1px solid var(--border-light);
+      border-radius: 4px; padding: 2px 6px; font-size: 12px;
+    }
+
+    /* ── CALLOUTS ── */
+    .callout {
+      border-radius: 8px; padding: 13px 18px; margin: 12px 0;
+      font-size: 13px; line-height: 1.6;
+    }
+    .callout-tip { background: rgba(63,185,80,.08); border-left: 3px solid var(--success); }
+    .callout-tip::before { content: "💡 "; }
+    .callout-warn { background: rgba(210,153,34,.08); border-left: 3px solid var(--warning); }
+    .callout-warn::before { content: "⚠️ "; }
+    .callout-danger { background: rgba(248,81,73,.08); border-left: 3px solid var(--danger); }
+    .callout-danger::before { content: "🚨 "; }
+    .callout-info { background: rgba(99,102,241,.08); border-left: 3px solid var(--claude); }
+    .callout-info::before { content: "ℹ️ "; }
+    .callout b { color: var(--text); }
+
+    /* ── CHECKPOINT ── */
+    .checkpoint {
+      background: rgba(63,185,80,.07); border: 1px solid rgba(63,185,80,.2);
+      border-radius: 8px; padding: 12px 18px; margin: 16px 0;
+      font-size: 13px; text-align: center; color: var(--success);
+    }
+    .checkpoint::before { content: "✅ "; }
+
+    /* ── TABLES ── */
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 18px; font-size: 13px; }
+    th { background: var(--bg-code); color: #58a6ff; font-weight: 600; padding: 9px 14px; border: 1px solid var(--border-light); text-align: left; }
+    td { background: var(--bg-card); color: #c9d1d9; padding: 9px 14px; border: 1px solid var(--border); }
+    tr:hover td { background: var(--bg-hover); }
+
+    /* ── STEP LIST ── */
+    .step-list { list-style: none; padding: 0; }
+    .step-list li { padding: 10px 14px; border-left: 2px solid var(--border-light); margin-bottom: 6px; background: rgba(255,255,255,.02); border-radius: 0 6px 6px 0; font-size: 13px; color: #c9d1d9; }
+    .step-list li strong { color: #58a6ff; }
+
+    /* ── CONFIG FIELDS ── */
+    .config-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 9px 14px; background: var(--bg-code); border-radius: 6px; margin: 4px 0; font-size: 13px; }
+    .cf-name { font-family: 'JetBrains Mono', monospace; color: var(--mcp); font-weight: 600; }
+    .cf-desc { color: var(--text-muted); }
+
+    /* ── OS TABS ── */
+    .os-tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+    .os-tab {
+      padding: 5px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
+      cursor: pointer; border: 1px solid var(--border-light); color: var(--text-muted);
+      background: transparent; transition: all .15s;
+    }
+    .os-tab.active { background: var(--claude-glow); border-color: rgba(99,102,241,.3); color: var(--claude); }
+    .os-panel { display: none; }
+    .os-panel.active { display: block; }
+
+    /* ── MCP CARDS ── */
+    .mcp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin: 16px 0; }
+    .mcp-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 10px;
+      transition: all .2s; position: relative; overflow: hidden;
+    }
+    .mcp-card:hover { border-color: var(--border-light); transform: translateY(-2px); }
+    .mcp-card::before { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .2s; border-radius: 10px; }
+    .mcp-card:hover::before { opacity: 1; }
+    .mcp-amber::before { background: radial-gradient(ellipse at top left, rgba(245,158,11,.05), transparent 60%); }
+    .mcp-blue::before { background: radial-gradient(ellipse at top left, rgba(59,130,246,.05), transparent 60%); }
+    .mcp-green::before { background: radial-gradient(ellipse at top left, rgba(63,185,80,.05), transparent 60%); }
+    .mcp-purple::before { background: radial-gradient(ellipse at top left, rgba(167,139,250,.05), transparent 60%); }
+    .mcp-red::before { background: radial-gradient(ellipse at top left, rgba(248,81,73,.05), transparent 60%); }
+    .mcp-card-header { display: flex; align-items: flex-start; gap: 12px; }
+    .mcp-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .ic-amber { background: var(--mcp-glow); }
+    .ic-blue { background: var(--google-glow); }
+    .ic-green { background: var(--openai-glow); }
+    .ic-purple { background: var(--skill-glow); }
+    .ic-red { background: rgba(248,81,73,.12); }
+    .ic-indigo { background: var(--claude-glow); }
+    .mcp-name { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.2; }
+    .mcp-pkg { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+    .mcp-desc { font-size: 13px; color: #8b949e; line-height: 1.55; }
+    .mcp-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    .mcp-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; }
+    .tag-amber { background: rgba(245,158,11,.1); color: var(--mcp); }
+    .tag-blue { background: rgba(59,130,246,.1); color: #58a6ff; }
+    .tag-green { background: rgba(63,185,80,.1); color: var(--success); }
+    .tag-purple { background: rgba(167,139,250,.1); color: var(--skill); }
+    .tag-red { background: rgba(248,81,73,.1); color: var(--danger); }
+    .mcp-install { margin-top: 4px; }
+    .mcp-install code { display: block; font-size: 11.5px; padding: 7px 10px; background: var(--bg-code); border: 1px solid var(--border); border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mcp-link { font-size: 12px; color: #58a6ff; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; margin-top: 2px; }
+    .mcp-link:hover { text-decoration: underline; }
+    .mcp-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: rgba(63,185,80,.1); color: var(--success); border: 1px solid rgba(63,185,80,.2); }
+    .mcp-badge-rec { background: rgba(99,102,241,.1); color: var(--claude); border: 1px solid rgba(99,102,241,.2); }
+
+    /* ── SKILL CARDS ── */
+    .skill-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin: 16px 0; }
+    .skill-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px;
+      transition: border-color .2s;
+    }
+    .skill-card:hover { border-color: rgba(167,139,250,.3); }
+    .skill-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .skill-name { font-size: 13px; font-weight: 700; color: #fff; font-family: 'JetBrains Mono', monospace; }
+    .skill-level { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
+    .sl-essential { background: rgba(248,81,73,.1); color: var(--danger); border: 1px solid rgba(248,81,73,.2); }
+    .sl-recommended { background: rgba(245,158,11,.1); color: var(--mcp); border: 1px solid rgba(245,158,11,.2); }
+    .sl-advanced { background: rgba(99,102,241,.1); color: var(--claude); border: 1px solid rgba(99,102,241,.2); }
+    .skill-desc { font-size: 12px; color: #8b949e; line-height: 1.5; }
+    .skill-use { font-size: 11px; color: var(--text-dim); font-style: italic; }
+
+    /* ── PLANS GRID ── */
+    .plans-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 16px 0; }
+    .plan-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .plan-header { padding: 16px 20px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+    .plan-logo { font-size: 20px; }
+    .plan-brand { font-size: 15px; font-weight: 800; color: #fff; }
+    .plan-brand-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+    .plan-table { width: 100%; font-size: 12px; }
+    .plan-table th { font-size: 11px; padding: 7px 12px; }
+    .plan-table td { padding: 7px 12px; }
+    .best-value { background: rgba(63,185,80,.1) !important; }
+    .best-value td:first-child::after { content: " ★"; color: var(--success); font-size: 10px; }
+
+    /* ── COMMAND REF ── */
+    .cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 640px) { .cmd-grid { grid-template-columns: 1fr; } }
+    .cmd-block { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .cmd-block-header { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: .08em; text-transform: uppercase; }
+    .cmd-row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 14px; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .cmd-row:last-child { border-bottom: none; }
+    .cmd-row code { font-family: 'JetBrains Mono', monospace; color: var(--success); font-size: 12px; }
+    .cmd-row span { color: var(--text-muted); text-align: right; font-size: 12px; }
+
+    /* ── COMPARE BAR ── */
+    .compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+    @media (max-width: 580px) { .compare-grid { grid-template-columns: 1fr; } }
+    .compare-card {
+      border-radius: 10px; padding: 20px; border: 1px solid;
+      display: flex; flex-direction: column; gap: 8px; position: relative;
+    }
+    .cc-claude { border-color: rgba(99,102,241,.25); background: linear-gradient(135deg, rgba(99,102,241,.08), var(--bg-card)); }
+    .cc-openai { border-color: rgba(16,185,129,.25); background: linear-gradient(135deg, rgba(16,185,129,.08), var(--bg-card)); }
+    .cc-google { border-color: rgba(59,130,246,.25); background: linear-gradient(135deg, rgba(59,130,246,.08), var(--bg-card)); }
+    .cc-label { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .cc-claude .cc-label { color: var(--claude); }
+    .cc-openai .cc-label { color: var(--openai); }
+    .cc-google .cc-label { color: var(--google); }
+    .cc-name { font-size: 18px; font-weight: 800; color: #fff; }
+    .cc-price { font-size: 14px; font-weight: 700; }
+    .cc-claude .cc-price { color: var(--claude); }
+    .cc-openai .cc-price { color: var(--openai); }
+    .cc-google .cc-price { color: var(--google); }
+    .cc-feature { font-size: 12px; color: var(--text-muted); display: flex; gap: 6px; }
+    .cc-feature::before { content: '→'; flex-shrink: 0; }
+
+    /* ── FOOTER ── */
+    footer { text-align: center; padding: 48px 24px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 13px; }
+    footer a { color: #58a6ff; text-decoration: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .hero { padding: 80px 20px 40px; }
+      .section { padding: 20px; }
+      .mcp-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Back Nav -->
+<nav class="back-nav">
+  <a href="/">← Central de Páginas</a>
+  <span class="sep">/</span>
+  <span class="cur">AI CLI Tools</span>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-badge">Guia Técnico · Fevereiro 2026 · v3.0</div>
+  <h1>AI <span>CLI Tools</span></h1>
+  <p class="hero-sub">Instale, configure e turbine Claude Code, Codex CLI e Gemini CLI com MCPs essenciais e Skills do AIOS.</p>
+  <div class="hero-tools">
+    <span class="tool-pill claude">🟣 Claude Code</span>
+    <span class="tool-pill openai">🟢 Codex CLI</span>
+    <span class="tool-pill google">🔵 Gemini CLI</span>
+  </div>
+  <p class="hero-meta">WSL · macOS · Windows · MCPs · Skills · Synkra AIOS</p>
+</div>
+
+<!-- Progress Bar -->
+<div class="progress-bar" id="progressBar">
+  <div class="pstep" title="Requisitos"></div>
+  <div class="pstep" title="Claude Code"></div>
+  <div class="pstep" title="Codex CLI"></div>
+  <div class="pstep" title="Gemini CLI"></div>
+  <div class="pstep" title="MCPs"></div>
+  <div class="pstep" title="Skills AIOS"></div>
+  <div class="pstep" title="Synkra AIOS"></div>
+  <div class="pstep" title="Planos"></div>
+  <div class="pstep" title="Verificação"></div>
+  <div class="pstep" title="Troubleshooting"></div>
+  <div class="pstep" title="Referência"></div>
+</div>
+
+<div class="container">
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">Índice</div>
+    <div class="toc-grid">
+      <div class="toc-item"><div class="toc-num">1</div><a href="#req" class="toc-link">Requisitos &amp; WSL</a></div>
+      <div class="toc-item"><div class="toc-num">2</div><a href="#claude" class="toc-link">Claude Code</a></div>
+      <div class="toc-item"><div class="toc-num">3</div><a href="#codex" class="toc-link">Codex CLI</a></div>
+      <div class="toc-item"><div class="toc-num">4</div><a href="#gemini" class="toc-link">Gemini CLI</a></div>
+      <div class="toc-item"><div class="toc-num">5</div><a href="#mcps" class="toc-link">MCPs Essenciais <span class="toc-new">NOVO</span></a></div>
+      <div class="toc-item"><div class="toc-num">6</div><a href="#skills" class="toc-link">Skills AIOS <span class="toc-new">NOVO</span></a></div>
+      <div class="toc-item"><div class="toc-num">7</div><a href="#aios" class="toc-link">Synkra AIOS</a></div>
+      <div class="toc-item"><div class="toc-num">8</div><a href="#planos" class="toc-link">Planos &amp; Custos</a></div>
+      <div class="toc-item"><div class="toc-num">9</div><a href="#verify" class="toc-link">Pós-instalação</a></div>
+      <div class="toc-item"><div class="toc-num">10</div><a href="#troubleshooting" class="toc-link">Troubleshooting</a></div>
+      <div class="toc-item"><div class="toc-num">11</div><a href="#ref" class="toc-link">Referência Rápida</a></div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SEÇÃO 1: REQUISITOS -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="section" id="req">
+    <div class="section-header">
+      <div class="section-num num-default">1</div>
+      <div>
+        <div class="section-title">Requisitos &amp; Preparação do Ambiente</div>
+        <div class="section-sub">Sistema, WSL e Node.js</div>
+      </div>
+    </div>
+
+    <h3>1.1 Requisitos Comuns</h3>
+    <table>
+      <tr><th>Requisito</th><th>Detalhes</th></tr>
+      <tr><td>Sistema Operacional</td><td>macOS 10.15+ / Windows 10+ / Linux (Ubuntu 20.04+)</td></tr>
+      <tr><td>RAM</td><td>4 GB ou mais (8 GB recomendado)</td></tr>
+      <tr><td>Node.js</td><td>v22+ (obrigatório para Codex e Gemini CLI; opcional para Claude Code nativo)</td></tr>
+      <tr><td>Rede</td><td>Conexão estável com a internet</td></tr>
+      <tr><td>Shell (Windows)</td><td>WSL (recomendado), Git Bash ou PowerShell</td></tr>
+    </table>
+    <div class="callout callout-info"><b>Claude Code</b> tem instalador nativo que dispensa Node.js. Mas Codex CLI e Gemini CLI exigem Node.js v20+. Se usar as três ferramentas, instale Node.js desde o início.</div>
+
+    <h3>1.2 Configurando o WSL (Windows)</h3>
+    <p>O WSL cria um ambiente Linux completo no Windows. É a forma recomendada para todas as ferramentas CLI.</p>
+    <ol class="step-list">
+      <li><strong>Abra o PowerShell como Administrador</strong></li>
+      <li><strong>Instale o WSL com Ubuntu:</strong>
+        <pre><code>wsl --install -d Ubuntu</code></pre>
+      </li>
+      <li><strong>Reinicie o computador.</strong> O Ubuntu abrirá automaticamente pedindo usuário e senha.</li>
+      <li><strong>Verifique a versão (recomendado WSL 2):</strong>
+        <pre><code>wsl --list --verbose</code></pre>
+      </li>
+    </ol>
+    <div class="callout callout-tip"><b>Performance:</b> Mantenha seus repositórios no diretório home do Linux (<code class="inline">~/code/meu-projeto</code>) em vez de <code class="inline">/mnt/c/...</code>. O I/O é significativamente melhor e você evita problemas com symlinks e permissões.</div>
+
+    <h3>1.3 Instalando Node.js com NVM</h3>
+    <p>O NVM permite alternar versões facilmente. É a forma recomendada no WSL/Linux/macOS.</p>
+<pre><code><span class="cm"># 1. Instalar NVM</span>
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
+
+<span class="cm"># 2. Carregar no terminal atual</span>
+source ~/.bashrc
+
+<span class="cm"># 3. Instalar Node.js v22</span>
+nvm install 22 && nvm use 22
+
+<span class="cm"># 4. Confirmar</span>
+node -v   <span class="cm"># v22.x.x</span>
+npm -v    <span class="cm"># 10.x.x</span></code></pre>
+    <div class="callout callout-warn"><b>Gemini CLI</b> requer Node.js v20+. Se estiver em v18, você verá <code class="inline">SyntaxError: Invalid regular expression flags</code>. Solução: <code class="inline">nvm install 22</code></div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SEÇÃO 2: CLAUDE CODE -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="section" id="claude">
+    <div class="section-header">
+      <div class="section-num num-claude">2</div>
+      <div>
+        <div class="section-title">Claude Code</div>
+        <div class="section-sub">Anthropic · claude.ai/code</div>
+      </div>
+    </div>
+    <p>A ferramenta de codificação por IA da Anthropic. Funciona diretamente no terminal, inspeciona repositórios, edita arquivos e executa comandos com autonomia.</p>
+
+    <h3>2.1 macOS</h3>
+    <h4>Via Homebrew (recomendado)</h4>
+<pre><code>brew install --cask claude-code
+claude --version</code></pre>
+    <h4>Via curl</h4>
+<pre><code>curl -fsSL https://claude.ai/install.sh | bash
+claude --version
+
+<span class="cm"># Se "command not found", adicione ao PATH:</span>
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc</code></pre>
+
+    <h3>2.2 Windows Nativo</h3>
+<pre><code><span class="cm"># PowerShell (requer Git for Windows)</span>
+irm https://claude.ai/install.ps1 | iex
+
+<span class="cm"># CMD</span>
+curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
+
+<span class="cm"># WinGet (Windows 11)</span>
+winget install Anthropic.ClaudeCode</code></pre>
+
+    <h3>2.3 WSL / Ubuntu (Recomendado para Windows)</h3>
+<pre><code>curl -fsSL https://claude.ai/install.sh | bash
+claude --version
+
+<span class="cm"># Navegar ao projeto e iniciar</span>
+cd ~/meu-projeto
+claude</code></pre>
+    <div class="callout callout-warn">No WSL, sempre execute o Claude Code a partir do terminal Linux (Ubuntu), <b>nunca pelo PowerShell ou CMD</b>.</div>
+
+    <h3>2.4 Autenticação</h3>
+    <p>Na primeira execução, o Claude Code solicitará autenticação:</p>
+    <table>
+      <tr><th>Opção</th><th>Quando usar</th></tr>
+      <tr><td><b>Claude Pro / Max</b></td><td>Login com conta claude.ai (assinatura mensal)</td></tr>
+      <tr><td><b>Claude Console</b></td><td>Fluxo OAuth com billing ativo em console.anthropic.com</td></tr>
+      <tr><td><b>Enterprise</b></td><td>Amazon Bedrock, Google Vertex AI ou Microsoft Foundry</td></tr>
+    </table>
+    <div class="checkpoint">claude --version retorna a versão • claude doctor sem erros críticos</div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SEÇÃO 3: CODEX CLI -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="section" id="codex">
+    <div class="section-header">
+      <div class="section-num num-openai">3</div>
+      <div>
+        <div class="section-title">Codex CLI</div>
+        <div class="section-sub">OpenAI · developers.openai.com/codex/cli</div>
+      </div>
+    </div>
+    <p>Ferramenta de codificação por IA da OpenAI. Roda localmente no terminal, conecta aos modelos GPT-5 para gerar, editar e revisar código.</p>
+
+    <h3>3.1 Instalação</h3>
+    <div class="callout callout-info"><b>Pré-requisito:</b> Node.js v18+ (recomendado v22).</div>
+<pre><code><span class="cm"># Via npm (todas as plataformas)</span>
+npm i -g @openai/codex
+
+<span class="cm"># Via Homebrew (macOS)</span>
+brew install codex</code></pre>
+
+    <h3>3.2 Execução e Comandos</h3>
+<pre><code>cd ~/meu-projeto
+codex</code></pre>
+    <table>
+      <tr><th>Comando</th><th>Descrição</th></tr>
+      <tr><td><code class="inline">/model</code></td><td>Trocar de modelo (ex: GPT-5.3-Codex)</td></tr>
+      <tr><td><code class="inline">/approval</code></td><td>Escolher modo de aprovação (auto ou pedir permissão)</td></tr>
+      <tr><td><code class="inline">/status</code></td><td>Ver configuração e uso de tokens / limites restantes</td></tr>
+      <tr><td><code class="inline">/compact</code></td><td>Comprimir histórico da conversa</td></tr>
+      <tr><td><code class="inline">/new</code></td><td>Nova conversa (limpar sessão)</td></tr>
+      <tr><td><code class="inline">!comando</code></td><td>Executar comando bash inline (ex: <code class="inline">!git status</code>)</td></tr>
+      <tr><td><code class="inline">/quit</code></td><td>Encerrar sessão</td></tr>
+    </table>
+
+    <h3>3.3 Autenticação</h3>
+    <p>Na primeira execução, escolha <b>"Sign in with ChatGPT"</b> para usar seu plano de assinatura sem custo adicional de tokens.</p>
+    <div class="callout callout-tip">Use <code class="inline">/status</code> para monitorar seus limites de uso. Para quem já assina ChatGPT Plus/Pro, o login com ChatGPT é muito mais econômico que usar API key por token.</div>
+    <div class="checkpoint">codex --version funciona • /status mostra seu plano corretamente</div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SEÇÃO 4: GEMINI CLI -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="section" id="gemini">
+    <div class="section-header">
+      <div class="section-num num-google">4</div>
+      <div>
+        <div class="section-title">Gemini CLI</div>
+        <div class="section-sub">Google · Open-source Apache 2.0</div>
+      </div>
+    </div>
+    <p>Ferramenta open-source do Google. Acesso direto aos modelos Gemini pelo terminal. Gratuito com qualquer conta Google.</p>
+
+    <h3>4.1 Instalação</h3>
+    <div class="callout callout-warn"><b>Node.js v20+ obrigatório.</b> Se estiver com v18, atualize: <code class="inline">nvm install 22 && nvm use 22</code></div>
+<pre><code><span class="cm"># Via npm (todas as plataformas)</span>
+npm install -g @google/gemini-cli
+
+<span class="cm"># Via Homebrew (macOS/Linux)</span>
+brew install gemini-cli</code></pre>
+
+    <h3>4.2 Execução e Comandos</h3>
+<pre><code>cd ~/meu-projeto
+gemini</code></pre>
+    <table>
+      <tr><th>Comando</th><th>Descrição</th></tr>
+      <tr><td><code class="inline">/model</code></td><td>Trocar de modelo</td></tr>
+      <tr><td><code class="inline">/auth</code></td><td>Trocar método de autenticação</td></tr>
+      <tr><td><code class="inline">/stats</code></td><td>Ver uso de tokens e quota</td></tr>
+      <tr><td><code class="inline">/mcp</code></td><td>Ver servidores MCP ativos</td></tr>
+      <tr><td><code class="inline">/compact</code></td><td>Comprimir histórico</td></tr>
+      <tr><td><code class="inline">!comando</code></td><td>Executar comando shell inline</td></tr>
+    </table>
+
+    <h3>4.3 Autenticação e Limites</h3>
+    <p>Escolha <b>"Login with Google"</b> com sua conta Google pessoal.</p>
+    <table>
+      <tr><th>Conta</th><th>Limites</th></tr>
+      <tr class="best-value"><td>Google pessoal (gratuito)</td><td>60 req/min · 1.000 req/dia</td></tr>
+      <tr><td>Google AI Pro</td><td>Limites expandidos</td></tr>
+      <tr><td>Google AI Ultra</td><td>Limites máximos + Deep Think</td></tr>
+      <tr><td>API Key (AI Studio)</td><td>Pay-as-you-go, sem limite fixo</td></tr>
+    </table>
+    <div class="checkpoint">gemini --version funciona • /stats mostra sua quota disponível</div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SEÇÃO 5: MCPs ESSENCIAIS -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="section" id="mcps">
+    <div class="section-header">
+      <div class="section-num num-mcp">5</div>
+      <div>
+        <div class="section-title">MCPs Essenciais para Claude Code</div>
+        <div class="section-sub">Model Context Protocol — Superpoderes para sua IA</div>
+      </div>
+    </div>
+    <p>MCPs (Model Context Protocol) são servidores que estendem as capacidades do Claude Code, Gemini CLI e outros agentes com ferramentas externas. Configure em <code class="inline">~/.claude/settings.json</code> ou via <code class="inline">claude mcp add</code>.</p>
+
+    <h3>Como adicionar MCPs ao Claude Code</h3>
+<pre><code><span class="cm"># Adicionar MCP via CLI (forma mais fácil)</span>
+claude mcp add &lt;nome&gt; -- npx -y &lt;pacote&gt;
+
+<span class="cm"># Exemplos</span>
+claude mcp add context7 -- npx -y @upstash/context7-mcp
+claude mcp add desktop-commander -- npx -y @wonderwhy-er/desktop-commander
+claude mcp add github -- npx -y @anthropic-ai/mcp-server-github
+
+<span class="cm"># Listar MCPs instalados</span>
+claude mcp list
+
+<span class="cm"># Verificar status</span>
+claude mcp get &lt;nome&gt;</code></pre>
+
+    <div class="callout callout-tip">Você também pode configurar diretamente em <code class="inline">~/.claude/settings.json</code> na seção <code class="inline">"mcpServers"</code>. Use <code class="inline">claude mcp add --scope project</code> para MCPs específicos de um projeto.</div>
+
+    <!-- GRUPO: PRODUTIVIDADE -->
+    <h3>📚 Conhecimento &amp; Documentação</h3>
+    <div class="mcp-grid">
+      <div class="mcp-card mcp-amber">
+        <div class="mcp-card-header">
+          <div class="mcp-icon ic-amber">📖</div>
+          <div>
+            <div class="mcp-name">Context7 <span class="mcp-badge mcp-badge-rec">Essencial</span></div>
+            <div class="mcp-pkg">@upstash/context7-mcp</div>
+          </div>
+        </div>
+        <div class="mcp-desc">Docs de bibliotecas em tempo real. Resolve alucinações ao gerar código para frameworks que o Claude não conhece bem. Indexa milhares de pacotes npm, Python, etc.</div>
+        <div class="mcp-tags"><span class="mcp-tag tag-amber">Docs</span><span class="mcp-tag tag-blue">Auto</span></div>
+        <div class="mcp-install"><code>npx -y @upstash/context7-mcp</code></div>
+        <a href="https://github.com/upstash/context7" class="mcp-link" target="_blank">↗ github.com/upstash/context7</a>
+      </div>
+
+      <div class="mcp-card mcp-blue">
+        <div class="mcp-card-header">
+          <div class="mcp-icon ic-blue">🔍</div>
+          <div>
+            <div class="mcp-name">Sequential Thinking</div>
+            <div class="mcp-pkg">@modelcontextprotocol/server-sequential-thinking</div>
+          </div>
+        </div>
+        <div class="mcp-desc">Força o modelo a pensar passo a passo antes de responder. Ideal para problemas complexos de arquitetura, debugging difícil e planejamento de features.</div>
+        <div class="mcp-tags"><span class="mcp-tag tag-purple">Raciocínio</span></div>
+        <div class="mcp-install"><code>npx -y @modelcontextprotocol/server-sequential-thinking</code></div>
+        <a href="https://github.com/modelcontextprotocol/servers" class="mcp-link" target="_blank">↗ modelcontextprotocol/servers</a>
+      </div>
+    </div>
+
+    <!-- GRUPO: SISTEMA -->
+    <h3>🖥️ Sistema &amp; Arquivos</h3>
+    <div class="mcp-grid">
+      <div class="mcp-card mcp-amber">
+        <div class="mcp-card-header">
+          <div class="mcp-icon ic-amber">⚡</div>
+          <div>
+            <div class="mcp-name">Desktop Commander <span class="mcp-badge">Instalado</span></div>
+            <div class="mcp-pkg">@wonderwhy-er/desktop-commander</div>
+          </div>
+        </div>
+        <div class="mcp-desc">Controle total do SO: edição de arquivos, execução de processos, busca avançada, leitura de PDFs/Excel, gerenciamento de sessões de terminal e muito mais.</div>
+        <div class="mcp-tags"><span class="mcp-tag tag-amber">Files</span><span class="mcp-tag tag-green">Processos</span><span class="mcp-tag tag-blue">Search</span></div>
+        <div class="mcp-install"><code>npx -y @wonderwhy-er/desktop-commander</code></div>
+        <a href="https://github.com/wonderwhy-er/DesktopCommanderMCP" class="mcp-link" target="_blank">↗ wonderwhy-er/DesktopCommanderMCP</a>
+      </div>
+
+      <div class="mcp-card mcp-blue">
+        <div class="mcp-card-header">
+          <div class="mcp-icon ic-indigo">📁</div>
+          <div>
+            <div class="mcp-name">Filesystem</div>
+            <div class="mcp-pkg">@anthropic-ai/mcp-server-filesystem</div>
+          </div>
+        </div>
+        <div class="mcp-desc">Acesso controlado ao sistema de arquivos. Define diretórios permitidos, lê e escreve arquivos com segurança. Mais simples que Desktop Commander.</div>
+        <div class="mcp-tags"><span class="mcp-tag tag-blue">Files</span><span class="mcp-tag tag-green">Seguro</span></div>
+        <div class="mcp-install"><code>npx -y @anthropic-ai/mcp-server-filesystem /home/user/projeto</code></div>
+        <a href="https://github.com/anthropics/anthropic-quickstarts" class="mcp-link" target="_blank">↗ anthropics/anthropic-quickstarts</a>
+      </div>
+
+      <div class="mcp-card mcp-green">
+        <div class="mcp-card-header">
+          <div class="mcp-icon ic-green">💾</div>
+          <div>
+            <div class="mcp-name">Memory</div>
+            <div class="mcp-pkg">@anthropic-ai/mcp-server-memory</div>
+          </div>
+        </div>
+        <div class="mcp-desc">Memória persistente entre sessões. Armazena fatos, preferências e contexto do projeto em um grafo de conhecimento. Fundamental para projetos longos.</div>
+        <div class="mcp-tags"><span class="mcp-tag tag-green">Persistência</span><span class="mcp-tag tag-purple">Contexto</span></div>
+        <div class="mcp-install"><code>npx -y @anthropic-ai/mcp-server-memory</code></div>
+        <a href="https://github.com/anthropics/anthropic-quickstarts" class="mcp-link" target="_blank">↗ anthropics/anthropic-quickstarts</a>
+      </div>
+    </div>
+
+    <!-- GRUPO: WEB -->
+    <h3>🌐 Web &amp; Browser</h3>
+    <div class="mcp-grid">
+      <div class="mcp-card mcp-purple">
+        <div class="mcp-card-header">
+          <div class="mcp-icon ic-purple">🎭</div>
+          <div>
+            <div class="mcp-name">Puppeteer / Browser <span class="mcp-badge">Instalado</span></div>
+            <div class="mcp-pkg">@anthropic-ai/mcp-server-puppeteer</div>
+          </div>
+        </div>
+        <div class="mcp-desc">Browser automation completo. Navega páginas, tira screenshots, preenche formulários, clica em elementos. Essencial para testar UIs e fazer scraping.</div>
+        <div class="mcp-tags"><span class="mcp-tag tag-purple">Browser</span><span class="mcp-tag tag-blue">Screenshot</span><span class="mcp-tag tag-amber">Automação</span></div>
+        <div class="mcp-install"><code>npx -y @anthropic-ai/mcp-server-puppeteer</code></div>
+        <a href="https://github.com/anthropics/anthropic-quickstarts" class="mcp-link" target="_blank">↗ anthropics/anthropic-quickstarts</a>
+      </div>
+
+      <div class="mcp-card mcp-blue">
+        <div class="mcp-card-header">
+          <div class="mcp-icon ic-blue">⚡</div>
+          <div>
+            <div class="mcp-name">Exa Search <span class="mcp-badge">Instalado</span></div>
+            <div class="mcp-pkg">@exa-labs/exa-mcp-server</div>
+          </div>
+        </div>
+        <div class="mcp-desc">Busca web com IA. Retorna conteúdo semântico de alta qualidade. Muito melhor que busca tradicional para pesquisas técnicas, documentação e artigos.</div>
+        <div class="mcp-tags"><span class="mcp-tag tag-blue">Search</span><span class="mcp-tag tag-green">IA</span></div>
+        <div class="mcp-install"><code>npx -y @exa-labs/exa-mcp-server</code></div>
+        <a href="https://github.com/exa-labs/exa-mcp-server" class="mcp-link" target="_blank">↗ exa-labs/exa-mcp-server</a>
+      </div>
+
+      <div class="mcp-card mcp-green">
+        <div class="mcp-card-header">
+          <div class="mcp-icon ic-green">🔗</div>
+          <div>
+            <div class="mcp-name">Fetch</div>
+            <div class="mcp-pkg">@anthropic-ai/mcp-server-fetch</div>
+          </div>
+        </div>
+        <div class="mcp-desc">Faz requisições HTTP e converte HTML para Markdown. Ideal para ler documentação online, APIs públicas e páginas web sem abrir browser completo.</div>
+        <div class="mcp-tags"><span class="mcp-tag tag-green">HTTP</span><span class="mcp-tag tag-blue">Web</span></div>
+        <div class="mcp-install"><code>npx -y @anthropic-ai/mcp-server-fetch</code></div>
+        <a href="https://github.com/anthropics/anthropic-quickstarts" class="mcp-link" target="_blank">↗ anthropics/anthropic-quickstarts</a>
+      </div>
+    </div>
+
+    <!-- GRUPO: DEV & GIT -->
+    <h3>🔧 Desenvolvimento &amp; Git</h3>
+    <div class="mcp-grid">
+      <div class="mcp-card mcp-blue">
+        <div class="mcp-card-header">
+          <div class="mcp-icon ic-blue">🐙</div>
+          <div>
+            <div class="mcp-name">GitHub</div>
+            <div class="mcp-pkg">@anthropic-ai/mcp-server-github</div>
+          </div>
+        </div>
+        <div class="mcp-desc">Integração completa com GitHub. Lê issues, PRs, código, cria branches, faz commits, abre PRs e muito mais — sem sair do Claude Code.</div>
+        <div class="mcp-tags"><span class="mcp-tag tag-blue">GitHub</span><span class="mcp-tag tag-purple">PRs</span><span class="mcp-tag tag-amber">Issues</span></div>
+        <div class="mcp-install"><code>GITHUB_TOKEN=seu_token npx -y @anthropic-ai/mcp-server-github</code></div>
+        <a href="https://github.com/anthropics/anthropic-quickstarts" class="mcp-link" target="_blank">↗ anthropics/anthropic-quickstarts</a>
+      </div>
+
+      <div class="mcp-card mcp-green">
+        <div class="mcp-card-header">
+          <div class="mcp-icon ic-green">📊</div>
+          <div>
+            <div class="mcp-name">Git MCP</div>
+            <div class="mcp-pkg">@modelcontextprotocol/server-git</div>
+          </div>
+        </div>
+        <div class="mcp-desc">Operações Git diretas: commits, diffs, log, branches, blame. Complementa o GitHub MCP para repositórios locais sem autenticação remota.</div>
+        <div class="mcp-tags"><span class="mcp-tag tag-green">Git</span><span class="mcp-tag tag-blue">Local</span></div>
+        <div class="mcp-install"><code>npx -y @modelcontextprotocol/server-git</code></div>
+        <a href="https://github.com/modelcontextprotocol/servers" class="mcp-link" target="_blank">↗ modelcontextprotocol/servers</a>
+      </div>
+    </div>
+
+    <!-- GRUPO: DATABASE -->
+    <h3>🗃️ Database</h3>
+    <div class="mcp-grid">
+      <div class="mcp-card mcp-green">
+        <div class="mcp-card-header">
+          <div class="mcp-icon ic-green">🐘</div>
+          <div>
+            <div class="mcp-name">Supabase MCP</div>
+            <div class="mcp-pkg">@supabase/mcp-server-supabase</div>
+          </div>
+        </div>
+        <div class="mcp-desc">Acesso completo ao Supabase: queries SQL, gestão de schema, edge functions, storage e auth — diretamente no Claude Code sem abrir o dashboard.</div>
+        <div class="mcp-tags"><span class="mcp-tag tag-green">Supabase</span><span class="mcp-tag tag-blue">SQL</span></div>
+        <div class="mcp-install"><code>npx -y @supabase/mcp-server-supabase --url ... --key ...</code></div>
+        <a href="https://supabase.com/docs/guides/ai/mcp" class="mcp-link" target="_blank">↗ supabase.com/docs/guides/ai/mcp</a>
+      </div>
+
+      <div class="mcp-card mcp-amber">
+        <div class="mcp-card-header">
+          <div class="mcp-icon ic-amber">💿</div>
+          <div>
+            <div class="mcp-name">SQLite</div>
+            <div class="mcp-pkg">@modelcontextprotocol/server-sqlite</div>
+          </div>
+        </div>
+        <div class="mcp-desc">Queries e manipulação de bancos SQLite locais. Ideal para protótipos, análise de dados e projetos que não precisam de servidor de banco de dados.</div>
+        <div class="mcp-tags"><span class="mcp-tag tag-amber">SQLite</span><span class="mcp-tag tag-blue">Local</span></div>
+        <div class="mcp-install"><code>npx -y @modelcontextprotocol/server-sqlite /path/to/db.sqlite</code></div>
+        <a href="https://github.com/modelcontextprotocol/servers" class="mcp-link" target="_blank">↗ modelcontextprotocol/servers</a>
+      </div>
+    </div>
+
+    <!-- GRUPO: AUTOMAÇÃO -->
+    <h3>⚙️ Automação &amp; Integração</h3>
+    <div class="mcp-grid">
+      <div class="mcp-card mcp-purple">
+        <div class="mcp-card-header">
+          <div class="mcp-icon ic-purple">🔄</div>
+          <div>
+            <div class="mcp-name">n8n MCP</div>
+            <div class="mcp-pkg">n8n built-in MCP</div>
+          </div>
+        </div>
+        <div class="mcp-desc">Integra Claude Code com workflows do n8n. Dispara automações, consulta dados de fluxos e cria integrações com centenas de serviços externos.</div>
+        <div class="mcp-tags"><span class="mcp-tag tag-purple">Automação</span><span class="mcp-tag tag-amber">Workflows</span></div>
+        <div class="mcp-install"><code>Configurar via n8n → MCP Trigger Node</code></div>
+        <a href="https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-langchain.mcptrigger/" class="mcp-link" target="_blank">↗ docs.n8n.io/mcp</a>
+      </div>
+
+      <div class="mcp-card mcp-blue">
+        <div class="mcp-card-header">
+          <div class="mcp-icon ic-blue">💬</div>
+          <div>
+            <div class="mcp-name">Slack MCP</div>
+            <div class="mcp-pkg">@modelcontextprotocol/server-slack</div>
+          </div>
+        </div>
+        <div class="mcp-desc">Lê e envia mensagens no Slack, acessa canais e histórico. Útil para automações de equipe, notificações de deploy e acesso a contexto de conversas.</div>
+        <div class="mcp-tags"><span class="mcp-tag tag-blue">Slack</span><span class="mcp-tag tag-green">Team</span></div>
+        <div class="mcp-install"><code>SLACK_BOT_TOKEN=xoxb-... npx -y @modelcontextprotocol/server-slack</code></div>
+        <a href="https://github.com/modelcontextprotocol/servers" class="mcp-link" target="_blank">↗ modelcontextprotocol/servers</a>
+      </div>
+    </div>
+
+    <h3>Configuração em settings.json</h3>
+    <p>Exemplo de <code class="inline">~/.claude/settings.json</code> com os principais MCPs:</p>
+<pre><code>{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "desktop-commander": {
+      "command": "npx",
+      "args": ["-y", "@wonderwhy-er/desktop-commander"]
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-server-puppeteer"]
+    },
+    "exa": {
+      "command": "npx",
+      "args": ["-y", "@exa-labs/exa-mcp-server"],
+      "env": { "EXA_API_KEY": "sua_key_aqui" }
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/mcp-server-github"],
+      "env": { "GITHUB_TOKEN": "seu_token_aqui" }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    }
+  }
+}</code></pre>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SEÇÃO 6: SKILLS AIOS -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="section" id="skills">
+    <div class="section-header">
+      <div class="section-num num-skill">6</div>
+      <div>
+        <div class="section-title">Skills AIOS para Performance</div>
+        <div class="section-sub">Comandos /skill que turbinaram o Claude Code</div>
+      </div>
+    </div>
+    <p>Skills são instruções especializadas carregadas via <code class="inline">/skill-name</code> no Claude Code. No framework AIOS, estão em <code class="inline">expansion-packs/</code> e sincronizadas em <code class="inline">.claude/commands/</code>.</p>
+
+    <h3>Agentes Principais (usar com @nome)</h3>
+    <div class="skill-grid">
+      <div class="skill-card">
+        <div class="skill-header"><span class="skill-name">@aios-master</span><span class="skill-level sl-essential">Essencial</span></div>
+        <div class="skill-desc">Orquestrador geral Pax. Coordena todos os agentes, cria stories, executa workflows e mantém o contexto do projeto.</div>
+        <div class="skill-use">Use para: iniciar sessões, planejar features, orquestrar fluxos complexos.</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-header"><span class="skill-name">@dev</span><span class="skill-level sl-essential">Essencial</span></div>
+        <div class="skill-desc">Dex, o desenvolvedor. Especialista em implementação, segue padrões do código, escreve testes e mantém qualidade.</div>
+        <div class="skill-use">Use para: implementar features, corrigir bugs, refactoring.</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-header"><span class="skill-name">@architect</span><span class="skill-level sl-recommended">Recomendado</span></div>
+        <div class="skill-desc">Aria, a arquiteta. Projeta sistemas, define estruturas de dados, avalia trade-offs e define padrões técnicos.</div>
+        <div class="skill-use">Use para: decisões de arquitetura, design de banco, definir padrões.</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-header"><span class="skill-name">@qa</span><span class="skill-level sl-recommended">Recomendado</span></div>
+        <div class="skill-desc">Quinn, QA specialist. Revisa código, escreve testes, identifica edge cases e garante qualidade antes do deploy.</div>
+        <div class="skill-use">Use para: review de PRs, escrever testes, validar implementações.</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-header"><span class="skill-name">@pm</span><span class="skill-level sl-advanced">Avançado</span></div>
+        <div class="skill-desc">Product Manager. Escreve PRDs, define critérios de aceitação, prioriza backlog e gerencia roadmap de features.</div>
+        <div class="skill-use">Use para: criar stories, definir requirements, priorizar features.</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-header"><span class="skill-name">@devops</span><span class="skill-level sl-advanced">Avançado</span></div>
+        <div class="skill-desc">Gage, DevOps engineer. Gerencia deploys, CI/CD, infraestrutura, Docker e configuração de ambientes.</div>
+        <div class="skill-use">Use para: configurar pipelines, deploys, infraestrutura.</div>
+      </div>
+    </div>
+
+    <h3>Skills de Produtividade (usar com /skill)</h3>
+    <div class="skill-grid">
+      <div class="skill-card">
+        <div class="skill-header"><span class="skill-name">/architect-first</span><span class="skill-level sl-essential">Essencial</span></div>
+        <div class="skill-desc">Filosofia de desenvolvimento: design completo antes de qualquer código. Exige documentação, zero coupling e validação por múltiplas perspectivas.</div>
+        <div class="skill-use">Use para: iniciar qualquer feature não trivial.</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-header"><span class="skill-name">/ultra-think</span><span class="skill-level sl-recommended">Recomendado</span></div>
+        <div class="skill-desc">Análise profunda multi-dimensional. Força o Claude a explorar múltiplas perspectivas antes de decidir. Reduz erros em decisões complexas.</div>
+        <div class="skill-use">Use para: problemas difíceis, debugging misterioso, decisões críticas.</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-header"><span class="skill-name">/refactor-code</span><span class="skill-level sl-recommended">Recomendado</span></div>
+        <div class="skill-desc">Refatoração inteligente e sistemática. Identifica code smells, propõe melhorias e executa com segurança mantendo comportamento.</div>
+        <div class="skill-use">Use para: limpar código legado, melhorar qualidade.</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-header"><span class="skill-name">/squad-creator</span><span class="skill-level sl-advanced">Avançado</span></div>
+        <div class="skill-desc">Craft, o builder. Cria e valida squads AIOS com estrutura task-first, manifests JSON Schema e distribuição em 3 níveis.</div>
+        <div class="skill-use">Use para: criar novos squads, migrar e estender squads existentes.</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-header"><span class="skill-name">/mcp-builder</span><span class="skill-level sl-advanced">Avançado</span></div>
+        <div class="skill-desc">Guia para criar servidores MCP de alta qualidade em Python (FastMCP) ou TypeScript (MCP SDK) para integrar serviços externos.</div>
+        <div class="skill-use">Use para: criar MCPs customizados para seu stack.</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-header"><span class="skill-name">/passando-a-bola</span><span class="skill-level sl-advanced">Avançado</span></div>
+        <div class="skill-desc">Cria um prompt para passar contexto para outro agente (ex: Haiku) continuar o trabalho de onde você parou. Economia de tokens.</div>
+        <div class="skill-use">Use para: handoff entre modelos, economizar contexto.</div>
+      </div>
+    </div>
+
+    <h3>Comandos de Agente (*comandos)</h3>
+    <table>
+      <tr><th>Comando</th><th>Descrição</th></tr>
+      <tr><td><code class="inline">*help</code></td><td>Mostrar todos os comandos disponíveis do agente ativo</td></tr>
+      <tr><td><code class="inline">*create-story</code></td><td>Criar nova story de desenvolvimento com critérios de aceitação</td></tr>
+      <tr><td><code class="inline">*task {nome}</code></td><td>Executar task específica do repositório</td></tr>
+      <tr><td><code class="inline">*workflow {nome}</code></td><td>Executar workflow multi-step</td></tr>
+      <tr><td><code class="inline">*exit</code></td><td>Sair do modo de agente atual</td></tr>
+    </table>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SEÇÃO 7: SYNKRA AIOS -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="section" id="aios">
+    <div class="section-header">
+      <div class="section-num num-aios">7</div>
+      <div>
+        <div class="section-title">Integração com Synkra AIOS</div>
+        <div class="section-sub">Framework AI-Orchestrated Full Stack Development</div>
+      </div>
+    </div>
+    <p>O Synkra AIOS coordena múltiplos agentes de IA para desenvolvimento full stack. Ao instalar em um projeto, configura automaticamente cada ferramenta CLI.</p>
+
+    <table>
+      <tr><th>Diretório</th><th>Ferramenta</th><th>Conteúdo</th></tr>
+      <tr><td><code class="inline">.claude/</code></td><td>Claude Code</td><td>Comandos e instruções para agentes AIOS</td></tr>
+      <tr><td><code class="inline">.codex/</code></td><td>Codex CLI</td><td>Configurações e diretrizes para agentes</td></tr>
+      <tr><td><code class="inline">.gemini/</code></td><td>Gemini CLI</td><td>Contexto e instruções persistentes</td></tr>
+      <tr><td><code class="inline">.aios-core/</code></td><td>AIOS Framework</td><td>Core do framework, agentes, tasks e configs</td></tr>
+    </table>
+
+<pre><code><span class="cm"># Novo projeto</span>
+npx aios-core init meu-projeto
+cd meu-projeto
+
+<span class="cm"># Projeto existente</span>
+cd seu-projeto
+npx aios-core install</code></pre>
+
+    <div class="callout callout-info">Após instalar, basta abrir qualquer ferramenta CLI (<code class="inline">claude</code>, <code class="inline">codex</code> ou <code class="inline">gemini</code>) no diretório do projeto. Elas reconhecerão automaticamente as configurações do AIOS.</div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SEÇÃO 8: PLANOS -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="section" id="planos">
+    <div class="section-header">
+      <div class="section-num num-default">8</div>
+      <div>
+        <div class="section-title">Comparativo de Planos &amp; Custos</div>
+        <div class="section-sub">Todas as três podem ser usadas sem custo adicional com assinatura compatível</div>
+      </div>
+    </div>
+
+    <div class="plans-row">
+      <!-- CLAUDE -->
+      <div class="plan-card">
+        <div class="plan-header" style="border-color: rgba(99,102,241,.2);">
+          <div class="plan-logo">🟣</div>
+          <div>
+            <div class="plan-brand" style="color: var(--claude);">Claude Code</div>
+            <div class="plan-brand-sub">Anthropic</div>
+          </div>
+        </div>
+        <table class="plan-table">
+          <tr><th>Plano</th><th>Preço</th><th>Acesso</th></tr>
+          <tr><td>Console (API)</td><td>Pay-as-you-go</td><td>Sim*</td></tr>
+          <tr class="best-value"><td>Claude Pro</td><td>US$20/mês</td><td>Incluído</td></tr>
+          <tr><td>Claude Max</td><td>US$100/mês</td><td>Limites maiores</td></tr>
+          <tr><td>Enterprise</td><td>Customizado</td><td>Sim</td></tr>
+        </table>
+        <p style="font-size:11px; color:var(--text-dim); padding: 8px 12px;">*Console requer billing ativo</p>
+      </div>
+      <!-- CODEX -->
+      <div class="plan-card">
+        <div class="plan-header" style="border-color: rgba(16,185,129,.2);">
+          <div class="plan-logo">🟢</div>
+          <div>
+            <div class="plan-brand" style="color: var(--openai);">Codex CLI</div>
+            <div class="plan-brand-sub">OpenAI</div>
+          </div>
+        </div>
+        <table class="plan-table">
+          <tr><th>Plano</th><th>Preço</th><th>Acesso</th></tr>
+          <tr class="best-value"><td>ChatGPT Plus</td><td>US$20/mês</td><td>Sessões/semana</td></tr>
+          <tr><td>ChatGPT Pro</td><td>US$200/mês</td><td>Uso intensivo</td></tr>
+          <tr><td>Business</td><td>US$25-30/seat</td><td>Equipes (mín. 2)</td></tr>
+          <tr><td>API Key</td><td>Pay-as-you-go</td><td>Por token</td></tr>
+        </table>
+        <p style="font-size:11px; color:var(--text-dim); padding: 8px 12px;">Use "Sign in with ChatGPT" para usar assinatura</p>
+      </div>
+      <!-- GEMINI -->
+      <div class="plan-card">
+        <div class="plan-header" style="border-color: rgba(59,130,246,.2);">
+          <div class="plan-logo">🔵</div>
+          <div>
+            <div class="plan-brand" style="color: var(--google);">Gemini CLI</div>
+            <div class="plan-brand-sub">Google · Open-source</div>
+          </div>
+        </div>
+        <table class="plan-table">
+          <tr><th>Plano</th><th>Preço</th><th>Limite</th></tr>
+          <tr class="best-value"><td>Conta Google</td><td>Grátis</td><td>60/min · 1k/dia</td></tr>
+          <tr><td>Google AI Pro</td><td>Pago</td><td>Expandido</td></tr>
+          <tr><td>Google AI Ultra</td><td>Pago</td><td>Máximo + Deep Think</td></tr>
+          <tr><td>API Key (AI Studio)</td><td>Pay-as-you-go</td><td>Sem limite fixo</td></tr>
+        </table>
+        <p style="font-size:11px; color:var(--text-dim); padding: 8px 12px;">Gratuito! Melhor custo-benefício para começar</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SEÇÃO 9: PÓS-INSTALAÇÃO -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="section" id="verify">
+    <div class="section-header">
+      <div class="section-num num-default">9</div>
+      <div>
+        <div class="section-title">Pós-instalação e Verificação</div>
+        <div class="section-sub">Confirme que tudo está funcionando</div>
+      </div>
+    </div>
+<pre><code><span class="cm"># Verificar todas as ferramentas</span>
+node -v          <span class="cm"># v22.x.x</span>
+claude --version
+codex --version  <span class="cm"># se instalado via npm</span>
+gemini --version
+
+<span class="cm"># Diagnóstico do Claude Code</span>
+claude doctor
+
+<span class="cm"># Atualizar Claude Code</span>
+claude update                          <span class="cm"># instalação nativa</span>
+brew upgrade claude-code               <span class="cm"># macOS Homebrew</span>
+winget upgrade Anthropic.ClaudeCode    <span class="cm"># Windows WinGet</span>
+
+<span class="cm"># Listar MCPs instalados</span>
+claude mcp list
+
+<span class="cm"># Primeiros testes</span>
+claude "explique a estrutura deste projeto"
+codex    <span class="cm"># TUI interativo</span>
+gemini   <span class="cm"># TUI interativo</span></code></pre>
+    <div class="checkpoint">Todas as versões exibidas • claude doctor sem erros • MCPs listados corretamente</div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SEÇÃO 10: TROUBLESHOOTING -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="section" id="troubleshooting">
+    <div class="section-header">
+      <div class="section-num" style="background:rgba(248,81,73,.1);color:var(--danger);border:1px solid rgba(248,81,73,.2);width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0;">!</div>
+      <div>
+        <div class="section-title">Troubleshooting</div>
+        <div class="section-sub">Problemas comuns e soluções</div>
+      </div>
+    </div>
+
+    <h3>"command not found: claude" (macOS)</h3>
+    <div class="callout callout-danger">O PATH não inclui <code class="inline">~/.local/bin</code>.</div>
+<pre><code>echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc</code></pre>
+
+    <h3>"command not found: nvm" (WSL)</h3>
+<pre><code>source ~/.bashrc
+
+<span class="cm"># Se ainda não funcionar:</span>
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"</code></pre>
+
+    <h3>"SyntaxError: Invalid regular expression flags" (Gemini CLI)</h3>
+    <div class="callout callout-danger">Node.js desatualizado. Gemini CLI requer v20+.</div>
+<pre><code>nvm install 22 && nvm use 22</code></pre>
+
+    <h3>"cd: /pasta: No such file or directory" (WSL)</h3>
+<pre><code><span class="cm"># Arquivos Windows ficam em /mnt/c/ no WSL</span>
+cd /mnt/c/Users/SeuUsuario/pasta
+
+<span class="cm"># Para melhor performance, copie para o home Linux:</span>
+cp -r /mnt/c/caminho/projeto ~/projeto</code></pre>
+
+    <h3>Codex CLI não reconhece plano Plus</h3>
+<pre><code>codex logout
+<span class="cm"># Abra novamente e escolha "Sign in with ChatGPT"</span>
+codex</code></pre>
+
+    <h3>Git Bash não encontrado (Claude Code, Windows nativo)</h3>
+<pre><code>$env:CLAUDE_CODE_GIT_BASH_PATH="C:\Program Files\Git\bin\bash.exe"</code></pre>
+
+    <h3>MCP não conecta / timeout</h3>
+<pre><code><span class="cm"># Verificar status do MCP</span>
+claude mcp get &lt;nome&gt;
+
+<span class="cm"># Reiniciar o MCP</span>
+claude mcp remove &lt;nome&gt;
+claude mcp add &lt;nome&gt; -- npx -y &lt;pacote&gt;
+
+<span class="cm"># Verificar logs de erro</span>
+claude --debug</code></pre>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SEÇÃO 11: REFERÊNCIA RÁPIDA -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="section" id="ref">
+    <div class="section-header">
+      <div class="section-num num-default">11</div>
+      <div>
+        <div class="section-title">Referência Rápida</div>
+        <div class="section-sub">Instalação, uso diário e links úteis</div>
+      </div>
+    </div>
+
+    <h3>Instalação — Todos os comandos</h3>
+    <table>
+      <tr><th>Ferramenta</th><th>Plataforma</th><th>Comando</th></tr>
+      <tr><td>Claude Code</td><td>macOS (Homebrew)</td><td><code class="inline">brew install --cask claude-code</code></td></tr>
+      <tr><td>Claude Code</td><td>macOS/Linux/WSL</td><td><code class="inline">curl -fsSL https://claude.ai/install.sh | bash</code></td></tr>
+      <tr><td>Claude Code</td><td>Windows (WinGet)</td><td><code class="inline">winget install Anthropic.ClaudeCode</code></td></tr>
+      <tr><td>Codex CLI</td><td>Todas (npm)</td><td><code class="inline">npm i -g @openai/codex</code></td></tr>
+      <tr><td>Codex CLI</td><td>macOS (Homebrew)</td><td><code class="inline">brew install codex</code></td></tr>
+      <tr><td>Gemini CLI</td><td>Todas (npm)</td><td><code class="inline">npm install -g @google/gemini-cli</code></td></tr>
+      <tr><td>Gemini CLI</td><td>macOS/Linux</td><td><code class="inline">brew install gemini-cli</code></td></tr>
+    </table>
+
+    <h3>Uso Diário</h3>
+    <div class="cmd-grid">
+      <div class="cmd-block">
+        <div class="cmd-block-header">Claude Code</div>
+        <div class="cmd-row"><code>claude</code><span>Iniciar no projeto atual</span></div>
+        <div class="cmd-row"><code>claude doctor</code><span>Diagnóstico</span></div>
+        <div class="cmd-row"><code>claude update</code><span>Atualizar</span></div>
+        <div class="cmd-row"><code>claude mcp list</code><span>Listar MCPs</span></div>
+        <div class="cmd-row"><code>claude mcp add</code><span>Adicionar MCP</span></div>
+        <div class="cmd-row"><code>claude --debug</code><span>Modo debug</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-block-header">Codex CLI</div>
+        <div class="cmd-row"><code>codex</code><span>Iniciar TUI</span></div>
+        <div class="cmd-row"><code>/status</code><span>Ver limites</span></div>
+        <div class="cmd-row"><code>/model</code><span>Trocar modelo</span></div>
+        <div class="cmd-row"><code>/compact</code><span>Comprimir histórico</span></div>
+        <div class="cmd-row"><code>/new</code><span>Nova sessão</span></div>
+        <div class="cmd-row"><code>!git status</code><span>Bash inline</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-block-header">Gemini CLI</div>
+        <div class="cmd-row"><code>gemini</code><span>Iniciar TUI</span></div>
+        <div class="cmd-row"><code>/stats</code><span>Ver quota</span></div>
+        <div class="cmd-row"><code>/model</code><span>Trocar modelo</span></div>
+        <div class="cmd-row"><code>/mcp</code><span>Ver MCPs ativos</span></div>
+        <div class="cmd-row"><code>/compact</code><span>Comprimir histórico</span></div>
+        <div class="cmd-row"><code>!ls</code><span>Shell inline</span></div>
+      </div>
+      <div class="cmd-block">
+        <div class="cmd-block-header">Node.js / NVM</div>
+        <div class="cmd-row"><code>node -v</code><span>Verificar versão</span></div>
+        <div class="cmd-row"><code>nvm install 22</code><span>Instalar v22</span></div>
+        <div class="cmd-row"><code>nvm use 22</code><span>Usar v22</span></div>
+        <div class="cmd-row"><code>nvm list</code><span>Listar versões</span></div>
+        <div class="cmd-row"><code>nvm alias default 22</code><span>Definir padrão</span></div>
+      </div>
+    </div>
+
+    <h3>Links Úteis</h3>
+    <table>
+      <tr><th>Recurso</th><th>URL</th></tr>
+      <tr><td>Claude Code Docs</td><td><a href="https://docs.anthropic.com/claude/docs/claude-code" target="_blank">docs.anthropic.com/claude/docs/claude-code</a></td></tr>
+      <tr><td>Claude Code — Instalar</td><td><a href="https://claude.ai/code" target="_blank">claude.ai/code</a></td></tr>
+      <tr><td>Codex CLI</td><td><a href="https://github.com/openai/codex" target="_blank">github.com/openai/codex</a></td></tr>
+      <tr><td>Gemini CLI</td><td><a href="https://github.com/google-gemini/gemini-cli" target="_blank">github.com/google-gemini/gemini-cli</a></td></tr>
+      <tr><td>MCP Servers (oficial)</td><td><a href="https://github.com/modelcontextprotocol/servers" target="_blank">github.com/modelcontextprotocol/servers</a></td></tr>
+      <tr><td>Context7 MCP</td><td><a href="https://github.com/upstash/context7" target="_blank">github.com/upstash/context7</a></td></tr>
+      <tr><td>Desktop Commander</td><td><a href="https://github.com/wonderwhy-er/DesktopCommanderMCP" target="_blank">github.com/wonderwhy-er/DesktopCommanderMCP</a></td></tr>
+      <tr><td>Exa Search MCP</td><td><a href="https://github.com/exa-labs/exa-mcp-server" target="_blank">github.com/exa-labs/exa-mcp-server</a></td></tr>
+      <tr><td>Synkra AIOS</td><td><a href="https://github.com/SynkraAI/aios-core" target="_blank">github.com/SynkraAI/aios-core</a></td></tr>
+      <tr><td>NVM</td><td><a href="https://github.com/nvm-sh/nvm" target="_blank">github.com/nvm-sh/nvm</a></td></tr>
+    </table>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  <p>🤖 Guia AI CLI Tools · Fevereiro 2026 · v3.0 · Claude Code · Codex CLI · Gemini CLI · MCPs · Skills AIOS</p>
+  <p style="margin-top:10px;"><a href="/">← Central de Páginas</a></p>
+</footer>
+
+<script>
+  // Progress bar
+  const sections = ['req','claude','codex','gemini','mcps','skills','aios','planos','verify','troubleshooting','ref'];
+  const steps = document.querySelectorAll('.pstep');
+  steps.forEach((s,i) => {
+    s.addEventListener('click', () => {
+      const el = document.getElementById(sections[i]);
+      if(el) el.scrollIntoView({behavior:'smooth'});
+    });
+  });
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if(e.isIntersecting) {
+        const idx = sections.indexOf(e.target.id);
+        if(idx >= 0) {
+          steps.forEach((s,i) => {
+            s.className = 'pstep' + (i < idx ? ' done' : i === idx ? ' active' : '');
+          });
+        }
+      }
+    });
+  }, {threshold: 0.2, rootMargin: '-110px 0px -40% 0px'});
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) observer.observe(el);
+  });
+</script>
+</body>
+</html>
