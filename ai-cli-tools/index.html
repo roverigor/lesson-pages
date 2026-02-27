@@ -361,6 +361,7 @@
   <div class="pstep" title="Skills AIOS"></div>
   <div class="pstep" title="Synkra AIOS"></div>
   <div class="pstep" title="Planos"></div>
+  <div class="pstep" title="Comparativo"></div>
   <div class="pstep" title="Verificação"></div>
   <div class="pstep" title="Troubleshooting"></div>
   <div class="pstep" title="Referência"></div>
@@ -380,9 +381,10 @@
       <div class="toc-item"><div class="toc-num">6</div><a href="#skills" class="toc-link">Skills AIOS <span class="toc-new">NOVO</span></a></div>
       <div class="toc-item"><div class="toc-num">7</div><a href="#aios" class="toc-link">Synkra AIOS</a></div>
       <div class="toc-item"><div class="toc-num">8</div><a href="#planos" class="toc-link">Planos &amp; Custos</a></div>
-      <div class="toc-item"><div class="toc-num">9</div><a href="#verify" class="toc-link">Pós-instalação</a></div>
-      <div class="toc-item"><div class="toc-num">10</div><a href="#troubleshooting" class="toc-link">Troubleshooting</a></div>
-      <div class="toc-item"><div class="toc-num">11</div><a href="#ref" class="toc-link">Referência Rápida</a></div>
+      <div class="toc-item"><div class="toc-num">9</div><a href="#comparativo" class="toc-link">Comparativo &amp; Cenários <span class="toc-new">NOVO</span></a></div>
+      <div class="toc-item"><div class="toc-num">10</div><a href="#verify" class="toc-link">Pós-instalação</a></div>
+      <div class="toc-item"><div class="toc-num">11</div><a href="#troubleshooting" class="toc-link">Troubleshooting</a></div>
+      <div class="toc-item"><div class="toc-num">12</div><a href="#ref" class="toc-link">Referência Rápida</a></div>
     </div>
   </div>
 
@@ -531,8 +533,41 @@ codex</code></pre>
 
     <h3>3.3 Autenticação</h3>
     <p>Na primeira execução, escolha <b>"Sign in with ChatGPT"</b> para usar seu plano de assinatura sem custo adicional de tokens.</p>
-    <div class="callout callout-tip">Use <code class="inline">/status</code> para monitorar seus limites de uso. Para quem já assina ChatGPT Plus/Pro, o login com ChatGPT é muito mais econômico que usar API key por token.</div>
-    <div class="checkpoint">codex --version funciona • /status mostra seu plano corretamente</div>
+    <div class="callout callout-tip">Use <code class="inline">/status</code> para monitorar seus limites. Para quem já assina ChatGPT Plus/Pro, o login com ChatGPT é muito mais econômico que usar API key por token.</div>
+
+    <h3>3.4 MCPs no Codex CLI</h3>
+    <p>O Codex CLI suporta MCPs oficialmente. Configuração em <code class="inline">~/.codex/config.toml</code> (global) ou <code class="inline">.codex/config.toml</code> (projeto).</p>
+    <div class="callout callout-warn"><b>Limitação crítica:</b> Codex CLI suporta apenas <b>STDIO transport</b>. Servidores MCP remotos via HTTP não são suportados.</div>
+<pre><code><span class="cm"># ~/.codex/config.toml</span>
+[[mcp_server]]
+name = "context7"
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+timeout_sec = 10
+
+[[mcp_server]]
+name = "github"
+command = "/path/to/github-mcp-server"
+env = { GITHUB_TOKEN = "seu_token" }
+
+<span class="cm"># Gerenciar via CLI</span>
+codex mcp           <span class="cm"># listar servidores</span>
+codex mcp add &lt;nome&gt; &lt;url&gt;  <span class="cm"># adicionar servidor</span></code></pre>
+
+    <h3>3.5 AGENTS.md — Contexto de Projeto</h3>
+    <p>Equivalente ao <code class="inline">CLAUDE.md</code>. O Codex busca <code class="inline">AGENTS.md</code> hierarquicamente do diretório raiz ao atual. Subdiretórios podem ter seus próprios arquivos que sobrescrevem o pai.</p>
+<pre><code><span class="cm"># Criar AGENTS.md no projeto atual</span>
+codex /init
+
+<span class="cm"># Estrutura hierárquica</span>
+projeto/
+├── AGENTS.md          <span class="cm"># instruções base</span>
+├── src/
+│   └── AGENTS.md      <span class="cm"># sobrescreve para src/</span>
+└── config/
+    └── AGENTS.md      <span class="cm"># sobrescreve para config/</span></code></pre>
+
+    <div class="checkpoint">codex --version funciona • /status mostra seu plano • codex mcp lista servidores</div>
   </div>
 
   <!-- ─────────────────────────────────────────────────── -->
@@ -564,7 +599,8 @@ gemini</code></pre>
       <tr><td><code class="inline">/model</code></td><td>Trocar de modelo</td></tr>
       <tr><td><code class="inline">/auth</code></td><td>Trocar método de autenticação</td></tr>
       <tr><td><code class="inline">/stats</code></td><td>Ver uso de tokens e quota</td></tr>
-      <tr><td><code class="inline">/mcp</code></td><td>Ver servidores MCP ativos</td></tr>
+      <tr><td><code class="inline">/memory show</code></td><td>Exibir contexto GEMINI.md carregado</td></tr>
+      <tr><td><code class="inline">/memory refresh</code></td><td>Recarregar arquivos de contexto</td></tr>
       <tr><td><code class="inline">/compact</code></td><td>Comprimir histórico</td></tr>
       <tr><td><code class="inline">!comando</code></td><td>Executar comando shell inline</td></tr>
     </table>
@@ -578,7 +614,38 @@ gemini</code></pre>
       <tr><td>Google AI Ultra</td><td>Limites máximos + Deep Think</td></tr>
       <tr><td>API Key (AI Studio)</td><td>Pay-as-you-go, sem limite fixo</td></tr>
     </table>
-    <div class="checkpoint">gemini --version funciona • /stats mostra sua quota disponível</div>
+    <h3>4.4 MCPs no Gemini CLI</h3>
+    <p>Gemini CLI suporta MCPs nativamente desde 2024. Configura em <code class="inline">~/.gemini/settings.json</code> (global) ou <code class="inline">.gemini/settings.json</code> (projeto). Suporta STDIO e HTTP transport.</p>
+<pre><code><span class="cm">// ~/.gemini/settings.json</span>
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "github-remote": {
+      "httpUrl": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer SEU_TOKEN"
+      },
+      "timeout": 5000
+    }
+  }
+}</code></pre>
+
+    <h3>4.5 GEMINI.md — Contexto de Projeto</h3>
+    <p>Equivalente ao <code class="inline">CLAUDE.md</code>. Sistema hierárquico: global, projeto e por subdiretório.</p>
+<pre><code><span class="cm"># Arquivos de contexto Gemini</span>
+~/.gemini/GEMINI.md       <span class="cm"># global (todos os projetos)</span>
+.gemini/GEMINI.md         <span class="cm"># projeto atual</span>
+src/.gemini/GEMINI.md     <span class="cm"># específico de subdiretório</span>
+
+<span class="cm"># Gerenciar contexto dentro da sessão</span>
+/memory show     <span class="cm"># exibir contexto combinado carregado</span>
+/memory refresh  <span class="cm"># recarregar todos os arquivos</span></code></pre>
+    <div class="callout callout-tip">Quando o GEMINI.md está ativo, a UI mostra o indicador <code class="inline">|⌐■_■|</code>. Use <code class="inline">/memory show</code> para confirmar o que foi carregado.</div>
+
+    <div class="checkpoint">gemini --version funciona • /stats mostra quota • /memory show carrega GEMINI.md</div>
   </div>
 
   <!-- ─────────────────────────────────────────────────── -->
@@ -831,7 +898,20 @@ claude mcp get &lt;nome&gt;</code></pre>
       </div>
     </div>
 
-    <h3>Configuração em settings.json</h3>
+    <h3>Suporte a MCP por Ferramenta</h3>
+    <table>
+      <tr><th>Recurso</th><th>Claude Code</th><th>Gemini CLI</th><th>Codex CLI</th></tr>
+      <tr><td>Suporte MCP</td><td>✅ Nativo (criador)</td><td>✅ Desde 2024</td><td>✅ Oficial</td></tr>
+      <tr><td>Transport STDIO</td><td>✅</td><td>✅</td><td>✅</td></tr>
+      <tr><td>Transport HTTP/SSE</td><td>✅</td><td>✅</td><td>❌ Não suportado</td></tr>
+      <tr><td>Arquivo de config</td><td><code class="inline">~/.claude/settings.json</code></td><td><code class="inline">~/.gemini/settings.json</code></td><td><code class="inline">~/.codex/config.toml</code></td></tr>
+      <tr><td>Formato</td><td>JSON</td><td>JSON</td><td>TOML</td></tr>
+      <tr><td>Gerenciar via CLI</td><td><code class="inline">claude mcp list/add</code></td><td>Editar settings.json</td><td><code class="inline">codex mcp list/add</code></td></tr>
+      <tr><td>Arquivo de contexto</td><td><code class="inline">CLAUDE.md</code></td><td><code class="inline">GEMINI.md</code></td><td><code class="inline">AGENTS.md</code></td></tr>
+    </table>
+    <div class="callout callout-danger"><b>Atenção Codex CLI:</b> Somente STDIO transport. MCPs que requerem HTTP remoto (ex: GitHub Copilot MCP via HTTPS) não funcionam no Codex.</div>
+
+    <h3>Configuração em settings.json (Claude Code)</h3>
     <p>Exemplo de <code class="inline">~/.claude/settings.json</code> com os principais MCPs:</p>
 <pre><code>{
   "mcpServers": {
@@ -955,6 +1035,18 @@ claude mcp get &lt;nome&gt;</code></pre>
       <tr><td><code class="inline">*workflow {nome}</code></td><td>Executar workflow multi-step</td></tr>
       <tr><td><code class="inline">*exit</code></td><td>Sair do modo de agente atual</td></tr>
     </table>
+
+    <h3>Equivalentes em Gemini CLI e Codex CLI</h3>
+    <div class="callout callout-info">O sistema de <b>Skills AIOS</b> é exclusivo do Claude Code — depende do mecanismo de slash commands e da arquitetura <code class="inline">.claude/commands/</code>. Gemini e Codex têm seus próprios sistemas de contexto persistente.</div>
+    <table>
+      <tr><th>Recurso</th><th>Claude Code (AIOS)</th><th>Gemini CLI</th><th>Codex CLI</th></tr>
+      <tr><td>Instruções globais</td><td><code class="inline">~/.claude/CLAUDE.md</code></td><td><code class="inline">~/.gemini/GEMINI.md</code></td><td><code class="inline">~/.codex/config.toml</code> (instrução global)</td></tr>
+      <tr><td>Contexto de projeto</td><td><code class="inline">CLAUDE.md</code> na raiz</td><td><code class="inline">.gemini/GEMINI.md</code></td><td><code class="inline">AGENTS.md</code> na raiz</td></tr>
+      <tr><td>Hierarquia</td><td>Global → Projeto → Subdir</td><td>Global → Projeto → Subdir</td><td>Raiz → Diretório atual</td></tr>
+      <tr><td>Recarregar contexto</td><td>Automático</td><td><code class="inline">/memory refresh</code></td><td>Automático</td></tr>
+      <tr><td>Skills / Agentes</td><td>✅ AIOS Skills + @agentes</td><td>❌ Sem equivalente</td><td>❌ Sem equivalente</td></tr>
+      <tr><td>Criar arquivo de contexto</td><td>Manual</td><td>Manual</td><td><code class="inline">codex /init</code></td></tr>
+    </table>
   </div>
 
   <!-- ─────────────────────────────────────────────────── -->
@@ -1060,11 +1152,148 @@ npx aios-core install</code></pre>
   </div>
 
   <!-- ─────────────────────────────────────────────────── -->
-  <!-- SEÇÃO 9: PÓS-INSTALAÇÃO -->
+  <!-- SEÇÃO 9: COMPARATIVO -->
+  <!-- ─────────────────────────────────────────────────── -->
+  <div class="section" id="comparativo">
+    <div class="section-header">
+      <div class="section-num num-default">9</div>
+      <div>
+        <div class="section-title">Comparativo — Qual Ferramenta Usar?</div>
+        <div class="section-sub">Vantagens, desvantagens e cenários de uso de cada CLI</div>
+      </div>
+    </div>
+    <p>As três ferramentas se complementam. Entender os pontos fortes de cada uma ajuda a escolher a certa para cada tarefa.</p>
+
+    <!-- CLAUDE CODE -->
+    <h3 style="color: var(--claude); display:flex; align-items:center; gap:8px;">🟣 Claude Code — Anthropic</h3>
+    <table>
+      <tr><th style="width:50%">✅ Vantagens</th><th style="width:50%">⚠️ Desvantagens</th></tr>
+      <tr>
+        <td>
+          <ul style="margin:0; padding-left:18px; line-height:2;">
+            <li>Instalador nativo — sem dependência de Node.js</li>
+            <li>Ecossistema MCP mais maduro (protocolo criado pela Anthropic)</li>
+            <li>Suporte completo: STDIO + SSE + HTTP transport</li>
+            <li>Sistema de Skills e Agentes AIOS exclusivo</li>
+            <li>CLAUDE.md hierárquico (global → projeto → subdir)</li>
+            <li>Gerenciamento de MCP via CLI (<code class="inline">claude mcp add/list</code>)</li>
+            <li>Modelos Claude 3.7/4 com raciocínio estendido</li>
+            <li>Melhor para projetos complexos com múltiplos agentes</li>
+          </ul>
+        </td>
+        <td>
+          <ul style="margin:0; padding-left:18px; line-height:2;">
+            <li>Requer assinatura paga para uso intensivo (US$20+/mês)</li>
+            <li>Sem versão totalmente gratuita para CLI</li>
+            <li>Open-source limitado (cliente proprietário)</li>
+          </ul>
+        </td>
+      </tr>
+    </table>
+
+    <!-- CODEX CLI -->
+    <h3 style="color: var(--openai); display:flex; align-items:center; gap:8px; margin-top:28px;">🟢 Codex CLI — OpenAI</h3>
+    <table>
+      <tr><th style="width:50%">✅ Vantagens</th><th style="width:50%">⚠️ Desvantagens</th></tr>
+      <tr>
+        <td>
+          <ul style="margin:0; padding-left:18px; line-height:2;">
+            <li>Incluído no ChatGPT Plus (US$20/mês já pago)</li>
+            <li>100% open-source (MIT License)</li>
+            <li>Modelos GPT-4o e o4-mini integrados</li>
+            <li>AGENTS.md inicializado via <code class="inline">codex /init</code></li>
+            <li>Leve e rápido para tarefas pontuais</li>
+            <li>Suporte a MCP oficial (STDIO)</li>
+          </ul>
+        </td>
+        <td>
+          <ul style="margin:0; padding-left:18px; line-height:2;">
+            <li><strong>MCP apenas STDIO</strong> — sem HTTP/SSE remote transport</li>
+            <li>Sem sistema de Skills ou Agentes equivalente ao AIOS</li>
+            <li>Sessões por semana limitadas no plano Plus</li>
+            <li>Menos mature que Claude Code para workflows longos</li>
+            <li>Requer Node.js (não tem instalador nativo)</li>
+          </ul>
+        </td>
+      </tr>
+    </table>
+
+    <!-- GEMINI CLI -->
+    <h3 style="color: var(--google); display:flex; align-items:center; gap:8px; margin-top:28px;">🔵 Gemini CLI — Google</h3>
+    <table>
+      <tr><th style="width:50%">✅ Vantagens</th><th style="width:50%">⚠️ Desvantagens</th></tr>
+      <tr>
+        <td>
+          <ul style="margin:0; padding-left:18px; line-height:2;">
+            <li><strong>Totalmente gratuito</strong> com conta Google pessoal</li>
+            <li>1.000 requisições/dia no plano gratuito</li>
+            <li>100% open-source (Apache 2.0)</li>
+            <li>Contexto de 1M de tokens (Gemini 2.5 Pro)</li>
+            <li>Suporte MCP: STDIO + HTTP (desde 2024)</li>
+            <li>GEMINI.md hierárquico com <code class="inline">/memory show</code> e <code class="inline">/memory refresh</code></li>
+            <li>Ideal para exploração e experimentos sem custo</li>
+          </ul>
+        </td>
+        <td>
+          <ul style="margin:0; padding-left:18px; line-height:2;">
+            <li>Sem sistema de Skills/Agentes equivalente ao AIOS</li>
+            <li>Requer Node.js v20+ (sem instalador nativo)</li>
+            <li>Rate limits rígidos no plano gratuito (60 req/min)</li>
+            <li>Integração IDE menos matura que Claude Code</li>
+          </ul>
+        </td>
+      </tr>
+    </table>
+
+    <!-- CENÁRIOS DE USO -->
+    <h3 style="margin-top:32px;">Qual usar em cada cenário?</h3>
+    <table>
+      <tr><th>Cenário</th><th>Ferramenta Ideal</th><th>Por quê</th></tr>
+      <tr>
+        <td>Projeto com múltiplos agentes e workflows complexos</td>
+        <td style="color:var(--claude); font-weight:600;">Claude Code</td>
+        <td>AIOS Skills, agentes @dev/@architect/@qa e MCPs avançados</td>
+      </tr>
+      <tr>
+        <td>Explorar e experimentar sem custo</td>
+        <td style="color:var(--google); font-weight:600;">Gemini CLI</td>
+        <td>1k req/dia grátis, contexto de 1M tokens, open-source</td>
+      </tr>
+      <tr>
+        <td>Usar assinatura ChatGPT Plus já existente</td>
+        <td style="color:var(--openai); font-weight:600;">Codex CLI</td>
+        <td>Incluído no Plus, sem custo extra, GPT-4o integrado</td>
+      </tr>
+      <tr>
+        <td>Integrar MCPs remotos (HTTP/SSE)</td>
+        <td style="color:var(--claude); font-weight:600;">Claude Code ou Gemini</td>
+        <td>Codex suporta apenas STDIO — sem HTTP transport</td>
+      </tr>
+      <tr>
+        <td>Projetos de muito longa duração com contexto enorme</td>
+        <td style="color:var(--google); font-weight:600;">Gemini CLI</td>
+        <td>1M de tokens de contexto nativo (Gemini 2.5 Pro)</td>
+      </tr>
+      <tr>
+        <td>Análise de código + tasks autônomas no terminal</td>
+        <td style="color:var(--claude); font-weight:600;">Claude Code</td>
+        <td>Mais autonomia, ferramentas nativas e suporte WSL/macOS/Win</td>
+      </tr>
+      <tr>
+        <td>Complementar Claude Code sem custo adicional</td>
+        <td style="color:var(--google); font-weight:600;">Gemini CLI</td>
+        <td>Usar gratuitamente para pesquisa e exploração paralela</td>
+      </tr>
+    </table>
+    <div class="callout callout-tip"><b>Recomendação AIOS:</b> Use <b>Claude Code + AIOS Skills</b> como ferramenta principal para desenvolvimento. Complemente com <b>Gemini CLI</b> gratuito para pesquisa e exploração. Use <b>Codex CLI</b> se já tem ChatGPT Plus e quer aproveitar a assinatura.</div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── -->
+  <!-- SEÇÃO 10: PÓS-INSTALAÇÃO -->
   <!-- ─────────────────────────────────────────────────── -->
   <div class="section" id="verify">
     <div class="section-header">
-      <div class="section-num num-default">9</div>
+      <div class="section-num num-default">10</div>
       <div>
         <div class="section-title">Pós-instalação e Verificação</div>
         <div class="section-sub">Confirme que tudo está funcionando</div>
@@ -1095,7 +1324,7 @@ gemini   <span class="cm"># TUI interativo</span></code></pre>
   </div>
 
   <!-- ─────────────────────────────────────────────────── -->
-  <!-- SEÇÃO 10: TROUBLESHOOTING -->
+  <!-- SEÇÃO 11: TROUBLESHOOTING -->
   <!-- ─────────────────────────────────────────────────── -->
   <div class="section" id="troubleshooting">
     <div class="section-header">
@@ -1149,11 +1378,11 @@ claude --debug</code></pre>
   </div>
 
   <!-- ─────────────────────────────────────────────────── -->
-  <!-- SEÇÃO 11: REFERÊNCIA RÁPIDA -->
+  <!-- SEÇÃO 12: REFERÊNCIA RÁPIDA -->
   <!-- ─────────────────────────────────────────────────── -->
   <div class="section" id="ref">
     <div class="section-header">
-      <div class="section-num num-default">11</div>
+      <div class="section-num num-default">12</div>
       <div>
         <div class="section-title">Referência Rápida</div>
         <div class="section-sub">Instalação, uso diário e links úteis</div>
@@ -1197,7 +1426,8 @@ claude --debug</code></pre>
         <div class="cmd-row"><code>gemini</code><span>Iniciar TUI</span></div>
         <div class="cmd-row"><code>/stats</code><span>Ver quota</span></div>
         <div class="cmd-row"><code>/model</code><span>Trocar modelo</span></div>
-        <div class="cmd-row"><code>/mcp</code><span>Ver MCPs ativos</span></div>
+        <div class="cmd-row"><code>/memory show</code><span>Ver contexto GEMINI.md</span></div>
+        <div class="cmd-row"><code>/memory refresh</code><span>Recarregar contexto</span></div>
         <div class="cmd-row"><code>/compact</code><span>Comprimir histórico</span></div>
         <div class="cmd-row"><code>!ls</code><span>Shell inline</span></div>
       </div>
@@ -1236,7 +1466,7 @@ claude --debug</code></pre>
 
 <script>
   // Progress bar
-  const sections = ['req','claude','codex','gemini','mcps','skills','aios','planos','verify','troubleshooting','ref'];
+  const sections = ['req','claude','codex','gemini','mcps','skills','aios','planos','comparativo','verify','troubleshooting','ref'];
   const steps = document.querySelectorAll('.pstep');
   steps.forEach((s,i) => {
     s.addEventListener('click', () => {
