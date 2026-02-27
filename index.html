@@ -147,6 +147,7 @@
     .card-featured .card-icon i { width: 26px; height: 26px; }
     .card-featured .card-title { font-size: 20px; }
     .card-featured:hover { box-shadow: 0 12px 40px rgba(99,102,241,0.1); }
+    .card-red.card-featured:hover { box-shadow: 0 12px 40px rgba(248,81,73,0.1); }
     @media (max-width: 600px) {
       .card-featured { flex-direction: column; }
       .hero h1 { font-size: 28px; }
@@ -201,13 +202,15 @@
       <div class="card-arrow">Ver análise →</div>
     </a>
 
-    <!-- OPENCLAW -->
-    <a href="/openclaw" class="card card-red">
+    <!-- OPENCLAW — destaque -->
+    <a href="/openclaw" class="card card-red card-featured" style="border-color: rgba(248,81,73,0.2); background: linear-gradient(135deg, #1a0d0d, #101010);">
       <div class="card-icon"><i data-lucide="server"></i></div>
-      <div class="card-label">Guia Técnico</div>
-      <div class="card-title">OpenClaw VPS Stack</div>
-      <div class="card-desc">Passo a passo completo para instalar e configurar o OpenClaw em uma VPS — Tailscale, WhatsApp, Dashboard e modelos LLM.</div>
-      <div class="card-arrow">Ver guia →</div>
+      <div class="card-content">
+        <div class="card-label">Guia Técnico</div>
+        <div class="card-title">OpenClaw VPS Stack</div>
+        <div class="card-desc">Passo a passo completo para instalar e configurar o OpenClaw em uma VPS — Tailscale, WhatsApp, Dashboard e modelos LLM.</div>
+        <div class="card-arrow">Ver guia de instalação →</div>
+      </div>
     </a>
 
   </div>
