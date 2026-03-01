@@ -21,6 +21,10 @@
     {
       "source": "/squad-creator",
       "destination": "/squad-creator/index.html"
+    },
+    {
+      "source": "/manual-aios",
+      "destination": "/manual-aios/index.html"
     }
   ]
 }
