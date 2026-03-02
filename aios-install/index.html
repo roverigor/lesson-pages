@@ -352,13 +352,21 @@
 
   .progress-step:last-child { border-right: none; }
 
+  .progress-step {
+    cursor: pointer;
+    user-select: none;
+  }
+  .progress-step:hover { background: rgba(255,255,255,0.02); }
+
   .progress-step.active {
     background: rgba(124,106,247,0.08);
   }
+  .progress-step.active:hover { background: rgba(124,106,247,0.12); }
 
   .progress-step.done {
     background: rgba(16,185,129,0.05);
   }
+  .progress-step.done:hover { background: rgba(16,185,129,0.09); }
 
   .ps-num {
     display: flex;
@@ -959,36 +967,36 @@
     </div>
 
     <!-- PROGRESS TRACK -->
-    <div class="progress-track">
-      <div class="progress-step done">
-        <div class="ps-num"><i data-lucide="check" class="lucide-sm"></i></div>
+    <div class="progress-track" id="progress-track">
+      <div class="progress-step" data-step="1" title="Clique para marcar como concluída">
+        <div class="ps-num">1</div>
         <div class="ps-info">
           <div class="ps-label">FASE 1</div>
           <div class="ps-name">Pré-requisitos</div>
         </div>
       </div>
-      <div class="progress-step done">
-        <div class="ps-num"><i data-lucide="check" class="lucide-sm"></i></div>
+      <div class="progress-step" data-step="2" title="Clique para marcar como concluída">
+        <div class="ps-num">2</div>
         <div class="ps-info">
           <div class="ps-label">FASE 2</div>
           <div class="ps-name">CLI Tools</div>
         </div>
       </div>
-      <div class="progress-step active">
+      <div class="progress-step" data-step="3" title="Clique para marcar como concluída">
         <div class="ps-num">3</div>
         <div class="ps-info">
           <div class="ps-label">FASE 3</div>
           <div class="ps-name">AIOS Core</div>
         </div>
       </div>
-      <div class="progress-step">
+      <div class="progress-step" data-step="4" title="Clique para marcar como concluída">
         <div class="ps-num">4</div>
         <div class="ps-info">
           <div class="ps-label">FASE 4</div>
           <div class="ps-name">Extras</div>
         </div>
       </div>
-      <div class="progress-step">
+      <div class="progress-step" data-step="5" title="Clique para marcar como concluída">
         <div class="ps-num">5</div>
         <div class="ps-info">
           <div class="ps-label">FASE 5</div>
@@ -1892,8 +1900,59 @@
 
   sections.forEach(s => observer.observe(s));
 
-  // LUCIDE ICONS
-  lucide.createIcons();
+  // PROGRESS TRACKER — localStorage
+  const PROGRESS_KEY = 'aios-install-phases';
+  const progressSteps = document.querySelectorAll('.progress-step[data-step]');
+
+  function loadDone() {
+    try { return JSON.parse(localStorage.getItem(PROGRESS_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function saveDone(done) {
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(done));
+  }
+
+  function renderProgress(done) {
+    let firstPending = true;
+    progressSteps.forEach(step => {
+      const num = parseInt(step.dataset.step);
+      const isDone = done.includes(num);
+      const psNum = step.querySelector('.ps-num');
+      step.classList.remove('done', 'active');
+      if (isDone) {
+        step.classList.add('done');
+        psNum.innerHTML = '<i data-lucide="check" class="lucide-sm"></i>';
+        step.title = 'Clique para desmarcar';
+      } else {
+        psNum.textContent = num;
+        if (firstPending) {
+          step.classList.add('active');
+          firstPending = false;
+        }
+        step.title = 'Clique para marcar como concluída';
+      }
+    });
+    lucide.createIcons();
+  }
+
+  progressSteps.forEach(step => {
+    step.addEventListener('click', () => {
+      const num = parseInt(step.dataset.step);
+      let done = loadDone();
+      if (done.includes(num)) {
+        done = done.filter(n => n !== num);
+      } else {
+        done.push(num);
+        done.sort((a, b) => a - b);
+      }
+      saveDone(done);
+      renderProgress(done);
+    });
+  });
+
+  // LUCIDE ICONS + init progress
+  renderProgress(loadDone());
 </script>
 
 </body>
