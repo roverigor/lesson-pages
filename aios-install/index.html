@@ -1045,12 +1045,12 @@
       <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 20px 0 12px;">Instalar Node.js</h3>
       <div class="tabs">
         <div class="tab-nav">
-          <button class="tab-btn active" onclick="switchTab(this, 'node-linux')">macOS / Linux</button>
-          <button class="tab-btn" onclick="switchTab(this, 'node-windows')">Windows</button>
+          <button class="tab-btn active" onclick="switchTab(this, 'node-windows')">Windows</button>
           <button class="tab-btn" onclick="switchTab(this, 'node-wsl')">WSL (recomendado)</button>
+          <button class="tab-btn" onclick="switchTab(this, 'node-linux')">macOS / Linux</button>
         </div>
         <div class="tab-content">
-          <div class="tab-panel active" id="node-linux">
+          <div class="tab-panel" id="node-linux">
             <div class="code-block">
               <div class="code-header">
                 <span class="code-lang">bash — Ubuntu / Debian</span>
@@ -1075,7 +1075,7 @@
 <span class="c-cmd">npm</span> <span class="c-flag">--version</span></code></pre>
             </div>
           </div>
-          <div class="tab-panel" id="node-windows">
+          <div class="tab-panel active" id="node-windows">
             <div class="code-block">
               <div class="code-header">
                 <span class="code-lang">powershell</span>
