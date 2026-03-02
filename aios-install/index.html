@@ -1112,6 +1112,27 @@
             </div>
           </div>
         </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <div class="step-title">Configure permissões do npm</div>
+            <div class="step-desc">Evita erros de permissão ao instalar pacotes globais com <span class="ic">npm install -g</span>.</div>
+            <div class="code-block" style="margin-top: 8px;">
+              <div class="code-header">
+                <span class="code-lang">bash — dentro do terminal Ubuntu/WSL</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># Criar diretório para pacotes globais sem sudo</span>
+<span class="c-cmd">mkdir</span> <span class="c-flag">-p</span> ~/.npm-global
+<span class="c-cmd">npm config set</span> prefix <span class="c-str">'~/.npm-global'</span>
+<span class="c-cmd">echo</span> <span class="c-str">'export PATH=~/.npm-global/bin:$PATH'</span> >> ~/.bashrc
+<span class="c-cmd">source</span> ~/.bashrc
+
+<span class="c-comment"># Verificar</span>
+<span class="c-cmd">npm</span> <span class="c-flag">--version</span></code></pre>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="info-box warn" style="margin-top: 12px;">
