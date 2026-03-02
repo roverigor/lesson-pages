@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instalação AIOS — Claude Code · Codex CLI · Gemini CLI + Synkra AIOS</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  /* LUCIDE ICONS */
+  .lucide {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .lucide-sm { width: 13px; height: 13px; }
+  .lucide-md { width: 16px; height: 16px; }
+  .lucide-lg { width: 20px; height: 20px; }
+  .lucide-xl { width: 22px; height: 22px; }
+  :root {
+    --bg: #000000;
+    --bg2: #0a0a0a;
+    --bg3: #111111;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.15);
+    --accent: #7c6af7;
+    --accent2: #a78bfa;
+    --accent3: #06b6d4;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --orange: #f97316;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --glass: rgba(255,255,255,0.03);
+    --glass-hover: rgba(255,255,255,0.05);
+    --sidebar-w: 280px;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --transition: 0.2s ease;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR */
+  #sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sidebar-header {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, #0a0a1a 0%, #0d0d1a 100%);
+  }
+
+  .back-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text3);
+    text-decoration: none;
+    font-size: 12px;
+    margin-bottom: 16px;
+    transition: color var(--transition);
+  }
+  .back-link:hover { color: var(--text2); }
+
+  .sidebar-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(124,106,247,0.15);
+    border: 1px solid rgba(124,106,247,0.3);
+    color: var(--accent2);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+
+  .sidebar-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .sidebar-subtitle {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+
+  .sidebar-nav { padding: 12px 0; flex: 1; }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 12px 20px 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    color: var(--text2);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all var(--transition);
+    cursor: pointer;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-item:hover {
+    color: var(--text);
+    background: var(--glass-hover);
+    border-left-color: rgba(124,106,247,0.4);
+  }
+
+  .nav-item.active {
+    color: var(--accent2);
+    background: rgba(124,106,247,0.08);
+    border-left-color: var(--accent);
+  }
+
+  .nav-step {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text3);
+    flex-shrink: 0;
+  }
+
+  .nav-item.active .nav-step {
+    background: var(--accent);
+    color: white;
+  }
+
+  .nav-item.done .nav-step {
+    background: var(--green);
+    color: white;
+  }
+
+  .nav-item.done { color: var(--text3); }
+
+  /* MAIN */
+  #main {
+    flex: 1;
+    overflow-y: auto;
+    max-width: calc(100vw - var(--sidebar-w));
+  }
+
+  /* TOP NAV */
+  .top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text3);
+  }
+
+  .breadcrumb a { color: var(--text3); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--text2); }
+  .breadcrumb .sep { color: var(--text3); }
+  .breadcrumb .current { color: var(--text); }
+
+  .top-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    background: var(--glass);
+  }
+
+  .btn-sm:hover {
+    background: var(--glass-hover);
+    border-color: var(--border-hover);
+    color: var(--text);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent2);
+    border-color: var(--accent2);
+  }
+
+  /* CONTENT */
+  .content {
+    padding: 60px 60px 80px;
+    max-width: 860px;
+  }
+
+  /* HERO */
+  .hero {
+    margin-bottom: 60px;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(124,106,247,0.1);
+    border: 1px solid rgba(124,106,247,0.25);
+    color: var(--accent2);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+
+  .hero-title {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-title .highlight { color: var(--accent2); }
+
+  .hero-subtitle {
+    font-size: 17px;
+    color: var(--text2);
+    line-height: 1.6;
+    max-width: 620px;
+    margin-bottom: 28px;
+  }
+
+  .hero-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+  }
+
+  .pill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* PROGRESS */
+  .progress-track {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 48px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .progress-step {
+    flex: 1;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+
+  .progress-step:last-child { border-right: none; }
+
+  .progress-step.active {
+    background: rgba(124,106,247,0.08);
+  }
+
+  .progress-step.done {
+    background: rgba(16,185,129,0.05);
+  }
+
+  .ps-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text3);
+    flex-shrink: 0;
+  }
+
+  .progress-step.active .ps-num {
+    background: var(--accent);
+    color: white;
+  }
+
+  .progress-step.done .ps-num {
+    background: var(--green);
+    color: white;
+  }
+
+  .ps-info { min-width: 0; }
+  .ps-label { font-size: 11px; font-weight: 600; color: var(--text3); }
+  .progress-step.active .ps-label { color: var(--accent2); }
+  .progress-step.done .ps-label { color: var(--green); }
+  .ps-name { font-size: 13px; font-weight: 600; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .progress-step.active .ps-name { color: var(--text); }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 56px;
+    scroll-margin-top: 70px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .section-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 800;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .section-num.purple { background: rgba(124,106,247,0.15); color: var(--accent2); }
+  .section-num.cyan { background: rgba(6,182,212,0.15); color: var(--accent3); }
+  .section-num.green { background: rgba(16,185,129,0.15); color: var(--green); }
+  .section-num.orange { background: rgba(249,115,22,0.15); color: var(--orange); }
+  .section-num.yellow { background: rgba(245,158,11,0.15); color: var(--yellow); }
+
+  .section-title-group { flex: 1; }
+  .section-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+
+  .section-desc {
+    font-size: 13px;
+    color: var(--text3);
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+    transition: border-color var(--transition);
+  }
+
+  .card:hover { border-color: var(--border-hover); }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: #050505;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: var(--radius-sm);
+    margin: 12px 0;
+    overflow: hidden;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .code-lang {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text3);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all var(--transition);
+    font-family: inherit;
+  }
+
+  .copy-btn:hover {
+    border-color: var(--border-hover);
+    color: var(--text2);
+  }
+
+  .copy-btn.copied {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  pre {
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.7;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+    color: #e2e8f0;
+  }
+
+  code { font-family: inherit; }
+
+  .c-comment { color: #4a5568; }
+  .c-cmd { color: #68d391; }
+  .c-flag { color: var(--accent2); }
+  .c-string { color: #fbd38d; }
+  .c-path { color: var(--accent3); }
+
+  /* INLINE CODE */
+  .ic {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 12px;
+    color: var(--accent3);
+  }
+
+  /* STEP */
+  .steps { display: flex; flex-direction: column; gap: 12px; }
+
+  .step {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: border-color var(--transition);
+  }
+
+  .step:hover { border-color: var(--border-hover); }
+
+  .step-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(124,106,247,0.12);
+    border: 1px solid rgba(124,106,247,0.25);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent2);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .step-content { flex: 1; min-width: 0; }
+  .step-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .step-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+  /* INFO BOX */
+  .info-box {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    margin: 12px 0;
+    line-height: 1.5;
+  }
+
+  .info-box.info { background: rgba(6,182,212,0.07); border: 1px solid rgba(6,182,212,0.2); color: #67e8f9; }
+  .info-box.tip { background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.2); color: #6ee7b7; }
+  .info-box.warn { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.2); color: #fcd34d; }
+  .info-box.critical { background: rgba(124,106,247,0.07); border: 1px solid rgba(124,106,247,0.2); color: var(--accent2); }
+
+  .info-icon { flex-shrink: 0; margin-top: 2px; }
+  .info-text { flex: 1; }
+  .info-text strong { display: block; font-weight: 600; margin-bottom: 3px; }
+
+  /* TABS */
+  .tabs { margin-bottom: 0; }
+
+  .tab-nav {
+    display: flex;
+    gap: 2px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    padding: 4px;
+    border-bottom: none;
+  }
+
+  .tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text3);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all var(--transition);
+    font-family: inherit;
+  }
+
+  .tab-btn:hover { color: var(--text2); background: var(--glass-hover); }
+  .tab-btn.active { color: var(--text); background: rgba(124,106,247,0.15); }
+
+  .tab-content {
+    border: 1px solid var(--border);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    background: var(--bg2);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* GRID */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 700px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  /* REPO CARD */
+  .repo-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: all var(--transition);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .repo-card:hover {
+    border-color: var(--border-hover);
+    background: var(--bg3);
+    transform: translateY(-1px);
+  }
+
+  .repo-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .repo-icon {
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(124,106,247,0.1);
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .repo-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'JetBrains Mono', Consolas, monospace;
+  }
+
+  .repo-org {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .repo-desc {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .repo-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .badge-required { background: rgba(16,185,129,0.12); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
+  .badge-optional { background: rgba(6,182,212,0.1); color: var(--accent3); border: 1px solid rgba(6,182,212,0.2); }
+  .badge-wip { background: rgba(245,158,11,0.1); color: var(--yellow); border: 1px solid rgba(245,158,11,0.2); }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text2);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ACTIVATION TABLE */
+  .activation-table td:first-child { color: var(--accent2); font-family: monospace; font-weight: 600; }
+  .activation-table td:nth-child(2) { color: var(--text3); }
+  .activation-table td:nth-child(3) { color: var(--accent3); font-family: monospace; }
+
+  /* CHECKLIST */
+  .checklist { display: flex; flex-direction: column; gap: 8px; }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text2);
+  }
+
+  .check-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* DIVIDER */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
+  }
+
+  /* PILL TAGS */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+
+  .tag-new { background: rgba(124,106,247,0.15); color: var(--accent2); }
+  .tag-tip { background: rgba(16,185,129,0.12); color: var(--green); }
+  .tag-opt { background: rgba(6,182,212,0.1); color: var(--accent3); }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 60px;
+    padding: 32px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+
+  .footer-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .footer-text { font-size: 13px; color: var(--text3); margin-bottom: 20px; }
+  .footer-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  .btn-lg {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition);
+    border: 1px solid;
+  }
+
+  .btn-lg.purple {
+    background: rgba(124,106,247,0.12);
+    border-color: rgba(124,106,247,0.3);
+    color: var(--accent2);
+  }
+  .btn-lg.purple:hover {
+    background: rgba(124,106,247,0.2);
+    border-color: var(--accent);
+  }
+
+  .btn-lg.ghost {
+    background: var(--glass);
+    border-color: var(--border);
+    color: var(--text2);
+  }
+  .btn-lg.ghost:hover {
+    background: var(--glass-hover);
+    border-color: var(--border-hover);
+    color: var(--text);
+  }
+
+  /* MOBILE */
+  @media (max-width: 900px) {
+    #sidebar { display: none; }
+    #main { max-width: 100vw; }
+    .content { padding: 32px 24px 60px; }
+    .hero-title { font-size: 32px; }
+    .progress-track { display: none; }
+    .top-nav { padding: 0 24px; }
+  }
+
+  @media (max-width: 600px) {
+    .content { padding: 24px 16px 48px; }
+    .hero-title { font-size: 28px; }
+    .top-nav { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <a href="/" class="back-link">
+      <i data-lucide="arrow-left" class="lucide-sm"></i> Central de Páginas
+    </a>
+    <div class="sidebar-badge"><i data-lucide="layers" class="lucide-sm"></i> Guia de Instalação</div>
+    <div class="sidebar-title">Synkra AIOS</div>
+    <div class="sidebar-subtitle">Setup completo · CLI + Framework</div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Pré-requisitos</div>
+    <a href="#sec-prereqs" class="nav-item" onclick="setActive(this)">
+      <span class="nav-step">1</span>
+      Requisitos & Node.js
+    </a>
+    <a href="#sec-wsl" class="nav-item" onclick="setActive(this)">
+      <span class="nav-step">2</span>
+      WSL (Windows)
+    </a>
+
+    <div class="nav-section-label" style="margin-top: 8px;">AI CLI Tools</div>
+    <a href="#sec-claude" class="nav-item" onclick="setActive(this)">
+      <span class="nav-step">3</span>
+      Claude Code
+    </a>
+    <a href="#sec-codex" class="nav-item" onclick="setActive(this)">
+      <span class="nav-step">4</span>
+      Codex CLI
+    </a>
+    <a href="#sec-gemini" class="nav-item" onclick="setActive(this)">
+      <span class="nav-step">5</span>
+      Gemini CLI
+    </a>
+
+    <div class="nav-section-label" style="margin-top: 8px;">Synkra AIOS</div>
+    <a href="#sec-repos" class="nav-item active" onclick="setActive(this)">
+      <span class="nav-step">6</span>
+      Repositórios AIOS
+    </a>
+    <a href="#sec-install" class="nav-item" onclick="setActive(this)">
+      <span class="nav-step">7</span>
+      Instalação do AIOS
+    </a>
+    <a href="#sec-dashboard" class="nav-item" onclick="setActive(this)">
+      <span class="nav-step">8</span>
+      Dashboard (opcional)
+    </a>
+    <a href="#sec-mcp" class="nav-item" onclick="setActive(this)">
+      <span class="nav-step">9</span>
+      MCP Ecosystem (opcional)
+    </a>
+    <a href="#sec-first-run" class="nav-item" onclick="setActive(this)">
+      <span class="nav-step">10</span>
+      Primeiro Uso
+    </a>
+
+    <div class="nav-section-label" style="margin-top: 8px;">Referência</div>
+    <a href="#sec-troubleshooting" class="nav-item" onclick="setActive(this)">
+      <span class="nav-step"><i data-lucide="alert-circle" class="lucide-sm"></i></span>
+      Troubleshooting
+    </a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+
+  <!-- TOP NAV -->
+  <div class="top-nav">
+    <div class="breadcrumb">
+      <a href="/">Central de Páginas</a>
+      <span class="sep">/</span>
+      <span class="current">Instalação AIOS</span>
+    </div>
+    <div class="top-actions">
+      <a href="https://github.com/SynkraAI" target="_blank" class="btn-sm">
+        <i data-lucide="github" class="lucide-sm"></i> SynkraAI
+      </a>
+      <a href="https://github.com/SynkraAI/aios-core" target="_blank" class="btn-sm btn-primary">
+        <i data-lucide="zap" class="lucide-sm"></i> AIOS Core
+      </a>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-tag"><i data-lucide="book-open" class="lucide-sm"></i> Guia Técnico · 2026 · V4.x</div>
+      <h1 class="hero-title">
+        Instale o <span class="highlight">AIOS</span>
+      </h1>
+      <p class="hero-subtitle">
+        Configure Claude Code, Codex CLI e Gemini CLI com o framework <strong>Synkra AIOS</strong> — a equipe ágil de agentes IA que transforma seu fluxo de desenvolvimento.
+      </p>
+      <div class="hero-pills">
+        <span class="pill"><span class="pill-dot" style="background:#10b981"></span> Claude Code</span>
+        <span class="pill"><span class="pill-dot" style="background:#06b6d4"></span> Codex CLI</span>
+        <span class="pill"><span class="pill-dot" style="background:#a78bfa"></span> Gemini CLI</span>
+        <span class="pill"><span class="pill-dot" style="background:#7c6af7"></span> AIOS Core</span>
+        <span class="pill"><span class="pill-dot" style="background:#f97316"></span> MCP Ecosystem</span>
+        <span class="pill"><span class="pill-dot" style="background:#f59e0b"></span> Dashboard</span>
+      </div>
+    </div>
+
+    <!-- PROGRESS TRACK -->
+    <div class="progress-track">
+      <div class="progress-step done">
+        <div class="ps-num"><i data-lucide="check" class="lucide-sm"></i></div>
+        <div class="ps-info">
+          <div class="ps-label">FASE 1</div>
+          <div class="ps-name">Pré-requisitos</div>
+        </div>
+      </div>
+      <div class="progress-step done">
+        <div class="ps-num"><i data-lucide="check" class="lucide-sm"></i></div>
+        <div class="ps-info">
+          <div class="ps-label">FASE 2</div>
+          <div class="ps-name">CLI Tools</div>
+        </div>
+      </div>
+      <div class="progress-step active">
+        <div class="ps-num">3</div>
+        <div class="ps-info">
+          <div class="ps-label">FASE 3</div>
+          <div class="ps-name">AIOS Core</div>
+        </div>
+      </div>
+      <div class="progress-step">
+        <div class="ps-num">4</div>
+        <div class="ps-info">
+          <div class="ps-label">FASE 4</div>
+          <div class="ps-name">Extras</div>
+        </div>
+      </div>
+      <div class="progress-step">
+        <div class="ps-num">5</div>
+        <div class="ps-info">
+          <div class="ps-label">FASE 5</div>
+          <div class="ps-name">Primeiro Uso</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 1 — PREREQS -->
+    <section class="section" id="sec-prereqs">
+      <div class="section-header">
+        <div class="section-num purple">1</div>
+        <div class="section-title-group">
+          <h2 class="section-title">Requisitos do Sistema</h2>
+          <p class="section-desc">Verifique antes de começar</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>Requisito</th>
+              <th>Versão mínima</th>
+              <th>Observação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Node.js</td><td>≥ 18.0.0</td><td>v20+ recomendado para AIOS</td></tr>
+            <tr><td>npm</td><td>≥ 9.0.0</td><td>ou yarn / pnpm</td></tr>
+            <tr><td>RAM</td><td>4 GB+</td><td>8 GB recomendado</td></tr>
+            <tr><td>Sistema Operacional</td><td>macOS 10.15+ / Win 10+ / Linux</td><td>WSL recomendado no Windows</td></tr>
+            <tr><td>GitHub CLI (opcional)</td><td>última versão</td><td>Para colaboração em equipe</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="info-box info">
+        <i data-lucide="info" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>Claude Code tem instalador nativo</strong>
+          Não requer Node.js. Mas AIOS (via npx) e Codex/Gemini CLI precisam de Node.js ≥ 18. Se usar tudo junto, instale Node.js primeiro.
+        </div>
+      </div>
+
+      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 20px 0 12px;">Instalar Node.js</h3>
+      <div class="tabs">
+        <div class="tab-nav">
+          <button class="tab-btn active" onclick="switchTab(this, 'node-nvm')">via NVM (recomendado)</button>
+          <button class="tab-btn" onclick="switchTab(this, 'node-direct')">Download direto</button>
+          <button class="tab-btn" onclick="switchTab(this, 'node-windows')">Windows</button>
+        </div>
+        <div class="tab-content">
+          <div class="tab-panel active" id="node-nvm">
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># Instalar NVM</span>
+<span class="c-cmd">curl</span> <span class="c-flag">-o-</span> https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+
+<span class="c-comment"># Recarregar shell</span>
+<span class="c-cmd">source</span> ~/.bashrc
+
+<span class="c-comment"># Instalar Node.js LTS</span>
+<span class="c-cmd">nvm install</span> <span class="c-flag">--lts</span>
+<span class="c-cmd">nvm use</span> <span class="c-flag">--lts</span>
+
+<span class="c-comment"># Verificar</span>
+<span class="c-cmd">node</span> <span class="c-flag">--version</span>  <span class="c-comment"># deve mostrar v20.x.x ou superior</span>
+<span class="c-cmd">npm</span> <span class="c-flag">--version</span></code></pre>
+            </div>
+          </div>
+          <div class="tab-panel" id="node-direct">
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># macOS via Homebrew</span>
+<span class="c-cmd">brew install</span> node@20
+
+<span class="c-comment"># Ubuntu/Debian</span>
+<span class="c-cmd">curl</span> <span class="c-flag">-fsSL</span> https://deb.nodesource.com/setup_20.x | sudo <span class="c-cmd">-E bash</span> <span class="c-flag">-</span>
+<span class="c-cmd">sudo apt-get install</span> <span class="c-flag">-y</span> nodejs</code></pre>
+            </div>
+          </div>
+          <div class="tab-panel" id="node-windows">
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">powershell</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># Via winget</span>
+<span class="c-cmd">winget install</span> OpenJS.NodeJS.LTS
+
+<span class="c-comment"># Ou baixar em: https://nodejs.org/</span>
+<span class="c-comment"># Recomendado: usar WSL2 para AIOS no Windows</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 — WSL -->
+    <section class="section" id="sec-wsl">
+      <div class="section-header">
+        <div class="section-num cyan">2</div>
+        <div class="section-title-group">
+          <h2 class="section-title">WSL no Windows</h2>
+          <p class="section-desc">Ambiente Linux recomendado para AIOS</p>
+        </div>
+      </div>
+
+      <div class="info-box tip">
+        <i data-lucide="lightbulb" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>Usuários Mac/Linux podem pular esta seção.</strong>
+          WSL (Windows Subsystem for Linux) é o ambiente recomendado para Windows. Ele garante compatibilidade total com as ferramentas do ecossistema AIOS.
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Abra o PowerShell como Administrador</div>
+            <div class="step-desc">Clique com botão direito no menu Iniciar → Windows PowerShell (Admin)</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Instale o WSL com Ubuntu</div>
+            <div class="code-block" style="margin-top: 8px;">
+              <div class="code-header">
+                <span class="code-lang">powershell</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-cmd">wsl</span> <span class="c-flag">--install</span> <span class="c-flag">-d</span> Ubuntu</code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Reinicie o computador</div>
+            <div class="step-desc">O Ubuntu abrirá automaticamente pedindo usuário e senha na primeira vez.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">Instale Node.js no WSL</div>
+            <div class="code-block" style="margin-top: 8px;">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># Dentro do terminal Ubuntu/WSL</span>
+<span class="c-cmd">curl</span> <span class="c-flag">-o-</span> https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+<span class="c-cmd">source</span> ~/.bashrc
+<span class="c-cmd">nvm install</span> <span class="c-flag">--lts</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box warn" style="margin-top: 12px;">
+        <i data-lucide="alert-triangle" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>Performance no Windows:</strong>
+          Mantenha seus projetos no diretório home do Linux (<span class="ic">~/projetos/</span>) e não em <span class="ic">/mnt/c/...</span>. O I/O é significativamente mais rápido.
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 — CLAUDE CODE -->
+    <section class="section" id="sec-claude">
+      <div class="section-header">
+        <div class="section-num green">3</div>
+        <div class="section-title-group">
+          <h2 class="section-title">Claude Code</h2>
+          <p class="section-desc">CLI oficial da Anthropic — melhor compatibilidade com AIOS</p>
+        </div>
+      </div>
+
+      <div class="info-box critical">
+        <i data-lucide="trophy" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>Claude Code tem paridade de hooks completa com o AIOS</strong>
+          É o CLI de referência para automação máxima de contexto, guardrails e auditoria. Se você vai usar apenas um CLI, use Claude Code.
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab-nav">
+          <button class="tab-btn active" onclick="switchTab(this, 'claude-mac')">macOS / Linux</button>
+          <button class="tab-btn" onclick="switchTab(this, 'claude-win')">Windows (WSL)</button>
+        </div>
+        <div class="tab-content">
+          <div class="tab-panel active" id="claude-mac">
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># Instalar Claude Code</span>
+<span class="c-cmd">npm install</span> <span class="c-flag">-g</span> @anthropic-ai/claude-code
+
+<span class="c-comment"># Verificar instalação</span>
+<span class="c-cmd">claude</span> <span class="c-flag">--version</span>
+
+<span class="c-comment"># Iniciar (vai pedir login Anthropic)</span>
+<span class="c-cmd">claude</span></code></pre>
+            </div>
+          </div>
+          <div class="tab-panel" id="claude-win">
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># No terminal WSL/Ubuntu</span>
+<span class="c-cmd">npm install</span> <span class="c-flag">-g</span> @anthropic-ai/claude-code
+
+<span class="c-comment"># Verificar</span>
+<span class="c-cmd">claude</span> <span class="c-flag">--version</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box tip" style="margin-top: 12px;">
+        <i data-lucide="check-circle" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          Após instalar, abra <span class="ic">claude</span> no terminal. Ele vai abrir o processo de autenticação com a Anthropic. Você precisa de uma conta em <strong>claude.ai</strong>.
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4 — CODEX -->
+    <section class="section" id="sec-codex">
+      <div class="section-header">
+        <div class="section-num cyan">4</div>
+        <div class="section-title-group">
+          <h2 class="section-title">Codex CLI <span class="tag tag-opt">Opcional</span></h2>
+          <p class="section-desc">CLI da OpenAI — paridade parcial com AIOS</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <pre><code><span class="c-comment"># Instalar Codex CLI</span>
+<span class="c-cmd">npm install</span> <span class="c-flag">-g</span> @openai/codex
+
+<span class="c-comment"># Verificar</span>
+<span class="c-cmd">codex</span> <span class="c-flag">--version</span>
+
+<span class="c-comment"># Configurar API key</span>
+<span class="c-cmd">export</span> <span class="c-flag">OPENAI_API_KEY</span>=<span class="c-string">"sua-chave-aqui"</span></code></pre>
+      </div>
+
+      <div class="info-box warn">
+        <i data-lucide="alert-triangle" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>Paridade parcial com AIOS:</strong>
+          Algumas automações do AIOS dependem do <span class="ic">AGENTS.md</span>, <span class="ic">/skills</span> e MCP. Ativação de agentes usa <span class="ic">/skills</span> em vez de <span class="ic">@agent-name</span>.
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5 — GEMINI -->
+    <section class="section" id="sec-gemini">
+      <div class="section-header">
+        <div class="section-num orange">5</div>
+        <div class="section-title-group">
+          <h2 class="section-title">Gemini CLI <span class="tag tag-opt">Opcional</span></h2>
+          <p class="section-desc">CLI do Google — alta paridade com AIOS</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <pre><code><span class="c-comment"># Instalar Gemini CLI</span>
+<span class="c-cmd">npm install</span> <span class="c-flag">-g</span> @google/gemini-cli
+
+<span class="c-comment"># Verificar</span>
+<span class="c-cmd">gemini</span> <span class="c-flag">--version</span>
+
+<span class="c-comment"># Login Google (abre browser)</span>
+<span class="c-cmd">gemini</span></code></pre>
+      </div>
+
+      <div class="info-box tip">
+        <i data-lucide="check-circle" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          Gemini CLI tem alta paridade de hooks com AIOS. Ativação de agentes usa <span class="ic">/aios-menu</span> → <span class="ic">/aios-&lt;agent&gt;</span>. Boa cobertura de automações pre/post tool e sessão.
+        </div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- SECTION 6 — REPOS -->
+    <section class="section" id="sec-repos">
+      <div class="section-header">
+        <div class="section-num purple">6</div>
+        <div class="section-title-group">
+          <h2 class="section-title">Repositórios Synkra AIOS</h2>
+          <p class="section-desc">O ecossistema open source do AIOS</p>
+        </div>
+      </div>
+
+      <div class="info-box critical">
+        <i data-lucide="building-2" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>Organização SynkraAI no GitHub</strong>
+          Todos os repositórios AIOS são open source e estão em <a href="https://github.com/SynkraAI" target="_blank" style="color:inherit;text-decoration:underline;">github.com/SynkraAI</a>.
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top: 16px;">
+        <a class="repo-card" href="https://github.com/SynkraAI/aios-core" target="_blank">
+          <div class="repo-card-header">
+            <div class="repo-icon"><i data-lucide="zap" class="lucide-lg"></i></div>
+            <div>
+              <div class="repo-name">aios-core</div>
+              <div class="repo-org">SynkraAI / aios-core</div>
+            </div>
+          </div>
+          <div class="repo-desc">Framework principal. Contém todos os agentes, workflows, tasks e templates do AIOS. Instale com <span class="ic">npx aios-core</span>.</div>
+          <div class="repo-badges">
+            <span class="badge badge-required">Obrigatório</span>
+            <span class="badge" style="background:rgba(124,106,247,0.1);color:var(--accent2);border:1px solid rgba(124,106,247,0.2);">npm package</span>
+          </div>
+        </a>
+
+        <a class="repo-card" href="https://github.com/SynkraAI/aios-dashboard" target="_blank">
+          <div class="repo-card-header">
+            <div class="repo-icon" style="background:rgba(6,182,212,0.1);"><i data-lucide="layout-dashboard" class="lucide-lg"></i></div>
+            <div>
+              <div class="repo-name">aios-dashboard</div>
+              <div class="repo-org">SynkraAI / aios-dashboard</div>
+            </div>
+          </div>
+          <div class="repo-desc">Interface web de observabilidade. Kanban de stories, monitor de eventos em tempo real, visualização de agentes e squads.</div>
+          <div class="repo-badges">
+            <span class="badge badge-optional">Opcional</span>
+            <span class="badge badge-wip">Dev inicial</span>
+          </div>
+        </a>
+
+        <a class="repo-card" href="https://github.com/SynkraAI/mcp-ecosystem" target="_blank">
+          <div class="repo-card-header">
+            <div class="repo-icon" style="background:rgba(16,185,129,0.1);"><i data-lucide="wrench" class="lucide-lg"></i></div>
+            <div>
+              <div class="repo-name">mcp-ecosystem</div>
+              <div class="repo-org">SynkraAI / mcp-ecosystem</div>
+            </div>
+          </div>
+          <div class="repo-desc">Configurações MCP prontas. Presets para desenvolvimento, pesquisa e full. Configs para Claude Code e Cursor.</div>
+          <div class="repo-badges">
+            <span class="badge badge-optional">Opcional</span>
+            <span class="badge" style="background:rgba(16,185,129,0.1);color:var(--green);border:1px solid rgba(16,185,129,0.2);">configs</span>
+          </div>
+        </a>
+
+        <a class="repo-card" href="https://github.com/SynkraAI" target="_blank">
+          <div class="repo-card-header">
+            <div class="repo-icon" style="background:rgba(245,158,11,0.1);"><i data-lucide="globe" class="lucide-lg"></i></div>
+            <div>
+              <div class="repo-name">SynkraAI</div>
+              <div class="repo-org">github.com / SynkraAI</div>
+            </div>
+          </div>
+          <div class="repo-desc">Organização completa. Issues, discussions, roadmap e todos os projetos do ecossistema Synkra AIOS.</div>
+          <div class="repo-badges">
+            <span class="badge" style="background:rgba(245,158,11,0.1);color:var(--yellow);border:1px solid rgba(245,158,11,0.2);">Organização</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- SECTION 7 — INSTALL AIOS -->
+    <section class="section" id="sec-install">
+      <div class="section-header">
+        <div class="section-num purple">7</div>
+        <div class="section-title-group">
+          <h2 class="section-title">Instalar AIOS Core <span class="tag tag-new">Principal</span></h2>
+          <p class="section-desc">Um comando instala tudo via npx</p>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab-nav">
+          <button class="tab-btn active" onclick="switchTab(this, 'aios-new')">Novo Projeto</button>
+          <button class="tab-btn" onclick="switchTab(this, 'aios-existing')">Projeto Existente</button>
+          <button class="tab-btn" onclick="switchTab(this, 'aios-update')">Atualizar</button>
+        </div>
+        <div class="tab-content">
+          <div class="tab-panel active" id="aios-new">
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># Criar novo projeto com assistente interativo</span>
+<span class="c-cmd">npx aios-core init</span> <span class="c-string">meu-projeto</span>
+
+<span class="c-comment"># Ou com versão específica</span>
+<span class="c-cmd">npx aios-core@latest init</span> <span class="c-string">meu-projeto</span></code></pre>
+            </div>
+          </div>
+          <div class="tab-panel" id="aios-existing">
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># Instalar em projeto existente</span>
+<span class="c-cmd">cd</span> <span class="c-path">seu-projeto</span>
+<span class="c-cmd">npx aios-core install</span>
+
+<span class="c-comment"># O instalador detecta automaticamente sua configuração</span></code></pre>
+            </div>
+          </div>
+          <div class="tab-panel" id="aios-update">
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># Atualizar instalação existente (preserva customizações)</span>
+<span class="c-cmd">npx aios-core@latest install</span>
+
+<span class="c-comment"># ✅ Detecta instalação existente automaticamente</span>
+<span class="c-comment"># ✅ Atualiza apenas arquivos que mudaram</span>
+<span class="c-comment"># ✅ Cria .bak para arquivos customizados</span>
+<span class="c-comment"># ✅ Preserva suas configurações do projeto</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 24px 0 12px;">O que o instalador faz</h3>
+      <div class="checklist">
+        <div class="check-item"><i data-lucide="check-circle-2" class="lucide-sm check-icon" style="color:var(--green)"></i> Download da versão mais recente do NPM</div>
+        <div class="check-item"><i data-lucide="check-circle-2" class="lucide-sm check-icon" style="color:var(--green)"></i> Assistente interativo com @clack/prompts (escolha de IDE, gerenciador de pacotes)</div>
+        <div class="check-item"><i data-lucide="check-circle-2" class="lucide-sm check-icon" style="color:var(--green)"></i> Configuração automática do IDE (Codex CLI, Cursor ou Claude Code)</div>
+        <div class="check-item"><i data-lucide="check-circle-2" class="lucide-sm check-icon" style="color:var(--green)"></i> Setup de todos os agentes e workflows AIOS no projeto</div>
+        <div class="check-item"><i data-lucide="check-circle-2" class="lucide-sm check-icon" style="color:var(--green)"></i> Criação dos arquivos de configuração necessários</div>
+        <div class="check-item"><i data-lucide="check-circle-2" class="lucide-sm check-icon" style="color:var(--green)"></i> Inicialização do sistema de meta-agentes</div>
+        <div class="check-item"><i data-lucide="check-circle-2" class="lucide-sm check-icon" style="color:var(--green)"></i> Verificações de saúde do sistema</div>
+        <div class="check-item"><i data-lucide="check-circle-2" class="lucide-sm check-icon" style="color:var(--green)"></i> Suporte a Windows, macOS e Linux</div>
+      </div>
+
+      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 24px 0 12px;">Estrutura instalada</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">estrutura</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <pre><code><span class="c-path">meu-projeto/</span>
+├── <span class="c-path">.aios-core/</span>          <span class="c-comment"># Framework AIOS (não modificar)</span>
+│   ├── <span class="c-path">agents/</span>              <span class="c-comment"># Agentes: @dev, @qa, @architect, @pm...</span>
+│   ├── <span class="c-path">tasks/</span>               <span class="c-comment"># Tasks executáveis</span>
+│   ├── <span class="c-path">workflows/</span>           <span class="c-comment"># Workflows multi-step</span>
+│   └── <span class="c-path">templates/</span>           <span class="c-comment"># Templates de docs</span>
+├── <span class="c-path">docs/</span>
+│   └── <span class="c-path">stories/</span>             <span class="c-comment"># Stories de desenvolvimento</span>
+└── <span class="c-path">expansion-packs/</span>     <span class="c-comment"># Suas extensões customizadas</span></code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION 8 — DASHBOARD -->
+    <section class="section" id="sec-dashboard">
+      <div class="section-header">
+        <div class="section-num cyan">8</div>
+        <div class="section-title-group">
+          <h2 class="section-title">AIOS Dashboard <span class="tag tag-opt">Opcional</span></h2>
+          <p class="section-desc">Interface web de observabilidade — precisa de AIOS Core instalado</p>
+        </div>
+      </div>
+
+      <div class="info-box warn">
+        <i data-lucide="alert-triangle" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>Em desenvolvimento inicial (Early Stage).</strong>
+          O Dashboard é funcional mas pode ter mudanças. Contribuições são bem-vindas!
+        </div>
+      </div>
+
+      <div class="info-box info">
+        <i data-lucide="info" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>O AIOS funciona 100% sem o Dashboard.</strong>
+          Ele existe apenas para <em>observar</em> o que acontece na CLI — nunca para controlar. A CLI é sempre a fonte da verdade.
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <pre><code><span class="c-comment"># Clonar o dashboard</span>
+<span class="c-cmd">git clone</span> https://github.com/SynkraAI/aios-dashboard.git
+<span class="c-cmd">cd</span> <span class="c-path">aios-dashboard</span>
+
+<span class="c-comment"># Instalar dependências</span>
+<span class="c-cmd">npm install</span>
+
+<span class="c-comment"># Iniciar (dentro da pasta do seu projeto com AIOS)</span>
+<span class="c-comment"># O dashboard deve estar dentro ou apontar para o projeto</span>
+<span class="c-cmd">npm run dev</span></code></pre>
+      </div>
+
+      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 20px 0 12px;">Views disponíveis</h3>
+      <div class="card">
+        <table>
+          <thead>
+            <tr><th>View</th><th>O que faz</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Kanban</td><td>Board de stories com drag-and-drop (Backlog, Doing, Done)</td></tr>
+            <tr><td>Monitor</td><td>Feed em tempo real de eventos do Claude Code (tools, prompts, erros)</td></tr>
+            <tr><td>Agents</td><td>Lista de agentes AIOS ativos e em standby</td></tr>
+            <tr><td>Squads</td><td>Organograma visual dos squads instalados</td></tr>
+            <tr><td>Insights</td><td>Estatísticas e métricas do projeto</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 9 — MCP -->
+    <section class="section" id="sec-mcp">
+      <div class="section-header">
+        <div class="section-num green">9</div>
+        <div class="section-title-group">
+          <h2 class="section-title">MCP Ecosystem <span class="tag tag-opt">Opcional</span></h2>
+          <p class="section-desc">Configurações MCP prontas para o AIOS</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <pre><code><span class="c-comment"># Clonar o ecossistema MCP</span>
+<span class="c-cmd">git clone</span> https://github.com/SynkraAI/mcp-ecosystem.git
+<span class="c-cmd">cd</span> <span class="c-path">mcp-ecosystem</span>
+
+<span class="c-comment"># Ver config de exemplo para Claude Code</span>
+<span class="c-cmd">cat</span> <span class="c-path">ide-configs/claude/sample-config.json</span>
+
+<span class="c-comment"># Aplicar (mesclar com ~/.claude.json existente)</span></code></pre>
+      </div>
+
+      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 20px 0 12px;">Presets disponíveis</h3>
+      <div class="card">
+        <table>
+          <thead>
+            <tr><th>Preset</th><th>MCPs incluídos</th><th>Uso ideal</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="ic">aios-dev.json</span></td><td>context7, desktop-commander, playwright</td><td>Implementação de stories, PRs</td></tr>
+            <tr><td><span class="ic">aios-research.json</span></td><td>context7, exa, playwright</td><td>Pesquisa, documentação</td></tr>
+            <tr><td><span class="ic">aios-full.json</span></td><td>Todos configurados</td><td>Tarefas multi-domínio complexas</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 20px 0 12px;">MCPs disponíveis</h3>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><i data-lucide="book-open" class="lucide-sm"></i> context7</div>
+          <div style="font-size:12px; color:var(--text2);">Documentação atualizada de bibliotecas para LLMs. Sem chave API necessária.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i data-lucide="terminal" class="lucide-sm"></i> desktop-commander</div>
+          <div style="font-size:12px; color:var(--text2);">Gerenciamento de arquivos, comandos de terminal e operações de sistema.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i data-lucide="monitor" class="lucide-sm"></i> playwright</div>
+          <div style="font-size:12px; color:var(--text2);">Automação de browser para testes e interação web.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i data-lucide="search" class="lucide-sm"></i> exa</div>
+          <div style="font-size:12px; color:var(--text2);">Busca web com IA e extração de conteúdo. Requer <span class="ic">EXA_API_KEY</span>.</div>
+        </div>
+      </div>
+
+      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 24px 0 4px; display:flex; align-items:center; gap:6px;"><i data-lucide="git-pull-request" class="lucide-sm" style="color:var(--accent2)"></i> CodeRabbit AI <span class="tag tag-new">Destaque</span></h3>
+      <p style="font-size:12px; color:var(--text3); margin-bottom:12px;">Code review com IA — integrado ao fluxo do agente @qa</p>
+
+      <div class="info-box critical">
+        <i data-lucide="git-pull-request" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>CodeRabbit é o MCP de code review do fluxo AIOS.</strong>
+          Ele é usado pelo agente <span class="ic">@qa</span> e pelo ciclo de desenvolvimento (<span class="ic">@dev</span> → PR → CodeRabbit → <span class="ic">@qa</span>) para revisar Pull Requests automaticamente com contexto do código e da story em andamento.
+        </div>
+      </div>
+
+      <div class="card" style="border-color:rgba(124,106,247,0.2);">
+        <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+          <div style="flex:1; min-width:220px;">
+            <div class="card-title" style="margin-bottom:8px;">Onde é usado no AIOS</div>
+            <div class="checklist">
+              <div class="check-item"><i data-lucide="check-circle-2" class="lucide-sm check-icon" style="color:var(--green)"></i> Revisão automática de PRs criados pelo <span class="ic">@dev</span></div>
+              <div class="check-item"><i data-lucide="check-circle-2" class="lucide-sm check-icon" style="color:var(--green)"></i> Agente <span class="ic">@qa</span> lê comentários do CodeRabbit para validação</div>
+              <div class="check-item"><i data-lucide="check-circle-2" class="lucide-sm check-icon" style="color:var(--green)"></i> Checklist de Definition of Done (DoD) usa relatório CodeRabbit</div>
+              <div class="check-item"><i data-lucide="check-circle-2" class="lucide-sm check-icon" style="color:var(--green)"></i> <span class="ic">@sm</span> incorpora feedbacks no refinamento de stories</div>
+              <div class="check-item"><i data-lucide="check-circle-2" class="lucide-sm check-icon" style="color:var(--green)"></i> Reduz ciclos manuais de review — o time foca em decisões, não em achados</div>
+            </div>
+          </div>
+          <div style="flex:1; min-width:220px;">
+            <div class="card-title" style="margin-bottom:8px;">Por que é importante</div>
+            <div class="checklist">
+              <div class="check-item"><i data-lucide="search" class="lucide-sm check-icon" style="color:var(--accent3)"></i> Analisa cada PR com contexto semântico do diff</div>
+              <div class="check-item"><i data-lucide="shield" class="lucide-sm check-icon" style="color:var(--accent2)"></i> Detecta bugs, code smells e violações de padrão</div>
+              <div class="check-item"><i data-lucide="message-square" class="lucide-sm check-icon" style="color:var(--accent3)"></i> Gera comentários line-by-line acionáveis</div>
+              <div class="check-item"><i data-lucide="refresh-cw" class="lucide-sm check-icon" style="color:var(--green)"></i> Integra com GitHub/GitLab sem configuração extra</div>
+              <div class="check-item"><i data-lucide="gift" class="lucide-sm check-icon" style="color:var(--yellow)"></i> Gratuito para repositórios open source</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">bash — configurar CodeRabbit MCP</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <pre><code><span class="c-comment"># Adicionar CodeRabbit MCP ao Claude Code</span>
+<span class="c-comment"># Em ~/.claude.json, adicione em mcpServers:</span>
+<span class="c-string">"coderabbit"</span>: {
+  <span class="c-string">"type"</span>: <span class="c-string">"stdio"</span>,
+  <span class="c-string">"command"</span>: <span class="c-string">"npx"</span>,
+  <span class="c-string">"args"</span>: [<span class="c-string">"-y"</span>, <span class="c-string">"@coderabbitai/mcp"</span>],
+  <span class="c-string">"env"</span>: {
+    <span class="c-string">"CODERABBIT_API_KEY"</span>: <span class="c-string">"sua-chave-aqui"</span>
+  }
+}
+
+<span class="c-comment"># Obter chave API em: https://coderabbit.ai</span>
+<span class="c-comment"># Gratuito para repositórios open source</span></code></pre>
+      </div>
+
+      <div class="info-box tip">
+        <i data-lucide="lightbulb" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          Após configurar o MCP, o agente <span class="ic">@qa</span> pode chamar <span class="ic">*review-pr</span> e obter o relatório completo do CodeRabbit diretamente no fluxo AIOS, sem precisar abrir o GitHub manualmente.
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 10 — FIRST RUN -->
+    <section class="section" id="sec-first-run">
+      <div class="section-header">
+        <div class="section-num green">10</div>
+        <div class="section-title-group">
+          <h2 class="section-title">Primeiro Uso</h2>
+          <p class="section-desc">Definição de first-value: ativação + greeting + comando em ≤ 10 min</p>
+        </div>
+      </div>
+
+      <div class="info-box critical">
+        <i data-lucide="target" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>First-value (binário):</strong>
+          Ativação de agente + greeting válido + comando inicial com output útil em menos de 10 minutos.
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Abra seu CLI no projeto com AIOS instalado</div>
+            <div class="code-block" style="margin-top:8px;">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-cmd">cd</span> <span class="c-path">meu-projeto</span>
+<span class="c-cmd">claude</span>  <span class="c-comment"># ou: codex / gemini</span></code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Ative um agente</div>
+            <div class="code-block" style="margin-top:8px;">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># No Claude Code:</span>
+@aios-master
+
+<span class="c-comment"># No Gemini CLI:</span>
+/aios-menu  <span class="c-comment"># depois selecione o agente</span>
+
+<span class="c-comment"># No Codex CLI:</span>
+/skills  <span class="c-comment"># depois selecione aios-&lt;agent-id&gt;</span></code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Confirme o greeting e rode o primeiro comando</div>
+            <div class="code-block" style="margin-top:8px;">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># Após o greeting do agente, teste:</span>
+*help  <span class="c-comment"># lista todos os comandos disponíveis</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 24px 0 12px;">Ativação por CLI</h3>
+      <div class="card">
+        <table class="activation-table">
+          <thead>
+            <tr><th>CLI</th><th>Paridade AIOS</th><th>Ativação de agente</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Claude Code</td><td>🟢 Completa (referência)</td><td>@agent-name</td></tr>
+            <tr><td>Gemini CLI</td><td>🟡 Alta</td><td>/aios-menu → /aios-&lt;agent&gt;</td></tr>
+            <tr><td>Codex CLI</td><td>🟠 Parcial</td><td>/skills → aios-&lt;agent-id&gt;</td></tr>
+            <tr><td>Cursor</td><td>🔴 Sem lifecycle hooks</td><td>Regras + MCP</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 20px 0 12px;">Agentes principais disponíveis</h3>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><i data-lucide="wand-2" class="lucide-sm" style="color:var(--accent2)"></i> @aios-master</div>
+          <div style="font-size:12px; color:var(--text2);">Executor universal. Use para qualquer tarefa que não requer persona específica.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i data-lucide="code-2" class="lucide-sm" style="color:var(--accent3)"></i> @dev</div>
+          <div style="font-size:12px; color:var(--text2);">Desenvolvedor full stack. Implementa stories com contexto arquitetural.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i data-lucide="building" class="lucide-sm" style="color:var(--yellow)"></i> @architect</div>
+          <div style="font-size:12px; color:var(--text2);">Arquiteto de sistemas. Cria PRDs, documentos de arquitetura e decisões técnicas.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i data-lucide="flask-conical" class="lucide-sm" style="color:var(--green)"></i> @qa</div>
+          <div style="font-size:12px; color:var(--text2);">Quality Assurance. Valida implementações e cria estratégias de teste.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i data-lucide="clipboard-list" class="lucide-sm" style="color:var(--accent3)"></i> @pm</div>
+          <div style="font-size:12px; color:var(--text2);">Product Manager. Criação de PRDs e definição de features.</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i data-lucide="repeat-2" class="lucide-sm" style="color:var(--accent2)"></i> @sm</div>
+          <div style="font-size:12px; color:var(--text2);">Scrum Master. Transforma PRDs em stories hiperdetalhadas para o @dev.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 11 — TROUBLESHOOTING -->
+    <section class="section" id="sec-troubleshooting">
+      <div class="section-header">
+        <div class="section-num yellow"><i data-lucide="alert-circle" class="lucide-sm"></i></div>
+        <div class="section-title-group">
+          <h2 class="section-title">Troubleshooting</h2>
+          <p class="section-desc">Problemas comuns e soluções</p>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num" style="background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.25);color:var(--red);"><i data-lucide="x-circle" class="lucide-sm"></i></div>
+          <div class="step-content">
+            <div class="step-title"><span class="ic">npx aios-core</span> não encontrado</div>
+            <div class="step-desc">Verifique se Node.js ≥ 18 está instalado: <span class="ic">node --version</span></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num" style="background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.25);color:var(--red);"><i data-lucide="x-circle" class="lucide-sm"></i></div>
+          <div class="step-content">
+            <div class="step-title">Agente não responde ao <span class="ic">@agent-name</span></div>
+            <div class="step-desc">Confirme que o AIOS foi instalado no projeto atual. O <span class="ic">.aios-core/</span> deve existir na raiz do projeto onde você abriu o Claude Code.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num" style="background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.25);color:var(--red);"><i data-lucide="x-circle" class="lucide-sm"></i></div>
+          <div class="step-content">
+            <div class="step-title">Erro de permissão no npm install global</div>
+            <div class="code-block" style="margin-top:8px;">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># Configure npm para instalar sem sudo</span>
+<span class="c-cmd">mkdir</span> <span class="c-path">~/.npm-global</span>
+<span class="c-cmd">npm config set prefix</span> <span class="c-string">'~/.npm-global'</span>
+<span class="c-cmd">echo</span> <span class="c-string">'export PATH=~/.npm-global/bin:$PATH'</span> >> ~/.bashrc
+<span class="c-cmd">source</span> ~/.bashrc</code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num" style="background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.25);color:var(--red);"><i data-lucide="x-circle" class="lucide-sm"></i></div>
+          <div class="step-content">
+            <div class="step-title">Claude Code não reconhece AIOS após instalação</div>
+            <div class="step-desc">Feche e reabra o Claude Code na pasta do projeto. O AIOS é carregado quando o CLI é iniciado no diretório correto.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box tip" style="margin-top: 16px;">
+        <i data-lucide="bug" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          Problemas não listados aqui? Abra uma issue em <a href="https://github.com/SynkraAI/aios-core/issues" target="_blank" style="color:inherit;text-decoration:underline;">github.com/SynkraAI/aios-core/issues</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER CTA -->
+    <div class="footer">
+      <div class="footer-title" style="display:flex;align-items:center;justify-content:center;gap:8px;"><i data-lucide="rocket" class="lucide-md"></i> AIOS instalado com sucesso?</div>
+      <div class="footer-text">Ative o <span class="ic">@aios-master</span> e rode <span class="ic">*help</span> para ver tudo que está disponível.</div>
+      <div class="footer-actions">
+        <a href="https://github.com/SynkraAI/aios-core" target="_blank" class="btn-lg purple"><i data-lucide="github" class="lucide-sm"></i> GitHub AIOS Core</a>
+        <a href="https://github.com/SynkraAI/aios-dashboard" target="_blank" class="btn-lg ghost"><i data-lucide="layout-dashboard" class="lucide-sm"></i> Dashboard</a>
+        <a href="https://github.com/SynkraAI/mcp-ecosystem" target="_blank" class="btn-lg ghost"><i data-lucide="wrench" class="lucide-sm"></i> MCP Ecosystem</a>
+        <a href="https://github.com/SynkraAI" target="_blank" class="btn-lg ghost"><i data-lucide="globe" class="lucide-sm"></i> SynkraAI Org</a>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<script>
+  // TABS
+  function switchTab(btn, panelId) {
+    const tabContent = btn.closest('.tabs').querySelector('.tab-content');
+    const tabNav = btn.closest('.tab-nav');
+
+    tabNav.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    tabContent.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById(panelId);
+    if (panel) panel.classList.add('active');
+  }
+
+  // COPY
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    const text = pre.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copiado!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copiar';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  // SIDEBAR ACTIVE
+  function setActive(el) {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // SCROLL SPY
+  const sections = document.querySelectorAll('.section[id]');
+  const navItems = document.querySelectorAll('.nav-item[href^="#"]');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = '#' + entry.target.id;
+        navItems.forEach(item => {
+          item.classList.toggle('active', item.getAttribute('href') === id);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  // LUCIDE ICONS
+  lucide.createIcons();
+</script>
+
+</body>
+</html>
