@@ -1026,7 +1026,7 @@
           </thead>
           <tbody>
             <tr><td>Node.js</td><td>≥ 18.0.0</td><td>v20+ recomendado para AIOS</td></tr>
-            <tr><td>npm</td><td>≥ 9.0.0</td><td>ou yarn / pnpm</td></tr>
+            <tr><td>npm</td><td>≥ 9.0.0</td><td>Já vem com o Node.js — ou use yarn / pnpm</td></tr>
             <tr><td>RAM</td><td>4 GB+</td><td>8 GB recomendado</td></tr>
             <tr><td>Sistema Operacional</td><td>macOS 10.15+ / Win 10+ / Linux</td><td>WSL recomendado no Windows</td></tr>
             <tr><td>GitHub CLI (opcional)</td><td>última versão</td><td>Para colaboração em equipe</td></tr>
@@ -1394,7 +1394,15 @@
         <div class="section-num purple">7</div>
         <div class="section-title-group">
           <h2 class="section-title">Instalar AIOS Core <span class="tag tag-new">Principal</span></h2>
-          <p class="section-desc">Um comando instala tudo via npx</p>
+          <p class="section-desc">Um comando instala tudo — você só roda npx uma vez</p>
+        </div>
+      </div>
+
+      <div class="info-box tip" style="margin-bottom: 20px;">
+        <i data-lucide="info" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>npx é só na instalação.</strong>
+          Você roda <span class="ic">npx aios-core init</span> apenas uma vez para criar o projeto. Depois disso, o AIOS já está instalado localmente e você usa os agentes direto na IDE (Claude Code, Cursor, etc.) sem precisar rodar <span class="ic">npx</span> novamente. Pense no <span class="ic">npx</span> como o instalador de um programa — você usa uma vez e depois abre o programa normalmente.
         </div>
       </div>
 
@@ -1437,13 +1445,14 @@
                 <span class="code-lang">bash</span>
                 <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
               </div>
-              <pre><code><span class="c-comment"># Atualizar instalação existente (preserva customizações)</span>
+              <pre><code><span class="c-comment"># Upstream Auto-Update — atualiza sem perder customizações</span>
 <span class="c-cmd">npx aios-core@latest install</span>
 
-<span class="c-comment"># ✅ Detecta instalação existente automaticamente</span>
-<span class="c-comment"># ✅ Atualiza apenas arquivos que mudaram</span>
-<span class="c-comment"># ✅ Cria .bak para arquivos customizados</span>
-<span class="c-comment"># ✅ Preserva suas configurações do projeto</span></code></pre>
+<span class="c-comment"># Simular antes (ver o que muda sem aplicar)</span>
+<span class="c-cmd">npx aios-core install</span> <span class="c-flag">--dry-run</span>
+
+<span class="c-comment"># Verificar saúde após atualizar</span>
+<span class="c-cmd">npx aios-core doctor</span></code></pre>
             </div>
           </div>
         </div>
@@ -1476,6 +1485,13 @@
 ├── <span class="c-path">docs/</span>
 │   └── <span class="c-path">stories/</span>             <span class="c-comment"># Stories de desenvolvimento</span>
 └── <span class="c-path">expansion-packs/</span>     <span class="c-comment"># Suas extensões customizadas</span></code></pre>
+      </div>
+
+      <div class="info-box" style="margin-top: 12px; background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.15);">
+        <i data-lucide="check-circle" class="lucide-md info-icon" style="color:var(--green);"></i>
+        <div class="info-text" style="color:var(--text2);">
+          O updater (aba "Atualizar") faz backup das suas customizações em <span class="ic">.aios-backup/</span>, atualiza apenas arquivos que mudaram e preserva suas configurações.
+        </div>
       </div>
     </section>
 
@@ -1693,6 +1709,9 @@
               <pre><code><span class="c-cmd">cd</span> <span class="c-path">meu-projeto</span>
 <span class="c-cmd">claude</span>  <span class="c-comment"># ou: codex / gemini</span></code></pre>
             </div>
+            <div style="margin-top:10px; font-size:12px; color:var(--text3); padding: 8px 12px; background: rgba(16,185,129,0.05); border-left: 2px solid var(--green); border-radius: 0 6px 6px 0;">
+              Percebeu? Nenhum <span class="ic">npx</span> aqui. O AIOS já está instalado no projeto — basta abrir o CLI e ativar os agentes.
+            </div>
           </div>
         </div>
         <div class="step">
@@ -1822,6 +1841,13 @@
           <div class="step-content">
             <div class="step-title">Claude Code não reconhece AIOS após instalação</div>
             <div class="step-desc">Feche e reabra o Claude Code na pasta do projeto. O AIOS é carregado quando o CLI é iniciado no diretório correto.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num" style="background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.25);color:var(--yellow);"><i data-lucide="help-circle" class="lucide-sm"></i></div>
+          <div class="step-content">
+            <div class="step-title">Preciso rodar <span class="ic">npx</span> toda vez que abrir o projeto?</div>
+            <div class="step-desc">Não. O <span class="ic">npx</span> é usado apenas para instalar ou atualizar o AIOS. No dia a dia, você abre o CLI (<span class="ic">claude</span>, <span class="ic">codex</span> ou <span class="ic">gemini</span>) dentro do projeto e usa os agentes diretamente com <span class="ic">@agent-name</span> — sem nenhum <span class="ic">npx</span>.</div>
           </div>
         </div>
       </div>
