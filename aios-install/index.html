@@ -873,46 +873,50 @@
     <div class="nav-section-label">Pré-requisitos</div>
     <a href="#sec-prereqs" class="nav-item" onclick="setActive(this)">
       <span class="nav-step">1</span>
-      Requisitos & Node.js
+      Requisitos
     </a>
     <a href="#sec-wsl" class="nav-item" onclick="setActive(this)">
       <span class="nav-step">2</span>
       WSL (Windows)
     </a>
+    <a href="#sec-nodejs" class="nav-item" onclick="setActive(this)">
+      <span class="nav-step">3</span>
+      Node.js
+    </a>
 
     <div class="nav-section-label" style="margin-top: 8px;">AI CLI Tools</div>
     <a href="#sec-claude" class="nav-item" onclick="setActive(this)">
-      <span class="nav-step">3</span>
+      <span class="nav-step">4</span>
       Claude Code
     </a>
     <a href="#sec-codex" class="nav-item" onclick="setActive(this)">
-      <span class="nav-step">4</span>
+      <span class="nav-step">5</span>
       Codex CLI
     </a>
     <a href="#sec-gemini" class="nav-item" onclick="setActive(this)">
-      <span class="nav-step">5</span>
+      <span class="nav-step">6</span>
       Gemini CLI
     </a>
 
     <div class="nav-section-label" style="margin-top: 8px;">Synkra AIOS</div>
-    <a href="#sec-repos" class="nav-item active" onclick="setActive(this)">
-      <span class="nav-step">6</span>
+    <a href="#sec-repos" class="nav-item" onclick="setActive(this)">
+      <span class="nav-step">7</span>
       Repositórios AIOS
     </a>
     <a href="#sec-install" class="nav-item" onclick="setActive(this)">
-      <span class="nav-step">7</span>
+      <span class="nav-step">8</span>
       Instalação do AIOS
     </a>
     <a href="#sec-dashboard" class="nav-item" onclick="setActive(this)">
-      <span class="nav-step">8</span>
+      <span class="nav-step">9</span>
       Dashboard (opcional)
     </a>
     <a href="#sec-mcp" class="nav-item" onclick="setActive(this)">
-      <span class="nav-step">9</span>
+      <span class="nav-step">10</span>
       MCP Ecosystem (opcional)
     </a>
     <a href="#sec-first-run" class="nav-item" onclick="setActive(this)">
-      <span class="nav-step">10</span>
+      <span class="nav-step">11</span>
       Primeiro Uso
     </a>
 
@@ -1042,80 +1046,6 @@
         </div>
       </div>
 
-      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 20px 0 12px;">Instalar Node.js</h3>
-      <div class="tabs">
-        <div class="tab-nav">
-          <button class="tab-btn active" onclick="switchTab(this, 'node-windows')">Windows</button>
-          <button class="tab-btn" onclick="switchTab(this, 'node-wsl')">WSL</button>
-          <button class="tab-btn" onclick="switchTab(this, 'node-linux')">macOS / Linux</button>
-        </div>
-        <div class="tab-content">
-          <div class="tab-panel" id="node-linux">
-            <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">bash — Ubuntu / Debian</span>
-                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
-              </div>
-              <pre><code><span class="c-cmd">curl</span> <span class="c-flag">-fsSL</span> https://deb.nodesource.com/setup_20.x | sudo <span class="c-cmd">-E bash</span> <span class="c-flag">-</span>
-<span class="c-cmd">sudo apt-get install</span> <span class="c-flag">-y</span> nodejs
-
-<span class="c-comment"># Verificar</span>
-<span class="c-cmd">node</span> <span class="c-flag">--version</span>
-<span class="c-cmd">npm</span> <span class="c-flag">--version</span></code></pre>
-            </div>
-            <div class="code-block" style="margin-top: 8px;">
-              <div class="code-header">
-                <span class="code-lang">bash — macOS via Homebrew</span>
-                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
-              </div>
-              <pre><code><span class="c-cmd">brew install</span> node@20
-
-<span class="c-comment"># Verificar</span>
-<span class="c-cmd">node</span> <span class="c-flag">--version</span>
-<span class="c-cmd">npm</span> <span class="c-flag">--version</span></code></pre>
-            </div>
-          </div>
-          <div class="tab-panel active" id="node-windows">
-            <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">powershell</span>
-                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
-              </div>
-              <pre><code><span class="c-cmd">winget install</span> OpenJS.NodeJS.LTS
-
-<span class="c-comment"># Verificar (abra um novo terminal após instalar)</span>
-<span class="c-cmd">node</span> <span class="c-flag">--version</span>
-<span class="c-cmd">npm</span> <span class="c-flag">--version</span></code></pre>
-            </div>
-            <div class="info-box" style="margin-top: 10px; background: rgba(6,182,212,0.05); border-color: rgba(6,182,212,0.15);">
-              <i data-lucide="info" class="lucide-md info-icon" style="color:var(--accent3);"></i>
-              <div class="info-text" style="color:var(--text2);">Para AIOS no Windows, prefira a aba <strong>WSL</strong> — o Node.js instalado no Linux tem melhor performance e compatibilidade com as ferramentas do ecossistema AIOS.</div>
-            </div>
-          </div>
-          <div class="tab-panel" id="node-wsl">
-            <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">bash — dentro do terminal Ubuntu/WSL</span>
-                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
-              </div>
-              <pre><code><span class="c-cmd">curl</span> <span class="c-flag">-fsSL</span> https://deb.nodesource.com/setup_20.x | sudo <span class="c-cmd">-E bash</span> <span class="c-flag">-</span>
-<span class="c-cmd">sudo apt-get install</span> <span class="c-flag">-y</span> nodejs
-
-<span class="c-comment"># Verificar</span>
-<span class="c-cmd">node</span> <span class="c-flag">--version</span>
-<span class="c-cmd">npm</span> <span class="c-flag">--version</span></code></pre>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="info-box" style="margin-top: 12px; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06);">
-        <i data-lucide="info" class="lucide-md info-icon" style="color:var(--text3);"></i>
-        <div class="info-text" style="color:var(--text3);">
-          <strong>Precisa gerenciar múltiplas versões do Node.js?</strong>
-          Use o <a href="https://github.com/nvm-sh/nvm" target="_blank" style="color:inherit;text-decoration:underline;">NVM</a> (Linux/macOS) ou <a href="https://github.com/coreybutler/nvm-windows" target="_blank" style="color:inherit;text-decoration:underline;">nvm-windows</a>. Para a maioria dos usuários, a instalação direta acima é suficiente.
-        </div>
-      </div>
     </section>
 
     <!-- SECTION 2 — WSL -->
@@ -1193,10 +1123,92 @@
       </div>
     </section>
 
-    <!-- SECTION 3 — CLAUDE CODE -->
+    <!-- SECTION 3 — NODE.JS -->
+    <section class="section" id="sec-nodejs">
+      <div class="section-header">
+        <div class="section-num cyan">3</div>
+        <div class="section-title-group">
+          <h2 class="section-title">Instalar Node.js</h2>
+          <p class="section-desc">Necessário para AIOS Core, Codex CLI e Gemini CLI</p>
+        </div>
+      </div>
+
+      <div class="info-box tip">
+        <i data-lucide="check-circle" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>Usuários Windows com WSL:</strong> o Node.js já foi instalado no passo 4 da seção anterior (dentro do Ubuntu). Podem avançar direto para a seção 4.
+        </div>
+      </div>
+
+      <div class="tabs" style="margin-top: 16px;">
+        <div class="tab-nav">
+          <button class="tab-btn active" onclick="switchTab(this, 'nodejs-linux')">Linux / WSL</button>
+          <button class="tab-btn" onclick="switchTab(this, 'nodejs-macos')">macOS</button>
+          <button class="tab-btn" onclick="switchTab(this, 'nodejs-windows-native')">Windows (sem WSL)</button>
+        </div>
+        <div class="tab-content">
+          <div class="tab-panel active" id="nodejs-linux">
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash — Ubuntu / Debian / WSL</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-cmd">curl</span> <span class="c-flag">-fsSL</span> https://deb.nodesource.com/setup_20.x | sudo <span class="c-cmd">-E bash</span> <span class="c-flag">-</span>
+<span class="c-cmd">sudo apt-get install</span> <span class="c-flag">-y</span> nodejs
+
+<span class="c-comment"># Verificar</span>
+<span class="c-cmd">node</span> <span class="c-flag">--version</span>   <span class="c-comment"># deve mostrar v20.x.x ou superior</span>
+<span class="c-cmd">npm</span> <span class="c-flag">--version</span>    <span class="c-comment"># deve mostrar v9.x.x ou superior</span></code></pre>
+            </div>
+          </div>
+          <div class="tab-panel" id="nodejs-macos">
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash — macOS via Homebrew</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-cmd">brew install</span> node@20
+
+<span class="c-comment"># Verificar</span>
+<span class="c-cmd">node</span> <span class="c-flag">--version</span>   <span class="c-comment"># deve mostrar v20.x.x ou superior</span>
+<span class="c-cmd">npm</span> <span class="c-flag">--version</span>    <span class="c-comment"># deve mostrar v9.x.x ou superior</span></code></pre>
+            </div>
+          </div>
+          <div class="tab-panel" id="nodejs-windows-native">
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">powershell</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-cmd">winget install</span> OpenJS.NodeJS.LTS
+
+<span class="c-comment"># Verificar (abra um novo terminal após instalar)</span>
+<span class="c-cmd">node</span> <span class="c-flag">--version</span>
+<span class="c-cmd">npm</span> <span class="c-flag">--version</span></code></pre>
+            </div>
+            <div class="info-box warn" style="margin-top: 10px;">
+              <i data-lucide="alert-triangle" class="lucide-md info-icon"></i>
+              <div class="info-text">
+                O Node.js instalado no Windows nativo <strong>não é acessível dentro do WSL</strong>. Se for usar WSL, instale o Node.js dentro do terminal Ubuntu (seção 2, passo 4).
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box" style="margin-top: 12px; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06);">
+        <i data-lucide="info" class="lucide-md info-icon" style="color:var(--text3);"></i>
+        <div class="info-text" style="color:var(--text3);">
+          <strong>Precisa gerenciar múltiplas versões do Node.js?</strong>
+          Use o <a href="https://github.com/nvm-sh/nvm" target="_blank" style="color:inherit;text-decoration:underline;">NVM</a> (Linux/macOS) ou <a href="https://github.com/coreybutler/nvm-windows" target="_blank" style="color:inherit;text-decoration:underline;">nvm-windows</a>. Para a maioria dos usuários, a instalação direta acima é suficiente.
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4 — CLAUDE CODE -->
     <section class="section" id="sec-claude">
       <div class="section-header">
-        <div class="section-num green">3</div>
+        <div class="section-num green">4</div>
         <div class="section-title-group">
           <h2 class="section-title">Claude Code</h2>
           <p class="section-desc">CLI oficial da Anthropic — melhor compatibilidade com AIOS</p>
@@ -1260,7 +1272,7 @@
     <!-- SECTION 4 — CODEX -->
     <section class="section" id="sec-codex">
       <div class="section-header">
-        <div class="section-num cyan">4</div>
+        <div class="section-num cyan">5</div>
         <div class="section-title-group">
           <h2 class="section-title">Codex CLI <span class="tag tag-opt">Opcional</span></h2>
           <p class="section-desc">CLI da OpenAI — paridade parcial com AIOS</p>
@@ -1314,7 +1326,7 @@
     <!-- SECTION 5 — GEMINI -->
     <section class="section" id="sec-gemini">
       <div class="section-header">
-        <div class="section-num orange">5</div>
+        <div class="section-num orange">6</div>
         <div class="section-title-group">
           <h2 class="section-title">Gemini CLI <span class="tag tag-opt">Opcional</span></h2>
           <p class="section-desc">CLI do Google — alta paridade com AIOS</p>
@@ -1368,7 +1380,7 @@
     <!-- SECTION 6 — REPOS -->
     <section class="section" id="sec-repos">
       <div class="section-header">
-        <div class="section-num purple">6</div>
+        <div class="section-num purple">7</div>
         <div class="section-title-group">
           <h2 class="section-title">Repositórios Synkra AIOS</h2>
           <p class="section-desc">O ecossistema open source do AIOS</p>
@@ -1448,7 +1460,7 @@
     <!-- SECTION 7 — INSTALL AIOS -->
     <section class="section" id="sec-install">
       <div class="section-header">
-        <div class="section-num purple">7</div>
+        <div class="section-num purple">8</div>
         <div class="section-title-group">
           <h2 class="section-title">Instalar AIOS Core <span class="tag tag-new">Principal</span></h2>
           <p class="section-desc">Um comando instala tudo — você só roda npx uma vez</p>
@@ -1583,7 +1595,7 @@
     <!-- SECTION 8 — DASHBOARD -->
     <section class="section" id="sec-dashboard">
       <div class="section-header">
-        <div class="section-num cyan">8</div>
+        <div class="section-num cyan">9</div>
         <div class="section-title-group">
           <h2 class="section-title">AIOS Dashboard <span class="tag tag-opt">Opcional</span></h2>
           <p class="section-desc">Interface web de observabilidade — precisa de AIOS Core instalado</p>
@@ -1673,7 +1685,7 @@
     <!-- SECTION 9 — MCP -->
     <section class="section" id="sec-mcp">
       <div class="section-header">
-        <div class="section-num green">9</div>
+        <div class="section-num green">10</div>
         <div class="section-title-group">
           <h2 class="section-title">MCP Ecosystem <span class="tag tag-opt">Opcional</span></h2>
           <p class="section-desc">Configurações MCP prontas para o AIOS</p>
@@ -1826,7 +1838,7 @@
     <!-- SECTION 10 — FIRST RUN -->
     <section class="section" id="sec-first-run">
       <div class="section-header">
-        <div class="section-num green">10</div>
+        <div class="section-num green">11</div>
         <div class="section-title-group">
           <h2 class="section-title">Primeiro Uso</h2>
           <p class="section-desc">Definição de first-value: ativação + greeting + comando em ≤ 10 min</p>
