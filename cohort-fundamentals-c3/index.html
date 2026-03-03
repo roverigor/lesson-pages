@@ -698,6 +698,9 @@
     <a class="sidebar-link" href="#precourse">
       <i data-lucide="settings"></i> Pré-curso
     </a>
+    <a class="sidebar-link" href="https://lesson-pages.vercel.app/aios-install" target="_blank" style="color:var(--emerald)">
+      <i data-lucide="external-link"></i> Guia de Instalação
+    </a>
 
     <div class="sidebar-section-label">Semanas</div>
     <a class="sidebar-link" href="#semana1">
@@ -824,15 +827,117 @@
       Pré-curso — Aula 0 (Assíncrona)
     </h2>
 
+    <!-- BANNER GUIA DE INSTALAÇÃO -->
+    <a href="https://lesson-pages.vercel.app/aios-install" target="_blank" style="text-decoration:none;display:block;margin-bottom:20px">
+      <div style="background:linear-gradient(135deg,rgba(16,185,129,0.1) 0%,rgba(59,130,246,0.07) 100%);border:1.5px solid rgba(16,185,129,0.35);border-radius:var(--radius-lg);padding:20px 24px;display:flex;align-items:center;gap:18px;transition:var(--transition);"
+           onmouseover="this.style.borderColor='rgba(16,185,129,0.6)';this.style.background='linear-gradient(135deg,rgba(16,185,129,0.15) 0%,rgba(59,130,246,0.1) 100%)'"
+           onmouseout="this.style.borderColor='rgba(16,185,129,0.35)';this.style.background='linear-gradient(135deg,rgba(16,185,129,0.1) 0%,rgba(59,130,246,0.07) 100%)'">
+        <div style="width:48px;height:48px;border-radius:12px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--emerald)">
+          <i data-lucide="book-open" class="lucide-lg"></i>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--emerald);margin-bottom:4px">Guia Técnico Oficial · V4.X · 2026</div>
+          <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px">Guia de Instalação Completo — lesson-pages.vercel.app/aios-install</div>
+          <div style="font-size:13px;color:var(--text3)">Claude Code · Codex CLI · Gemini CLI · AIOS Core · MCP Ecosystem · Dashboard — passo a passo por sistema operacional</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <span style="font-size:12px;font-weight:700;color:var(--emerald)">Abrir guia</span>
+          <i data-lucide="external-link" class="lucide-md" style="color:var(--emerald)"></i>
+        </div>
+      </div>
+    </a>
+
+    <!-- ESCOLHA DO CLI -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text4);margin-bottom:12px">Escolha seu CLI — os 3 são suportados pelo AIOS</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+
+        <!-- Claude Code -->
+        <div style="background:var(--bg2);border:1.5px solid rgba(59,130,246,0.3);border-radius:var(--radius-lg);padding:18px;position:relative;overflow:hidden">
+          <div style="position:absolute;top:10px;right:10px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;background:rgba(59,130,246,0.15);color:var(--blue);border:1px solid rgba(59,130,246,0.3);padding:2px 7px;border-radius:4px">RECOMENDADO</div>
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;margin-bottom:12px;color:var(--blue)">
+            <i data-lucide="terminal" class="lucide-lg"></i>
+          </div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:4px">Claude Code</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:12px">Anthropic · Paridade AIOS completa</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2)">
+              <i data-lucide="check-circle" class="lucide-sm" style="color:var(--green)"></i> Ativação: <code style="color:var(--emerald);font-size:11px">@agent-name</code>
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2)">
+              <i data-lucide="check-circle" class="lucide-sm" style="color:var(--green)"></i> Lifecycle hooks completos
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2)">
+              <i data-lucide="check-circle" class="lucide-sm" style="color:var(--green)"></i> Todos os subagentes
+            </div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+            <code style="font-size:11px;color:var(--text3)">npm install -g @anthropic-ai/claude-code</code>
+          </div>
+          <div style="margin-top:8px;font-size:11px;color:var(--text4)">~$20/mês (Claude Max)</div>
+        </div>
+
+        <!-- Gemini CLI -->
+        <div style="background:var(--bg2);border:1px solid rgba(6,182,212,0.2);border-radius:var(--radius-lg);padding:18px">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(6,182,212,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:12px;color:var(--cyan)">
+            <i data-lucide="sparkles" class="lucide-lg"></i>
+          </div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:4px">Gemini CLI</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:12px">Google · Alta paridade com AIOS</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2)">
+              <i data-lucide="check-circle" class="lucide-sm" style="color:var(--green)"></i> Ativação: <code style="color:var(--cyan);font-size:11px">/aios-menu</code>
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2)">
+              <i data-lucide="check-circle" class="lucide-sm" style="color:var(--green)"></i> 60 req/min · 1.000 req/dia
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2)">
+              <i data-lucide="minus-circle" class="lucide-sm" style="color:var(--text4)"></i> Hooks parciais
+            </div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+            <code style="font-size:11px;color:var(--text3)">npm install -g @google/gemini-cli</code>
+          </div>
+          <div style="margin-top:8px;font-size:11px;color:var(--green);font-weight:600">Gratuito com conta Google</div>
+        </div>
+
+        <!-- Codex CLI -->
+        <div style="background:var(--bg2);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-lg);padding:18px">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;margin-bottom:12px;color:var(--text3)">
+            <i data-lucide="code-2" class="lucide-lg"></i>
+          </div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:4px">Codex CLI</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:12px">OpenAI · Paridade parcial</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2)">
+              <i data-lucide="check-circle" class="lucide-sm" style="color:var(--yellow)"></i> Ativação: <code style="color:var(--yellow);font-size:11px">/skills → aios-&lt;id&gt;</code>
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2)">
+              <i data-lucide="minus-circle" class="lucide-sm" style="color:var(--text4)"></i> Sem lifecycle hooks
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2)">
+              <i data-lucide="minus-circle" class="lucide-sm" style="color:var(--text4)"></i> Features AIOS limitadas
+            </div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+            <code style="font-size:11px;color:var(--text3)">npm install -g @openai/codex</code>
+          </div>
+          <div style="margin-top:8px;font-size:11px;color:var(--text4)">Incluso no plano ChatGPT</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FASES DE INSTALAÇÃO -->
     <div class="precourse-card">
       <div class="precourse-header">
         <div class="stat-icon bg-orange" style="color:var(--orange);">
-          <i data-lucide="settings" class="lucide-md"></i>
+          <i data-lucide="list-ordered" class="lucide-md"></i>
         </div>
         <div style="flex:1">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text4);margin-bottom:3px">Prazo: até 02/03/2026</div>
-          <div style="font-size:17px;font-weight:700">Setup Completo — Chegue Pronto para o Dia 1</div>
-          <div style="font-size:13px;color:var(--text3);margin-top:3px">Vídeo gravado + guia escrito + bot de diagnóstico · Evita 1–2h de setup em aula</div>
+          <div style="font-size:17px;font-weight:700">5 Fases de Instalação — Faça Antes da Aula 1</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:3px">Guia completo em: <a href="https://lesson-pages.vercel.app/aios-install" target="_blank" style="color:var(--emerald);text-decoration:none;font-weight:600">lesson-pages.vercel.app/aios-install</a></div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
           <span class="lesson-badge" style="background:rgba(249,115,22,0.12);color:var(--orange);border:1px solid rgba(249,115,22,0.25)">Assíncrona</span>
@@ -842,18 +947,25 @@
 
       <div class="precourse-phase">
         <span class="phase-badge">FASE 1</span>
-        <span>Pré-requisitos: SO, RAM ≥4 GB, conta Anthropic com plano pago</span>
+        <span>Pré-requisitos: SO compatível, RAM ≥4 GB, conta Anthropic com plano pago</span>
         <span style="margin-left:auto;color:var(--text4);font-size:12px">Verificação</span>
       </div>
       <div class="precourse-phase">
         <span class="phase-badge">FASE 2</span>
-        <span>Node.js v20+ — Mac, Windows (WSL Ubuntu) ou Linux</span>
+        <span>Node.js v20+ — Mac / Linux direto · Windows via <strong style="color:var(--text2)">WSL Ubuntu</strong> (obrigatório)</span>
         <span style="margin-left:auto;font-family:monospace;font-size:12px;color:var(--emerald)">node --version → v20.x</span>
       </div>
       <div class="precourse-phase">
         <span class="phase-badge">FASE 3</span>
-        <span>Claude Code — instalação via npm + login Anthropic</span>
-        <span style="margin-left:auto;font-family:monospace;font-size:12px;color:var(--emerald)">claude --version ✓</span>
+        <div style="flex:1">
+          <span>Instalar o CLI principal: </span>
+          <span style="display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px">
+            <code style="font-size:11px;background:rgba(59,130,246,0.1);color:var(--blue);padding:2px 7px;border-radius:4px;border:1px solid rgba(59,130,246,0.2)">npm i -g @anthropic-ai/claude-code</code>
+            <span style="font-size:11px;color:var(--text4)">ou</span>
+            <code style="font-size:11px;background:rgba(6,182,212,0.08);color:var(--cyan);padding:2px 7px;border-radius:4px;border:1px solid rgba(6,182,212,0.2)">npm i -g @google/gemini-cli</code>
+          </span>
+        </div>
+        <span style="margin-left:auto;font-family:monospace;font-size:12px;color:var(--emerald);flex-shrink:0">CLI --version ✓</span>
       </div>
       <div class="precourse-phase">
         <span class="phase-badge">FASE 4</span>
@@ -862,15 +974,26 @@
       </div>
       <div class="precourse-phase">
         <span class="phase-badge">FASE 5</span>
-        <span>Primeiro teste — digitar <code style="font-size:12px;color:var(--emerald)">/</code> e ver agentes listados</span>
+        <span>Primeiro teste — abrir o CLI dentro da pasta do projeto · digitar <code style="font-size:12px;color:var(--emerald)">/</code> e ver os agentes listados</span>
         <span style="margin-left:auto;font-family:monospace;font-size:12px;color:var(--emerald)">Agentes visíveis ✓</span>
       </div>
 
-      <div style="padding:16px 24px;background:rgba(34,197,94,0.05);border-top:1px solid var(--border);display:flex;align-items:center;gap:12px">
-        <i data-lucide="send" style="color:var(--green)" class="lucide-md"></i>
-        <div style="font-size:13px;color:var(--text2)">
-          <strong style="color:var(--green)">Entregável de aprovação:</strong> Print ou vídeo 15s (terminal + <code style="color:var(--emerald)">claude --version</code> + agentes visíveis) · Enviar no WhatsApp: <strong>"CHECKLIST VERDE — pronto para a Aula 1"</strong>
+      <div style="padding:14px 24px;background:rgba(255,255,255,0.02);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:10px">
+          <i data-lucide="send" style="color:var(--green)" class="lucide-md"></i>
+          <div style="font-size:13px;color:var(--text2)">
+            <strong style="color:var(--green)">Entregável de aprovação:</strong> Print ou vídeo 15s · terminal + <code style="color:var(--emerald)">claude --version</code> + agentes visíveis com <code style="color:var(--emerald)">/</code>
+            <br><span style="color:var(--text3)">Enviar no grupo do WhatsApp:</span> <strong style="color:var(--text)">"CHECKLIST VERDE — pronto para a Aula 1"</strong>
+          </div>
         </div>
+        <a href="https://lesson-pages.vercel.app/aios-install" target="_blank"
+           style="display:inline-flex;align-items:center;gap:8px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:9px 16px;text-decoration:none;color:var(--emerald);font-size:13px;font-weight:700;white-space:nowrap;flex-shrink:0;transition:var(--transition)"
+           onmouseover="this.style.background='rgba(16,185,129,0.18)'"
+           onmouseout="this.style.background='rgba(16,185,129,0.1)'">
+          <i data-lucide="book-open" class="lucide-sm"></i>
+          Ver guia completo
+          <i data-lucide="external-link" class="lucide-sm"></i>
+        </a>
       </div>
     </div>
   </section>
