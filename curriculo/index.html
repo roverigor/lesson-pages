@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grade Curricular — Cohort Fundamentals AIOS Core | Turma 3</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  .lucide { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; display: inline-block; vertical-align: middle; }
+  .lucide-sm { width: 13px; height: 13px; }
+  .lucide-md { width: 18px; height: 18px; }
+  .lucide-lg { width: 22px; height: 22px; }
+  .lucide-xl { width: 28px; height: 28px; }
+  .lucide-2xl { width: 40px; height: 40px; }
+
+  :root {
+    --bg: #000000;
+    --bg2: #0a0a0a;
+    --bg3: #111111;
+    --bg4: #141414;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.15);
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --cyan: #06b6d4;
+    --yellow: #f5c518;
+    --orange: #f97316;
+    --red: #ef4444;
+    --pink: #ec4899;
+    --emerald: #10b981;
+    --text: #ffffff;
+    --text2: rgba(255,255,255,0.75);
+    --text3: rgba(255,255,255,0.5);
+    --text4: rgba(255,255,255,0.35);
+    --radius: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --sidebar-w: 280px;
+    --transition: 0.25s ease;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ─── SIDEBAR ─── */
+  #sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
+
+  .sidebar-header {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, #0a0a18 0%, #0d0d1a 100%);
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .sidebar-logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(59,130,246,0.2));
+    border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--green);
+  }
+
+  .sidebar-logo-text { font-size: 13px; font-weight: 700; color: var(--text); }
+  .sidebar-logo-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+  .sidebar-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25);
+    color: var(--green); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 6px;
+  }
+
+  .sidebar-nav { padding: 16px 12px; flex: 1; }
+
+  .sidebar-section-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--text4);
+    padding: 0 8px; margin: 12px 0 6px;
+  }
+
+  .sidebar-link {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 10px; border-radius: 8px;
+    color: var(--text3); text-decoration: none;
+    font-size: 13px; font-weight: 500;
+    transition: var(--transition);
+    cursor: pointer;
+    border: none; background: none; width: 100%; text-align: left;
+  }
+
+  .sidebar-link:hover, .sidebar-link.active {
+    background: rgba(255,255,255,0.05);
+    color: var(--text);
+  }
+
+  .sidebar-link.active { color: var(--green); }
+
+  .week-indicator {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 5px;
+    font-size: 10px; font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .w0 { background: rgba(255,255,255,0.08); color: var(--text3); }
+  .w1 { background: rgba(59,130,246,0.2); color: var(--blue); }
+  .w2 { background: rgba(34,197,94,0.2); color: var(--green); }
+  .w3 { background: rgba(168,85,247,0.2); color: var(--purple); }
+  .w4 { background: rgba(245,197,24,0.2); color: var(--yellow); }
+
+  /* ─── MAIN ─── */
+  #main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 48px 56px;
+    max-width: 1100px;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    margin-bottom: 56px;
+    position: relative;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 400px; height: 400px;
+    background: radial-gradient(ellipse, rgba(34,197,94,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-label {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--green);
+    margin-bottom: 16px;
+  }
+
+  .hero h1 {
+    font-size: 48px; font-weight: 800; line-height: 1.1;
+    letter-spacing: -0.02em; color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .hero h1 span { color: var(--green); }
+
+  .hero-sub {
+    font-size: 20px; font-weight: 400; color: var(--text2);
+    margin-bottom: 24px;
+  }
+
+  .hero-meta {
+    display: flex; flex-wrap: wrap; gap: 12px;
+  }
+
+  .meta-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 7px 13px;
+    font-size: 13px; color: var(--text2);
+  }
+
+  .meta-chip i { color: var(--green); }
+
+  /* ─── STATS ─── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 56px;
+  }
+
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px 20px;
+    transition: var(--transition);
+  }
+
+  .stat-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+  }
+
+  .stat-icon {
+    width: 38px; height: 38px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+
+  .stat-value {
+    font-size: 30px; font-weight: 800; line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label { font-size: 12px; color: var(--text3); }
+
+  /* ─── SECTION TITLES ─── */
+  .section-title {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 22px; font-weight: 700;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-title .icon-box {
+    width: 38px; height: 38px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ─── JOURNEY MAP ─── */
+  .journey {
+    margin-bottom: 56px;
+  }
+
+  .journey-track {
+    display: flex; align-items: stretch; gap: 0;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+  }
+
+  .journey-step {
+    flex: 1;
+    padding: 24px 18px;
+    position: relative;
+    border-right: 1px solid var(--border);
+    transition: var(--transition);
+  }
+
+  .journey-step:last-child { border-right: none; }
+
+  .journey-step:hover { background: rgba(255,255,255,0.02); }
+
+  .journey-step-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 8px;
+  }
+
+  .journey-step-title {
+    font-size: 15px; font-weight: 700; margin-bottom: 6px;
+  }
+
+  .journey-step-sub {
+    font-size: 12px; color: var(--text3); line-height: 1.5;
+  }
+
+  .journey-arrow {
+    position: absolute; right: -10px; top: 50%;
+    transform: translateY(-50%);
+    z-index: 2; color: var(--text4);
+  }
+
+  /* ─── WEEK BLOCKS ─── */
+  .week-block { margin-bottom: 48px; }
+
+  .week-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 20px 24px;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  .week-number {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .week-info { flex: 1; }
+  .week-title { font-size: 18px; font-weight: 700; margin-bottom: 3px; }
+  .week-subtitle { font-size: 13px; color: var(--text3); }
+
+  .week-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .week-badge {
+    font-size: 11px; font-weight: 600; padding: 3px 9px;
+    border-radius: 6px; white-space: nowrap;
+  }
+
+  .week-lessons {
+    border: 1px solid var(--border);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    overflow: hidden;
+  }
+
+  /* ─── LESSON CARD ─── */
+  .lesson-card {
+    border-bottom: 1px solid var(--border);
+    transition: var(--transition);
+  }
+
+  .lesson-card:last-child { border-bottom: none; }
+
+  .lesson-header {
+    display: flex; align-items: center; gap: 0;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .lesson-date-col {
+    width: 130px; flex-shrink: 0;
+    padding: 20px 18px;
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    gap: 3px;
+  }
+
+  .lesson-date { font-size: 13px; font-weight: 700; }
+  .lesson-weekday { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+  .lesson-time { font-size: 11px; color: var(--text4); }
+
+  .lesson-main {
+    flex: 1; padding: 20px 22px;
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .lesson-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .lesson-info { flex: 1; }
+
+  .lesson-number {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--text4);
+    margin-bottom: 3px;
+  }
+
+  .lesson-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .lesson-tagline { font-size: 13px; color: var(--text3); }
+
+  .lesson-right {
+    padding: 20px 20px 20px 0;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+  }
+
+  .lesson-duration {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; color: var(--text3);
+  }
+
+  .lesson-badge {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; padding: 3px 8px; border-radius: 5px;
+  }
+
+  /* ─── LESSON DETAILS (ACCORDION) ─── */
+  .lesson-details {
+    display: none;
+    padding: 0 22px 24px;
+    border-top: 1px solid var(--border);
+    background: rgba(255,255,255,0.01);
+  }
+
+  .lesson-details.open { display: block; }
+
+  .details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .detail-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+
+  .detail-box-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text3);
+    margin-bottom: 14px;
+  }
+
+  .objective-item {
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px; color: var(--text2); line-height: 1.5;
+  }
+
+  .objective-item:last-child { border-bottom: none; }
+
+  .objective-item i { flex-shrink: 0; margin-top: 2px; }
+
+  .topic-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px; color: var(--text2);
+  }
+
+  .topic-row:last-child { border-bottom: none; }
+
+  .topic-num {
+    width: 20px; height: 20px; border-radius: 5px;
+    background: rgba(255,255,255,0.05);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: var(--text3);
+    flex-shrink: 0;
+  }
+
+  .topic-time {
+    margin-left: auto; font-size: 11px; color: var(--text4);
+    white-space: nowrap;
+  }
+
+  .deliverable-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 7px 0; font-size: 13px; color: var(--text2);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .deliverable-item:last-child { border-bottom: none; }
+
+  .highlight-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10px; font-weight: 700; padding: 2px 7px;
+    border-radius: 4px; white-space: nowrap;
+    background: rgba(245,197,24,0.12); color: var(--yellow);
+    border: 1px solid rgba(245,197,24,0.25);
+  }
+
+  /* ─── PRE-COURSE ─── */
+  .precourse-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 48px;
+  }
+
+  .precourse-header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 22px 24px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .precourse-phase {
+    padding: 14px 24px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .precourse-phase:last-child { border-bottom: none; }
+
+  .phase-badge {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; padding: 3px 8px; border-radius: 5px;
+    white-space: nowrap;
+    background: rgba(255,255,255,0.06); color: var(--text3);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  /* ─── MATERIALS ─── */
+  .materials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 56px;
+  }
+
+  .material-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex; align-items: flex-start; gap: 12px;
+    transition: var(--transition);
+  }
+
+  .material-card:hover {
+    border-color: var(--border-hover);
+    background: var(--bg3);
+  }
+
+  .material-icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .material-info { flex: 1; min-width: 0; }
+  .material-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text4); margin-bottom: 3px; }
+  .material-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; line-height: 1.4; }
+  .material-when { font-size: 11px; color: var(--text3); }
+
+  /* ─── STACK ─── */
+  .stack-table {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 56px;
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .stack-table th {
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--text3);
+  }
+
+  .stack-table td {
+    padding: 13px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px; color: var(--text2);
+    vertical-align: middle;
+  }
+
+  .stack-table tr:last-child td { border-bottom: none; }
+
+  .stack-tool { font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .stack-cost-free { color: var(--green); font-weight: 600; }
+  .stack-cost-paid { color: var(--yellow); font-weight: 600; }
+  .stack-when { color: var(--text3); }
+
+  /* ─── PS TABLE ─── */
+  .ps-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 56px;
+  }
+
+  .ps-table th {
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--text3);
+  }
+
+  .ps-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px; color: var(--text2);
+    vertical-align: middle;
+  }
+
+  .ps-table tr:last-child td { border-bottom: none; }
+
+  /* ─── CTA ─── */
+  .cta-box {
+    background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(59,130,246,0.05));
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: var(--radius-xl);
+    padding: 40px;
+    text-align: center;
+    margin-top: 24px;
+  }
+
+  .cta-box h2 { font-size: 28px; font-weight: 800; margin-bottom: 10px; }
+  .cta-box p { font-size: 15px; color: var(--text2); margin-bottom: 24px; }
+
+  .cta-chips { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
+  .cta-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px;
+    font-size: 13px; font-weight: 600; color: var(--text2);
+  }
+
+  /* ─── UTILS ─── */
+  .mb-56 { margin-bottom: 56px; }
+  .text-green { color: var(--green); }
+  .text-blue { color: var(--blue); }
+  .text-purple { color: var(--purple); }
+  .text-yellow { color: var(--yellow); }
+  .text-orange { color: var(--orange); }
+  .text-cyan { color: var(--cyan); }
+  .text-pink { color: var(--pink); }
+
+  .bg-green { background: rgba(34,197,94,0.12); }
+  .bg-blue { background: rgba(59,130,246,0.12); }
+  .bg-purple { background: rgba(168,85,247,0.12); }
+  .bg-yellow { background: rgba(245,197,24,0.12); }
+  .bg-orange { background: rgba(249,115,22,0.12); }
+  .bg-cyan { background: rgba(6,182,212,0.12); }
+
+  .border-green { border-color: rgba(34,197,94,0.25); }
+  .border-blue { border-color: rgba(59,130,246,0.25); }
+  .border-purple { border-color: rgba(168,85,247,0.25); }
+  .border-yellow { border-color: rgba(245,197,24,0.25); }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1024px) {
+    #main { padding: 32px 28px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .details-grid { grid-template-columns: 1fr; }
+    .materials-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 768px) {
+    body { flex-direction: column; }
+    #sidebar { width: 100%; min-width: 100%; height: auto; position: static; }
+    #sidebar .sidebar-nav { display: none; }
+    #main { padding: 24px 16px; }
+    .hero h1 { font-size: 30px; }
+    .hero-sub { font-size: 16px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .journey-track { flex-direction: column; }
+    .journey-step { border-right: none; border-bottom: 1px solid var(--border); }
+    .journey-step:last-child { border-bottom: none; }
+    .lesson-date-col { width: 90px; }
+    .materials-grid { grid-template-columns: 1fr; }
+    .week-badges { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── SIDEBAR ─── -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">
+        <i data-lucide="graduation-cap" class="lucide-md"></i>
+      </div>
+      <div>
+        <div class="sidebar-logo-text">AIOS Core</div>
+        <div class="sidebar-logo-sub">Cohort Fundamentals</div>
+      </div>
+    </div>
+    <span class="sidebar-badge">
+      <i data-lucide="calendar" class="lucide-sm"></i>
+      Turma 3 · Mar 2026
+    </span>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="sidebar-section-label">Navegação</div>
+    <a class="sidebar-link active" href="#overview">
+      <i data-lucide="layout-dashboard"></i> Visão Geral
+    </a>
+    <a class="sidebar-link" href="#jornada">
+      <i data-lucide="route"></i> Jornada do Aluno
+    </a>
+    <a class="sidebar-link" href="#precourse">
+      <i data-lucide="settings"></i> Pré-curso
+    </a>
+
+    <div class="sidebar-section-label">Semanas</div>
+    <a class="sidebar-link" href="#semana1">
+      <span class="week-indicator w1">1</span> Claude Code
+    </a>
+    <a class="sidebar-link" href="#semana2">
+      <span class="week-indicator w2">2</span> AIOS e Squads
+    </a>
+    <a class="sidebar-link" href="#semana3">
+      <span class="week-indicator w3">3</span> PRD e Quality Gates
+    </a>
+    <a class="sidebar-link" href="#semana4">
+      <span class="week-indicator w4">4</span> Subagentes e Launch
+    </a>
+
+    <div class="sidebar-section-label">Referência</div>
+    <a class="sidebar-link" href="#materiais">
+      <i data-lucide="file-text"></i> Materiais
+    </a>
+    <a class="sidebar-link" href="#stack">
+      <i data-lucide="layers"></i> Stack Tecnológica
+    </a>
+    <a class="sidebar-link" href="#ps">
+      <i data-lucide="headphones"></i> Pronto Socorro
+    </a>
+  </div>
+</nav>
+
+<!-- ─── MAIN ─── -->
+<main id="main">
+
+  <!-- ─── HERO ─── -->
+  <section id="overview" class="hero">
+    <div class="hero-label">
+      <i data-lucide="graduation-cap" class="lucide-sm"></i>
+      Academia Lendária · Turma 3 · 2026
+    </div>
+    <h1>Cohort <span>Fundamentals</span><br>AIOS Core</h1>
+    <p class="hero-sub">Grade Curricular Completa — de Usuário a CEO de Equipe de IA em 4 semanas</p>
+    <div class="hero-meta">
+      <span class="meta-chip"><i data-lucide="calendar" class="lucide-sm"></i> 03 a 26 de março de 2026</span>
+      <span class="meta-chip"><i data-lucide="clock" class="lucide-sm"></i> Terças e Quintas · 18h–20h</span>
+      <span class="meta-chip"><i data-lucide="user" class="lucide-sm"></i> Adriano de Marqui</span>
+      <span class="meta-chip"><i data-lucide="users" class="lucide-sm"></i> Não-técnicos · Duck Stacker</span>
+    </div>
+  </section>
+
+  <!-- ─── STATS ─── -->
+  <div class="stats-grid mb-56">
+    <div class="stat-card">
+      <div class="stat-icon bg-blue" style="color:var(--blue)">
+        <i data-lucide="book-open" class="lucide-md"></i>
+      </div>
+      <div class="stat-value text-blue">8</div>
+      <div class="stat-label">Aulas ao vivo</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-green" style="color:var(--green)">
+        <i data-lucide="clock" class="lucide-md"></i>
+      </div>
+      <div class="stat-value text-green">16h</div>
+      <div class="stat-label">Carga horária total</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-purple" style="color:var(--purple)">
+        <i data-lucide="headphones" class="lucide-md"></i>
+      </div>
+      <div class="stat-value text-purple">10</div>
+      <div class="stat-label">Sessões de PS</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon bg-yellow" style="color:var(--yellow)">
+        <i data-lucide="calendar-days" class="lucide-md"></i>
+      </div>
+      <div class="stat-value text-yellow">4</div>
+      <div class="stat-label">Semanas intensivas</div>
+    </div>
+  </div>
+
+  <!-- ─── JORNADA ─── -->
+  <section id="jornada" class="journey mb-56">
+    <h2 class="section-title">
+      <div class="icon-box bg-green" style="color:var(--green)">
+        <i data-lucide="route" class="lucide-md"></i>
+      </div>
+      Jornada do Aluno
+    </h2>
+
+    <div class="journey-track">
+      <div class="journey-step">
+        <div class="journey-step-label" style="color:var(--text4)">Pré-curso</div>
+        <div class="journey-step-title">Usuário</div>
+        <div class="journey-step-sub">ChatGPT avulso. Tudo manual. Sem processo.</div>
+      </div>
+      <div class="journey-step">
+        <div class="journey-step-label" style="color:var(--blue)">Semana 1</div>
+        <div class="journey-step-title" style="color:var(--blue)">Piloto</div>
+        <div class="journey-step-sub">Opera Claude Code no terminal. CLAUDE.md configurado.</div>
+      </div>
+      <div class="journey-step">
+        <div class="journey-step-label" style="color:var(--green)">Semana 2</div>
+        <div class="journey-step-title" style="color:var(--green)">CEO</div>
+        <div class="journey-step-sub">Orquestra equipe de agentes. Squad personalizado criado.</div>
+      </div>
+      <div class="journey-step">
+        <div class="journey-step-label" style="color:var(--purple)">Semana 3</div>
+        <div class="journey-step-title" style="color:var(--purple)">Arquiteto</div>
+        <div class="journey-step-sub">Escreve PRDs. Stories. Deploy no Vercel.</div>
+      </div>
+      <div class="journey-step">
+        <div class="journey-step-label" style="color:var(--yellow)">Semana 4</div>
+        <div class="journey-step-title" style="color:var(--yellow)">Fundador</div>
+        <div class="journey-step-sub">Subagentes paralelos. Projeto no GitHub. Receita real.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PRÉ-CURSO ─── -->
+  <section id="precourse" class="mb-56">
+    <h2 class="section-title">
+      <div class="icon-box bg-orange" style="color:var(--orange)">
+        <i data-lucide="settings" class="lucide-md"></i>
+      </div>
+      Pré-curso — Aula 0 (Assíncrona)
+    </h2>
+
+    <div class="precourse-card">
+      <div class="precourse-header">
+        <div class="stat-icon bg-orange" style="color:var(--orange);">
+          <i data-lucide="settings" class="lucide-md"></i>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text4);margin-bottom:3px">Prazo: até 02/03/2026</div>
+          <div style="font-size:17px;font-weight:700">Setup Completo — Chegue Pronto para o Dia 1</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:3px">Vídeo gravado + guia escrito + bot de diagnóstico · Evita 1–2h de setup em aula</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <span class="lesson-badge" style="background:rgba(249,115,22,0.12);color:var(--orange);border:1px solid rgba(249,115,22,0.25)">Assíncrona</span>
+          <span style="font-size:11px;color:var(--text3)">Autoestudo</span>
+        </div>
+      </div>
+
+      <div class="precourse-phase">
+        <span class="phase-badge">FASE 1</span>
+        <span>Pré-requisitos: SO, RAM ≥4 GB, conta Anthropic com plano pago</span>
+        <span style="margin-left:auto;color:var(--text4);font-size:12px">Verificação</span>
+      </div>
+      <div class="precourse-phase">
+        <span class="phase-badge">FASE 2</span>
+        <span>Node.js v20+ — Mac, Windows (WSL Ubuntu) ou Linux</span>
+        <span style="margin-left:auto;font-family:monospace;font-size:12px;color:var(--emerald)">node --version → v20.x</span>
+      </div>
+      <div class="precourse-phase">
+        <span class="phase-badge">FASE 3</span>
+        <span>Claude Code — instalação via npm + login Anthropic</span>
+        <span style="margin-left:auto;font-family:monospace;font-size:12px;color:var(--emerald)">claude --version ✓</span>
+      </div>
+      <div class="precourse-phase">
+        <span class="phase-badge">FASE 4</span>
+        <span>AIOS Core — <code style="font-size:12px;color:var(--emerald)">npx aios-core init meu-projeto</code> + <code style="font-size:12px;color:var(--emerald)">npx aios-core doctor</code></span>
+        <span style="margin-left:auto;font-family:monospace;font-size:12px;color:var(--emerald)">All checks ✔</span>
+      </div>
+      <div class="precourse-phase">
+        <span class="phase-badge">FASE 5</span>
+        <span>Primeiro teste — digitar <code style="font-size:12px;color:var(--emerald)">/</code> e ver agentes listados</span>
+        <span style="margin-left:auto;font-family:monospace;font-size:12px;color:var(--emerald)">Agentes visíveis ✓</span>
+      </div>
+
+      <div style="padding:16px 24px;background:rgba(34,197,94,0.05);border-top:1px solid var(--border);display:flex;align-items:center;gap:12px">
+        <i data-lucide="send" style="color:var(--green)" class="lucide-md"></i>
+        <div style="font-size:13px;color:var(--text2)">
+          <strong style="color:var(--green)">Entregável de aprovação:</strong> Print ou vídeo 15s (terminal + <code style="color:var(--emerald)">claude --version</code> + agentes visíveis) · Enviar no WhatsApp: <strong>"CHECKLIST VERDE — pronto para a Aula 1"</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SEMANA 1
+  ═══════════════════════════════════════════════════════ -->
+  <section id="semana1" class="week-block">
+    <div class="week-header" style="background:rgba(59,130,246,0.05);border-color:rgba(59,130,246,0.2)">
+      <div class="week-number bg-blue text-blue">1</div>
+      <div class="week-info">
+        <div class="week-title">De Usuário a Piloto</div>
+        <div class="week-subtitle">Claude Code · 03/03 e 05/03 · Meta: dominar o cockpit</div>
+      </div>
+      <div class="week-badges">
+        <span class="week-badge" style="background:rgba(59,130,246,0.12);color:var(--blue);border:1px solid rgba(59,130,246,0.25)"><i data-lucide="terminal" class="lucide-sm" style="vertical-align:middle"></i> Claude Code</span>
+        <span class="week-badge" style="background:rgba(255,255,255,0.05);color:var(--text3);border:1px solid var(--border)">2 aulas · 4h</span>
+      </div>
+    </div>
+
+    <div class="week-lessons">
+
+      <!-- AULA 1 -->
+      <div class="lesson-card">
+        <div class="lesson-header" onclick="toggleLesson('a1')">
+          <div class="lesson-date-col">
+            <span class="lesson-date">03/03</span>
+            <span class="lesson-weekday">Terça</span>
+            <span class="lesson-time">18h–20h</span>
+          </div>
+          <div class="lesson-main">
+            <div class="lesson-icon bg-blue" style="color:var(--blue)">
+              <i data-lucide="terminal" class="lucide-md"></i>
+            </div>
+            <div class="lesson-info">
+              <div class="lesson-number">Aula 1</div>
+              <div class="lesson-title">Cockpit: Seu Primeiro Dia como Piloto</div>
+              <div class="lesson-tagline">Terminal · Claude Code · CLAUDE.md · Status line</div>
+            </div>
+          </div>
+          <div class="lesson-right">
+            <span class="lesson-badge" style="background:rgba(59,130,246,0.12);color:var(--blue);border:1px solid rgba(59,130,246,0.25)">HOJE</span>
+            <span class="lesson-duration"><i data-lucide="clock" class="lucide-sm"></i> 2h</span>
+            <i data-lucide="chevron-down" id="chevron-a1" style="color:var(--text3)"></i>
+          </div>
+        </div>
+
+        <div class="lesson-details" id="details-a1">
+          <div class="details-grid">
+            <div class="detail-box">
+              <div class="detail-box-title">
+                <i data-lucide="target" style="color:var(--blue)" class="lucide-sm"></i>
+                Objetivos (Bloom's)
+              </div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Lembrar os 5 comandos do terminal: mkdir, cd, cd .., ls, pwd</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Compreender diferença entre Claude Code (executa) e ChatGPT (conversa)</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Aplicar o ritual de abertura: pasta → entrar → claude</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Analisar a interface do CC: sidebar, permissões, status line</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Criar CLAUDE.md funcional com template via /init</div>
+            </div>
+            <div class="detail-box">
+              <div class="detail-box-title">
+                <i data-lucide="list" style="color:var(--blue)" class="lucide-sm"></i>
+                Conteúdo em sequência
+              </div>
+              <div class="topic-row"><span class="topic-num">1</span>Ritual de comprometimento: foto + post Instagram<span class="topic-time">10 min</span></div>
+              <div class="topic-row"><span class="topic-num">2</span>Terminal como cockpit — analogia do piloto<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">3</span>Comandos básicos ao vivo<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">4</span>Abrindo o Claude Code em pasta específica<span class="topic-time">10 min</span></div>
+              <div class="topic-row"><span class="topic-num">5</span>Interface do CC: sidebar, permissões, status line<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">6</span>CLAUDE.md: analogia da Lucy / Fita VHS<span class="topic-time">10 min</span></div>
+              <div class="topic-row"><span class="topic-num">7</span>Criando e editando o CLAUDE.md ao vivo<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">8</span>Comandos: /help, /status, /model, /compact<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">9</span>Status line personalizada <span class="highlight-tag"><i data-lucide="star" class="lucide-sm"></i>Gamificado</span><span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">10</span>Contexto: /compact, nunca /clear<span class="topic-time">10 min</span></div>
+              <div class="topic-row"><span class="topic-num">11</span>Preview do Squad Creator (próxima aula)<span class="topic-time">10 min</span></div>
+              <div class="topic-row"><span class="topic-num">12</span>Checkpoint de saída + tarefa<span class="topic-time">5 min</span></div>
+            </div>
+          </div>
+          <div class="detail-box" style="margin-top:16px">
+            <div class="detail-box-title">
+              <i data-lucide="package" style="color:var(--blue)" class="lucide-sm"></i>
+              Entregáveis do Aluno
+            </div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Pasta de projeto criada no terminal</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Claude Code abrindo dentro da pasta</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>CLAUDE.md preenchido com template</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Print da status line personalizada no WhatsApp</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AULA 2 -->
+      <div class="lesson-card">
+        <div class="lesson-header" onclick="toggleLesson('a2')">
+          <div class="lesson-date-col">
+            <span class="lesson-date">05/03</span>
+            <span class="lesson-weekday">Quinta</span>
+            <span class="lesson-time">18h–20h</span>
+          </div>
+          <div class="lesson-main">
+            <div class="lesson-icon bg-blue" style="color:var(--blue)">
+              <i data-lucide="bot" class="lucide-md"></i>
+            </div>
+            <div class="lesson-info">
+              <div class="lesson-number">Aula 2</div>
+              <div class="lesson-title">Jarvis: Instalando Sua Equipe de IA</div>
+              <div class="lesson-tagline">AIOS Core · Agentes · Decision Tree · Squad Creator</div>
+            </div>
+          </div>
+          <div class="lesson-right">
+            <span class="lesson-badge" style="background:rgba(59,130,246,0.12);color:var(--blue);border:1px solid rgba(59,130,246,0.25)">SEM 1</span>
+            <span class="lesson-duration"><i data-lucide="clock" class="lucide-sm"></i> 2h</span>
+            <i data-lucide="chevron-down" id="chevron-a2" style="color:var(--text3)"></i>
+          </div>
+        </div>
+
+        <div class="lesson-details" id="details-a2">
+          <div class="details-grid">
+            <div class="detail-box">
+              <div class="detail-box-title"><i data-lucide="target" style="color:var(--blue)" class="lucide-sm"></i>Objetivos (Bloom's)</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Explicar o que o AIOS faz de diferente do CC solo (Jarvis vs. caverna)</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Executar o ritual de instalação: npx aios-core init</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Distinguir /barra (pipeline completo) de @arroba (só o prompt)</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Aplicar a Decision Tree para escolher o componente certo</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Criar o primeiro Squad com o Squad Creator</div>
+            </div>
+            <div class="detail-box">
+              <div class="detail-box-title"><i data-lucide="list" style="color:var(--blue)" class="lucide-sm"></i>Conteúdo em sequência</div>
+              <div class="topic-row"><span class="topic-num">1</span>Showcase dos CLAUDE.md da turma<span class="topic-time">10 min</span></div>
+              <div class="topic-row"><span class="topic-num">2</span>Tony Stark na caverna vs. Tony Stark com Jarvis<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">3</span>Anatomia do AIOS: metáfora da obra de construção<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">4</span>Instalação ao vivo + npx aios-core doctor<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">5</span>Card Ritual de Início (5 passos)<span class="topic-time">10 min</span></div>
+              <div class="topic-row"><span class="topic-num">6</span>Os 12 agentes: quem faz o quê<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">7</span>/barra vs. @arroba — demo lado a lado<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">8</span>Decision Tree: quiz ao vivo (5 cenários) <span class="highlight-tag"><i data-lucide="star" class="lucide-sm"></i>Ranking</span><span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">9</span><strong>CLÍMAX: Squad Creator ao vivo</strong> <span class="highlight-tag"><i data-lucide="zap" class="lucide-sm"></i>Alto impacto</span><span class="topic-time">30 min</span></div>
+              <div class="topic-row"><span class="topic-num">10</span>Liberação da Zona de Genialidade (43 perguntas)<span class="topic-time">10 min</span></div>
+            </div>
+          </div>
+          <div class="detail-box" style="margin-top:16px">
+            <div class="detail-box-title"><i data-lucide="package" style="color:var(--green)" class="lucide-sm"></i>Entregáveis do Aluno</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>AIOS instalado e verificado (npx aios-core doctor)</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Card "Ritual de Início" no grupo</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Zona de Genialidade iniciada (concluir até Aula 3)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SEMANA 2
+  ═══════════════════════════════════════════════════════ -->
+  <section id="semana2" class="week-block">
+    <div class="week-header" style="background:rgba(34,197,94,0.05);border-color:rgba(34,197,94,0.2)">
+      <div class="week-number bg-green text-green">2</div>
+      <div class="week-info">
+        <div class="week-title">De Piloto a CEO</div>
+        <div class="week-subtitle">AIOS e Squads · 10/03 e 12/03 · Meta: orquestrar equipe de agentes</div>
+      </div>
+      <div class="week-badges">
+        <span class="week-badge" style="background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.25)"><i data-lucide="bot" class="lucide-sm" style="vertical-align:middle"></i> AIOS + Squads</span>
+        <span class="week-badge" style="background:rgba(255,255,255,0.05);color:var(--text3);border:1px solid var(--border)">2 aulas · 4h</span>
+      </div>
+    </div>
+
+    <div class="week-lessons">
+
+      <!-- AULA 3 -->
+      <div class="lesson-card">
+        <div class="lesson-header" onclick="toggleLesson('a3')">
+          <div class="lesson-date-col">
+            <span class="lesson-date">10/03</span>
+            <span class="lesson-weekday">Terça</span>
+            <span class="lesson-time">18h–20h</span>
+          </div>
+          <div class="lesson-main">
+            <div class="lesson-icon bg-green" style="color:var(--green)">
+              <i data-lucide="cpu" class="lucide-md"></i>
+            </div>
+            <div class="lesson-info">
+              <div class="lesson-number">Aula 3</div>
+              <div class="lesson-title">Arquitetura: A Anatomia do AIOS</div>
+              <div class="lesson-tagline">Pré-req: Zona de Genialidade concluída · AIOS Core vs. Squad · Organograma</div>
+            </div>
+          </div>
+          <div class="lesson-right">
+            <span class="lesson-badge" style="background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.25)">SEM 2</span>
+            <span class="lesson-duration"><i data-lucide="clock" class="lucide-sm"></i> 2h</span>
+            <i data-lucide="chevron-down" id="chevron-a3" style="color:var(--text3)"></i>
+          </div>
+        </div>
+
+        <div class="lesson-details" id="details-a3">
+          <div class="details-grid">
+            <div class="detail-box">
+              <div class="detail-box-title"><i data-lucide="target" style="color:var(--green)" class="lucide-sm"></i>Objetivos (Bloom's)</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Mapear a anatomia interna do AIOS Core (config, tasks, workflows, templates)</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Distinguir o papel de cada agente no fluxo Agile</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Comparar AIOS Core (framework) com Squad (produto)</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Aplicar Squad Creator Premium com Zona de Genialidade pessoal</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Avaliar Squad nos 3 critérios: nicho, ICP, Zona de Genialidade</div>
+            </div>
+            <div class="detail-box">
+              <div class="detail-box-title"><i data-lucide="list" style="color:var(--green)" class="lucide-sm"></i>Conteúdo em sequência</div>
+              <div class="topic-row"><span class="topic-num">1</span>Showcase Zona de Genialidade da turma<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">2</span>AIOS Core vs. CC solo — você foi o gerente<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">3</span>Anatomia interna: metáfora do cadáver <span class="highlight-tag"><i data-lucide="zap" class="lucide-sm"></i>Alto impacto</span><span class="topic-time">25 min</span></div>
+              <div class="topic-row"><span class="topic-num">4</span>Tabela: metáfora da obra ↔ arquivo AIOS<span class="topic-time">10 min</span></div>
+              <div class="topic-row"><span class="topic-num">5</span>Fluxo de agentes: PM → Arq → Dev → QA → DevOps<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">6</span>Verificação: "O que é task vs workflow?"<span class="topic-time">10 min</span></div>
+              <div class="topic-row"><span class="topic-num">7</span>AIOS Core vs. Squad: quando usar cada um<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">8</span>Organograma de agentes (template)<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">9</span><strong>Squad Creator Premium</strong> com Zona de Genialidade<span class="topic-time">30 min</span></div>
+              <div class="topic-row"><span class="topic-num">10</span>Avaliação do Squad: 3 critérios<span class="topic-time">10 min</span></div>
+            </div>
+          </div>
+          <div class="detail-box" style="margin-top:16px">
+            <div class="detail-box-title"><i data-lucide="package" style="color:var(--green)" class="lucide-sm"></i>Entregáveis do Aluno</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Squad personalizado criado e avaliado nos 3 critérios</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Organograma preenchido</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Blueprint do Squad publicado no grupo</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AULA 4 -->
+      <div class="lesson-card">
+        <div class="lesson-header" onclick="toggleLesson('a4')">
+          <div class="lesson-date-col">
+            <span class="lesson-date">12/03</span>
+            <span class="lesson-weekday">Quinta</span>
+            <span class="lesson-time">18h–20h</span>
+          </div>
+          <div class="lesson-main">
+            <div class="lesson-icon bg-green" style="color:var(--green)">
+              <i data-lucide="git-branch" class="lucide-md"></i>
+            </div>
+            <div class="lesson-info">
+              <div class="lesson-number">Aula 4</div>
+              <div class="lesson-title">Thinker vs. Maker: Seu Estilo com o AIOS</div>
+              <div class="lesson-tagline">SDC · Spec Pipeline · Brownfield · Matchmaking · Project Brief</div>
+            </div>
+          </div>
+          <div class="lesson-right">
+            <span class="lesson-badge" style="background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.25)">SEM 2</span>
+            <span class="lesson-duration"><i data-lucide="clock" class="lucide-sm"></i> 2h</span>
+            <i data-lucide="chevron-down" id="chevron-a4" style="color:var(--text3)"></i>
+          </div>
+        </div>
+
+        <div class="lesson-details" id="details-a4">
+          <div class="details-grid">
+            <div class="detail-box">
+              <div class="detail-box-title"><i data-lucide="target" style="color:var(--green)" class="lucide-sm"></i>Objetivos (Bloom's)</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Identificar perfil Thinker ou Maker e implicações no AIOS</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Descrever o SDC: SM → Dev → QA → DevOps com exemplos</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Descrever o Spec Pipeline: PM → Arq → Stories</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Compreender que a cadeia de documentos é o mecanismo central</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Criar Project Brief com o Agente Analista</div>
+            </div>
+            <div class="detail-box">
+              <div class="detail-box-title"><i data-lucide="list" style="color:var(--green)" class="lucide-sm"></i>Conteúdo em sequência</div>
+              <div class="topic-row"><span class="topic-num">1</span>Cases de monetização da semana<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">2</span>Thinker vs. Maker: analogia do Linktree<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">3</span>Identificação de perfil ao vivo + revelação<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">4</span>SDC: o fluxo do Maker (PDF distribuído)<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">5</span>Spec Pipeline: o fluxo do Thinker<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">6</span>A cadeia de documentos: por que não depende do contexto<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">7</span>Demo @pm, @architect, @sm + *help<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">8</span>Brownfield Discovery (projetos existentes)<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">9</span>Project Brief com @analyst<span class="topic-time">25 min</span></div>
+              <div class="topic-row"><span class="topic-num">10</span>Matchmaking Maker + Thinker <span class="highlight-tag"><i data-lucide="users" class="lucide-sm"></i>Novo T3</span><span class="topic-time">10 min</span></div>
+            </div>
+          </div>
+          <div class="detail-box" style="margin-top:16px">
+            <div class="detail-box-title"><i data-lucide="package" style="color:var(--green)" class="lucide-sm"></i>Entregáveis do Aluno</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Perfil identificado: Thinker ou Maker</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>project_brief.md gerado com @analyst</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Dupla Maker+Thinker formada (opcional)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SEMANA 3
+  ═══════════════════════════════════════════════════════ -->
+  <section id="semana3" class="week-block">
+    <div class="week-header" style="background:rgba(168,85,247,0.05);border-color:rgba(168,85,247,0.2)">
+      <div class="week-number bg-purple text-purple">3</div>
+      <div class="week-info">
+        <div class="week-title">De CEO a Arquiteto</div>
+        <div class="week-subtitle">PRD e Quality Gates · 17/03 e 19/03 · Meta: documentar para escalar</div>
+      </div>
+      <div class="week-badges">
+        <span class="week-badge" style="background:rgba(168,85,247,0.12);color:var(--purple);border:1px solid rgba(168,85,247,0.25)"><i data-lucide="file-text" class="lucide-sm" style="vertical-align:middle"></i> PRD + Deploy</span>
+        <span class="week-badge" style="background:rgba(255,255,255,0.05);color:var(--text3);border:1px solid var(--border)">2 aulas · 4h</span>
+      </div>
+    </div>
+
+    <div class="week-lessons">
+
+      <!-- AULA 5 -->
+      <div class="lesson-card">
+        <div class="lesson-header" onclick="toggleLesson('a5')">
+          <div class="lesson-date-col">
+            <span class="lesson-date">17/03</span>
+            <span class="lesson-weekday">Terça</span>
+            <span class="lesson-time">18h–20h</span>
+          </div>
+          <div class="lesson-main">
+            <div class="lesson-icon bg-purple" style="color:var(--purple)">
+              <i data-lucide="file-text" class="lucide-md"></i>
+            </div>
+            <div class="lesson-info">
+              <div class="lesson-number">Aula 5</div>
+              <div class="lesson-title">PRD: O Blueprint do Seu Projeto</div>
+              <div class="lesson-tagline">@pm · Épicos · Stories · Brownfield Discovery · Validação @po</div>
+            </div>
+          </div>
+          <div class="lesson-right">
+            <span class="lesson-badge" style="background:rgba(168,85,247,0.12);color:var(--purple);border:1px solid rgba(168,85,247,0.25)">SEM 3</span>
+            <span class="lesson-duration"><i data-lucide="clock" class="lucide-sm"></i> 2h</span>
+            <i data-lucide="chevron-down" id="chevron-a5" style="color:var(--text3)"></i>
+          </div>
+        </div>
+
+        <div class="lesson-details" id="details-a5">
+          <div class="details-grid">
+            <div class="detail-box">
+              <div class="detail-box-title"><i data-lucide="target" style="color:var(--purple)" class="lucide-sm"></i>Objetivos (Bloom's)</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Definir o que é um PRD e por que é a memória persistente do projeto</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Escrever um PRD completo com @pm *create-prd</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Criar épicos com @pm *create-epic</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Executar o Brownfield Discovery para projetos existentes</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Validar stories com @po *validate-story-draft</div>
+            </div>
+            <div class="detail-box">
+              <div class="detail-box-title"><i data-lucide="list" style="color:var(--purple)" class="lucide-sm"></i>Conteúdo em sequência</div>
+              <div class="topic-row"><span class="topic-num">1</span>Revisão dos Project Briefs da semana<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">2</span>Por que o PRD: memória persistente vs. contexto finito<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">3</span>Anatomia do PRD: seções, acceptance criteria, out-of-scope<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">4</span><strong>@pm *create-prd — PRD real ao vivo</strong><span class="topic-time">30 min</span></div>
+              <div class="topic-row"><span class="topic-num">5</span>De PRD para épicos: *create-epic<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">6</span>Brownfield Discovery: auditando projetos existentes<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">7</span>@po: validando stories (checklist 10 pontos)<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">8</span>Exercício: 1 épico do projeto pessoal<span class="topic-time">20 min</span></div>
+            </div>
+          </div>
+          <div class="detail-box" style="margin-top:16px">
+            <div class="detail-box-title"><i data-lucide="package" style="color:var(--green)" class="lucide-sm"></i>Entregáveis do Aluno</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>prd.md do projeto pessoal completo</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Pelo menos 1 épico criado</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Para projetos existentes: Brownfield Discovery iniciado</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AULA 6 -->
+      <div class="lesson-card">
+        <div class="lesson-header" onclick="toggleLesson('a6')">
+          <div class="lesson-date-col">
+            <span class="lesson-date">19/03</span>
+            <span class="lesson-weekday">Quinta</span>
+            <span class="lesson-time">18h–20h</span>
+          </div>
+          <div class="lesson-main">
+            <div class="lesson-icon bg-purple" style="color:var(--purple)">
+              <i data-lucide="shield-check" class="lucide-md"></i>
+            </div>
+            <div class="lesson-info">
+              <div class="lesson-number">Aula 6</div>
+              <div class="lesson-title">Quality Gates: Por Que o AIOS Não Inventa</div>
+              <div class="lesson-tagline">SDC completo · QA Loop · Guardrails (novo T3) · Deploy Vercel</div>
+            </div>
+          </div>
+          <div class="lesson-right">
+            <div style="display:flex;gap:6px">
+              <span class="lesson-badge" style="background:rgba(168,85,247,0.12);color:var(--purple);border:1px solid rgba(168,85,247,0.25)">SEM 3</span>
+              <span class="lesson-badge" style="background:rgba(245,197,24,0.12);color:var(--yellow);border:1px solid rgba(245,197,24,0.25)">NOVO</span>
+            </div>
+            <span class="lesson-duration"><i data-lucide="clock" class="lucide-sm"></i> 2h</span>
+            <i data-lucide="chevron-down" id="chevron-a6" style="color:var(--text3)"></i>
+          </div>
+        </div>
+
+        <div class="lesson-details" id="details-a6">
+          <div class="details-grid">
+            <div class="detail-box">
+              <div class="detail-box-title"><i data-lucide="target" style="color:var(--purple)" class="lucide-sm"></i>Objetivos (Bloom's)</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Executar o SDC completo: SM → PO → Dev → QA → DevOps</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Aplicar quality gates: PASS / CONCERNS / FAIL / WAIVED</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Operar o QA Loop (máximo 5 iterações)</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Configurar guardrails no CLAUDE.md para prevenir exposição de dados</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Fazer o primeiro deploy no Vercel via @devops</div>
+            </div>
+            <div class="detail-box">
+              <div class="detail-box-title"><i data-lucide="list" style="color:var(--purple)" class="lucide-sm"></i>Conteúdo em sequência</div>
+              <div class="topic-row"><span class="topic-num">1</span>Revisão de PRDs e épicos<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">2</span>O "dev preguiçoso": IA muda o teste em vez do código<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">3</span>Quality gates: portais que bloqueiam progressão<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">4</span>SDC ao vivo: SM → PO → Dev → QA → DevOps<span class="topic-time">40 min</span></div>
+              <div class="topic-row"><span class="topic-num">5</span><strong>GUARDRAILS (novo T3)</strong>: incidente ao vivo + prevenção <span class="highlight-tag"><i data-lucide="shield" class="lucide-sm"></i>Segurança</span><span class="topic-time">25 min</span></div>
+              <div class="topic-row"><span class="topic-num">6</span>Vercel + GitHub: primeiro deploy ao vivo<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">7</span>Cloudflare: domínio barato (~$3/ano)<span class="topic-time">15 min</span></div>
+            </div>
+          </div>
+          <div class="detail-box" style="margin-top:16px">
+            <div class="detail-box-title"><i data-lucide="package" style="color:var(--green)" class="lucide-sm"></i>Entregáveis do Aluno</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>1 story completando o SDC completo</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>CLAUDE.md com seção de guardrails configurada</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Projeto com pelo menos 1 deploy no Vercel</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       SEMANA 4
+  ═══════════════════════════════════════════════════════ -->
+  <section id="semana4" class="week-block">
+    <div class="week-header" style="background:rgba(245,197,24,0.05);border-color:rgba(245,197,24,0.2)">
+      <div class="week-number bg-yellow text-yellow" style="color:#000">4</div>
+      <div class="week-info">
+        <div class="week-title">De Arquiteto a Fundador</div>
+        <div class="week-subtitle">Subagentes e Lançamento · 24/03 e 26/03 · Meta: projeto no ar, receita real</div>
+      </div>
+      <div class="week-badges">
+        <span class="week-badge" style="background:rgba(245,197,24,0.12);color:var(--yellow);border:1px solid rgba(245,197,24,0.25)"><i data-lucide="rocket" class="lucide-sm" style="vertical-align:middle"></i> Launch</span>
+        <span class="week-badge" style="background:rgba(255,255,255,0.05);color:var(--text3);border:1px solid var(--border)">2 aulas · 4h</span>
+      </div>
+    </div>
+
+    <div class="week-lessons">
+
+      <!-- AULA 7 -->
+      <div class="lesson-card">
+        <div class="lesson-header" onclick="toggleLesson('a7')">
+          <div class="lesson-date-col">
+            <span class="lesson-date">24/03</span>
+            <span class="lesson-weekday">Terça</span>
+            <span class="lesson-time">18h–20h</span>
+          </div>
+          <div class="lesson-main">
+            <div class="lesson-icon bg-yellow" style="color:var(--yellow)">
+              <i data-lucide="layers" class="lucide-md"></i>
+            </div>
+            <div class="lesson-info">
+              <div class="lesson-number">Aula 7</div>
+              <div class="lesson-title">Subagentes: Sua Equipe Trabalhando em Paralelo</div>
+              <div class="lesson-tagline">Subagentes · Gestão de tokens (novo T3) · MCPs · APIs externas</div>
+            </div>
+          </div>
+          <div class="lesson-right">
+            <div style="display:flex;gap:6px">
+              <span class="lesson-badge" style="background:rgba(245,197,24,0.12);color:var(--yellow);border:1px solid rgba(245,197,24,0.25)">SEM 4</span>
+              <span class="lesson-badge" style="background:rgba(245,197,24,0.12);color:var(--yellow);border:1px solid rgba(245,197,24,0.25)">NOVO</span>
+            </div>
+            <span class="lesson-duration"><i data-lucide="clock" class="lucide-sm"></i> 2h</span>
+            <i data-lucide="chevron-down" id="chevron-a7" style="color:var(--text3)"></i>
+          </div>
+        </div>
+
+        <div class="lesson-details" id="details-a7">
+          <div class="details-grid">
+            <div class="detail-box">
+              <div class="detail-box-title"><i data-lucide="target" style="color:var(--yellow)" class="lucide-sm"></i>Objetivos (Bloom's)</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Explicar diferença entre agentes sequenciais e subagentes paralelos</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Configurar subagentes para tarefas independentes simultâneas</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Gerenciar custo de tokens com subagentes (consomem 7x mais)</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Integrar MCPs essenciais: EXA, Context7, Playwright</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Montar arquitetura final do projeto para deploy na Aula 8</div>
+            </div>
+            <div class="detail-box">
+              <div class="detail-box-title"><i data-lucide="list" style="color:var(--yellow)" class="lucide-sm"></i>Conteúdo em sequência</div>
+              <div class="topic-row"><span class="topic-num">1</span>Demo: Squad áudio → animação <span class="highlight-tag"><i data-lucide="zap" class="lucide-sm"></i>Alto impacto</span><span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">2</span>Subagentes vs. sequenciais: quando usar<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">3</span>Demo: 3 subagentes rodando em paralelo<span class="topic-time">25 min</span></div>
+              <div class="topic-row"><span class="topic-num">4</span><strong>GESTÃO DE TOKENS (novo T3)</strong>: literacia financeira <span class="highlight-tag"><i data-lucide="coins" class="lucide-sm"></i>Novo</span><span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">5</span>MCPs: EXA, Context7, Apify<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">6</span>Integrando APIs externas ao Squad<span class="topic-time">20 min</span></div>
+              <div class="topic-row"><span class="topic-num">7</span>Planejamento do projeto final<span class="topic-time">25 min</span></div>
+            </div>
+          </div>
+          <div class="detail-box" style="margin-top:16px">
+            <div class="detail-box-title"><i data-lucide="package" style="color:var(--green)" class="lucide-sm"></i>Entregáveis do Aluno</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Subagentes configurados</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Pelo menos 1 MCP integrado</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Arquitetura final do projeto definida e pronta para deploy</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AULA 8 -->
+      <div class="lesson-card">
+        <div class="lesson-header" onclick="toggleLesson('a8')">
+          <div class="lesson-date-col">
+            <span class="lesson-date">26/03</span>
+            <span class="lesson-weekday">Quinta</span>
+            <span class="lesson-time">18h–20h</span>
+          </div>
+          <div class="lesson-main">
+            <div class="lesson-icon bg-yellow" style="color:var(--yellow)">
+              <i data-lucide="rocket" class="lucide-md"></i>
+            </div>
+            <div class="lesson-info">
+              <div class="lesson-number">Aula 8</div>
+              <div class="lesson-title">Lançamento: Projeto no Ar e CEO de Verdade</div>
+              <div class="lesson-tagline">Deploy final · GitHub · Showcase dos projetos · Certificado</div>
+            </div>
+          </div>
+          <div class="lesson-right">
+            <span class="lesson-badge" style="background:rgba(245,197,24,0.15);color:var(--yellow);border:1px solid rgba(245,197,24,0.35)">FORMATURA</span>
+            <span class="lesson-duration"><i data-lucide="clock" class="lucide-sm"></i> 2h</span>
+            <i data-lucide="chevron-down" id="chevron-a8" style="color:var(--text3)"></i>
+          </div>
+        </div>
+
+        <div class="lesson-details" id="details-a8">
+          <div class="details-grid">
+            <div class="detail-box">
+              <div class="detail-box-title"><i data-lucide="target" style="color:var(--yellow)" class="lucide-sm"></i>Objetivos (Bloom's)</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Completar o projeto com todos os quality gates passados</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Publicar no GitHub com README e documentação via @pm</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Apresentar o projeto (2 minutos) com pitch estruturado</div>
+              <div class="objective-item"><i data-lucide="check-circle" style="color:var(--text3)" class="lucide-sm"></i>Mapear próximos passos: monetizar, escalar, avançar</div>
+            </div>
+            <div class="detail-box">
+              <div class="detail-box-title"><i data-lucide="list" style="color:var(--yellow)" class="lucide-sm"></i>Conteúdo em sequência</div>
+              <div class="topic-row"><span class="topic-num">1</span>Deploy final: @devops *push + Vercel + domínio<span class="topic-time">30 min</span></div>
+              <div class="topic-row"><span class="topic-num">2</span>README e documentação via @pm<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">3</span>Apresentações (2 min cada aluno) <span class="highlight-tag"><i data-lucide="mic" class="lucide-sm"></i>Showcase</span><span class="topic-time">60 min</span></div>
+              <div class="topic-row"><span class="topic-num">4</span>Próximos passos: Intermediário, Advanced, Expert<span class="topic-time">15 min</span></div>
+              <div class="topic-row"><span class="topic-num">5</span>Top 3 projetos + reconhecimentos<span class="topic-time">10 min</span></div>
+              <div class="topic-row"><span class="topic-num">6</span>Encerramento: a jornada de 4 semanas<span class="topic-time">10 min</span></div>
+            </div>
+          </div>
+          <div class="detail-box" style="margin-top:16px">
+            <div class="detail-box-title"><i data-lucide="package" style="color:var(--yellow)" class="lucide-sm"></i>Entregáveis do Aluno</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Projeto publicado no GitHub (URL pública)</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Deploy funcionando no Vercel</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--green)" class="lucide-sm"></i>Apresentação realizada ao vivo</div>
+            <div class="deliverable-item"><i data-lucide="check-circle" style="color:var(--yellow)" class="lucide-sm"></i><strong>Certificado de conclusão do Cohort Fundamentals</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── MATERIAIS ─── -->
+  <section id="materiais" class="mb-56">
+    <h2 class="section-title">
+      <div class="icon-box bg-cyan" style="color:var(--cyan)">
+        <i data-lucide="file-text" class="lucide-md"></i>
+      </div>
+      Materiais Distribuídos ao Longo do Curso
+    </h2>
+
+    <div class="materials-grid">
+      <div class="material-card">
+        <div class="material-icon" style="background:rgba(249,115,22,0.12);color:var(--orange)"><i data-lucide="settings" class="lucide-sm"></i></div>
+        <div class="material-info">
+          <div class="material-label">Pré-curso</div>
+          <div class="material-name">Guia de instalação por SO</div>
+          <div class="material-when">PDF + Vídeo · antes da Aula 1</div>
+        </div>
+      </div>
+      <div class="material-card">
+        <div class="material-icon" style="background:rgba(249,115,22,0.12);color:var(--orange)"><i data-lucide="clipboard-list" class="lucide-sm"></i></div>
+        <div class="material-info">
+          <div class="material-label">Pré-curso</div>
+          <div class="material-name">Checklist de setup (5 itens)</div>
+          <div class="material-when">Card visual</div>
+        </div>
+      </div>
+      <div class="material-card">
+        <div class="material-icon" style="background:rgba(59,130,246,0.12);color:var(--blue)"><i data-lucide="file-code" class="lucide-sm"></i></div>
+        <div class="material-info">
+          <div class="material-label">Aula 1</div>
+          <div class="material-name">Template de CLAUDE.md padrão</div>
+          <div class="material-when">Arquivo .md · editar ao vivo</div>
+        </div>
+      </div>
+      <div class="material-card">
+        <div class="material-icon" style="background:rgba(59,130,246,0.12);color:var(--blue)"><i data-lucide="alert-triangle" class="lucide-sm"></i></div>
+        <div class="material-info">
+          <div class="material-label">Aula 1</div>
+          <div class="material-name">Card "Vilões do Terminal"</div>
+          <div class="material-when">Imagem · enviar no WhatsApp</div>
+        </div>
+      </div>
+      <div class="material-card">
+        <div class="material-icon" style="background:rgba(34,197,94,0.12);color:var(--green)"><i data-lucide="repeat" class="lucide-sm"></i></div>
+        <div class="material-info">
+          <div class="material-label">Aula 2</div>
+          <div class="material-name">Card "Ritual de Início do AIOS"</div>
+          <div class="material-when">Imagem · fixar no grupo</div>
+        </div>
+      </div>
+      <div class="material-card">
+        <div class="material-icon" style="background:rgba(34,197,94,0.12);color:var(--green)"><i data-lucide="git-branch" class="lucide-sm"></i></div>
+        <div class="material-info">
+          <div class="material-label">Aula 2</div>
+          <div class="material-name">Tabela Decision Tree</div>
+          <div class="material-when">PDF imprimível</div>
+        </div>
+      </div>
+      <div class="material-card">
+        <div class="material-icon" style="background:rgba(34,197,94,0.12);color:var(--green)"><i data-lucide="network" class="lucide-sm"></i></div>
+        <div class="material-info">
+          <div class="material-label">Aula 3</div>
+          <div class="material-name">Template de organograma de agentes</div>
+          <div class="material-when">Arquivo .md · antes da Aula 3</div>
+        </div>
+      </div>
+      <div class="material-card">
+        <div class="material-icon" style="background:rgba(34,197,94,0.12);color:var(--green)"><i data-lucide="workflow" class="lucide-sm"></i></div>
+        <div class="material-info">
+          <div class="material-label">Aula 4</div>
+          <div class="material-name">Diagrama do SDC (PDF)</div>
+          <div class="material-when">PDF · antes da Aula 4</div>
+        </div>
+      </div>
+      <div class="material-card">
+        <div class="material-icon" style="background:rgba(168,85,247,0.12);color:var(--purple)"><i data-lucide="file-text" class="lucide-sm"></i></div>
+        <div class="material-info">
+          <div class="material-label">Aula 5</div>
+          <div class="material-name">Template de PRD comentado</div>
+          <div class="material-when">Arquivo .md · antes da Aula 5</div>
+        </div>
+      </div>
+      <div class="material-card">
+        <div class="material-icon" style="background:rgba(168,85,247,0.12);color:var(--purple)"><i data-lucide="shield" class="lucide-sm"></i></div>
+        <div class="material-info">
+          <div class="material-label">Aula 6</div>
+          <div class="material-name">Checklist de guardrails (CLAUDE.md)</div>
+          <div class="material-when">Arquivo .md + card visual</div>
+        </div>
+      </div>
+      <div class="material-card">
+        <div class="material-icon" style="background:rgba(245,197,24,0.12);color:var(--yellow)"><i data-lucide="coins" class="lucide-sm"></i></div>
+        <div class="material-info">
+          <div class="material-label">Aula 7</div>
+          <div class="material-name">Tabela de custo de tokens por projeto</div>
+          <div class="material-when">Tabela PDF</div>
+        </div>
+      </div>
+      <div class="material-card">
+        <div class="material-icon" style="background:rgba(245,197,24,0.12);color:var(--yellow)"><i data-lucide="mic" class="lucide-sm"></i></div>
+        <div class="material-info">
+          <div class="material-label">Aula 8</div>
+          <div class="material-name">Template de pitch (2 minutos)</div>
+          <div class="material-when">Slide · antes da Aula 8</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── STACK ─── -->
+  <section id="stack" class="mb-56">
+    <h2 class="section-title">
+      <div class="icon-box bg-purple" style="color:var(--purple)">
+        <i data-lucide="layers" class="lucide-md"></i>
+      </div>
+      Stack Tecnológica
+    </h2>
+
+    <table class="stack-table">
+      <thead>
+        <tr>
+          <th>Ferramenta</th>
+          <th>Função</th>
+          <th>Custo</th>
+          <th>Entra em</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="stack-tool"><i data-lucide="terminal" class="lucide-sm"></i> Claude Code</div></td>
+          <td>Terminal principal agêntico (Anthropic)</td>
+          <td class="stack-cost-paid">~$20/mês</td>
+          <td class="stack-when">Aula 0</td>
+        </tr>
+        <tr>
+          <td><div class="stack-tool"><i data-lucide="bot" class="lucide-sm"></i> AIOS Core</div></td>
+          <td>Framework de agentes (Synkra)</td>
+          <td class="stack-cost-free">Gratuito</td>
+          <td class="stack-when">Aula 0</td>
+        </tr>
+        <tr>
+          <td><div class="stack-tool"><i data-lucide="cpu" class="lucide-sm"></i> Node.js v20+</div></td>
+          <td>Pré-requisito para CC e AIOS</td>
+          <td class="stack-cost-free">Gratuito</td>
+          <td class="stack-when">Aula 0</td>
+        </tr>
+        <tr>
+          <td><div class="stack-tool"><i data-lucide="git-branch" class="lucide-sm"></i> Git</div></td>
+          <td>Versionamento de código</td>
+          <td class="stack-cost-free">Gratuito</td>
+          <td class="stack-when">Aula 4</td>
+        </tr>
+        <tr>
+          <td><div class="stack-tool"><i data-lucide="github" class="lucide-sm"></i> GitHub</div></td>
+          <td>Repositório + CI/CD + trigger de deploy</td>
+          <td class="stack-cost-free">Gratuito</td>
+          <td class="stack-when">Aula 4</td>
+        </tr>
+        <tr>
+          <td><div class="stack-tool"><i data-lucide="rocket" class="lucide-sm"></i> Vercel</div></td>
+          <td>Deploy automático de aplicações</td>
+          <td class="stack-cost-free">Gratuito</td>
+          <td class="stack-when">Aula 6</td>
+        </tr>
+        <tr>
+          <td><div class="stack-tool"><i data-lucide="shield" class="lucide-sm"></i> Cloudflare</div></td>
+          <td>Domínio + máscara de IP</td>
+          <td class="stack-cost-paid">~$3/ano</td>
+          <td class="stack-when">Aula 6</td>
+        </tr>
+        <tr>
+          <td><div class="stack-tool"><i data-lucide="search" class="lucide-sm"></i> EXA (MCP)</div></td>
+          <td>Pesquisa web semântica para agentes</td>
+          <td class="stack-cost-free">$10 crédito grátis</td>
+          <td class="stack-when">Aula 7</td>
+        </tr>
+        <tr>
+          <td><div class="stack-tool"><i data-lucide="book-open" class="lucide-sm"></i> Context7 (MCP)</div></td>
+          <td>Documentação atualizada de libs</td>
+          <td class="stack-cost-free">Gratuito</td>
+          <td class="stack-when">Aula 7</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:14px">
+      <div style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+        <i data-lucide="trending-down" class="lucide-lg" style="color:var(--green)"></i>
+        <div>
+          <div style="font-size:13px;color:var(--text3)">Custo mensal estimado</div>
+          <div style="font-size:20px;font-weight:800;color:var(--green)">~R$ 2.000/mês</div>
+        </div>
+      </div>
+      <div style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+        <i data-lucide="users" class="lucide-lg" style="color:var(--blue)"></i>
+        <div>
+          <div style="font-size:13px;color:var(--text3)">Equipe equivalente sem AIOS</div>
+          <div style="font-size:20px;font-weight:800;color:var(--blue)">R$15k–120k/mês</div>
+        </div>
+      </div>
+      <div style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px">
+        <i data-lucide="zap" class="lucide-lg" style="color:var(--yellow)"></i>
+        <div>
+          <div style="font-size:13px;color:var(--text3)">Alavancagem documentada</div>
+          <div style="font-size:20px;font-weight:800;color:var(--yellow)">7x – 60x</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PS ─── -->
+  <section id="ps" class="mb-56">
+    <h2 class="section-title">
+      <div class="icon-box bg-cyan" style="color:var(--cyan)">
+        <i data-lucide="headphones" class="lucide-md"></i>
+      </div>
+      Pronto Socorro — Suporte Técnico
+    </h2>
+
+    <table class="ps-table">
+      <thead>
+        <tr>
+          <th>PS</th>
+          <th>Data</th>
+          <th>Dia</th>
+          <th>Horário</th>
+          <th>Foco</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:700;color:var(--text3)">PS 0</td>
+          <td>02/03</td>
+          <td>Segunda</td>
+          <td>18h–19h</td>
+          <td>Setup e instalação (pré-Aula 1)</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:var(--blue)">PS 1</td>
+          <td>04/03</td>
+          <td>Quarta</td>
+          <td>18h–19h</td>
+          <td>Terminal, Claude Code, CLAUDE.md</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:var(--blue)">PS 2</td>
+          <td>07/03</td>
+          <td>Sexta</td>
+          <td>18h–19h</td>
+          <td>AIOS, Squad Creator, Zona de Genialidade</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:var(--blue)">PS 3</td>
+          <td>09/03</td>
+          <td>Segunda</td>
+          <td>18h–19h</td>
+          <td>Consolidação Semana 1</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:var(--green)">PS 4</td>
+          <td>11/03</td>
+          <td>Quarta</td>
+          <td>18h–19h</td>
+          <td>Anatomia AIOS, Squads</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:var(--green)">PS 5</td>
+          <td>14/03</td>
+          <td>Sexta</td>
+          <td>18h–19h</td>
+          <td>SDC, Spec Pipeline, Matchmaking</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:var(--green)">PS 6</td>
+          <td>16/03</td>
+          <td>Segunda</td>
+          <td>18h–19h</td>
+          <td>Consolidação Semana 2</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:var(--purple)">PS 7</td>
+          <td>18/03</td>
+          <td>Quarta</td>
+          <td>18h–19h</td>
+          <td>PRD, épicos, stories</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:var(--purple)">PS 8</td>
+          <td>21/03</td>
+          <td>Sexta</td>
+          <td>18h–19h</td>
+          <td>Deploys, guardrails, QA</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:var(--purple)">PS 9</td>
+          <td>23/03</td>
+          <td>Segunda</td>
+          <td>18h–19h</td>
+          <td>Preparação Semana 4</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;color:var(--yellow)">PS 10</td>
+          <td>25/03</td>
+          <td>Quarta</td>
+          <td>18h–19h</td>
+          <td>Suporte final pré-lançamento</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="font-size:12px;color:var(--text4);margin-top:8px">
+      <i data-lucide="info" class="lucide-sm"></i>
+      PS = sessões de Q&A com especialistas técnicos da Academia Lendária. 1h cada. Não são aulas estruturadas.
+    </div>
+  </section>
+
+  <!-- ─── CTA ─── -->
+  <div class="cta-box">
+    <h2>Sua jornada começa <span style="color:var(--green)">hoje</span></h2>
+    <p>Aula 1 · 03/03/2026 · 18h · Terça-feira · Cohort ao vivo com Adriano de Marqui</p>
+    <div class="cta-chips">
+      <span class="cta-chip"><i data-lucide="terminal" class="lucide-sm" style="color:var(--blue)"></i> Claude Code</span>
+      <span class="cta-chip"><i data-lucide="bot" class="lucide-sm" style="color:var(--green)"></i> AIOS Core</span>
+      <span class="cta-chip"><i data-lucide="users" class="lucide-sm" style="color:var(--purple)"></i> Squad Creator</span>
+      <span class="cta-chip"><i data-lucide="rocket" class="lucide-sm" style="color:var(--yellow)"></i> Deploy ao vivo</span>
+      <span class="cta-chip"><i data-lucide="award" class="lucide-sm" style="color:var(--orange)"></i> Certificado</span>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // Accordion
+  function toggleLesson(id) {
+    const details = document.getElementById('details-' + id);
+    const chevron = document.getElementById('chevron-' + id);
+    const isOpen = details.classList.contains('open');
+    details.classList.toggle('open', !isOpen);
+    chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+    chevron.style.transition = 'transform 0.25s ease';
+  }
+
+  // Sidebar smooth scroll + active state
+  document.querySelectorAll('.sidebar-link[href^="#"]').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+      }
+    });
+  });
+
+  // Init Lucide
+  lucide.createIcons();
+</script>
+</body>
+</html>
