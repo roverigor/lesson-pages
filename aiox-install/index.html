@@ -1021,11 +1021,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr><td>Node.js</td><td>≥ 18.0.0</td><td>v20+ recomendado para AIOX</td></tr>
+            <tr><td>Node.js</td><td>≥ 18.0.0</td><td>v22 LTS recomendado — instale via NVM</td></tr>
             <tr><td>npm</td><td>≥ 9.0.0</td><td>Já vem com o Node.js — ou use yarn / pnpm</td></tr>
             <tr><td>RAM</td><td>4 GB+</td><td>8 GB recomendado</td></tr>
             <tr><td>Sistema Operacional</td><td>macOS 10.15+ / Win 10+ / Linux</td><td>WSL recomendado no Windows</td></tr>
-            <tr><td>GitHub CLI (opcional)</td><td>última versão</td><td>Para colaboração em equipe</td></tr>
           </tbody>
         </table>
       </div>
@@ -1034,7 +1033,7 @@
         <i data-lucide="info" class="lucide-md info-icon"></i>
         <div class="info-text">
           <strong>Claude Code tem instalador nativo</strong>
-          Não requer Node.js. Mas AIOX (via npx) e Codex/Gemini CLI precisam de Node.js ≥ 18. Se usar tudo junto, instale Node.js primeiro.
+          Não requer Node.js. Mas AIOX (via npx) e Codex/Gemini CLI precisam de Node.js ≥ 18 (recomendado v22 LTS via NVM). Se usar tudo junto, instale Node.js primeiro.
         </div>
       </div>
 
@@ -1095,33 +1094,14 @@
                 <span class="code-lang">bash — dentro do terminal Ubuntu/WSL</span>
                 <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
               </div>
-              <pre><code><span class="c-cmd">curl</span> <span class="c-flag">-fsSL</span> https://deb.nodesource.com/setup_20.x | sudo <span class="c-cmd">-E bash</span> <span class="c-flag">-</span>
-<span class="c-cmd">sudo apt-get install</span> <span class="c-flag">-y</span> nodejs
-
-<span class="c-comment"># Verificar</span>
-<span class="c-cmd">node</span> <span class="c-flag">--version</span>
-<span class="c-cmd">npm</span> <span class="c-flag">--version</span></code></pre>
-            </div>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">5</div>
-          <div class="step-content">
-            <div class="step-title">Configure permissões do npm</div>
-            <div class="step-desc">Evita erros de permissão ao instalar pacotes globais com <span class="ic">npm install -g</span>.</div>
-            <div class="code-block" style="margin-top: 8px;">
-              <div class="code-header">
-                <span class="code-lang">bash — dentro do terminal Ubuntu/WSL</span>
-                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
-              </div>
-              <pre><code><span class="c-comment"># Criar diretório para pacotes globais sem sudo</span>
-<span class="c-cmd">mkdir</span> <span class="c-flag">-p</span> ~/.npm-global
-<span class="c-cmd">npm config set</span> prefix <span class="c-str">'~/.npm-global'</span>
-<span class="c-cmd">echo</span> <span class="c-str">'export PATH=~/.npm-global/bin:$PATH'</span> >> ~/.bashrc
+              <pre><code><span class="c-cmd">curl</span> <span class="c-flag">-o-</span> https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 <span class="c-cmd">source</span> ~/.bashrc
 
+<span class="c-cmd">nvm install</span> <span class="c-flag">--lts</span>
+
 <span class="c-comment"># Verificar</span>
-<span class="c-cmd">npm</span> <span class="c-flag">--version</span></code></pre>
+<span class="c-cmd">node</span> <span class="c-flag">-v</span> <span class="c-comment"># deve mostrar v22.x.x</span>
+<span class="c-cmd">npm</span> <span class="c-flag">-v</span></code></pre>
             </div>
           </div>
         </div>
@@ -1166,12 +1146,14 @@
                 <span class="code-lang">bash — Ubuntu / Debian / WSL</span>
                 <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
               </div>
-              <pre><code><span class="c-cmd">curl</span> <span class="c-flag">-fsSL</span> https://deb.nodesource.com/setup_20.x | sudo <span class="c-cmd">-E bash</span> <span class="c-flag">-</span>
-<span class="c-cmd">sudo apt-get install</span> <span class="c-flag">-y</span> nodejs
+              <pre><code><span class="c-cmd">curl</span> <span class="c-flag">-o-</span> https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+<span class="c-cmd">source</span> ~/.bashrc
+
+<span class="c-cmd">nvm install</span> <span class="c-flag">--lts</span>
 
 <span class="c-comment"># Verificar</span>
-<span class="c-cmd">node</span> <span class="c-flag">--version</span>   <span class="c-comment"># deve mostrar v20.x.x ou superior</span>
-<span class="c-cmd">npm</span> <span class="c-flag">--version</span>    <span class="c-comment"># deve mostrar v9.x.x ou superior</span></code></pre>
+<span class="c-cmd">node</span> <span class="c-flag">-v</span> <span class="c-comment"># deve mostrar v22.x.x (LTS mais recente)</span>
+<span class="c-cmd">npm</span> <span class="c-flag">-v</span></code></pre>
             </div>
           </div>
           <div class="tab-panel" id="nodejs-macos">
@@ -1180,11 +1162,14 @@
                 <span class="code-lang">bash — macOS via Homebrew</span>
                 <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
               </div>
-              <pre><code><span class="c-cmd">brew install</span> node@20
+              <pre><code><span class="c-cmd">curl</span> <span class="c-flag">-o-</span> https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+<span class="c-cmd">source</span> ~/.zshrc
+
+<span class="c-cmd">nvm install</span> <span class="c-flag">--lts</span>
 
 <span class="c-comment"># Verificar</span>
-<span class="c-cmd">node</span> <span class="c-flag">--version</span>   <span class="c-comment"># deve mostrar v20.x.x ou superior</span>
-<span class="c-cmd">npm</span> <span class="c-flag">--version</span>    <span class="c-comment"># deve mostrar v9.x.x ou superior</span></code></pre>
+<span class="c-cmd">node</span> <span class="c-flag">-v</span> <span class="c-comment"># deve mostrar v22.x.x (LTS mais recente)</span>
+<span class="c-cmd">npm</span> <span class="c-flag">-v</span></code></pre>
             </div>
           </div>
           <div class="tab-panel" id="nodejs-windows-native">
@@ -1209,11 +1194,11 @@
         </div>
       </div>
 
-      <div class="info-box" style="margin-top: 12px; background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.06);">
-        <i data-lucide="info" class="lucide-md info-icon" style="color:var(--text3);"></i>
-        <div class="info-text" style="color:var(--text3);">
-          <strong>Precisa gerenciar múltiplas versões do Node.js?</strong>
-          Use o <a href="https://github.com/nvm-sh/nvm" target="_blank" style="color:inherit;text-decoration:underline;">NVM</a> (Linux/macOS) ou <a href="https://github.com/coreybutler/nvm-windows" target="_blank" style="color:inherit;text-decoration:underline;">nvm-windows</a>. Para a maioria dos usuários, a instalação direta acima é suficiente.
+      <div class="info-box tip" style="margin-top: 12px;">
+        <i data-lucide="info" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>Por que NVM?</strong>
+          O NVM instala o Node.js no espaço do usuário — sem <span class="ic">sudo</span>, sem conflito de versões. O <span class="ic">--lts</span> sempre pega a versão LTS mais estável disponível.
         </div>
       </div>
     </section>
@@ -1611,7 +1596,7 @@
           <span class="code-lang">saída esperada</span>
         </div>
         <pre><code><span class="c-comment">🏥 AIOX System Diagnostics</span>
-<span style="color:var(--green)">✔</span> Node.js version: v20.x.x (meets requirement: &gt;=18.0.0)
+<span style="color:var(--green)">✔</span> Node.js version: v22.x.x (meets requirement: &gt;=18.0.0)
 <span style="color:var(--green)">✔</span> npm version: 10.x.x
 <span style="color:var(--green)">✔</span> Git installed
 <span style="color:var(--green)">✔</span> Synkra AIOX: v5.0.3
