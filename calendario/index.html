@@ -205,6 +205,8 @@
     }
     .modal-role-prof { background: rgba(99,102,241,0.15); color: #a5b4fc; }
     .modal-role-host { background: rgba(255,255,255,0.06); color: #555; }
+    .modal-role-sub  { background: rgba(250,204,21,0.15); color: #facc15; }
+    .event-mentor.sub { background: rgba(250,204,21,0.1); color: #facc15 !important; }
 
     /* ═══════════════════════════════════════
        MONTH TITLE
@@ -305,7 +307,26 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+// ═══════════════════════════════════════
+// SUPABASE (read-only for substitutes display)
+// ═══════════════════════════════════════
+const sb = window.supabase.createClient(
+  'https://gpufcipkajppykmnmdeh.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU'
+);
+let attendanceData = {}; // { "dd/mm|course|teacher": { status, substitute_name, substitute_role } }
+
+async function loadAttendanceData() {
+  const { data } = await sb.from('attendance').select('*');
+  attendanceData = {};
+  for (const row of (data || [])) {
+    const key = `${row.lesson_date}|${row.course}|${row.teacher_name}`;
+    attendanceData[key] = row;
+  }
+}
+
 // ═══════════════════════════════════════
 // DATA
 // ═══════════════════════════════════════
@@ -583,12 +604,24 @@ function renderGrid(year, month1) { // month1 = 1-indexed
 
     const eventsHTML = events.map(ev => {
       const cfg = getCfg(ev.course);
-      const mentorActive = activeMentor && ev.mentors.some(m=>m.name===activeMentor);
+      // Inject substitutes into event pill
+      const subs = [];
+      for (const ak in attendanceData) {
+        const rec = attendanceData[ak];
+        const [aDate, aCourse] = ak.split('|');
+        if (aDate === key && normalizeCourse(aCourse) === ev.course && rec.substitute_name) {
+          const already = ev.mentors.some(m => m.name === rec.substitute_name) || subs.some(s => s.name === rec.substitute_name);
+          if (!already) subs.push({ name: rec.substitute_name, role: rec.substitute_role || 'Substituto' });
+        }
+      }
+      const allMentors = [...ev.mentors, ...subs];
+      const mentorActive = activeMentor && allMentors.some(m=>m.name===activeMentor);
       const dimmed = activeMentor && !mentorActive;
-      const mentorsHTML = ev.mentors.map(m => {
+      const mentorsHTML = allMentors.map(m => {
         const isActive = !activeMentor || m.name===activeMentor;
-        return `<span class="event-mentor ${m.role==='Professor'?'prof':'host'}"
-          style="color:${isActive?mentorColor(m.name):'#333'}">${m.name.split(' ')[0]}</span>`;
+        const isSub = subs.some(s => s.name === m.name);
+        return `<span class="event-mentor ${isSub?'sub':(m.role==='Professor'?'prof':'host')}"
+          style="color:${isActive?mentorColor(m.name):'#333'}">${m.name.split(' ')[0]}${isSub?' ↻':''}</span>`;
       }).join('');
       return `<div class="event ${dimmed?'dimmed':''}"
         style="border-left-color:${cfg.color};background:${cfg.bg}"
@@ -622,15 +655,31 @@ function openModal(key) {
 
   const sessionsHTML = events.map(ev => {
     const cfg = getCfg(ev.course);
-    const mentorsHTML = ev.mentors.map(m => `
+    // Add substitutes from attendance data
+    const subs = [];
+    for (const ak in attendanceData) {
+      const rec = attendanceData[ak];
+      const [aDate, aCourse] = ak.split('|');
+      if (aDate === key && normalizeCourse(aCourse) === ev.course && rec.substitute_name) {
+        const already = ev.mentors.some(m => m.name === rec.substitute_name) || subs.some(s => s.name === rec.substitute_name);
+        if (!already) subs.push({ name: rec.substitute_name, role: rec.substitute_role || 'Substituto', isSub: true, replacing: rec.teacher_name });
+      }
+    }
+    const allMentors = [...ev.mentors, ...subs];
+
+    const mentorsHTML = allMentors.map(m => {
+      const roleClass = m.isSub ? 'modal-role-sub' : (m.role==='Professor'?'modal-role-prof':'modal-role-host');
+      const roleLabel = m.isSub ? `${m.role} (sub)` : m.role;
+      const subNote = m.isSub ? `<div style="font-size:10px;color:#666;margin-top:2px">Substituindo ${m.replacing}</div>` : '';
+      return `
       <div class="modal-mentor-row">
         <span style="display:inline-flex;align-items:center;gap:6px">
           <span style="width:20px;height:20px;border-radius:50%;background:${mentorColor(m.name)};display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;color:#fff;flex-shrink:0">${initials(m.name)}</span>
-          <span class="modal-mentor-name">${m.name}</span>
+          <span class="modal-mentor-name">${m.name}${subNote}</span>
         </span>
-        <span class="modal-role-badge ${m.role==='Professor'?'modal-role-prof':'modal-role-host'}">${m.role}</span>
-      </div>
-    `).join('');
+        <span class="modal-role-badge ${roleClass}">${roleLabel}</span>
+      </div>`;
+    }).join('');
     return `<div class="modal-session" style="border-left-color:${cfg.color}">
       <div class="modal-session-course" style="color:${cfg.color}">${ev.course}</div>
       ${mentorsHTML}
@@ -662,14 +711,16 @@ function goToMonth(year, month1) {
 // ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
-renderMentorPills();
-renderStats();
-
-// Go to current month or Feb 2026 if before
-const now = new Date();
-const initMonth = (now.getFullYear()===2026 && now.getMonth()>=1 && now.getMonth()<=4)
-  ? now.getMonth()+1 : 2;
-renderGrid(2026, initMonth);
+async function init() {
+  renderMentorPills();
+  renderStats();
+  await loadAttendanceData();
+  const now = new Date();
+  const initMonth = (now.getFullYear()===2026 && now.getMonth()>=1 && now.getMonth()<=4)
+    ? now.getMonth()+1 : 2;
+  renderGrid(2026, initMonth);
+}
+init();
 </script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>lucide.createIcons();</script>

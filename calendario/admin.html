@@ -275,8 +275,44 @@
       border-bottom: 1px solid #141414;
     }
     .report-table tr:hover td { background: #0f0f0f; }
-    .badge-present { color: #4ade80; background: rgba(34,197,94,0.1); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
-    .badge-absent  { color: #f87171; background: rgba(239,68,68,0.1); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+    .badge-present    { color: #4ade80; background: rgba(34,197,94,0.1); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+    .badge-absent     { color: #f87171; background: rgba(239,68,68,0.1); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+    .badge-substitute { color: #facc15; background: rgba(250,204,21,0.1); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+    .badge-pending    { color: #555; background: rgba(85,85,85,0.1); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+    .badge-role-prof  { color: #a5b4fc; background: rgba(99,102,241,0.12); padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+    .badge-role-host  { color: #555; background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+
+    .report-card {
+      background: #111; border: 1px solid #1e1e1e; border-radius: 12px;
+      padding: 20px; margin-bottom: 16px;
+    }
+    .report-card-header {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+      padding-bottom: 12px; border-bottom: 1px solid #1a1a1a;
+    }
+    .report-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .report-name { font-size: 16px; font-weight: 800; color: #fff; }
+    .report-summary { font-size: 12px; color: #555; margin-top: 2px; }
+    .report-stats-row { display: flex; gap: 12px; margin-left: auto; flex-wrap: wrap; }
+    .report-stat { text-align: center; }
+    .report-stat-num { font-size: 18px; font-weight: 800; line-height: 1; }
+    .report-stat-label { font-size: 9px; color: #444; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .report-course-section { margin-bottom: 10px; }
+    .report-course-title { font-size: 12px; font-weight: 700; color: #888; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .report-dates { display: flex; flex-wrap: wrap; gap: 4px; }
+    .report-date {
+      font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px;
+      border: 1px solid #1e1e1e; background: #0d0d0d; color: #555;
+    }
+    .report-date.present { border-color: #166534; color: #4ade80; background: rgba(34,197,94,0.08); }
+    .report-date.absent { border-color: #7f1d1d; color: #f87171; background: rgba(239,68,68,0.08); }
+    .report-date.substitute { border-color: #854d0e; color: #facc15; background: rgba(250,204,21,0.08); }
+    .report-date .sub-name { font-size: 9px; color: #facc15; display: block; }
 
     #report-view { display: none; }
 
@@ -324,6 +360,7 @@
       <div class="view-toggle">
         <button class="view-btn active" onclick="switchView('calendar')">Calendário</button>
         <button class="view-btn" onclick="switchView('report')">Relatório</button>
+        <button class="view-btn" onclick="switchView('staff')">Cadastro</button>
       </div>
       <a href="/calendario" class="link-pill"><i data-lucide="calendar" style="width:14px;height:14px"></i> Calendário Público</a>
       <div class="month-tabs" id="month-tabs">
@@ -365,6 +402,44 @@
   <div id="report-view">
     <h2 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:16px">Relatório de Presença</h2>
     <div id="report-content"></div>
+  </div>
+
+  <!-- STAFF VIEW -->
+  <div id="staff-view" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-size:20px;font-weight:800;color:#fff">Cadastro de Professores, Mentores e Hosts</h2>
+      <button class="btn-save" onclick="openStaffForm()">+ Novo Cadastro</button>
+    </div>
+    <div id="staff-form-container" style="display:none;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:16px">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+        <div style="flex:1;min-width:180px">
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Nome *</label>
+          <input class="login-field" style="margin:0" type="text" id="staff-name" placeholder="Nome completo" required>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Email</label>
+          <input class="login-field" style="margin:0" type="email" id="staff-email" placeholder="email@exemplo.com">
+        </div>
+        <div style="flex:1;min-width:140px">
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Telefone</label>
+          <input class="login-field" style="margin:0" type="tel" id="staff-phone" placeholder="(11) 99999-9999">
+        </div>
+        <div style="min-width:130px">
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Categoria *</label>
+          <select class="substitute-select" style="width:100%;padding:12px 10px" id="staff-category">
+            <option value="Professor">Professor</option>
+            <option value="Mentor">Mentor</option>
+            <option value="Host">Host</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-save" onclick="saveStaff()">Salvar</button>
+          <button class="att-btn delete" onclick="closeStaffForm()" style="padding:10px 14px">Cancelar</button>
+        </div>
+      </div>
+      <input type="hidden" id="staff-edit-id" value="">
+    </div>
+    <div id="staff-list"></div>
   </div>
 </div>
 
@@ -579,6 +654,7 @@ async function loadAttendance() {
       id: row.id,
       status: row.status,
       substitute_name: row.substitute_name,
+      substitute_role: row.substitute_role,
       notes: row.notes,
     };
   }
@@ -601,6 +677,7 @@ async function saveAttendance(records) {
         .update({
           status: rec.status,
           substitute_name: rec.substitute_name || null,
+          substitute_role: rec.substitute_role || null,
           notes: rec.notes || null,
         })
         .eq('id', existing.id);
@@ -616,6 +693,7 @@ async function saveAttendance(records) {
           role: rec.role,
           status: rec.status,
           substitute_name: rec.substitute_name || null,
+          substitute_role: rec.substitute_role || null,
           notes: rec.notes || null,
           recorded_by: session.user.id,
         });
@@ -795,6 +873,12 @@ function openAttendance(dateKey) {
             <option value="">— Nenhum —</option>
             ${substituteOptions}
           </select>
+          <select class="substitute-select" style="max-width:120px"
+            data-date="${dateKey}" data-course="${ev.course}" data-teacher="${m.name}" data-field="role">
+            <option value="Professor" ${(cached.substitute_role||'Professor')==='Professor'?'selected':''}>Professor</option>
+            <option value="Mentor" ${cached.substitute_role==='Mentor'?'selected':''}>Mentor</option>
+            <option value="Host" ${cached.substitute_role==='Host'?'selected':''}>Host</option>
+          </select>
         </div>`;
     }).join('');
 
@@ -868,12 +952,15 @@ async function saveAll() {
       status: b.dataset.action,
     };
 
-    // Find substitute select by matching data attributes
+    // Find substitute name and role selects
     const allSelects = document.querySelectorAll('.substitute-select');
     for (const sel of allSelects) {
       if (sel.dataset.date === rec.lesson_date && sel.dataset.course === rec.course && sel.dataset.teacher === rec.teacher_name) {
-        if (sel.value) rec.substitute_name = sel.value;
-        break;
+        if (sel.dataset.field === 'role') {
+          rec.substitute_role = sel.value;
+        } else if (sel.value) {
+          rec.substitute_name = sel.value;
+        }
       }
     }
 
@@ -915,57 +1002,224 @@ function switchView(view) {
 
   document.getElementById('calendar-view').style.display = view === 'calendar' ? '' : 'none';
   document.getElementById('report-view').style.display = view === 'report' ? '' : 'none';
+  document.getElementById('staff-view').style.display = view === 'staff' ? '' : 'none';
 
   if (view === 'report') renderReport();
+  if (view === 'staff') loadStaff();
 }
 
-function renderReport() {
-  const teacherStats = {};
-  for (const t of TEACHERS) {
-    teacherStats[t.name] = { total: t.total, present: 0, absent: 0, asSubstitute: 0 };
-  }
+// ═══════════════════════════════════════
+// STAFF MANAGEMENT
+// ═══════════════════════════════════════
+let staffList = [];
 
-  for (const key in attendanceCache) {
-    const rec = attendanceCache[key];
-    const teacher = key.split('|')[2];
-    if (!teacherStats[teacher]) teacherStats[teacher] = { total: 0, present: 0, absent: 0, asSubstitute: 0 };
-    if (rec.status === 'present') teacherStats[teacher].present++;
-    else teacherStats[teacher].absent++;
+async function loadStaff() {
+  const { data, error } = await sb.from('staff').select('*').order('name');
+  if (error) { console.error('Load staff error:', error); return; }
+  staffList = data || [];
+  renderStaffList();
+}
 
-    if (rec.substitute_name && teacherStats[rec.substitute_name]) {
-      teacherStats[rec.substitute_name].asSubstitute++;
-    }
-  }
+function renderStaffList() {
+  const categoryColors = { Professor: '#a5b4fc', Mentor: '#facc15', Host: '#555' };
+  const categoryBg = { Professor: 'rgba(99,102,241,0.12)', Mentor: 'rgba(250,204,21,0.1)', Host: 'rgba(255,255,255,0.05)' };
 
-  let rows = '';
-  for (const [name, s] of Object.entries(teacherStats).sort((a,b) => a[0].localeCompare(b[0]))) {
-    const recorded = s.present + s.absent;
-    const pct = recorded > 0 ? Math.round((s.present / recorded) * 100) : '-';
-    rows += `<tr>
-      <td style="color:#ddd;font-weight:600">${name}</td>
-      <td>${s.total}</td>
-      <td><span class="badge-present">${s.present}</span></td>
-      <td><span class="badge-absent">${s.absent}</span></td>
-      <td>${s.asSubstitute > 0 ? s.asSubstitute : '-'}</td>
-      <td style="color:${typeof pct === 'number' ? (pct >= 80 ? '#4ade80' : pct >= 50 ? '#f59e0b' : '#f87171') : '#444'}">${typeof pct === 'number' ? pct + '%' : pct}</td>
-    </tr>`;
-  }
+  const rows = staffList.map(s => `
+    <tr>
+      <td>
+        <span style="display:inline-flex;align-items:center;gap:8px">
+          <span style="width:28px;height:28px;border-radius:50%;background:${mentorColor(s.name)};display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff">${initials(s.name)}</span>
+          <span style="color:#ddd;font-weight:600">${s.name}</span>
+        </span>
+      </td>
+      <td>${s.email || '<span style="color:#333">—</span>'}</td>
+      <td>${s.phone || '<span style="color:#333">—</span>'}</td>
+      <td><span style="color:${categoryColors[s.category]};background:${categoryBg[s.category]};padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">${s.category}</span></td>
+      <td>
+        <span style="display:flex;gap:4px">
+          <button class="att-btn" style="padding:4px 8px;font-size:11px" onclick="editStaff('${s.id}')">Editar</button>
+          <button class="att-btn delete" style="padding:4px 8px" onclick="deleteStaff('${s.id}','${s.name}')">🗑</button>
+        </span>
+      </td>
+    </tr>
+  `).join('');
 
-  document.getElementById('report-content').innerHTML = `
+  document.getElementById('staff-list').innerHTML = `
     <table class="report-table">
-      <thead>
-        <tr>
-          <th>Professor</th>
-          <th>Aulas Totais</th>
-          <th>Presenças</th>
-          <th>Faltas</th>
-          <th>Substituições</th>
-          <th>Frequência</th>
-        </tr>
-      </thead>
+      <thead><tr>
+        <th>Nome</th><th>Email</th><th>Telefone</th><th>Categoria</th><th>Ações</th>
+      </tr></thead>
       <tbody>${rows}</tbody>
     </table>
   `;
+}
+
+function openStaffForm() {
+  document.getElementById('staff-form-container').style.display = '';
+  document.getElementById('staff-edit-id').value = '';
+  document.getElementById('staff-name').value = '';
+  document.getElementById('staff-email').value = '';
+  document.getElementById('staff-phone').value = '';
+  document.getElementById('staff-category').value = 'Professor';
+  document.getElementById('staff-name').focus();
+}
+
+function closeStaffForm() {
+  document.getElementById('staff-form-container').style.display = 'none';
+}
+
+function editStaff(id) {
+  const s = staffList.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('staff-form-container').style.display = '';
+  document.getElementById('staff-edit-id').value = s.id;
+  document.getElementById('staff-name').value = s.name;
+  document.getElementById('staff-email').value = s.email || '';
+  document.getElementById('staff-phone').value = s.phone || '';
+  document.getElementById('staff-category').value = s.category;
+  document.getElementById('staff-name').focus();
+}
+
+async function saveStaff() {
+  const id = document.getElementById('staff-edit-id').value;
+  const name = document.getElementById('staff-name').value.trim();
+  const email = document.getElementById('staff-email').value.trim();
+  const phone = document.getElementById('staff-phone').value.trim();
+  const category = document.getElementById('staff-category').value;
+
+  if (!name) { showToast('Nome é obrigatório', 'error'); return; }
+
+  const record = { name, email: email || null, phone: phone || null, category };
+
+  if (id) {
+    const { error } = await sb.from('staff').update(record).eq('id', id);
+    if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+    showToast('Cadastro atualizado!', 'success');
+  } else {
+    const { error } = await sb.from('staff').insert(record);
+    if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+    showToast('Cadastro criado!', 'success');
+  }
+
+  closeStaffForm();
+  await loadStaff();
+}
+
+async function deleteStaff(id, name) {
+  if (!confirm(`Excluir ${name}?`)) return;
+  const { error } = await sb.from('staff').delete().eq('id', id);
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+  showToast(`${name} removido`, 'success');
+  await loadStaff();
+}
+
+function renderReport() {
+  // Build substitution index: who substituted where
+  const subIndex = {}; // { "substitute_name": [ {date, course, replacing} ] }
+  for (const key in attendanceCache) {
+    const rec = attendanceCache[key];
+    if (rec.substitute_name) {
+      if (!subIndex[rec.substitute_name]) subIndex[rec.substitute_name] = [];
+      const [date, course, teacher] = key.split('|');
+      subIndex[rec.substitute_name].push({ date, course, replacing: teacher });
+    }
+  }
+
+  const cards = TEACHERS.map(teacher => {
+    let presents = 0, absents = 0, pending = 0;
+
+    // Build course sections with date-by-date status
+    const courseSections = teacher.assignments.map(a => {
+      const datesHTML = a.dates.map(date => {
+        const cacheKey = `${date}|${a.course}|${teacher.name}`;
+        const rec = attendanceCache[cacheKey];
+        if (rec) {
+          if (rec.status === 'present') {
+            presents++;
+            let label = date;
+            if (rec.substitute_name) label += ` <span class="sub-name">sub: ${rec.substitute_name}</span>`;
+            return `<span class="report-date present" title="Presente">${label}</span>`;
+          } else {
+            absents++;
+            let label = date;
+            if (rec.substitute_name) label += ` <span class="sub-name">sub: ${rec.substitute_name}</span>`;
+            return `<span class="report-date absent" title="Falta">${label}</span>`;
+          }
+        } else {
+          pending++;
+          return `<span class="report-date" title="Sem registro">${date}</span>`;
+        }
+      }).join('');
+
+      const cfg = getCfg(a.course);
+      const roleBadge = a.role === 'Professor'
+        ? '<span class="badge-role-prof">Professor</span>'
+        : '<span class="badge-role-host">Host</span>';
+
+      return `<div class="report-course-section">
+        <div class="report-course-title">
+          <span style="width:8px;height:8px;border-radius:2px;background:${cfg.color};display:inline-block"></span>
+          ${a.course} ${roleBadge}
+        </div>
+        <div class="report-dates">${datesHTML}</div>
+      </div>`;
+    }).join('');
+
+    // Substitution section: where this teacher was a substitute for others
+    const subs = subIndex[teacher.name] || [];
+    let subSection = '';
+    if (subs.length > 0) {
+      const subDates = subs.map(s => {
+        const cfg = getCfg(s.course);
+        return `<span class="report-date substitute" title="Substituiu ${s.replacing}">
+          ${s.date} <span class="sub-name">${s.course} (por ${s.replacing})</span>
+        </span>`;
+      }).join('');
+      subSection = `<div class="report-course-section">
+        <div class="report-course-title">
+          <span style="width:8px;height:8px;border-radius:2px;background:#facc15;display:inline-block"></span>
+          Como Substituto <span class="badge-substitute">${subs.length}x</span>
+        </div>
+        <div class="report-dates">${subDates}</div>
+      </div>`;
+    }
+
+    const recorded = presents + absents;
+    const pct = recorded > 0 ? Math.round((presents / recorded) * 100) : null;
+    const pctColor = pct !== null ? (pct >= 80 ? '#4ade80' : pct >= 50 ? '#f59e0b' : '#f87171') : '#444';
+
+    return `<div class="report-card">
+      <div class="report-card-header">
+        <div class="report-avatar" style="background:${mentorColor(teacher.name)}">${initials(teacher.name)}</div>
+        <div>
+          <div class="report-name">${teacher.name}</div>
+          <div class="report-summary">${teacher.total} aulas programadas${subs.length > 0 ? ` · ${subs.length} substituições` : ''}</div>
+        </div>
+        <div class="report-stats-row">
+          <div class="report-stat">
+            <div class="report-stat-num" style="color:#4ade80">${presents}</div>
+            <div class="report-stat-label">Presenças</div>
+          </div>
+          <div class="report-stat">
+            <div class="report-stat-num" style="color:#f87171">${absents}</div>
+            <div class="report-stat-label">Faltas</div>
+          </div>
+          <div class="report-stat">
+            <div class="report-stat-num" style="color:#555">${pending}</div>
+            <div class="report-stat-label">Pendente</div>
+          </div>
+          <div class="report-stat">
+            <div class="report-stat-num" style="color:${pctColor}">${pct !== null ? pct + '%' : '-'}</div>
+            <div class="report-stat-label">Frequência</div>
+          </div>
+        </div>
+      </div>
+      ${courseSections}
+      ${subSection}
+    </div>`;
+  }).join('');
+
+  document.getElementById('report-content').innerHTML = cards;
 }
 
 // ═══════════════════════════════════════
