@@ -788,7 +788,7 @@ function openAttendance(dateKey) {
               onclick="deleteAtt(this)">🗑</button>` : ''}
           </div>
         </div>
-        <div class="substitute-row ${isAbsent?'show':''}" id="sub-${dateKey}-${ev.course}-${m.name}".replace(/[^a-zA-Z0-9]/g,'-')>
+        <div class="substitute-row show">
           <span class="substitute-label">Substituto:</span>
           <select class="substitute-select"
             data-date="${dateKey}" data-course="${ev.course}" data-teacher="${m.name}">
@@ -818,24 +818,11 @@ function openAttendance(dateKey) {
 
 function toggleAtt(btn) {
   const row = btn.closest('.att-row');
-  const actions = row.querySelectorAll('.att-btn');
+  const actions = row.querySelectorAll('.att-btn.present, .att-btn.absent');
   const isActive = btn.classList.contains('active');
 
   actions.forEach(b => b.classList.remove('active'));
   if (!isActive) btn.classList.add('active');
-
-  // Show/hide substitute row
-  const date = btn.dataset.date;
-  const course = btn.dataset.course;
-  const teacher = btn.dataset.teacher;
-  const subRow = btn.closest('.att-row').nextElementSibling;
-  if (subRow && subRow.classList.contains('substitute-row')) {
-    if (!isActive && btn.dataset.action === 'absent') {
-      subRow.classList.add('show');
-    } else {
-      subRow.classList.remove('show');
-    }
-  }
 }
 
 async function deleteAtt(btn) {
@@ -881,12 +868,13 @@ async function saveAll() {
       status: b.dataset.action,
     };
 
-    // Check for substitute
-    const subSelect = document.querySelector(
-      `select[data-date="${rec.lesson_date}"][data-course="${rec.course}"][data-teacher="${rec.teacher_name}"]`
-    );
-    if (subSelect && subSelect.value) {
-      rec.substitute_name = subSelect.value;
+    // Find substitute select by matching data attributes
+    const allSelects = document.querySelectorAll('.substitute-select');
+    for (const sel of allSelects) {
+      if (sel.dataset.date === rec.lesson_date && sel.dataset.course === rec.course && sel.dataset.teacher === rec.teacher_name) {
+        if (sel.value) rec.substitute_name = sel.value;
+        break;
+      }
     }
 
     records.push(rec);
