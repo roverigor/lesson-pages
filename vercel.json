@@ -3,6 +3,10 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/calendario/admin",
+      "destination": "/calendario/admin.html"
+    },
+    {
       "source": "/calendario",
       "destination": "/calendario/index.html"
     },

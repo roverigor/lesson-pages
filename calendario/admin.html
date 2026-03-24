@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do Coordenador — Presença</title>
+  <link rel="stylesheet" href="../templates/design-tokens-dark-premium.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-sans); background: #080808; color: #888; min-height: 100vh; }
+
+    /* ═══════════════════════════════════════
+       LOGIN
+    ═══════════════════════════════════════ */
+    .login-overlay {
+      position: fixed; inset: 0; background: #080808;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+    }
+    .login-overlay.hidden { display: none; }
+    .login-box {
+      background: #111; border: 1px solid #222; border-radius: 16px;
+      padding: 40px; width: 90%; max-width: 400px; text-align: center;
+    }
+    .login-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 20px;
+    }
+    .login-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .login-subtitle { font-size: 13px; color: #555; margin-bottom: 28px; }
+    .login-field {
+      width: 100%; padding: 12px 16px; border-radius: 8px;
+      background: #0d0d0d; border: 1px solid #1e1e1e;
+      color: #ddd; font-size: 14px; font-family: var(--font-sans);
+      margin-bottom: 12px; outline: none; transition: border-color 0.15s;
+    }
+    .login-field:focus { border-color: #6366f1; }
+    .login-field::placeholder { color: #333; }
+    .login-btn {
+      width: 100%; padding: 12px; border-radius: 8px; border: none;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+      font-family: var(--font-sans); margin-top: 8px; transition: opacity 0.15s;
+    }
+    .login-btn:hover { opacity: 0.9; }
+    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .login-error { color: #ef4444; font-size: 12px; margin-top: 12px; display: none; }
+    .login-error.show { display: block; }
+
+    /* ═══════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════ */
+    .header {
+      background: #101010; border-bottom: 1px solid #1a1a1a;
+      padding: 20px 32px; position: sticky; top: 0; z-index: 200;
+    }
+    .header-inner { max-width: 1600px; margin: 0 auto; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .header-title { display: flex; align-items: center; gap: 12px; flex: 1; }
+    .header-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .header-title h1 { font-size: 18px; font-weight: 800; color: #fff; }
+    .header-title p  { font-size: 12px; color: #444; margin-top: 1px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+
+    .link-pill {
+      background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25);
+      border-radius: 999px; padding: 8px 16px; font-size: 12px; font-weight: 600;
+      color: #a5b4fc; text-decoration: none; display: flex; align-items: center; gap: 6px;
+      transition: all 0.15s; white-space: nowrap; cursor: pointer;
+    }
+    .link-pill:hover { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.4); }
+    .link-pill.danger { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.25); color: #fca5a5; }
+    .link-pill.danger:hover { background: rgba(239,68,68,0.2); }
+
+    .month-tabs { display: flex; gap: 4px; background: #0d0d0d; padding: 4px; border-radius: 10px; border: 1px solid #1a1a1a; }
+    .month-tab {
+      padding: 8px 20px; border-radius: 7px; font-size: 13px; font-weight: 600;
+      color: #444; cursor: pointer; transition: all 0.15s; border: none; background: transparent;
+      font-family: var(--font-sans);
+    }
+    .month-tab:hover { color: #888; background: #151515; }
+    .month-tab.active { background: #1e1e2e; color: #a5b4fc; border: 1px solid #2e2e4e; }
+
+    /* ═══════════════════════════════════════
+       MAIN CONTENT
+    ═══════════════════════════════════════ */
+    .main-wrap { max-width: 1600px; margin: 0 auto; padding: 28px 36px 160px; }
+
+    .stats-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .stat-card {
+      background: #101010; border: 1px solid #1a1a1a; border-radius: 10px;
+      padding: 12px 18px; display: flex; align-items: center; gap: 10px;
+    }
+    .stat-num { font-size: 22px; font-weight: 800; color: #fff; line-height: 1; }
+    .stat-label { font-size: 11px; color: #444; margin-top: 2px; }
+
+    .month-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+    .month-name { font-size: 28px; font-weight: 900; color: #fff; }
+    .month-year { font-size: 16px; font-weight: 400; color: #333; }
+
+    /* ═══════════════════════════════════════
+       CALENDAR GRID
+    ═══════════════════════════════════════ */
+    .weekday-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 5px; }
+    .weekday-label {
+      text-align: center; font-size: 10px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; color: #2a2a2a; padding: 8px 0;
+    }
+    .weekday-label.weekend { color: #222; }
+
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+    .cal-cell {
+      min-height: 120px; border-radius: 8px;
+      background: #0d0d0d; border: 1px solid #141414;
+      padding: 10px 8px; position: relative; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .cal-cell.empty { background: transparent; border-color: transparent; cursor: default; }
+    .cal-cell.has-events { background: #0f0f0f; border-color: #1a1a1a; }
+    .cal-cell.has-events:hover { background: #121218; border-color: #2e2e4e; }
+    .cal-cell.is-today { background: #0d0d1a !important; border-color: #2e2e5e !important; }
+    .cal-cell.is-past { opacity: 0.6; }
+
+    .day-num { font-size: 13px; font-weight: 700; color: #2e2e2e; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+    .day-num.has-events { color: #555; }
+    .today-badge { font-size: 9px; font-weight: 800; background: #6366f1; color: #fff; padding: 2px 6px; border-radius: 4px; }
+
+    .day-event {
+      font-size: 10px; padding: 3px 6px; border-radius: 4px; margin-bottom: 3px;
+      border-left: 2px solid; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* Attendance status indicators */
+    .att-indicator {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 4px; vertical-align: middle;
+    }
+    .att-complete { background: #22c55e; }
+    .att-partial  { background: #f59e0b; }
+    .att-none     { background: #333; }
+
+    /* ═══════════════════════════════════════
+       ATTENDANCE MODAL
+    ═══════════════════════════════════════ */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75); z-index: 1000;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: #111; border: 1px solid #222; border-radius: 16px;
+      padding: 28px; max-width: 560px; width: 95%; max-height: 85vh;
+      overflow-y: auto; position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      background: #1a1a1a; border: 1px solid #222; border-radius: 6px;
+      color: #666; cursor: pointer; padding: 4px 10px; font-size: 12px;
+      font-family: var(--font-sans);
+    }
+    .modal-date { font-size: 13px; color: #555; margin-bottom: 4px; }
+    .modal-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 20px; }
+
+    .att-session {
+      background: #161616; border: 1px solid #1e1e1e; border-radius: 10px;
+      padding: 16px; margin-bottom: 12px; border-left: 3px solid;
+    }
+    .att-session-course { font-size: 14px; font-weight: 700; color: #ddd; margin-bottom: 12px; }
+
+    .att-row {
+      display: flex; align-items: center; gap: 10px; padding: 10px 0;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .att-row:last-child { border-bottom: none; }
+
+    .att-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .att-info { flex: 1; }
+    .att-name { font-size: 13px; color: #ccc; font-weight: 600; }
+    .att-role { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .att-actions { display: flex; gap: 6px; }
+    .att-btn {
+      padding: 6px 12px; border-radius: 6px; border: 1px solid #222;
+      font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s;
+      font-family: var(--font-sans); background: #1a1a1a; color: #555;
+    }
+    .att-btn:hover { background: #222; color: #888; }
+    .att-btn.present { border-color: #166534; color: #4ade80; background: rgba(34,197,94,0.1); }
+    .att-btn.present.active { background: rgba(34,197,94,0.2); border-color: #22c55e; color: #22c55e; }
+    .att-btn.absent { border-color: #7f1d1d; color: #f87171; background: rgba(239,68,68,0.1); }
+    .att-btn.absent.active { background: rgba(239,68,68,0.2); border-color: #ef4444; color: #ef4444; }
+
+    .substitute-row {
+      display: none; padding: 8px 0 8px 38px;
+    }
+    .substitute-row.show { display: flex; align-items: center; gap: 8px; }
+    .substitute-label { font-size: 11px; color: #666; white-space: nowrap; }
+    .substitute-select {
+      flex: 1; padding: 6px 10px; border-radius: 6px;
+      background: #0d0d0d; border: 1px solid #1e1e1e;
+      color: #ccc; font-size: 12px; font-family: var(--font-sans);
+      outline: none;
+    }
+    .substitute-select:focus { border-color: #6366f1; }
+
+    .att-save-bar {
+      display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; padding-top: 16px;
+      border-top: 1px solid #1e1e1e;
+    }
+    .btn-save {
+      padding: 10px 24px; border-radius: 8px; border: none;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
+      font-family: var(--font-sans); transition: opacity 0.15s;
+    }
+    .btn-save:hover { opacity: 0.9; }
+    .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Saved indicator */
+    .saved-badge {
+      font-size: 10px; font-weight: 700; color: #22c55e; padding: 4px 8px;
+      background: rgba(34,197,94,0.1); border-radius: 4px; display: none;
+    }
+    .saved-badge.show { display: inline-block; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 20px;
+      border-radius: 10px; font-size: 13px; font-weight: 600;
+      z-index: 2000; transition: all 0.3s; transform: translateY(80px); opacity: 0;
+      font-family: var(--font-sans);
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #052e16; border: 1px solid #166534; color: #4ade80; }
+    .toast.error   { background: #2d0a0a; border: 1px solid #7f1d1d; color: #f87171; }
+
+    /* ═══════════════════════════════════════
+       REPORT VIEW
+    ═══════════════════════════════════════ */
+    .view-toggle { display: flex; gap: 4px; background: #0d0d0d; padding: 4px; border-radius: 10px; border: 1px solid #1a1a1a; }
+    .view-btn {
+      padding: 8px 16px; border-radius: 7px; font-size: 12px; font-weight: 600;
+      color: #444; cursor: pointer; border: none; background: transparent;
+      font-family: var(--font-sans); transition: all 0.15s;
+    }
+    .view-btn.active { background: #1e1e2e; color: #a5b4fc; }
+    .view-btn:hover { color: #888; }
+
+    .report-table {
+      width: 100%; border-collapse: collapse; margin-top: 16px;
+    }
+    .report-table th {
+      text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 700;
+      color: #444; text-transform: uppercase; letter-spacing: 0.05em;
+      border-bottom: 1px solid #1e1e1e; background: #0d0d0d;
+    }
+    .report-table td {
+      padding: 10px 12px; font-size: 13px; color: #aaa;
+      border-bottom: 1px solid #141414;
+    }
+    .report-table tr:hover td { background: #0f0f0f; }
+    .badge-present { color: #4ade80; background: rgba(34,197,94,0.1); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+    .badge-absent  { color: #f87171; background: rgba(239,68,68,0.1); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+
+    #report-view { display: none; }
+
+    @media (max-width: 768px) {
+      .header { padding: 14px 16px; }
+      .main-wrap { padding: 12px 10px; }
+      .cal-cell { min-height: 70px; padding: 6px 4px; }
+      .day-event { display: none; }
+      .month-name { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════ -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-icon">🔐</div>
+    <div class="login-title">Painel do Coordenador</div>
+    <div class="login-subtitle">Acesse para gerenciar presença dos professores</div>
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <input class="login-field" type="email" id="login-email" placeholder="Email" required autocomplete="email">
+      <input class="login-field" type="password" id="login-password" placeholder="Senha" required autocomplete="current-password">
+      <button class="login-btn" type="submit" id="login-btn">Entrar</button>
+      <div class="login-error" id="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     HEADER
+═══════════════════════════════════════ -->
+<header class="header" id="app-header" style="display:none">
+  <div class="header-inner">
+    <div class="header-title">
+      <div class="header-icon"><i data-lucide="shield-check" style="width:20px;height:20px;color:#fff"></i></div>
+      <div>
+        <h1>Painel do Coordenador</h1>
+        <p>Gestão de presença — Fev-Mai 2026</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="view-toggle">
+        <button class="view-btn active" onclick="switchView('calendar')">Calendário</button>
+        <button class="view-btn" onclick="switchView('report')">Relatório</button>
+      </div>
+      <a href="/calendario" class="link-pill"><i data-lucide="calendar" style="width:14px;height:14px"></i> Calendário Público</a>
+      <div class="month-tabs" id="month-tabs">
+        <button class="month-tab active" onclick="goToMonth(2026,2)">Fev</button>
+        <button class="month-tab" onclick="goToMonth(2026,3)">Mar</button>
+        <button class="month-tab" onclick="goToMonth(2026,4)">Abr</button>
+        <button class="month-tab" onclick="goToMonth(2026,5)">Mai</button>
+      </div>
+      <button class="link-pill danger" onclick="handleLogout()"><i data-lucide="log-out" style="width:14px;height:14px"></i> Sair</button>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════ -->
+<div class="main-wrap" id="app-content" style="display:none">
+  <div class="stats-bar" id="stats-bar"></div>
+
+  <!-- CALENDAR VIEW -->
+  <div id="calendar-view">
+    <div class="month-header">
+      <span class="month-name" id="month-name-label"></span>
+      <span class="month-year">2026</span>
+    </div>
+    <div class="weekday-header">
+      <div class="weekday-label">Seg</div>
+      <div class="weekday-label">Ter</div>
+      <div class="weekday-label">Qua</div>
+      <div class="weekday-label">Qui</div>
+      <div class="weekday-label">Sex</div>
+      <div class="weekday-label weekend">Sáb</div>
+      <div class="weekday-label weekend">Dom</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
+  <!-- REPORT VIEW -->
+  <div id="report-view">
+    <h2 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:16px">Relatório de Presença</h2>
+    <div id="report-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     ATTENDANCE MODAL
+═══════════════════════════════════════ -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal" id="modal-body">
+    <button class="modal-close" onclick="closeModal()">✕ fechar</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ═══════════════════════════════════════
+// SUPABASE CONFIG — PREENCHA COM SUAS CREDENCIAIS
+// ═══════════════════════════════════════
+const SUPABASE_URL  = 'SUA_SUPABASE_URL';
+const SUPABASE_KEY  = 'SUA_SUPABASE_ANON_KEY';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ═══════════════════════════════════════
+// TEACHERS DATA (mesmo do calendário público)
+// ═══════════════════════════════════════
+const TEACHERS = [
+  { name:"Talles", total:45, assignments:[
+    {course:"PS Advanced T1",  role:"Professor", dates:["24/02","27/02","03/03","06/03","10/03","13/03","17/03","20/03","24/03","27/03","31/03","03/04"]},
+    {course:"PS Advanced T2",  role:"Professor", dates:["07/04","10/04","14/04","17/04","21/04","24/04","28/04","01/05","05/05","08/05","12/05","15/05","19/05","22/05","26/05","29/05"]},
+    {course:"Aulas Advanced T1",role:"Host",     dates:["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"]},
+    {course:"Aulas Advanced T2",role:"Host",     dates:["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"]},
+  ]},
+  { name:"José Amorim", total:25, assignments:[
+    {course:"PS Advanced T1",   role:"Professor", dates:["27/02","06/03","13/03","20/03","27/03","03/04"]},
+    {course:"PS Advanced T2",   role:"Professor", dates:["10/04","17/04","24/04","01/05","08/05","15/05","22/05","29/05"]},
+    {course:"Aulas Fund T1",    role:"Professor", dates:["12/02","16/02","19/02","23/02","26/02","02/03","05/03"]},
+    {course:"AIOS Fund (Manhã)", role:"Professor", dates:["21/02","28/02","07/03","14/03"]},
+    {course:"AIOS Fund (Tarde)", role:"Professor", dates:["21/02","28/02","07/03","14/03"]},
+  ]},
+  { name:"Klaus", total:14, assignments:[
+    {course:"PS Advanced T1+T2",role:"Professor", dates:["24/02","03/03","10/03","17/03","24/03","31/03","07/04","14/04","21/04","28/04","05/05","12/05","19/05","26/05"]},
+  ]},
+  { name:"Day", total:14, assignments:[
+    {course:"PS Advanced T1+T2",role:"Professor", dates:["24/02","03/03","10/03","17/03","24/03","31/03","07/04","14/04","21/04","28/04","05/05","12/05","19/05","26/05"]},
+  ]},
+  { name:"Sidney", total:11, assignments:[
+    {course:"PS Fundamentals",    role:"Professor", dates:["17/02","20/02","03/03","06/03","13/03","20/03","27/03"]},
+    {course:"AIOS Fund (Manhã)",  role:"Host",      dates:["21/02","28/02","07/03","14/03"]},
+  ]},
+  { name:"Rodrigo Feldman", total:6, assignments:[
+    {course:"PS Fundamentals",role:"Professor", dates:["13/02","24/02","27/02","10/03","17/03","24/03"]},
+  ]},
+  { name:"Bruno Gentil", total:16, assignments:[
+    {course:"PS Fundamentals",  role:"Professor", dates:["13/02","17/02","20/02","27/02","03/03","06/03","10/03","13/03","17/03","20/03","24/03","27/03"]},
+    {course:"AIOS Fund (Tarde)",role:"Host",      dates:["21/02","28/02","07/03","14/03"]},
+  ]},
+  { name:"Diego", total:14, assignments:[
+    {course:"PS Fundamentals",role:"Professor", dates:["17/02","24/02","03/03","10/03","17/03","24/03"]},
+    {course:"Aulas Fund T1",  role:"Host",      dates:["12/02","19/02","26/02","05/03"]},
+    {course:"Aulas Fund T3",  role:"Host",      dates:["05/03","12/03","19/03","26/03"]},
+  ]},
+  { name:"Adavio", total:22, assignments:[
+    {course:"PS Advanced T1+T2",role:"Professor", dates:["27/02","06/03","13/03","20/03","27/03","03/04","10/04","17/04","24/04","01/05","08/05","15/05","22/05","29/05"]},
+    {course:"Aulas Advanced T2",role:"Host",      dates:["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"]},
+  ]},
+  { name:"Alan Nicolas", total:9, assignments:[
+    {course:"Aulas Advanced T1",role:"Professor", dates:["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"]},
+  ]},
+  { name:"Adriano", total:25, assignments:[
+    {course:"Aulas Advanced T1",role:"Host",      dates:["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"]},
+    {course:"Aulas Advanced T2",role:"Professor", dates:["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"]},
+    {course:"Aulas Fund T3",   role:"Professor", dates:["02/03","05/03","09/03","12/03","16/03","19/03","23/03","26/03"]},
+  ]},
+  { name:"Fran", total:3, assignments:[
+    {course:"Aulas Fund T1",role:"Host", dates:["16/02","23/02","02/03"]},
+  ]},
+  { name:"Douglas", total:8, assignments:[
+    {course:"Aulas Fund T3",role:"Host", dates:["02/03","05/03","09/03","12/03","16/03","19/03","23/03","26/03"]},
+  ]},
+  { name:"Lucas Charão", total:7, assignments:[
+    {course:"Aulas Fund T1",role:"Host", dates:["12/02","16/02","19/02","23/02","26/02","02/03","05/03"]},
+  ]},
+];
+
+const COURSE_CFG = {
+  'PS Advanced':       {color:'#6366f1', bg:'rgba(99,102,241,0.08)'},
+  'PS Advanced T1':    {color:'#6366f1', bg:'rgba(99,102,241,0.08)'},
+  'PS Advanced T2':    {color:'#6366f1', bg:'rgba(99,102,241,0.08)'},
+  'PS Advanced T1+T2': {color:'#6366f1', bg:'rgba(99,102,241,0.08)'},
+  'PS Fundamentals':   {color:'#f59e0b', bg:'rgba(245,158,11,0.08)'},
+  'Aulas Advanced T1': {color:'#10b981', bg:'rgba(16,185,129,0.08)'},
+  'Aulas Advanced T2': {color:'#34d399', bg:'rgba(52,211,153,0.08)'},
+  'Aulas Fund T1':     {color:'#06b6d4', bg:'rgba(6,182,212,0.08)'},
+  'Aulas Fund T2':     {color:'#0ea5e9', bg:'rgba(14,165,233,0.08)'},
+  'Aulas Fund T3':     {color:'#22d3ee', bg:'rgba(34,211,238,0.08)'},
+  'AIOS Fund (Manhã)': {color:'#ec4899', bg:'rgba(236,72,153,0.08)'},
+  'AIOS Fund (Tarde)': {color:'#f472b6', bg:'rgba(244,114,182,0.08)'},
+};
+function getCfg(c) { return COURSE_CFG[c] || {color:'#666', bg:'rgba(102,102,102,0.08)'}; }
+
+const MENTOR_COLORS = ['#6366f1','#10b981','#f59e0b','#ec4899','#06b6d4','#8b5cf6','#ef4444','#14b8a6','#f97316','#a855f7','#22c55e','#3b82f6','#e11d48','#7c3aed','#0891b2'];
+function mentorColor(name) { let h=0; for(const c of name) h=(h*31+c.charCodeAt(0))%MENTOR_COLORS.length; return MENTOR_COLORS[h]; }
+function initials(name) { return name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
+
+// ═══════════════════════════════════════
+// BUILD EVENTS MAP
+// ═══════════════════════════════════════
+function buildEventsMap() {
+  const map = {};
+  for (const teacher of TEACHERS) {
+    for (const a of teacher.assignments) {
+      for (const date of a.dates) {
+        if (!map[date]) map[date] = {};
+        if (!map[date][a.course]) map[date][a.course] = { course: a.course, mentors: [] };
+        const already = map[date][a.course].mentors.some(m => m.name === teacher.name);
+        if (!already) map[date][a.course].mentors.push({ name: teacher.name, role: a.role });
+      }
+    }
+  }
+  return map;
+}
+const EVENTS = buildEventsMap();
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let currentMonth = 2;
+let currentYear = 2026;
+let attendanceCache = {}; // { "dd/mm|course|teacher": {status, substitute_name} }
+const MONTHS = [{y:2026,m:2},{y:2026,m:3},{y:2026,m:4},{y:2026,m:5}];
+const MONTH_NAMES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+function todayDate() { const d=new Date(); d.setHours(0,0,0,0); return d; }
+function dateStr(d, m) { return `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}`; }
+
+// ═══════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════
+async function checkAuth() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    showApp();
+    await loadAttendance();
+    renderAll();
+  }
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  btn.disabled = true;
+  errEl.classList.remove('show');
+
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    errEl.textContent = 'Email ou senha incorretos';
+    errEl.classList.add('show');
+    btn.disabled = false;
+    return;
+  }
+
+  showApp();
+  await loadAttendance();
+  renderAll();
+}
+
+async function handleLogout() {
+  await supabase.auth.signOut();
+  document.getElementById('login-overlay').classList.remove('hidden');
+  document.getElementById('app-header').style.display = 'none';
+  document.getElementById('app-content').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('app-header').style.display = '';
+  document.getElementById('app-content').style.display = '';
+}
+
+// ═══════════════════════════════════════
+// LOAD ATTENDANCE FROM SUPABASE
+// ═══════════════════════════════════════
+async function loadAttendance() {
+  const { data, error } = await supabase
+    .from('attendance')
+    .select('*');
+
+  if (error) { console.error('Load attendance error:', error); return; }
+
+  attendanceCache = {};
+  for (const row of (data || [])) {
+    const key = `${row.lesson_date}|${row.course}|${row.teacher_name}`;
+    attendanceCache[key] = {
+      id: row.id,
+      status: row.status,
+      substitute_name: row.substitute_name,
+      notes: row.notes,
+    };
+  }
+}
+
+// ═══════════════════════════════════════
+// SAVE ATTENDANCE
+// ═══════════════════════════════════════
+async function saveAttendance(records) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) { showToast('Sessão expirada. Faça login novamente.', 'error'); return false; }
+
+  for (const rec of records) {
+    const key = `${rec.lesson_date}|${rec.course}|${rec.teacher_name}`;
+    const existing = attendanceCache[key];
+
+    if (existing && existing.id) {
+      const { error } = await supabase
+        .from('attendance')
+        .update({
+          status: rec.status,
+          substitute_name: rec.substitute_name || null,
+          notes: rec.notes || null,
+        })
+        .eq('id', existing.id);
+
+      if (error) { console.error('Update error:', error); showToast('Erro ao salvar: ' + error.message, 'error'); return false; }
+    } else {
+      const { error } = await supabase
+        .from('attendance')
+        .insert({
+          lesson_date: rec.lesson_date,
+          course: rec.course,
+          teacher_name: rec.teacher_name,
+          role: rec.role,
+          status: rec.status,
+          substitute_name: rec.substitute_name || null,
+          notes: rec.notes || null,
+          recorded_by: session.user.id,
+        });
+
+      if (error) { console.error('Insert error:', error); showToast('Erro ao salvar: ' + error.message, 'error'); return false; }
+    }
+  }
+
+  await loadAttendance();
+  return true;
+}
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
+function renderAll() {
+  renderStats();
+  renderGrid(currentYear, currentMonth);
+}
+
+function renderStats() {
+  const totalLessons = Object.keys(EVENTS).length;
+  let recorded = 0;
+  let presents = 0;
+  let absents = 0;
+  for (const key in attendanceCache) {
+    recorded++;
+    if (attendanceCache[key].status === 'present') presents++;
+    else absents++;
+  }
+
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat-card">
+      <span style="font-size:20px">👥</span>
+      <div><div class="stat-num">${TEACHERS.length}</div><div class="stat-label">Professores</div></div>
+    </div>
+    <div class="stat-card">
+      <span style="font-size:20px">📆</span>
+      <div><div class="stat-num">${totalLessons}</div><div class="stat-label">Dias com aula</div></div>
+    </div>
+    <div class="stat-card">
+      <span style="font-size:20px">✅</span>
+      <div><div class="stat-num">${presents}</div><div class="stat-label">Presenças</div></div>
+    </div>
+    <div class="stat-card">
+      <span style="font-size:20px">❌</span>
+      <div><div class="stat-num">${absents}</div><div class="stat-label">Faltas</div></div>
+    </div>
+    <div class="stat-card">
+      <span style="font-size:20px">📋</span>
+      <div><div class="stat-num">${recorded}</div><div class="stat-label">Registros</div></div>
+    </div>
+  `;
+}
+
+function getDateAttStatus(dateKey) {
+  const events = EVENTS[dateKey];
+  if (!events) return 'none';
+  let total = 0;
+  let recorded = 0;
+  for (const course in events) {
+    for (const m of events[course].mentors) {
+      total++;
+      const key = `${dateKey}|${course}|${m.name}`;
+      if (attendanceCache[key]) recorded++;
+    }
+  }
+  if (recorded === 0) return 'none';
+  if (recorded >= total) return 'complete';
+  return 'partial';
+}
+
+function renderGrid(year, month1) {
+  currentYear = year;
+  currentMonth = month1;
+  document.getElementById('month-name-label').textContent = MONTH_NAMES[month1-1];
+
+  const firstDay = new Date(year, month1-1, 1).getDay();
+  const startOffset = (firstDay + 6) % 7;
+  const daysInMonth = new Date(year, month1, 0).getDate();
+  const t = todayDate();
+  const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+
+  let html = '';
+  for (let i = 0; i < totalCells; i++) {
+    const dayNum = i - startOffset + 1;
+    if (dayNum < 1 || dayNum > daysInMonth) { html += '<div class="cal-cell empty"></div>'; continue; }
+
+    const key = dateStr(dayNum, month1);
+    const events = EVENTS[key] ? Object.values(EVENTS[key]) : [];
+    const cellDate = new Date(year, month1-1, dayNum); cellDate.setHours(0,0,0,0);
+    const isPast = cellDate < t;
+    const isToday = cellDate.getTime() === t.getTime();
+    const dow = i % 7;
+
+    let classes = 'cal-cell';
+    if (events.length) classes += ' has-events';
+    if (isToday) classes += ' is-today';
+    else if (isPast) classes += ' is-past';
+
+    const attStatus = getDateAttStatus(key);
+    const indicator = events.length
+      ? `<span class="att-indicator att-${attStatus}" title="${attStatus === 'complete' ? 'Completo' : attStatus === 'partial' ? 'Parcial' : 'Sem registro'}"></span>`
+      : '';
+
+    const eventsHTML = events.slice(0, 3).map(ev => {
+      const cfg = getCfg(ev.course);
+      return `<div class="day-event" style="border-color:${cfg.color};color:${cfg.color};background:${cfg.bg}">${ev.course.replace('Aulas ','')}</div>`;
+    }).join('') + (events.length > 3 ? `<div style="font-size:10px;color:#444">+${events.length-3} mais</div>` : '');
+
+    html += `<div class="${classes}" onclick="openAttendance('${key}')">
+      <div class="day-num ${events.length?'has-events':''}">
+        ${dayNum} ${isToday ? '<span class="today-badge">Hoje</span>' : ''} ${indicator}
+      </div>
+      ${eventsHTML}
+    </div>`;
+  }
+
+  document.getElementById('cal-grid').innerHTML = html;
+  document.querySelectorAll('.month-tab').forEach((btn, i) => {
+    btn.classList.toggle('active', MONTHS[i].m === month1);
+  });
+}
+
+// ═══════════════════════════════════════
+// ATTENDANCE MODAL
+// ═══════════════════════════════════════
+let modalDateKey = null;
+
+function openAttendance(dateKey) {
+  const events = EVENTS[dateKey] ? Object.values(EVENTS[dateKey]) : [];
+  if (!events.length) return;
+  modalDateKey = dateKey;
+
+  const [dd, mm] = dateKey.split('/');
+  const date = new Date(2026, parseInt(mm)-1, parseInt(dd));
+  const weekday = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'][date.getDay()];
+
+  const allTeacherNames = TEACHERS.map(t => t.name);
+
+  const sessionsHTML = events.map(ev => {
+    const cfg = getCfg(ev.course);
+    const mentorsHTML = ev.mentors.map(m => {
+      const cacheKey = `${dateKey}|${ev.course}|${m.name}`;
+      const cached = attendanceCache[cacheKey] || {};
+      const isPresent = cached.status === 'present';
+      const isAbsent = cached.status === 'absent';
+
+      const substituteOptions = allTeacherNames
+        .filter(n => n !== m.name)
+        .map(n => `<option value="${n}" ${cached.substitute_name === n ? 'selected' : ''}>${n}</option>`)
+        .join('');
+
+      return `
+        <div class="att-row">
+          <div class="att-avatar" style="background:${mentorColor(m.name)}">${initials(m.name)}</div>
+          <div class="att-info">
+            <div class="att-name">${m.name}</div>
+            <div class="att-role">${m.role}</div>
+          </div>
+          <div class="att-actions">
+            <button class="att-btn present ${isPresent?'active':''}"
+              data-date="${dateKey}" data-course="${ev.course}" data-teacher="${m.name}" data-role="${m.role}" data-action="present"
+              onclick="toggleAtt(this)">Presente</button>
+            <button class="att-btn absent ${isAbsent?'active':''}"
+              data-date="${dateKey}" data-course="${ev.course}" data-teacher="${m.name}" data-role="${m.role}" data-action="absent"
+              onclick="toggleAtt(this)">Falta</button>
+          </div>
+        </div>
+        <div class="substitute-row ${isAbsent?'show':''}" id="sub-${dateKey}-${ev.course}-${m.name}".replace(/[^a-zA-Z0-9]/g,'-')>
+          <span class="substitute-label">Substituto:</span>
+          <select class="substitute-select"
+            data-date="${dateKey}" data-course="${ev.course}" data-teacher="${m.name}">
+            <option value="">— Nenhum —</option>
+            ${substituteOptions}
+          </select>
+        </div>`;
+    }).join('');
+
+    return `<div class="att-session" style="border-left-color:${cfg.color}">
+      <div class="att-session-course" style="color:${cfg.color}">${ev.course}</div>
+      ${mentorsHTML}
+    </div>`;
+  }).join('');
+
+  document.getElementById('modal-content').innerHTML = `
+    <div class="modal-date">${weekday}, ${dd}/${mm}/2026</div>
+    <div class="modal-title">Registrar Presença</div>
+    ${sessionsHTML}
+    <div class="att-save-bar">
+      <span class="saved-badge" id="saved-badge">Salvo!</span>
+      <button class="btn-save" id="btn-save" onclick="saveAll()">Salvar Presença</button>
+    </div>
+  `;
+  document.getElementById('modal').classList.add('show');
+}
+
+function toggleAtt(btn) {
+  const row = btn.closest('.att-row');
+  const actions = row.querySelectorAll('.att-btn');
+  const isActive = btn.classList.contains('active');
+
+  actions.forEach(b => b.classList.remove('active'));
+  if (!isActive) btn.classList.add('active');
+
+  // Show/hide substitute row
+  const date = btn.dataset.date;
+  const course = btn.dataset.course;
+  const teacher = btn.dataset.teacher;
+  const subRow = btn.closest('.att-row').nextElementSibling;
+  if (subRow && subRow.classList.contains('substitute-row')) {
+    if (!isActive && btn.dataset.action === 'absent') {
+      subRow.classList.add('show');
+    } else {
+      subRow.classList.remove('show');
+    }
+  }
+}
+
+async function saveAll() {
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+
+  const records = [];
+  document.querySelectorAll('.att-btn.active').forEach(b => {
+    const rec = {
+      lesson_date: b.dataset.date,
+      course: b.dataset.course,
+      teacher_name: b.dataset.teacher,
+      role: b.dataset.role,
+      status: b.dataset.action,
+    };
+
+    // Check for substitute
+    const subSelect = document.querySelector(
+      `select[data-date="${rec.lesson_date}"][data-course="${rec.course}"][data-teacher="${rec.teacher_name}"]`
+    );
+    if (subSelect && subSelect.value) {
+      rec.substitute_name = subSelect.value;
+    }
+
+    records.push(rec);
+  });
+
+  if (!records.length) {
+    showToast('Nenhuma presença marcada', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Salvar Presença';
+    return;
+  }
+
+  const ok = await saveAttendance(records);
+  btn.disabled = false;
+  btn.textContent = 'Salvar Presença';
+
+  if (ok) {
+    showToast('Presença salva com sucesso!', 'success');
+    document.getElementById('saved-badge').classList.add('show');
+    renderAll();
+  }
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal') || e.target.classList.contains('modal-close')) {
+    document.getElementById('modal').classList.remove('show');
+    modalDateKey = null;
+  }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal({target:document.getElementById('modal')}); });
+
+// ═══════════════════════════════════════
+// VIEW TOGGLE
+// ═══════════════════════════════════════
+function switchView(view) {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.view-btn[onclick="switchView('${view}')"]`).classList.add('active');
+
+  document.getElementById('calendar-view').style.display = view === 'calendar' ? '' : 'none';
+  document.getElementById('report-view').style.display = view === 'report' ? '' : 'none';
+
+  if (view === 'report') renderReport();
+}
+
+function renderReport() {
+  const teacherStats = {};
+  for (const t of TEACHERS) {
+    teacherStats[t.name] = { total: t.total, present: 0, absent: 0, asSubstitute: 0 };
+  }
+
+  for (const key in attendanceCache) {
+    const rec = attendanceCache[key];
+    const teacher = key.split('|')[2];
+    if (!teacherStats[teacher]) teacherStats[teacher] = { total: 0, present: 0, absent: 0, asSubstitute: 0 };
+    if (rec.status === 'present') teacherStats[teacher].present++;
+    else teacherStats[teacher].absent++;
+
+    if (rec.substitute_name && teacherStats[rec.substitute_name]) {
+      teacherStats[rec.substitute_name].asSubstitute++;
+    }
+  }
+
+  let rows = '';
+  for (const [name, s] of Object.entries(teacherStats).sort((a,b) => a[0].localeCompare(b[0]))) {
+    const recorded = s.present + s.absent;
+    const pct = recorded > 0 ? Math.round((s.present / recorded) * 100) : '-';
+    rows += `<tr>
+      <td style="color:#ddd;font-weight:600">${name}</td>
+      <td>${s.total}</td>
+      <td><span class="badge-present">${s.present}</span></td>
+      <td><span class="badge-absent">${s.absent}</span></td>
+      <td>${s.asSubstitute > 0 ? s.asSubstitute : '-'}</td>
+      <td style="color:${typeof pct === 'number' ? (pct >= 80 ? '#4ade80' : pct >= 50 ? '#f59e0b' : '#f87171') : '#444'}">${typeof pct === 'number' ? pct + '%' : pct}</td>
+    </tr>`;
+  }
+
+  document.getElementById('report-content').innerHTML = `
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th>Professor</th>
+          <th>Aulas Totais</th>
+          <th>Presenças</th>
+          <th>Faltas</th>
+          <th>Substituições</th>
+          <th>Frequência</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function goToMonth(y, m) { renderGrid(y, m); }
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+checkAuth();
+</script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>
