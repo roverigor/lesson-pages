@@ -203,6 +203,8 @@
     .att-btn.present.active { background: rgba(34,197,94,0.2); border-color: #22c55e; color: #22c55e; }
     .att-btn.absent { border-color: #7f1d1d; color: #f87171; background: rgba(239,68,68,0.1); }
     .att-btn.absent.active { background: rgba(239,68,68,0.2); border-color: #ef4444; color: #ef4444; }
+    .att-btn.delete { border-color: #44403c; color: #a8a29e; background: rgba(168,162,158,0.08); font-size: 13px; padding: 6px 8px; }
+    .att-btn.delete:hover { background: rgba(239,68,68,0.15); border-color: #7f1d1d; color: #f87171; }
 
     .substitute-row {
       display: none; padding: 8px 0 8px 38px;
@@ -781,6 +783,9 @@ function openAttendance(dateKey) {
             <button class="att-btn absent ${isAbsent?'active':''}"
               data-date="${dateKey}" data-course="${ev.course}" data-teacher="${m.name}" data-role="${m.role}" data-action="absent"
               onclick="toggleAtt(this)">Falta</button>
+            ${cached.status ? `<button class="att-btn delete" title="Excluir registro"
+              data-date="${dateKey}" data-course="${ev.course}" data-teacher="${m.name}"
+              onclick="deleteAtt(this)">🗑</button>` : ''}
           </div>
         </div>
         <div class="substitute-row ${isAbsent?'show':''}" id="sub-${dateKey}-${ev.course}-${m.name}".replace(/[^a-zA-Z0-9]/g,'-')>
@@ -831,6 +836,34 @@ function toggleAtt(btn) {
       subRow.classList.remove('show');
     }
   }
+}
+
+async function deleteAtt(btn) {
+  const dateKey = btn.dataset.date;
+  const course = btn.dataset.course;
+  const teacher = btn.dataset.teacher;
+  const cacheKey = `${dateKey}|${course}|${teacher}`;
+  const cached = attendanceCache[cacheKey];
+
+  if (!cached || !cached.id) { showToast('Nenhum registro para excluir', 'error'); return; }
+
+  if (!confirm(`Excluir registro de ${teacher} em ${dateKey}?`)) return;
+
+  const { error } = await sb
+    .from('attendance')
+    .delete()
+    .eq('id', cached.id);
+
+  if (error) {
+    showToast('Erro ao excluir: ' + error.message, 'error');
+    return;
+  }
+
+  delete attendanceCache[cacheKey];
+  showToast(`Registro de ${teacher} excluído`, 'success');
+  renderAll();
+  // Reopen modal to refresh
+  openAttendance(dateKey);
 }
 
 async function saveAll() {
