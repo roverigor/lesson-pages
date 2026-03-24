@@ -389,7 +389,7 @@
 // ═══════════════════════════════════════
 const SUPABASE_URL  = 'https://gpufcipkajppykmnmdeh.supabase.co';
 const SUPABASE_KEY  = 'sb_publishable_z0KFl9NcCg7tmy27GUUVLw_uS_kEV9K';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ═══════════════════════════════════════
 // TEACHERS DATA (mesmo do calendário público)
@@ -508,7 +508,7 @@ function dateStr(d, m) { return `${String(d).padStart(2,'0')}/${String(m).padSta
 // AUTH
 // ═══════════════════════════════════════
 async function checkAuth() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sb.auth.getSession();
   if (session) {
     showApp();
     await loadAttendance();
@@ -526,7 +526,7 @@ async function handleLogin(e) {
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await sb.auth.signInWithPassword({ email, password });
   if (error) {
     errEl.textContent = 'Email ou senha incorretos';
     errEl.classList.add('show');
@@ -540,7 +540,7 @@ async function handleLogin(e) {
 }
 
 async function handleLogout() {
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
   document.getElementById('login-overlay').classList.remove('hidden');
   document.getElementById('app-header').style.display = 'none';
   document.getElementById('app-content').style.display = 'none';
@@ -556,7 +556,7 @@ function showApp() {
 // LOAD ATTENDANCE FROM SUPABASE
 // ═══════════════════════════════════════
 async function loadAttendance() {
-  const { data, error } = await supabase
+  const { data, error } = await sb
     .from('attendance')
     .select('*');
 
@@ -578,7 +578,7 @@ async function loadAttendance() {
 // SAVE ATTENDANCE
 // ═══════════════════════════════════════
 async function saveAttendance(records) {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sb.auth.getSession();
   if (!session) { showToast('Sessão expirada. Faça login novamente.', 'error'); return false; }
 
   for (const rec of records) {
@@ -586,7 +586,7 @@ async function saveAttendance(records) {
     const existing = attendanceCache[key];
 
     if (existing && existing.id) {
-      const { error } = await supabase
+      const { error } = await sb
         .from('attendance')
         .update({
           status: rec.status,
@@ -597,7 +597,7 @@ async function saveAttendance(records) {
 
       if (error) { console.error('Update error:', error); showToast('Erro ao salvar: ' + error.message, 'error'); return false; }
     } else {
-      const { error } = await supabase
+      const { error } = await sb
         .from('attendance')
         .insert({
           lesson_date: rec.lesson_date,
