@@ -31,35 +31,23 @@ ALTER TABLE attendance ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Authenticated read" ON attendance
   FOR SELECT TO authenticated USING (true);
 
--- Insert/Update apenas para admins
+-- Insert/Update/Delete apenas para admins (usa auth.jwt() para evitar problema de permissão em auth.users)
 CREATE POLICY "Admin insert" ON attendance
   FOR INSERT TO authenticated
   WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM auth.users
-      WHERE id = auth.uid()
-      AND raw_user_meta_data->>'role' = 'admin'
-    )
+    (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
   );
 
 CREATE POLICY "Admin update" ON attendance
   FOR UPDATE TO authenticated
   USING (
-    EXISTS (
-      SELECT 1 FROM auth.users
-      WHERE id = auth.uid()
-      AND raw_user_meta_data->>'role' = 'admin'
-    )
+    (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
   );
 
 CREATE POLICY "Admin delete" ON attendance
   FOR DELETE TO authenticated
   USING (
-    EXISTS (
-      SELECT 1 FROM auth.users
-      WHERE id = auth.uid()
-      AND raw_user_meta_data->>'role' = 'admin'
-    )
+    (auth.jwt() -> 'user_metadata' ->> 'role') = 'admin'
   );
 
 -- Function para updated_at automático
