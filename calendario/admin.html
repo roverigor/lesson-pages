@@ -388,7 +388,7 @@
 // SUPABASE CONFIG — PREENCHA COM SUAS CREDENCIAIS
 // ═══════════════════════════════════════
 const SUPABASE_URL  = 'https://gpufcipkajppykmnmdeh.supabase.co';
-const SUPABASE_KEY  = 'sb_publishable_z0KFl9NcCg7tmy27GUUVLw_uS_kEV9K';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ═══════════════════════════════════════
@@ -523,20 +523,28 @@ async function handleLogin(e) {
   btn.disabled = true;
   errEl.classList.remove('show');
 
-  const email = document.getElementById('login-email').value;
+  const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
 
-  const { error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) {
-    errEl.textContent = 'Email ou senha incorretos';
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    console.log('Login result:', { data, error });
+    if (error) {
+      errEl.textContent = error.message || 'Email ou senha incorretos';
+      errEl.classList.add('show');
+      btn.disabled = false;
+      return;
+    }
+
+    showApp();
+    await loadAttendance();
+    renderAll();
+  } catch (err) {
+    console.error('Login exception:', err);
+    errEl.textContent = 'Erro de conexão: ' + err.message;
     errEl.classList.add('show');
     btn.disabled = false;
-    return;
   }
-
-  showApp();
-  await loadAttendance();
-  renderAll();
 }
 
 async function handleLogout() {
