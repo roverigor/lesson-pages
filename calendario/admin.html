@@ -551,8 +551,10 @@ function mentorColor(name) { let h=0; for(const c of name) h=(h*31+c.charCodeAt(
 function initials(name) { return name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
 
 // ═══════════════════════════════════════
-// BUILD EVENTS MAP
+// BUILD EVENTS MAP (applies overrides)
 // ═══════════════════════════════════════
+let overridesCache = []; // loaded from Supabase
+
 function buildEventsMap() {
   const map = {};
   for (const teacher of TEACHERS) {
@@ -565,9 +567,22 @@ function buildEventsMap() {
       }
     }
   }
+  // Apply overrides
+  for (const ov of overridesCache) {
+    if (ov.action === 'remove') {
+      if (map[ov.lesson_date] && map[ov.lesson_date][ov.course]) {
+        map[ov.lesson_date][ov.course].mentors = map[ov.lesson_date][ov.course].mentors.filter(m => m.name !== ov.teacher_name);
+      }
+    } else if (ov.action === 'add') {
+      if (!map[ov.lesson_date]) map[ov.lesson_date] = {};
+      if (!map[ov.lesson_date][ov.course]) map[ov.lesson_date][ov.course] = { course: ov.course, mentors: [] };
+      const already = map[ov.lesson_date][ov.course].mentors.some(m => m.name === ov.teacher_name);
+      if (!already) map[ov.lesson_date][ov.course].mentors.push({ name: ov.teacher_name, role: ov.role });
+    }
+  }
   return map;
 }
-const EVENTS = buildEventsMap();
+let EVENTS = buildEventsMap();
 
 // ═══════════════════════════════════════
 // STATE
@@ -584,10 +599,17 @@ function dateStr(d, m) { return `${String(d).padStart(2,'0')}/${String(m).padSta
 // ═══════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════
+async function loadOverrides() {
+  const { data } = await sb.from('schedule_overrides').select('*');
+  overridesCache = data || [];
+  EVENTS = buildEventsMap(); // rebuild with overrides applied
+}
+
 async function checkAuth() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     showApp();
+    await loadOverrides();
     await loadAttendance();
     renderAll();
   }
@@ -614,6 +636,7 @@ async function handleLogin(e) {
     }
 
     showApp();
+    await loadOverrides();
     await loadAttendance();
     renderAll();
   } catch (err) {
@@ -825,24 +848,37 @@ let modalDateKey = null;
 
 function openAttendance(dateKey) {
   const events = EVENTS[dateKey] ? Object.values(EVENTS[dateKey]) : [];
-  if (!events.length) return;
+  // Also check for original events that may have been fully emptied by overrides
+  const originalEvents = buildOriginalEventsForDate(dateKey);
+  const allCourses = new Set([...Object.keys(events.length ? EVENTS[dateKey] : {}), ...Object.keys(originalEvents)]);
+
+  if (!allCourses.size) return;
   modalDateKey = dateKey;
 
   const [dd, mm] = dateKey.split('/');
   const date = new Date(2026, parseInt(mm)-1, parseInt(dd));
   const weekday = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'][date.getDay()];
 
-  const allTeacherNames = TEACHERS.map(t => t.name);
+  // Get all staff names for dropdowns
+  const allNames = staffList.length > 0
+    ? staffList.map(s => s.name)
+    : TEACHERS.map(t => t.name);
+
+  // Get removed overrides for this date to show them
+  const removedForDate = overridesCache.filter(o => o.lesson_date === dateKey && o.action === 'remove');
 
   const sessionsHTML = events.map(ev => {
     const cfg = getCfg(ev.course);
+    const courseId = ev.course.replace(/[^a-zA-Z0-9]/g, '');
+
     const mentorsHTML = ev.mentors.map(m => {
       const cacheKey = `${dateKey}|${ev.course}|${m.name}`;
       const cached = attendanceCache[cacheKey] || {};
       const isPresent = cached.status === 'present';
       const isAbsent = cached.status === 'absent';
+      const isAdded = overridesCache.some(o => o.lesson_date === dateKey && o.course === ev.course && o.teacher_name === m.name && o.action === 'add');
 
-      const substituteOptions = allTeacherNames
+      const nameOptions = allNames
         .filter(n => n !== m.name)
         .map(n => `<option value="${n}" ${cached.substitute_name === n ? 'selected' : ''}>${n}</option>`)
         .join('');
@@ -851,7 +887,7 @@ function openAttendance(dateKey) {
         <div class="att-row">
           <div class="att-avatar" style="background:${mentorColor(m.name)}">${initials(m.name)}</div>
           <div class="att-info">
-            <div class="att-name">${m.name}</div>
+            <div class="att-name">${m.name} ${isAdded ? '<span style="font-size:9px;color:#facc15;background:rgba(250,204,21,0.1);padding:1px 5px;border-radius:3px">adicionado</span>' : ''}</div>
             <div class="att-role">${m.role}</div>
           </div>
           <div class="att-actions">
@@ -861,9 +897,15 @@ function openAttendance(dateKey) {
             <button class="att-btn absent ${isAbsent?'active':''}"
               data-date="${dateKey}" data-course="${ev.course}" data-teacher="${m.name}" data-role="${m.role}" data-action="absent"
               onclick="toggleAtt(this)">Falta</button>
-            ${cached.status ? `<button class="att-btn delete" title="Excluir registro"
+            ${cached.status ? `<button class="att-btn delete" title="Excluir registro de presença"
               data-date="${dateKey}" data-course="${ev.course}" data-teacher="${m.name}"
               onclick="deleteAtt(this)">🗑</button>` : ''}
+            ${isAdded
+              ? `<button class="att-btn delete" title="Desfazer adição" onclick="undoAdd('${dateKey}','${ev.course}','${m.name}')" style="font-size:11px;padding:6px 8px">↩</button>`
+              : `<button class="att-btn delete" title="Remover da aula"
+                data-date="${dateKey}" data-course="${ev.course}" data-teacher="${m.name}"
+                onclick="removeFromLesson(this)" style="font-size:11px;padding:6px 8px">✕</button>`
+            }
           </div>
         </div>
         <div class="substitute-row show">
@@ -871,7 +913,7 @@ function openAttendance(dateKey) {
           <select class="substitute-select"
             data-date="${dateKey}" data-course="${ev.course}" data-teacher="${m.name}">
             <option value="">— Nenhum —</option>
-            ${substituteOptions}
+            ${nameOptions}
           </select>
           <select class="substitute-select" style="max-width:120px"
             data-date="${dateKey}" data-course="${ev.course}" data-teacher="${m.name}" data-field="role">
@@ -882,9 +924,47 @@ function openAttendance(dateKey) {
         </div>`;
     }).join('');
 
+    // Removed mentors for this course
+    const removedForCourse = removedForDate.filter(o => o.course === ev.course);
+    const removedHTML = removedForCourse.map(o => `
+      <div class="att-row" style="opacity:0.4">
+        <div class="att-avatar" style="background:#333">${initials(o.teacher_name)}</div>
+        <div class="att-info">
+          <div class="att-name" style="text-decoration:line-through;color:#555">${o.teacher_name}</div>
+          <div class="att-role" style="color:#7f1d1d">Removido</div>
+        </div>
+        <div class="att-actions">
+          <button class="att-btn" onclick="undoRemove('${dateKey}','${ev.course}','${o.teacher_name}')" style="padding:6px 10px;font-size:11px;color:#facc15;border-color:#854d0e">↩ Restaurar</button>
+        </div>
+      </div>
+    `).join('');
+
+    // Add teacher form
+    const addOptions = allNames
+      .filter(n => !ev.mentors.some(m => m.name === n))
+      .map(n => `<option value="${n}">${n}</option>`)
+      .join('');
+
+    const addHTML = `
+      <div style="display:flex;gap:6px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid #1a1a1a">
+        <span style="font-size:11px;color:#555;white-space:nowrap">Adicionar:</span>
+        <select class="substitute-select" id="add-teacher-name-${courseId}" style="flex:1">
+          <option value="">— Selecionar —</option>
+          ${addOptions}
+        </select>
+        <select class="substitute-select" id="add-teacher-role-${courseId}" style="max-width:120px">
+          <option value="Professor">Professor</option>
+          <option value="Mentor">Mentor</option>
+          <option value="Host">Host</option>
+        </select>
+        <button class="att-btn present" onclick="addToLesson('${dateKey}','${ev.course}')" style="padding:6px 10px;font-size:11px">+ Add</button>
+      </div>`;
+
     return `<div class="att-session" style="border-left-color:${cfg.color}">
       <div class="att-session-course" style="color:${cfg.color}">${ev.course}</div>
       ${mentorsHTML}
+      ${removedHTML}
+      ${addHTML}
     </div>`;
   }).join('');
 
@@ -900,6 +980,20 @@ function openAttendance(dateKey) {
   document.getElementById('modal').classList.add('show');
 }
 
+// Build original events for a date (without overrides) to detect emptied courses
+function buildOriginalEventsForDate(dateKey) {
+  const map = {};
+  for (const teacher of TEACHERS) {
+    for (const a of teacher.assignments) {
+      if (a.dates.includes(dateKey)) {
+        if (!map[a.course]) map[a.course] = { course: a.course, mentors: [] };
+        map[a.course].mentors.push({ name: teacher.name, role: a.role });
+      }
+    }
+  }
+  return map;
+}
+
 function toggleAtt(btn) {
   const row = btn.closest('.att-row');
   const actions = row.querySelectorAll('.att-btn.present, .att-btn.absent');
@@ -907,6 +1001,94 @@ function toggleAtt(btn) {
 
   actions.forEach(b => b.classList.remove('active'));
   if (!isActive) btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════
+// SCHEDULE OVERRIDES (remove/add to lesson)
+// ═══════════════════════════════════════
+async function removeFromLesson(btn) {
+  const dateKey = btn.dataset.date;
+  const course = btn.dataset.course;
+  const teacher = btn.dataset.teacher;
+
+  if (!confirm(`Remover ${teacher} da aula ${course} em ${dateKey}?`)) return;
+
+  const { error } = await sb.from('schedule_overrides').insert({
+    lesson_date: dateKey,
+    course: course,
+    teacher_name: teacher,
+    action: 'remove',
+    role: 'Professor',
+  });
+
+  if (error) {
+    if (error.code === '23505') { showToast('Já removido', 'error'); return; }
+    showToast('Erro: ' + error.message, 'error'); return;
+  }
+
+  showToast(`${teacher} removido de ${course} em ${dateKey}`, 'success');
+  await loadOverrides();
+  renderAll();
+  openAttendance(dateKey);
+}
+
+async function addToLesson(dateKey, course) {
+  const nameSelect = document.getElementById('add-teacher-name-' + course.replace(/[^a-zA-Z0-9]/g, ''));
+  const roleSelect = document.getElementById('add-teacher-role-' + course.replace(/[^a-zA-Z0-9]/g, ''));
+  const name = nameSelect.value;
+  const role = roleSelect.value;
+
+  if (!name) { showToast('Selecione um nome', 'error'); return; }
+
+  const { error } = await sb.from('schedule_overrides').insert({
+    lesson_date: dateKey,
+    course: course,
+    teacher_name: name,
+    action: 'add',
+    role: role,
+  });
+
+  if (error) {
+    if (error.code === '23505') { showToast('Já adicionado', 'error'); return; }
+    showToast('Erro: ' + error.message, 'error'); return;
+  }
+
+  showToast(`${name} adicionado como ${role} em ${course}`, 'success');
+  await loadOverrides();
+  renderAll();
+  openAttendance(dateKey);
+}
+
+async function undoRemove(dateKey, course, teacher) {
+  const { error } = await sb.from('schedule_overrides')
+    .delete()
+    .eq('lesson_date', dateKey)
+    .eq('course', course)
+    .eq('teacher_name', teacher)
+    .eq('action', 'remove');
+
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+
+  showToast(`${teacher} restaurado`, 'success');
+  await loadOverrides();
+  renderAll();
+  openAttendance(dateKey);
+}
+
+async function undoAdd(dateKey, course, teacher) {
+  const { error } = await sb.from('schedule_overrides')
+    .delete()
+    .eq('lesson_date', dateKey)
+    .eq('course', course)
+    .eq('teacher_name', teacher)
+    .eq('action', 'add');
+
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+
+  showToast(`${teacher} removido`, 'success');
+  await loadOverrides();
+  renderAll();
+  openAttendance(dateKey);
 }
 
 async function deleteAtt(btn) {

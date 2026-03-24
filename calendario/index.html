@@ -318,6 +318,8 @@ const sb = window.supabase.createClient(
 );
 let attendanceData = {}; // { "dd/mm|course|teacher": { status, substitute_name, substitute_role } }
 
+let overridesData = [];
+
 async function loadAttendanceData() {
   const { data } = await sb.from('attendance').select('*');
   attendanceData = {};
@@ -325,6 +327,9 @@ async function loadAttendanceData() {
     const key = `${row.lesson_date}|${row.course}|${row.teacher_name}`;
     attendanceData[key] = row;
   }
+  // Load schedule overrides
+  const { data: ovData } = await sb.from('schedule_overrides').select('*');
+  overridesData = ovData || [];
 }
 
 // ═══════════════════════════════════════
@@ -445,6 +450,20 @@ function buildEventsMap() {
       }
     }
   }
+  // Apply schedule overrides
+  for (const ov of overridesData) {
+    const courseKey = normalizeCourse(ov.course);
+    if (ov.action === 'remove') {
+      if (map[ov.lesson_date] && map[ov.lesson_date][courseKey]) {
+        map[ov.lesson_date][courseKey].mentors = map[ov.lesson_date][courseKey].mentors.filter(m => m.name !== ov.teacher_name);
+      }
+    } else if (ov.action === 'add') {
+      if (!map[ov.lesson_date]) map[ov.lesson_date] = {};
+      if (!map[ov.lesson_date][courseKey]) map[ov.lesson_date][courseKey] = { course: courseKey, mentors: [] };
+      const already = map[ov.lesson_date][courseKey].mentors.some(m => m.name === ov.teacher_name);
+      if (!already) map[ov.lesson_date][courseKey].mentors.push({ name: ov.teacher_name, role: ov.role });
+    }
+  }
   // Sort mentors: Professors first
   for (const date in map) {
     for (const course in map[date]) {
@@ -453,7 +472,7 @@ function buildEventsMap() {
   }
   return map;
 }
-const EVENTS = buildEventsMap();
+let EVENTS = buildEventsMap();
 
 // ═══════════════════════════════════════
 // STATE
@@ -715,6 +734,8 @@ async function init() {
   renderMentorPills();
   renderStats();
   await loadAttendanceData();
+  EVENTS = buildEventsMap(); // rebuild with overrides
+  renderStats();
   const now = new Date();
   const initMonth = (now.getFullYear()===2026 && now.getMonth()>=1 && now.getMonth()<=4)
     ? now.getMonth()+1 : 2;
