@@ -1561,24 +1561,50 @@ async function deleteClass(id, name) {
 }
 
 function renderReport() {
-  // Build substitution index: who substituted where
-  const subIndex = {}; // { "substitute_name": [ {date, course, replacing} ] }
-  for (const key in attendanceCache) {
-    const rec = attendanceCache[key];
-    if (rec.substitute_name) {
-      if (!subIndex[rec.substitute_name]) subIndex[rec.substitute_name] = [];
-      const [date, course, teacher] = key.split('|');
-      subIndex[rec.substitute_name].push({ date, course, replacing: teacher });
+  // Build per-mentor data from EVENTS (includes overrides)
+  const mentorData = {}; // { name: { courses: { courseName: { role, dates: [date,...] } }, asSubstitute: [] } }
+
+  for (const date in EVENTS) {
+    for (const course in EVENTS[date]) {
+      for (const m of EVENTS[date][course].mentors) {
+        if (!mentorData[m.name]) mentorData[m.name] = { courses: {}, asSubstitute: [] };
+        const key = `${course}|${m.role}`;
+        if (!mentorData[m.name].courses[key]) mentorData[m.name].courses[key] = { course, role: m.role, dates: [] };
+        mentorData[m.name].courses[key].dates.push(date);
+      }
     }
   }
 
-  const cards = TEACHERS.map(teacher => {
+  // Build substitution index
+  for (const key in attendanceCache) {
+    const rec = attendanceCache[key];
+    if (rec.substitute_name) {
+      if (!mentorData[rec.substitute_name]) mentorData[rec.substitute_name] = { courses: {}, asSubstitute: [] };
+      const [date, course, teacher] = key.split('|');
+      mentorData[rec.substitute_name].asSubstitute.push({ date, course, replacing: teacher, role: rec.substitute_role || 'Substituto' });
+    }
+  }
+
+  // Sort dates within each course
+  for (const name in mentorData) {
+    for (const key in mentorData[name].courses) {
+      mentorData[name].courses[key].dates.sort((a, b) => {
+        const [da, ma] = a.split('/').map(Number);
+        const [db, mb] = b.split('/').map(Number);
+        return (ma * 100 + da) - (mb * 100 + db);
+      });
+    }
+  }
+
+  const sortedNames = Object.keys(mentorData).sort();
+
+  const cards = sortedNames.map(name => {
+    const data = mentorData[name];
     let presents = 0, absents = 0, pending = 0;
 
-    // Build course sections with date-by-date status
-    const courseSections = teacher.assignments.map(a => {
-      const datesHTML = a.dates.map(date => {
-        const cacheKey = `${date}|${a.course}|${teacher.name}`;
+    const courseSections = Object.values(data.courses).map(c => {
+      const datesHTML = c.dates.map(date => {
+        const cacheKey = `${date}|${c.course}|${name}`;
         const rec = attendanceCache[cacheKey];
         if (rec) {
           if (rec.status === 'present') {
@@ -1598,27 +1624,29 @@ function renderReport() {
         }
       }).join('');
 
-      const cfg = getCfg(a.course);
-      const roleBadge = a.role === 'Professor'
-        ? '<span class="badge-role-prof">Professor</span>'
-        : '<span class="badge-role-host">Host</span>';
+      const cfg = getCfg(c.course);
+      const roleBadges = {
+        'Professor': '<span class="badge-role-prof">Professor</span>',
+        'Mentor': '<span class="badge-substitute">Mentor</span>',
+        'Host': '<span class="badge-role-host">Host</span>',
+      };
+      const roleBadge = roleBadges[c.role] || `<span class="badge-role-host">${c.role}</span>`;
 
       return `<div class="report-course-section">
         <div class="report-course-title">
           <span style="width:8px;height:8px;border-radius:2px;background:${cfg.color};display:inline-block"></span>
-          ${a.course} ${roleBadge}
+          ${c.course} ${roleBadge}
         </div>
         <div class="report-dates">${datesHTML}</div>
       </div>`;
     }).join('');
 
-    // Substitution section: where this teacher was a substitute for others
-    const subs = subIndex[teacher.name] || [];
+    // Substitution section
+    const subs = data.asSubstitute;
     let subSection = '';
     if (subs.length > 0) {
       const subDates = subs.map(s => {
-        const cfg = getCfg(s.course);
-        return `<span class="report-date substitute" title="Substituiu ${s.replacing}">
+        return `<span class="report-date substitute" title="Substituiu ${s.replacing} como ${s.role}">
           ${s.date} <span class="sub-name">${s.course} (por ${s.replacing})</span>
         </span>`;
       }).join('');
@@ -1631,16 +1659,21 @@ function renderReport() {
       </div>`;
     }
 
+    const totalDates = Object.values(data.courses).reduce((s, c) => s + c.dates.length, 0);
     const recorded = presents + absents;
     const pct = recorded > 0 ? Math.round((presents / recorded) * 100) : null;
     const pctColor = pct !== null ? (pct >= 80 ? '#4ade80' : pct >= 50 ? '#f59e0b' : '#f87171') : '#444';
 
+    // Get roles for this mentor
+    const roles = [...new Set(Object.values(data.courses).map(c => c.role))];
+    const rolesLabel = roles.join(', ');
+
     return `<div class="report-card">
       <div class="report-card-header">
-        <div class="report-avatar" style="background:${mentorColor(teacher.name)}">${initials(teacher.name)}</div>
+        <div class="report-avatar" style="background:${mentorColor(name)}">${initials(name)}</div>
         <div>
-          <div class="report-name">${teacher.name}</div>
-          <div class="report-summary">${teacher.total} aulas programadas${subs.length > 0 ? ` · ${subs.length} substituições` : ''}</div>
+          <div class="report-name">${name}</div>
+          <div class="report-summary">${rolesLabel} · ${totalDates} aulas${subs.length > 0 ? ` · ${subs.length} substituições` : ''}</div>
         </div>
         <div class="report-stats-row">
           <div class="report-stat">
@@ -1666,7 +1699,7 @@ function renderReport() {
     </div>`;
   }).join('');
 
-  document.getElementById('report-content').innerHTML = cards;
+  document.getElementById('report-content').innerHTML = cards || '<div style="text-align:center;color:#333;padding:40px">Nenhum dado para exibir</div>';
 }
 
 // ═══════════════════════════════════════
