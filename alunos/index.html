@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestao de Alunos — Academia Lendaria</title>
+  <link rel="stylesheet" href="../templates/design-tokens-dark-premium.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-sans); background: #080808; color: #888; min-height: 100vh; }
+
+    /* LOGIN */
+    .login-overlay {
+      position: fixed; inset: 0; background: #080808;
+      display: flex; align-items: center; justify-content: center; z-index: 9999;
+    }
+    .login-overlay.hidden { display: none; }
+    .login-box {
+      background: #111; border: 1px solid #222; border-radius: 16px;
+      padding: 40px; width: 90%; max-width: 400px; text-align: center;
+    }
+    .login-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 20px;
+    }
+    .login-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .login-subtitle { font-size: 13px; color: #555; margin-bottom: 28px; }
+    .login-field {
+      width: 100%; padding: 12px 16px; border-radius: 8px;
+      background: #0d0d0d; border: 1px solid #1e1e1e;
+      color: #ddd; font-size: 14px; font-family: var(--font-sans);
+      margin-bottom: 12px; outline: none; transition: border-color 0.15s;
+    }
+    .login-field:focus { border-color: #6366f1; }
+    .login-field::placeholder { color: #333; }
+    .login-btn {
+      width: 100%; padding: 12px; border-radius: 8px; border: none;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+      font-family: var(--font-sans); margin-top: 8px; transition: opacity 0.15s;
+    }
+    .login-btn:hover { opacity: 0.9; }
+    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .login-error { color: #ef4444; font-size: 12px; margin-top: 12px; display: none; }
+    .login-error.show { display: block; }
+
+    /* HEADER */
+    .header {
+      background: #101010; border-bottom: 1px solid #1a1a1a;
+      padding: 20px 32px; position: sticky; top: 0; z-index: 200;
+    }
+    .header-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .header-title { display: flex; align-items: center; gap: 12px; flex: 1; }
+    .header-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .header-title h1 { font-size: 18px; font-weight: 800; color: #fff; }
+    .header-title p { font-size: 12px; color: #444; margin-top: 1px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .link-pill {
+      background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25);
+      border-radius: 999px; padding: 8px 16px; font-size: 12px; font-weight: 600;
+      color: #a5b4fc; text-decoration: none; display: flex; align-items: center; gap: 6px;
+      transition: all 0.15s; white-space: nowrap; cursor: pointer;
+    }
+    .link-pill:hover { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.4); }
+    .link-pill.danger { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.25); color: #fca5a5; }
+
+    /* LAYOUT */
+    .layout { max-width: 1400px; margin: 0 auto; padding: 28px 32px 120px; }
+
+    /* STATS */
+    .stats-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .stat-card {
+      background: #101010; border: 1px solid #1a1a1a; border-radius: 10px;
+      padding: 14px 20px; display: flex; align-items: center; gap: 12px; flex: 1; min-width: 150px;
+    }
+    .stat-num { font-size: 26px; font-weight: 800; color: #fff; line-height: 1; }
+    .stat-label { font-size: 11px; color: #444; margin-top: 2px; }
+
+    /* SEARCH & FILTERS */
+    .toolbar {
+      display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; align-items: center;
+    }
+    .search-input {
+      flex: 1; min-width: 200px; padding: 10px 16px; border-radius: 8px;
+      background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd;
+      font-size: 13px; font-family: var(--font-sans); outline: none;
+    }
+    .search-input:focus { border-color: #6366f1; }
+    .search-input::placeholder { color: #333; }
+    .cohort-tab {
+      padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      color: #444; cursor: pointer; border: 1px solid #1a1a1a; background: #0d0d0d;
+      font-family: var(--font-sans); transition: all 0.15s; white-space: nowrap;
+    }
+    .cohort-tab:hover { color: #888; border-color: #333; }
+    .cohort-tab.active { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
+
+    /* TABLE */
+    .table-wrap {
+      background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 12px; overflow: hidden;
+    }
+    .students-table { width: 100%; border-collapse: collapse; }
+    .students-table th {
+      text-align: left; padding: 12px 16px; font-size: 10px; font-weight: 700;
+      color: #444; text-transform: uppercase; letter-spacing: 0.06em;
+      border-bottom: 1px solid #1a1a1a; background: #0a0a0a;
+    }
+    .students-table td {
+      padding: 12px 16px; font-size: 13px; color: #aaa;
+      border-bottom: 1px solid #111;
+    }
+    .students-table tr:hover td { background: #101010; }
+    .students-table tr.editing td { background: #0d0d1a; }
+
+    .student-name {
+      font-weight: 600; color: #ddd; display: flex; align-items: center; gap: 8px;
+    }
+    .student-name .avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .student-phone { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; color: #666; }
+
+    .cohort-badge {
+      font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+    }
+    .cohort-fund { background: rgba(6,182,212,0.12); color: #22d3ee; }
+    .cohort-adv { background: rgba(99,102,241,0.12); color: #a5b4fc; }
+
+    .action-btn {
+      padding: 5px 10px; border-radius: 6px; border: 1px solid #222;
+      background: #1a1a1a; color: #666; font-size: 11px; font-weight: 600;
+      cursor: pointer; font-family: var(--font-sans); transition: all 0.15s;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .action-btn:hover { background: #222; color: #aaa; }
+    .action-btn.whatsapp { border-color: #166534; color: #4ade80; background: rgba(34,197,94,0.08); }
+    .action-btn.whatsapp:hover { background: rgba(34,197,94,0.15); }
+    .action-btn.edit { border-color: #1e40af; color: #60a5fa; background: rgba(96,165,250,0.08); }
+    .action-btn.save { border-color: #166534; color: #4ade80; background: rgba(34,197,94,0.12); }
+    .action-btn.cancel { border-color: #44403c; color: #a8a29e; }
+    .action-btn.delete { border-color: #7f1d1d; color: #f87171; background: rgba(239,68,68,0.08); }
+    .action-btn.delete:hover { background: rgba(239,68,68,0.15); }
+
+    .edit-input {
+      padding: 5px 8px; border-radius: 5px; background: #0a0a0a; border: 1px solid #333;
+      color: #ddd; font-size: 13px; font-family: var(--font-sans); outline: none; width: 100%;
+    }
+    .edit-input:focus { border-color: #6366f1; }
+
+    .actions-cell { display: flex; gap: 4px; flex-wrap: nowrap; }
+
+    /* PAGINATION */
+    .pagination {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 20px; border-top: 1px solid #1a1a1a;
+    }
+    .pagination-info { font-size: 12px; color: #444; }
+    .pagination-btns { display: flex; gap: 4px; }
+    .page-btn {
+      padding: 6px 12px; border-radius: 6px; border: 1px solid #1e1e1e;
+      background: #0d0d0d; color: #555; font-size: 12px; cursor: pointer;
+      font-family: var(--font-sans); transition: all 0.15s;
+    }
+    .page-btn:hover { color: #aaa; border-color: #333; }
+    .page-btn.active { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
+    .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    /* EMPTY */
+    .empty { text-align: center; padding: 60px 20px; color: #333; font-size: 14px; }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 20px;
+      border-radius: 10px; font-size: 13px; font-weight: 600;
+      z-index: 2000; transition: all 0.3s; transform: translateY(80px); opacity: 0;
+      font-family: var(--font-sans);
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #052e16; border: 1px solid #166534; color: #4ade80; }
+    .toast.error { background: #2d0a0a; border: 1px solid #7f1d1d; color: #f87171; }
+
+    @media (max-width: 768px) {
+      .header { padding: 14px 16px; }
+      .layout { padding: 16px 12px 80px; }
+      .students-table th:nth-child(4), .students-table td:nth-child(4) { display: none; }
+      .stat-card { min-width: 120px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-icon">👥</div>
+    <div class="login-title">Gestao de Alunos</div>
+    <div class="login-subtitle">Acesse para gerenciar alunos e disparos</div>
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <input class="login-field" type="email" id="login-email" placeholder="Email" required autocomplete="email">
+      <input class="login-field" type="password" id="login-password" placeholder="Senha" required autocomplete="current-password">
+      <button class="login-btn" type="submit" id="login-btn">Entrar</button>
+      <div class="login-error" id="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header" id="app-header" style="display:none">
+  <div class="header-inner">
+    <div class="header-title">
+      <div class="header-icon">👥</div>
+      <div>
+        <h1>Gestao de Alunos</h1>
+        <p>Cadastro, edicao e disparos individuais</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="/" class="link-pill">Home</a>
+      <a href="/calendario" class="link-pill">Calendario</a>
+      <a href="/calendario/admin" class="link-pill">Presenca</a>
+      <span class="link-pill danger" onclick="handleLogout()">Sair</span>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="layout" id="app-main" style="display:none">
+
+  <!-- STATS -->
+  <div class="stats-bar" id="stats-bar"></div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <input class="search-input" id="search" placeholder="Buscar por nome ou telefone..." oninput="handleSearch()">
+    <div id="cohort-tabs"></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <table class="students-table">
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th>Telefone</th>
+          <th>Cohort</th>
+          <th>WhatsApp</th>
+          <th>Acoes</th>
+        </tr>
+      </thead>
+      <tbody id="students-body"></tbody>
+    </table>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://gpufcipkajppykmnmdeh.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let allStudents = [];
+let cohorts = [];
+let currentCohort = 'all';
+let currentSearch = '';
+let currentPage = 1;
+const PAGE_SIZE = 50;
+let editingId = null;
+
+// AUTH
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-error');
+  btn.disabled = true; err.classList.remove('show');
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-password').value;
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    err.textContent = error.message; err.classList.add('show');
+    btn.disabled = false; return;
+  }
+  showApp();
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  location.reload();
+}
+
+async function checkSession() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) showApp();
+}
+
+async function showApp() {
+  document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('app-header').style.display = '';
+  document.getElementById('app-main').style.display = '';
+  await loadData();
+}
+
+// DATA
+async function loadData() {
+  const [{ data: c }, { data: s }] = await Promise.all([
+    sb.from('cohorts').select('*').order('name'),
+    sb.from('students').select('*, cohorts(name, whatsapp_group_jid)').order('name'),
+  ]);
+  cohorts = c || [];
+  allStudents = s || [];
+  renderStats();
+  renderCohortTabs();
+  renderTable();
+}
+
+// STATS
+function renderStats() {
+  const filtered = getFiltered();
+  const withName = filtered.filter(s => s.name && s.name.trim() !== '').length;
+  const withoutName = filtered.length - withName;
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat-card"><div><div class="stat-num">${filtered.length}</div><div class="stat-label">Total alunos</div></div></div>
+    <div class="stat-card"><div><div class="stat-num">${cohorts.length}</div><div class="stat-label">Cohorts</div></div></div>
+    <div class="stat-card"><div><div class="stat-num">${withName}</div><div class="stat-label">Com nome</div></div></div>
+    <div class="stat-card"><div><div class="stat-num" style="color:${withoutName > 0 ? '#f59e0b' : '#4ade80'}">${withoutName}</div><div class="stat-label">Sem nome</div></div></div>
+  `;
+}
+
+// COHORT TABS
+function renderCohortTabs() {
+  const tabs = document.getElementById('cohort-tabs');
+  const counts = {};
+  allStudents.forEach(s => {
+    const cn = s.cohorts?.name || 'Sem cohort';
+    counts[cn] = (counts[cn] || 0) + 1;
+  });
+  tabs.innerHTML = `<button class="cohort-tab ${currentCohort === 'all' ? 'active' : ''}" onclick="setCohort('all')">Todos (${allStudents.length})</button>` +
+    cohorts.map(c => {
+      const cnt = counts[c.name] || 0;
+      const cls = currentCohort === c.name ? 'active' : '';
+      return `<button class="cohort-tab ${cls}" onclick="setCohort('${c.name}')">${c.name} (${cnt})</button>`;
+    }).join('');
+}
+
+function setCohort(name) {
+  currentCohort = name;
+  currentPage = 1;
+  renderCohortTabs();
+  renderStats();
+  renderTable();
+}
+
+function handleSearch() {
+  currentSearch = document.getElementById('search').value.toLowerCase();
+  currentPage = 1;
+  renderTable();
+}
+
+// FILTER
+function getFiltered() {
+  return allStudents.filter(s => {
+    if (currentCohort !== 'all' && s.cohorts?.name !== currentCohort) return false;
+    if (currentSearch) {
+      const hay = `${s.name || ''} ${s.phone}`.toLowerCase();
+      if (!hay.includes(currentSearch)) return false;
+    }
+    return true;
+  });
+}
+
+// RENDER TABLE
+function renderTable() {
+  const filtered = getFiltered();
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const page = filtered.slice(start, start + PAGE_SIZE);
+
+  const body = document.getElementById('students-body');
+  if (!page.length) {
+    body.innerHTML = '<tr><td colspan="5" class="empty">Nenhum aluno encontrado</td></tr>';
+    renderPagination(filtered.length, totalPages);
+    return;
+  }
+
+  body.innerHTML = page.map(s => {
+    const cohortName = s.cohorts?.name || '—';
+    const isAdv = cohortName.includes('Advanced');
+    const badgeClass = isAdv ? 'cohort-adv' : 'cohort-fund';
+    const color = getColor(s.name || s.phone);
+    const initials = getInitials(s.name || s.phone);
+    const displayName = s.name || '<span style="color:#333;font-style:italic">Sem nome</span>';
+    const phone = s.phone;
+    const waLink = `https://wa.me/${phone}`;
+
+    if (editingId === s.id) {
+      return `<tr class="editing">
+        <td><input class="edit-input" id="edit-name" value="${s.name || ''}" placeholder="Nome do aluno"></td>
+        <td><input class="edit-input" id="edit-phone" value="${s.phone}" placeholder="Telefone"></td>
+        <td><span class="cohort-badge ${badgeClass}">${cohortName}</span></td>
+        <td></td>
+        <td><div class="actions-cell">
+          <button class="action-btn save" onclick="saveEdit('${s.id}')">Salvar</button>
+          <button class="action-btn cancel" onclick="cancelEdit()">Cancelar</button>
+        </div></td>
+      </tr>`;
+    }
+
+    return `<tr>
+      <td><div class="student-name"><div class="avatar" style="background:${color}">${initials}</div>${displayName}</div></td>
+      <td><span class="student-phone">${formatPhone(phone)}</span></td>
+      <td><span class="cohort-badge ${badgeClass}">${cohortName}</span></td>
+      <td><a href="${waLink}" target="_blank" class="action-btn whatsapp">Abrir</a></td>
+      <td><div class="actions-cell">
+        <button class="action-btn edit" onclick="startEdit('${s.id}')">Editar</button>
+        <button class="action-btn delete" onclick="deleteStudent('${s.id}','${(s.name || s.phone).replace(/'/g, "\\'")}')">X</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  renderPagination(filtered.length, totalPages);
+}
+
+function renderPagination(total, totalPages) {
+  const el = document.getElementById('pagination');
+  if (totalPages <= 1) {
+    el.innerHTML = `<span class="pagination-info">${total} aluno${total !== 1 ? 's' : ''}</span><div></div>`;
+    return;
+  }
+  const start = (currentPage - 1) * PAGE_SIZE + 1;
+  const end = Math.min(currentPage * PAGE_SIZE, total);
+
+  let btns = '';
+  for (let i = 1; i <= totalPages; i++) {
+    if (totalPages > 7 && i > 3 && i < totalPages - 2 && Math.abs(i - currentPage) > 1) {
+      if (i === 4 || i === totalPages - 3) btns += '<span style="color:#333;padding:0 4px">...</span>';
+      continue;
+    }
+    btns += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+  }
+
+  el.innerHTML = `
+    <span class="pagination-info">${start}-${end} de ${total}</span>
+    <div class="pagination-btns">
+      <button class="page-btn" onclick="goPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>Ant</button>
+      ${btns}
+      <button class="page-btn" onclick="goPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>Prox</button>
+    </div>
+  `;
+}
+
+function goPage(p) {
+  const filtered = getFiltered();
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  if (p < 1 || p > totalPages) return;
+  currentPage = p;
+  renderTable();
+  window.scrollTo({ top: 300, behavior: 'smooth' });
+}
+
+// EDIT
+function startEdit(id) {
+  editingId = id;
+  renderTable();
+}
+
+function cancelEdit() {
+  editingId = null;
+  renderTable();
+}
+
+async function saveEdit(id) {
+  const name = document.getElementById('edit-name').value.trim();
+  const phone = document.getElementById('edit-phone').value.trim();
+  if (!phone) { showToast('Telefone obrigatorio', 'error'); return; }
+  const { error } = await sb.from('students').update({ name, phone }).eq('id', id);
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+  editingId = null;
+  showToast('Aluno atualizado');
+  await loadData();
+}
+
+async function deleteStudent(id, label) {
+  if (!confirm(`Remover "${label}"?`)) return;
+  const { error } = await sb.from('students').delete().eq('id', id);
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+  showToast('Aluno removido');
+  await loadData();
+}
+
+// UTILS
+function getColor(name) {
+  const colors = ['#6366f1','#10b981','#f59e0b','#ec4899','#06b6d4','#8b5cf6','#ef4444','#14b8a6','#f97316','#a855f7'];
+  let h = 0; for (const c of (name || '')) h = (h * 31 + c.charCodeAt(0)) % colors.length;
+  return colors[h];
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+}
+
+function formatPhone(phone) {
+  if (phone.startsWith('55') && phone.length >= 12) {
+    const ddd = phone.slice(2, 4);
+    const num = phone.slice(4);
+    if (num.length === 9) return `+55 (${ddd}) ${num.slice(0,5)}-${num.slice(5)}`;
+    if (num.length === 8) return `+55 (${ddd}) ${num.slice(0,4)}-${num.slice(4)}`;
+  }
+  return '+' + phone;
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// INIT
+checkSession();
+</script>
+</body>
+</html>

@@ -33,6 +33,10 @@
     {
       "source": "/aios-install",
       "destination": "/aios-install/index.html"
+    },
+    {
+      "source": "/alunos",
+      "destination": "/alunos/index.html"
     }
   ]
 }
