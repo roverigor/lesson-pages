@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoom — Autorizacao</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #080808; color: #888; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .card {
+      background: #111; border: 1px solid #222; border-radius: 16px;
+      padding: 40px; width: 90%; max-width: 420px; text-align: center;
+    }
+    .icon { font-size: 48px; margin-bottom: 20px; }
+    .title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+    .subtitle { font-size: 13px; color: #555; margin-bottom: 24px; }
+    .status { font-size: 14px; margin-top: 16px; }
+    .status.success { color: #4ade80; }
+    .status.error { color: #f87171; }
+    .status.loading { color: #a5b4fc; }
+    .back-link {
+      display: inline-block; margin-top: 20px; font-size: 13px;
+      color: #a5b4fc; text-decoration: none;
+    }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon" id="icon">🔄</div>
+    <div class="title" id="title">Conectando Zoom...</div>
+    <div class="subtitle" id="subtitle">Processando autorizacao</div>
+    <div class="status loading" id="status">Aguarde...</div>
+    <a href="/calendario/admin" class="back-link" id="back" style="display:none">Voltar ao painel</a>
+  </div>
+
+  <script>
+  async function handleCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const state = params.get('state');
+    const error = params.get('error');
+
+    if (error) {
+      document.getElementById('icon').textContent = '❌';
+      document.getElementById('title').textContent = 'Autorizacao negada';
+      document.getElementById('subtitle').textContent = 'O mentor nao autorizou o acesso';
+      document.getElementById('status').textContent = error;
+      document.getElementById('status').className = 'status error';
+      document.getElementById('back').style.display = '';
+      return;
+    }
+
+    if (!code) {
+      document.getElementById('icon').textContent = '❌';
+      document.getElementById('title').textContent = 'Erro';
+      document.getElementById('subtitle').textContent = 'Codigo de autorizacao nao recebido';
+      document.getElementById('status').className = 'status error';
+      document.getElementById('back').style.display = '';
+      return;
+    }
+
+    try {
+      const res = await fetch('https://gpufcipkajppykmnmdeh.supabase.co/functions/v1/zoom-oauth?action=callback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU',
+        },
+        body: JSON.stringify({ code, state }),
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        document.getElementById('icon').textContent = '✅';
+        document.getElementById('title').textContent = 'Zoom conectado!';
+        document.getElementById('subtitle').textContent = data.name || '';
+        document.getElementById('status').textContent = data.email + ' autorizado com sucesso';
+        document.getElementById('status').className = 'status success';
+      } else {
+        document.getElementById('icon').textContent = '❌';
+        document.getElementById('title').textContent = 'Erro na autorizacao';
+        document.getElementById('status').textContent = data.error || 'Erro desconhecido';
+        document.getElementById('status').className = 'status error';
+      }
+    } catch (err) {
+      document.getElementById('icon').textContent = '❌';
+      document.getElementById('title').textContent = 'Erro de conexao';
+      document.getElementById('status').textContent = err.message;
+      document.getElementById('status').className = 'status error';
+    }
+
+    document.getElementById('back').style.display = '';
+  }
+
+  handleCallback();
+  </script>
+</body>
+</html>

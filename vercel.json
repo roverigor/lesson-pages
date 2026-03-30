@@ -37,6 +37,10 @@
     {
       "source": "/alunos",
       "destination": "/alunos/index.html"
+    },
+    {
+      "source": "/api/zoom/callback",
+      "destination": "/api/zoom/callback.html"
     }
   ]
 }
