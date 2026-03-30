@@ -392,6 +392,12 @@ const TEACHERS = [
   { name:"Lucas Charão", total:7, assignments:[
     {course:"Aulas Fund T1",role:"Host", dates:["12/02","16/02","19/02","23/02","26/02","02/03","05/03"]},
   ]},
+  { name:"Pedro", total:1, assignments:[
+    {course:"Workshop VPS→ClickUp+CLI", role:"Professor", dates:["06/04"]},
+  ]},
+  { name:"Mission Control", total:1, assignments:[
+    {course:"Dashboard Mission Control", role:"Professor", dates:["31/03"]},
+  ]},
 ];
 
 // ═══════════════════════════════════════
@@ -407,6 +413,8 @@ const COURSE_CFG = {
   'Aulas Fund T3':     {color:'#22d3ee', bg:'rgba(34,211,238,0.08)',  short:'Fund T3'},
   'Fund T2 Manhã':     {color:'#ec4899', bg:'rgba(236,72,153,0.08)',  short:'Fund T2 Manhã'},
   'Fund T2 Tarde':     {color:'#f472b6', bg:'rgba(244,114,182,0.08)', short:'Fund T2 Tarde'},
+  'Workshop VPS→ClickUp+CLI':  {color:'#a855f7', bg:'rgba(168,85,247,0.08)', short:'Workshop Pedro'},
+  'Dashboard Mission Control':  {color:'#f97316', bg:'rgba(249,115,22,0.08)', short:'Mission Control'},
 };
 function getCfg(course) {
   return COURSE_CFG[course] || {color:'#666', bg:'rgba(102,102,102,0.08)', short: course};
