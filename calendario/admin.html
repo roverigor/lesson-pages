@@ -455,9 +455,18 @@
     </div>
     <div id="class-form-container" style="display:none;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:16px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div style="grid-column:1/-1">
+        <div>
           <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Nome da Turma *</label>
-          <input class="login-field" style="margin:0" type="text" id="class-name" placeholder="Ex: Aulas Advanced T1">
+          <input class="login-field" style="margin:0" type="text" id="class-name" placeholder="Ex: PS Advanced T1">
+        </div>
+        <div>
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Tipo *</label>
+          <select class="substitute-select" style="width:100%;padding:12px 10px" id="class-type">
+            <option value="PS">PS (Pronto Socorro)</option>
+            <option value="Aula">Aula</option>
+            <option value="Imersão">Imersão</option>
+            <option value="Workshop">Workshop</option>
+          </select>
         </div>
         <div>
           <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Data Início *</label>
@@ -466,18 +475,6 @@
         <div>
           <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Data Fim *</label>
           <input class="login-field" style="margin:0" type="date" id="class-end">
-        </div>
-        <div>
-          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Dia da Semana *</label>
-          <select class="substitute-select" style="width:100%;padding:12px 10px" id="class-weekday">
-            <option value="1">Segunda-feira</option>
-            <option value="2">Terça-feira</option>
-            <option value="3">Quarta-feira</option>
-            <option value="4">Quinta-feira</option>
-            <option value="5">Sexta-feira</option>
-            <option value="6">Sábado</option>
-            <option value="0">Domingo</option>
-          </select>
         </div>
         <div style="display:flex;gap:10px">
           <div style="flex:1">
@@ -490,29 +487,23 @@
           </div>
         </div>
         <div>
-          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Professor</label>
-          <select class="substitute-select" style="width:100%;padding:12px 10px" id="class-professor">
-            <option value="">— Nenhum —</option>
-          </select>
-        </div>
-        <div>
-          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Host</label>
-          <select class="substitute-select" style="width:100%;padding:12px 10px" id="class-host">
-            <option value="">— Nenhum —</option>
-          </select>
-        </div>
-        <div>
           <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Cor</label>
           <input class="login-field" style="margin:0;padding:4px;height:44px" type="color" id="class-color" value="#6366f1">
         </div>
-        <div style="display:flex;align-items:flex-end;gap:6px">
-          <button class="btn-save" onclick="saveClass()">Salvar Turma</button>
-          <button class="att-btn delete" onclick="closeClassForm()" style="padding:10px 14px">Cancelar</button>
-        </div>
       </div>
-      <div id="class-preview" style="margin-top:12px;display:none">
-        <div style="font-size:11px;color:#555;margin-bottom:4px">Aulas que serão geradas:</div>
-        <div id="class-preview-dates" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+
+      <!-- DIAS DA SEMANA + EQUIPE POR DIA -->
+      <div style="margin-top:16px;border-top:1px solid #1e1e1e;padding-top:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <label style="font-size:13px;font-weight:700;color:#ddd">Dias da Semana e Equipe</label>
+          <button class="att-btn present" onclick="addScheduleDay()" style="padding:6px 12px;font-size:11px;background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.25);color:#4ade80">+ Dia</button>
+        </div>
+        <div id="schedule-days-container"></div>
+      </div>
+
+      <div style="display:flex;gap:6px;margin-top:16px;justify-content:flex-end">
+        <button class="btn-save" onclick="saveClassV2()">Salvar Turma</button>
+        <button class="att-btn delete" onclick="closeClassForm()" style="padding:10px 14px">Cancelar</button>
       </div>
       <input type="hidden" id="class-edit-id" value="">
     </div>
@@ -1425,19 +1416,25 @@ async function deleteStaff(id, name) {
 const WEEKDAY_NAMES = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 let classesList = [];
 
-async function loadClasses() {
-  const { data, error } = await sb.from('classes').select('*').order('name');
-  if (error) { console.error('Load classes error:', error); return; }
-  classesList = data || [];
-  renderClassesList();
-  // Also ensure staff is loaded for dropdowns
-  if (!staffList.length) await loadStaff();
-}
+let mentorsList = [];
+let classSchedules = []; // temp schedule days for current form
 
-function populateClassDropdowns() {
-  const names = staffList.map(s => `<option value="${s.name}">${s.name} (${s.category})</option>`).join('');
-  document.getElementById('class-professor').innerHTML = `<option value="">— Nenhum —</option>${names}`;
-  document.getElementById('class-host').innerHTML = `<option value="">— Nenhum —</option>${names}`;
+async function loadClasses() {
+  const [{ data: classes }, { data: mentors }, { data: cmData }] = await Promise.all([
+    sb.from('classes').select('*').order('name'),
+    sb.from('mentors').select('id, name, role, active').eq('active', true).order('name'),
+    sb.from('class_mentors').select('*').order('weekday'),
+  ]);
+  classesList = classes || [];
+  mentorsList = mentors || [];
+  classSchedules = [];
+  if (!staffList.length) await loadStaff();
+
+  // Attach mentors to each class
+  for (const c of classesList) {
+    c._mentors = (cmData || []).filter(cm => cm.class_id === c.id);
+  }
+  renderClassesList();
 }
 
 function generateDates(startStr, endStr, weekday) {
@@ -1445,12 +1442,8 @@ function generateDates(startStr, endStr, weekday) {
   const start = new Date(startStr + 'T00:00:00');
   const end = new Date(endStr + 'T00:00:00');
   const d = new Date(start);
-  // Advance to first matching weekday
   while (d.getDay() !== weekday) d.setDate(d.getDate() + 1);
-  while (d <= end) {
-    dates.push(new Date(d));
-    d.setDate(d.getDate() + 7);
-  }
+  while (d <= end) { dates.push(new Date(d)); d.setDate(d.getDate() + 7); }
   return dates;
 }
 
@@ -1458,23 +1451,13 @@ function fmtDate(d) {
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
 }
 
-function previewClassDates() {
-  const start = document.getElementById('class-start').value;
-  const end = document.getElementById('class-end').value;
-  const weekday = parseInt(document.getElementById('class-weekday').value);
-  const preview = document.getElementById('class-preview');
-  const container = document.getElementById('class-preview-dates');
-
-  if (!start || !end) { preview.style.display = 'none'; return; }
-
-  const dates = generateDates(start, end, weekday);
-  if (!dates.length) { preview.style.display = 'none'; return; }
-
-  container.innerHTML = dates.map(d =>
-    `<span style="font-size:11px;padding:3px 8px;border-radius:4px;background:#161616;border:1px solid #1e1e1e;color:#888">${fmtDate(d)} (${WEEKDAY_NAMES[d.getDay()]})</span>`
-  ).join('');
-  preview.style.display = '';
+function getMentorName(id) {
+  const m = mentorsList.find(x => x.id === id);
+  return m ? m.name : '?';
 }
+
+const WEEKDAY_LABELS = {0:'Dom',1:'Seg',2:'Ter',3:'Qua',4:'Qui',5:'Sex',6:'Sab'};
+const WEEKDAY_FULL = {0:'Domingo',1:'Segunda',2:'Terça',3:'Quarta',4:'Quinta',5:'Sexta',6:'Sábado'};
 
 function renderClassesList() {
   if (!classesList.length) {
@@ -1483,29 +1466,60 @@ function renderClassesList() {
   }
 
   const cards = classesList.map(c => {
-    const dates = generateDates(c.start_date, c.end_date, c.weekday);
     const startFmt = new Date(c.start_date + 'T00:00:00').toLocaleDateString('pt-BR');
     const endFmt = new Date(c.end_date + 'T00:00:00').toLocaleDateString('pt-BR');
+    const typeBadge = c.type ? `<span style="font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(99,102,241,0.12);color:#a5b4fc;font-weight:700">${c.type}</span>` : '';
 
-    return `<div class="report-card" style="border-left:3px solid ${c.color}">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div>
+    // Group mentors by weekday
+    const byDay = {};
+    for (const cm of (c._mentors || [])) {
+      const wd = cm.weekday ?? c.weekday ?? 0;
+      if (!byDay[wd]) byDay[wd] = [];
+      byDay[wd].push({ name: getMentorName(cm.mentor_id), role: cm.role });
+    }
+
+    // Fallback to old professor/host fields
+    if (Object.keys(byDay).length === 0 && (c.professor || c.host)) {
+      const wd = c.weekday || 0;
+      byDay[wd] = [];
+      if (c.professor) byDay[wd].push({ name: c.professor, role: 'Professor' });
+      if (c.host) byDay[wd].push({ name: c.host, role: 'Host' });
+    }
+
+    const daysHtml = Object.entries(byDay).sort((a,b) => a[0]-b[0]).map(([wd, members]) => {
+      const people = members.map(m => {
+        const color = m.role === 'Professor' ? '#a5b4fc' : m.role === 'Host' ? '#555' : '#facc15';
+        return `<span style="font-size:11px;color:${color}">${m.name} <span style="font-size:9px;color:#333">(${m.role})</span></span>`;
+      }).join(', ');
+      return `<div style="font-size:12px;margin-bottom:4px"><span style="color:#555;font-weight:600">${WEEKDAY_FULL[wd] || 'Dia '+wd}:</span> ${people}</div>`;
+    }).join('');
+
+    // Generate all dates from all weekdays
+    const allDates = [];
+    const weekdays = Object.keys(byDay).length > 0 ? Object.keys(byDay).map(Number) : (c.weekday != null ? [c.weekday] : []);
+    for (const wd of weekdays) {
+      allDates.push(...generateDates(c.start_date, c.end_date, wd));
+    }
+    allDates.sort((a,b) => a-b);
+
+    return `<div class="report-card" style="border-left:3px solid ${c.color || '#666'}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px">
           <div style="font-size:16px;font-weight:800;color:#fff">${c.name}</div>
-          <div style="font-size:12px;color:#555;margin-top:2px">
-            ${WEEKDAY_NAMES[c.weekday]}s | ${c.time_start}–${c.time_end} | ${startFmt} a ${endFmt} | ${dates.length} aulas
-          </div>
+          ${typeBadge}
         </div>
         <div style="display:flex;gap:6px">
           <button class="att-btn" style="padding:6px 10px;font-size:11px" onclick="editClass('${c.id}')">Editar</button>
           <button class="att-btn delete" style="padding:6px 8px" onclick="deleteClass('${c.id}','${c.name}')">🗑</button>
         </div>
       </div>
-      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px">
-        ${c.professor ? `<div style="font-size:12px;color:#a5b4fc"><span style="color:#555">Professor:</span> ${c.professor}</div>` : ''}
-        ${c.host ? `<div style="font-size:12px;color:#888"><span style="color:#555">Host:</span> ${c.host}</div>` : ''}
+      <div style="font-size:12px;color:#555;margin-bottom:10px">
+        ${c.time_start || ''}–${c.time_end || ''} | ${startFmt} a ${endFmt} | ${allDates.length} aulas
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px">
-        ${dates.map(d => `<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:${c.color}15;border:1px solid ${c.color}30;color:${c.color}">${fmtDate(d)}</span>`).join('')}
+      ${daysHtml}
+      <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:8px">
+        ${allDates.slice(0,30).map(d => `<span style="font-size:9px;padding:2px 5px;border-radius:3px;background:${(c.color||'#666')}15;border:1px solid ${(c.color||'#666')}30;color:${c.color||'#666'}">${fmtDate(d)}</span>`).join('')}
+        ${allDates.length > 30 ? `<span style="font-size:9px;color:#333">+${allDates.length-30}</span>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1513,86 +1527,189 @@ function renderClassesList() {
   document.getElementById('classes-list').innerHTML = cards;
 }
 
+// Schedule day builder
+function addScheduleDay() {
+  const idx = classSchedules.length;
+  classSchedules.push({ weekday: 1, professors: [], mentors: [], hosts: [] });
+  renderScheduleDays();
+}
+
+function removeScheduleDay(idx) {
+  classSchedules.splice(idx, 1);
+  renderScheduleDays();
+}
+
+function addMemberToDay(idx, role) {
+  classSchedules[idx][role].push('');
+  renderScheduleDays();
+}
+
+function removeMemberFromDay(idx, role, mIdx) {
+  classSchedules[idx][role].splice(mIdx, 1);
+  renderScheduleDays();
+}
+
+function updateDayWeekday(idx, val) {
+  classSchedules[idx].weekday = parseInt(val);
+}
+
+function updateMember(idx, role, mIdx, val) {
+  classSchedules[idx][role][mIdx] = val;
+}
+
+function renderScheduleDays() {
+  const container = document.getElementById('schedule-days-container');
+  const mentorOpts = mentorsList.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+
+  container.innerHTML = classSchedules.map((day, idx) => `
+    <div style="background:#0d0d0d;border:1px solid #1e1e1e;border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <select class="substitute-select" style="padding:8px 10px;flex:0 0 160px" onchange="updateDayWeekday(${idx},this.value)">
+          <option value="1" ${day.weekday===1?'selected':''}>Segunda-feira</option>
+          <option value="2" ${day.weekday===2?'selected':''}>Terça-feira</option>
+          <option value="3" ${day.weekday===3?'selected':''}>Quarta-feira</option>
+          <option value="4" ${day.weekday===4?'selected':''}>Quinta-feira</option>
+          <option value="5" ${day.weekday===5?'selected':''}>Sexta-feira</option>
+          <option value="6" ${day.weekday===6?'selected':''}>Sábado</option>
+          <option value="0" ${day.weekday===0?'selected':''}>Domingo</option>
+        </select>
+        <span style="flex:1"></span>
+        <button class="att-btn delete" style="padding:4px 8px;font-size:10px" onclick="removeScheduleDay(${idx})">Remover dia</button>
+      </div>
+      ${renderMemberSection(idx, 'professors', 'Professor', mentorOpts, '#a5b4fc')}
+      ${renderMemberSection(idx, 'mentors', 'Mentor', mentorOpts, '#facc15')}
+      ${renderMemberSection(idx, 'hosts', 'Host', mentorOpts, '#888')}
+    </div>
+  `).join('');
+}
+
+function renderMemberSection(dayIdx, role, label, mentorOpts, color) {
+  const members = classSchedules[dayIdx][role];
+  return `
+    <div style="margin-bottom:8px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+        <span style="font-size:11px;font-weight:700;color:${color}">${label}</span>
+        <button style="font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid ${color}40;background:${color}15;color:${color};cursor:pointer;font-family:var(--font-sans)" onclick="addMemberToDay(${dayIdx},'${role}')">+</button>
+      </div>
+      ${members.map((mId, mIdx) => `
+        <div style="display:flex;gap:4px;margin-bottom:4px">
+          <select class="substitute-select" style="flex:1;padding:6px 8px;font-size:12px" onchange="updateMember(${dayIdx},'${role}',${mIdx},this.value)">
+            <option value="">— Selecione —</option>
+            ${mentorOpts.replace(`value="${mId}"`, `value="${mId}" selected`)}
+          </select>
+          <button class="att-btn delete" style="padding:4px 6px;font-size:10px" onclick="removeMemberFromDay(${dayIdx},'${role}',${mIdx})">✕</button>
+        </div>
+      `).join('')}
+    </div>`;
+}
+
 function openClassForm() {
-  populateClassDropdowns();
   document.getElementById('class-form-container').style.display = '';
   document.getElementById('class-edit-id').value = '';
   document.getElementById('class-name').value = '';
+  document.getElementById('class-type').value = 'PS';
   document.getElementById('class-start').value = '2026-02-01';
   document.getElementById('class-end').value = '2026-05-31';
-  document.getElementById('class-weekday').value = '1';
   document.getElementById('class-time-start').value = '18:00';
   document.getElementById('class-time-end').value = '20:00';
-  document.getElementById('class-professor').value = '';
-  document.getElementById('class-host').value = '';
   document.getElementById('class-color').value = '#6366f1';
-  document.getElementById('class-preview').style.display = 'none';
+  classSchedules = [];
+  renderScheduleDays();
   document.getElementById('class-name').focus();
-
-  // Add preview listeners
-  ['class-start','class-end','class-weekday'].forEach(id => {
-    document.getElementById(id).onchange = previewClassDates;
-  });
 }
 
 function closeClassForm() {
   document.getElementById('class-form-container').style.display = 'none';
+  classSchedules = [];
 }
 
-function editClass(id) {
+async function editClass(id) {
   const c = classesList.find(x => x.id === id);
   if (!c) return;
-  populateClassDropdowns();
   document.getElementById('class-form-container').style.display = '';
   document.getElementById('class-edit-id').value = c.id;
   document.getElementById('class-name').value = c.name;
+  document.getElementById('class-type').value = c.type || 'PS';
   document.getElementById('class-start').value = c.start_date;
   document.getElementById('class-end').value = c.end_date;
-  document.getElementById('class-weekday').value = c.weekday;
   document.getElementById('class-time-start').value = c.time_start;
   document.getElementById('class-time-end').value = c.time_end;
-  document.getElementById('class-professor').value = c.professor || '';
-  document.getElementById('class-host').value = c.host || '';
   document.getElementById('class-color').value = c.color || '#6366f1';
-  previewClassDates();
 
-  ['class-start','class-end','class-weekday'].forEach(id => {
-    document.getElementById(id).onchange = previewClassDates;
-  });
+  // Load existing schedule from class_mentors
+  const byDay = {};
+  for (const cm of (c._mentors || [])) {
+    const wd = cm.weekday ?? c.weekday ?? 1;
+    if (!byDay[wd]) byDay[wd] = { weekday: wd, professors: [], mentors: [], hosts: [] };
+    const roleKey = cm.role === 'Professor' ? 'professors' : cm.role === 'Host' ? 'hosts' : 'mentors';
+    byDay[wd][roleKey].push(cm.mentor_id);
+  }
+
+  // Fallback to old fields
+  if (Object.keys(byDay).length === 0 && c.weekday != null) {
+    byDay[c.weekday] = { weekday: c.weekday, professors: [], mentors: [], hosts: [] };
+  }
+
+  classSchedules = Object.values(byDay);
+  renderScheduleDays();
 }
 
-async function saveClass() {
+async function saveClassV2() {
   const id = document.getElementById('class-edit-id').value;
   const name = document.getElementById('class-name').value.trim();
+  const type = document.getElementById('class-type').value;
   const start_date = document.getElementById('class-start').value;
   const end_date = document.getElementById('class-end').value;
-  const weekday = parseInt(document.getElementById('class-weekday').value);
   const time_start = document.getElementById('class-time-start').value;
   const time_end = document.getElementById('class-time-end').value;
-  const professor = document.getElementById('class-professor').value || null;
-  const host = document.getElementById('class-host').value || null;
   const color = document.getElementById('class-color').value;
 
   if (!name || !start_date || !end_date) { showToast('Preencha nome e datas', 'error'); return; }
 
-  const record = { name, start_date, end_date, weekday, time_start, time_end, professor, host, color };
+  // Use first weekday as main (for backwards compat)
+  const weekday = classSchedules.length > 0 ? classSchedules[0].weekday : 1;
 
+  const record = { name, type, start_date, end_date, weekday, time_start, time_end, color, active: true };
+
+  let classId = id;
   if (id) {
     const { error } = await sb.from('classes').update(record).eq('id', id);
     if (error) { showToast('Erro: ' + error.message, 'error'); return; }
-    showToast('Turma atualizada!', 'success');
   } else {
-    const { error } = await sb.from('classes').insert(record);
+    const { data, error } = await sb.from('classes').insert(record).select().single();
     if (error) { showToast('Erro: ' + error.message, 'error'); return; }
-    showToast('Turma criada!', 'success');
+    classId = data.id;
   }
 
+  // Save class_mentors: delete old, insert new
+  await sb.from('class_mentors').delete().eq('class_id', classId);
+
+  const mentorRows = [];
+  for (const day of classSchedules) {
+    for (const mId of day.professors) {
+      if (mId) mentorRows.push({ class_id: classId, mentor_id: mId, role: 'Professor', weekday: day.weekday });
+    }
+    for (const mId of day.mentors) {
+      if (mId) mentorRows.push({ class_id: classId, mentor_id: mId, role: 'Mentor', weekday: day.weekday });
+    }
+    for (const mId of day.hosts) {
+      if (mId) mentorRows.push({ class_id: classId, mentor_id: mId, role: 'Host', weekday: day.weekday });
+    }
+  }
+
+  if (mentorRows.length > 0) {
+    const { error } = await sb.from('class_mentors').insert(mentorRows);
+    if (error) console.error('class_mentors insert error:', error);
+  }
+
+  showToast(id ? 'Turma atualizada!' : 'Turma criada!', 'success');
   closeClassForm();
   await loadClasses();
 }
 
 async function deleteClass(id, name) {
   if (!confirm(`Excluir turma ${name}?`)) return;
+  await sb.from('class_mentors').delete().eq('class_id', id);
   const { error } = await sb.from('classes').delete().eq('id', id);
   if (error) { showToast('Erro: ' + error.message, 'error'); return; }
   showToast(`Turma ${name} removida`, 'success');
