@@ -45,6 +45,10 @@
     {
       "source": "/presenca",
       "destination": "/presenca/index.html"
+    },
+    {
+      "source": "/aulas",
+      "destination": "/aulas/index.html"
     }
   ]
 }

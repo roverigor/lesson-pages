@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aulas e Gravacoes — Academia Lendaria</title>
+  <link rel="stylesheet" href="../templates/design-tokens-dark-premium.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-sans); background: #080808; color: #888; min-height: 100vh; }
+
+    .login-overlay { position: fixed; inset: 0; background: #080808; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .login-overlay.hidden { display: none; }
+    .login-box { background: #111; border: 1px solid #222; border-radius: 16px; padding: 40px; width: 90%; max-width: 400px; text-align: center; }
+    .login-icon { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; }
+    .login-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .login-subtitle { font-size: 13px; color: #555; margin-bottom: 28px; }
+    .login-field { width: 100%; padding: 12px 16px; border-radius: 8px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd; font-size: 14px; font-family: var(--font-sans); margin-bottom: 12px; outline: none; }
+    .login-field:focus { border-color: #6366f1; }
+    .login-field::placeholder { color: #333; }
+    .login-btn { width: 100%; padding: 12px; border-radius: 8px; border: none; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font-sans); margin-top: 8px; }
+    .login-error { color: #ef4444; font-size: 12px; margin-top: 12px; display: none; }
+    .login-error.show { display: block; }
+
+    .header { background: #101010; border-bottom: 1px solid #1a1a1a; padding: 20px 32px; position: sticky; top: 0; z-index: 200; }
+    .header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .header-title { display: flex; align-items: center; gap: 12px; flex: 1; }
+    .header-icon { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .header-title h1 { font-size: 18px; font-weight: 800; color: #fff; }
+    .header-title p { font-size: 12px; color: #444; margin-top: 1px; }
+    .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill { background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25); border-radius: 999px; padding: 8px 16px; font-size: 12px; font-weight: 600; color: #a5b4fc; text-decoration: none; display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
+    .pill:hover { background: rgba(99,102,241,0.2); }
+    .pill.danger { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.25); color: #fca5a5; }
+
+    .layout { max-width: 1200px; margin: 0 auto; padding: 28px 32px 120px; }
+
+    /* Cohort selector */
+    .cohort-tabs { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
+    .cohort-tab { padding: 10px 20px; border-radius: 10px; border: 1px solid #1e1e1e; background: #0d0d0d; color: #555; font-size: 13px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); transition: all 0.15s; }
+    .cohort-tab:hover { color: #aaa; border-color: #333; }
+    .cohort-tab.active { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.3); color: #a5b4fc; }
+
+    /* Recording card */
+    .recording-card { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 14px; margin-bottom: 20px; overflow: hidden; }
+    .card-header { padding: 20px 24px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid #141414; }
+    .card-date { font-size: 11px; color: #555; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .card-title { font-size: 18px; font-weight: 800; color: #fff; flex: 1; }
+    .card-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+    .badge { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+    .badge-purple { background: rgba(99,102,241,0.12); color: #a5b4fc; }
+    .badge-green { background: rgba(34,197,94,0.12); color: #4ade80; }
+    .badge-yellow { background: rgba(245,158,11,0.12); color: #fbbf24; }
+
+    .card-meta { padding: 16px 24px; display: flex; gap: 16px; flex-wrap: wrap; border-bottom: 1px solid #141414; }
+    .meta-item { font-size: 12px; color: #555; display: flex; align-items: center; gap: 6px; }
+    .meta-value { color: #aaa; font-weight: 600; }
+
+    .card-links { padding: 16px 24px; display: flex; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid #141414; }
+    .link-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #222; background: #111; color: #aaa; font-size: 12px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: all 0.15s; cursor: pointer; font-family: var(--font-sans); }
+    .link-btn:hover { background: #1a1a1a; color: #fff; }
+    .link-btn.primary { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.25); color: #a5b4fc; }
+    .link-btn.green { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.2); color: #4ade80; }
+
+    /* Sections */
+    .card-sections { padding: 0 24px 24px; }
+    .section { margin-top: 20px; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; padding: 12px 0; border-bottom: 1px solid #141414; }
+    .section-title { font-size: 14px; font-weight: 700; color: #ddd; }
+    .section-toggle { font-size: 11px; color: #555; font-weight: 600; padding: 4px 10px; border-radius: 6px; background: #111; border: 1px solid #1e1e1e; }
+    .section-body { display: none; padding: 16px 0; }
+    .section-body.open { display: block; }
+
+    .summary-content { font-size: 13px; line-height: 1.8; color: #aaa; }
+    .summary-content h2 { font-size: 16px; font-weight: 800; color: #fff; margin: 20px 0 8px; }
+    .summary-content h3 { font-size: 14px; font-weight: 700; color: #ddd; margin: 16px 0 6px; }
+    .summary-content strong { color: #ddd; }
+    .summary-content ul, .summary-content ol { padding-left: 20px; margin: 8px 0; }
+    .summary-content li { margin: 4px 0; }
+    .summary-content table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    .summary-content th { text-align: left; padding: 8px 12px; font-size: 11px; color: #555; border-bottom: 1px solid #1e1e1e; background: #0a0a0a; }
+    .summary-content td { padding: 8px 12px; font-size: 12px; color: #aaa; border-bottom: 1px solid #111; }
+
+    .transcript-content { font-size: 12px; line-height: 1.7; color: #666; white-space: pre-wrap; font-family: 'SF Mono', 'Fira Code', monospace; max-height: 500px; overflow-y: auto; background: #0a0a0a; border-radius: 8px; padding: 16px; }
+    .chat-content { font-size: 12px; line-height: 1.7; color: #888; white-space: pre-wrap; max-height: 300px; overflow-y: auto; background: #0a0a0a; border-radius: 8px; padding: 16px; }
+
+    .empty { text-align: center; padding: 60px 20px; color: #333; font-size: 14px; }
+
+    @media (max-width: 768px) {
+      .header { padding: 14px 16px; }
+      .layout { padding: 16px 12px 80px; }
+      .card-header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-icon">🎓</div>
+    <div class="login-title">Aulas e Gravacoes</div>
+    <div class="login-subtitle">Transcricoes, resumos e materiais por turma</div>
+    <form onsubmit="handleLogin(event)">
+      <input class="login-field" type="email" id="login-email" placeholder="Email" required>
+      <input class="login-field" type="password" id="login-password" placeholder="Senha" required>
+      <button class="login-btn" type="submit">Entrar</button>
+      <div class="login-error" id="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<header class="header" id="app-header" style="display:none">
+  <div class="header-inner">
+    <div class="header-title">
+      <div class="header-icon">🎓</div>
+      <div>
+        <h1>Aulas e Gravacoes</h1>
+        <p>Transcricoes, resumos e materiais por turma</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="/" class="pill">Home</a>
+      <a href="/presenca" class="pill">Presenca</a>
+      <a href="/alunos" class="pill">Alunos</a>
+      <a href="/calendario/admin" class="pill">Admin</a>
+      <span class="pill danger" onclick="handleLogout()">Sair</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout" id="app-main" style="display:none">
+  <div class="cohort-tabs" id="cohort-tabs"></div>
+  <div id="recordings-list"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://gpufcipkajppykmnmdeh.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let recordings = [];
+let cohorts = [];
+let currentCohort = 'all';
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const err = document.getElementById('login-error');
+  err.classList.remove('show');
+  const { error } = await sb.auth.signInWithPassword({
+    email: document.getElementById('login-email').value,
+    password: document.getElementById('login-password').value,
+  });
+  if (error) { err.textContent = error.message; err.classList.add('show'); return; }
+  showApp();
+}
+async function handleLogout() { await sb.auth.signOut(); location.reload(); }
+async function checkSession() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) showApp();
+}
+
+async function showApp() {
+  document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('app-header').style.display = '';
+  document.getElementById('app-main').style.display = '';
+  await loadData();
+}
+
+async function loadData() {
+  const [r, c] = await Promise.all([
+    sb.from('class_recordings').select('*, cohorts(name, tally_url, zoom_link, time_start, time_end, schedule_days)').order('recording_date', { ascending: false }),
+    sb.from('cohorts').select('*').order('name'),
+  ]);
+  recordings = r.data || [];
+  cohorts = c.data || [];
+  renderCohortTabs();
+  renderRecordings();
+}
+
+function renderCohortTabs() {
+  const el = document.getElementById('cohort-tabs');
+  const cohortsWithRecordings = new Set(recordings.map(r => r.cohort_id).filter(Boolean));
+  const relevantCohorts = cohorts.filter(c => cohortsWithRecordings.has(c.id));
+
+  el.innerHTML = `<button class="cohort-tab ${currentCohort === 'all' ? 'active' : ''}" onclick="setCohort('all')">Todas</button>` +
+    relevantCohorts.map(c =>
+      `<button class="cohort-tab ${currentCohort === c.id ? 'active' : ''}" onclick="setCohort('${c.id}')">${c.name}</button>`
+    ).join('');
+}
+
+function setCohort(id) {
+  currentCohort = id;
+  renderCohortTabs();
+  renderRecordings();
+}
+
+function renderRecordings() {
+  const el = document.getElementById('recordings-list');
+  let filtered = recordings;
+  if (currentCohort !== 'all') {
+    filtered = recordings.filter(r => r.cohort_id === currentCohort);
+  }
+
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty">Nenhuma gravacao encontrada</div>';
+    return;
+  }
+
+  el.innerHTML = filtered.map((r, idx) => {
+    const cohort = r.cohorts || {};
+    const date = r.recording_date ? new Date(r.recording_date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
+    const hasSummary = r.summary && r.summary.length > 10;
+    const hasTranscript = r.transcript_text && r.transcript_text.length > 10;
+    const hasChat = r.chat_log && r.chat_log.length > 5;
+    const hasVtt = r.transcript_vtt && r.transcript_vtt.length > 10;
+
+    // Parse markdown summary
+    const summaryHtml = hasSummary ? (typeof marked !== 'undefined' ? marked.parse(r.summary) : r.summary.replace(/\n/g, '<br>')) : '';
+
+    return `
+    <div class="recording-card">
+      <div class="card-header">
+        <div style="flex:1">
+          <div class="card-date">${date}</div>
+          <div class="card-title">${r.title || '—'}</div>
+        </div>
+        <div class="card-badges">
+          <span class="badge badge-purple">${cohort.name || '—'}</span>
+          ${r.duration_minutes ? `<span class="badge badge-yellow">${r.duration_minutes} min</span>` : ''}
+          ${hasSummary ? '<span class="badge badge-green">Resumo</span>' : ''}
+          ${hasTranscript ? '<span class="badge badge-green">Transcricao</span>' : ''}
+        </div>
+      </div>
+
+      <div class="card-meta">
+        ${cohort.time_start ? `<div class="meta-item">Horario: <span class="meta-value">${cohort.time_start} - ${cohort.time_end || ''}</span></div>` : ''}
+        ${cohort.schedule_days ? `<div class="meta-item">Dias: <span class="meta-value">${cohort.schedule_days}</span></div>` : ''}
+        ${r.duration_minutes ? `<div class="meta-item">Duracao: <span class="meta-value">${r.duration_minutes} min</span></div>` : ''}
+        ${hasTranscript ? `<div class="meta-item">Transcricao: <span class="meta-value">${Math.round(r.transcript_text.length / 1000)}k chars</span></div>` : ''}
+      </div>
+
+      <div class="card-links">
+        ${cohort.zoom_link ? `<a href="${cohort.zoom_link}" target="_blank" class="link-btn primary">Zoom</a>` : ''}
+        ${r.video_url ? `<a href="${r.video_url}" target="_blank" class="link-btn">Video</a>` : ''}
+        ${r.audio_url ? `<a href="${r.audio_url}" target="_blank" class="link-btn">Audio</a>` : ''}
+        ${cohort.tally_url ? `<a href="${cohort.tally_url}" target="_blank" class="link-btn green">CSAT</a>` : ''}
+      </div>
+
+      <div class="card-sections">
+        ${hasSummary ? `
+        <div class="section">
+          <div class="section-header" onclick="toggleSection(this)">
+            <span class="section-title">Resumo da Aula</span>
+            <span class="section-toggle">Expandir</span>
+          </div>
+          <div class="section-body open">
+            <div class="summary-content">${summaryHtml}</div>
+          </div>
+        </div>` : ''}
+
+        ${hasTranscript ? `
+        <div class="section">
+          <div class="section-header" onclick="toggleSection(this)">
+            <span class="section-title">Transcricao Completa</span>
+            <span class="section-toggle">Expandir</span>
+          </div>
+          <div class="section-body">
+            <div class="transcript-content">${escapeHtml(r.transcript_text)}</div>
+          </div>
+        </div>` : ''}
+
+        ${hasVtt ? `
+        <div class="section">
+          <div class="section-header" onclick="toggleSection(this)">
+            <span class="section-title">Transcricao com Timestamps (VTT)</span>
+            <span class="section-toggle">Expandir</span>
+          </div>
+          <div class="section-body">
+            <div class="transcript-content">${escapeHtml(r.transcript_vtt)}</div>
+          </div>
+        </div>` : ''}
+
+        ${hasChat ? `
+        <div class="section">
+          <div class="section-header" onclick="toggleSection(this)">
+            <span class="section-title">Chat da Aula</span>
+            <span class="section-toggle">Expandir</span>
+          </div>
+          <div class="section-body">
+            <div class="chat-content">${escapeHtml(r.chat_log)}</div>
+          </div>
+        </div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSection(header) {
+  const body = header.nextElementSibling;
+  const toggle = header.querySelector('.section-toggle');
+  body.classList.toggle('open');
+  toggle.textContent = body.classList.contains('open') ? 'Recolher' : 'Expandir';
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+checkSession();
+</script>
+</body>
+</html>
