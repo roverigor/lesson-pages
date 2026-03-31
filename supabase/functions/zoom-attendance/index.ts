@@ -103,7 +103,7 @@ async function getPastMeetingDetails(token: string, meetingUUID: string) {
 // 5. If multiple students match, prefer exact match, skip ambiguous
 // 6. Email match takes priority over name match
 
-const BOT_PATTERNS = /notetaker|fathom|read\.ai|fireflies|otter|autonom\.ia|bot\b|recording|reunio|pedagogico|academia/i;
+const BOT_PATTERNS = /notetaker|fathom|read\.ai|fireflies|otter|bot\b|recording|reunio.*boa\s*vista|pedagogico.*academia|academia.*lend/i;
 
 function normalize(str: string): string {
   return (str || "")
