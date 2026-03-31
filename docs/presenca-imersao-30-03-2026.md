@@ -7,24 +7,204 @@
 
 ---
 
+## Metodologia
+
+Os dados foram extraídos da API do Zoom (endpoint ).
+A sala do Zoom caiu durante a aula e foi reaberta, gerando **2 instâncias** do mesmo Meeting ID.
+O Zoom registra cada entrada/saída como um registro separado.
+
+| Dado | Valor |
+|------|-------|
+| Registros brutos do Zoom (joins/leaves) | 427 |
+| Pessoas únicas (por nome) | 162 |
+| Com 1 entrada | 10 |
+| Com múltiplas entradas (reconexões) | 152 |
+| Total de reconexões | 265 |
+| IAs/Bots removidos | 7 |
+| Contas equipe removidas | 9 |
+| **Alunos únicos** | **148** |
+
+> **Nota:** O pico de ~180 conexões simultâneas reportado pelo Zoom inclui reconexões,
+> múltiplos dispositivos, bots de transcrição e contas da equipe.
+> O número real de alunos únicos que participaram é **148**.
+
+### Detalhamento de reconexões
+
+| Nome | Entradas | Joins/Leaves |
+|------|----------|-------------|
+| @dr.lucasmoraes | 4 | 22:58→23:02; 23:02→23:26; 01:43→01:43; 01:43→02:28 |
+| A.T.M. | 4 | 23:14→23:15; 23:15→23:34; 01:41→01:41; 01:41→02:20 |
+| Adavio Tittoni | 8 | 22:50→22:52; 22:52→22:52; 22:52→22:54; 22:54→22:55; 22:55→22:58; 22:55→23:24; 01:43→01:43; 01:43→02:28 |
+| Adriano De Marqui | 4 | 22:44→22:44; 22:44→01:38; 01:43→01:43; 01:43→01:51 |
+| Alan Cichella | 2 | 23:15→23:15; 23:15→23:30 |
+| Alexandre Pegoraro de Souza | 2 | 22:52→23:03; 23:03→23:24 |
+| Alexandre Rosa | 4 | 22:51→23:03; 23:03→01:38; 01:44→01:44; 01:44→02:05 |
+| Allison Braz | 2 | 23:15→23:15; 23:15→23:18 |
+| ALUIZIO  JR | 2 | 01:43→01:43; 01:43→02:28 |
+| ALUIZIO C JR | 2 | 22:57→23:02; 23:02→23:24 |
+| Alvaro Shoji | 4 | 22:58→23:03; 23:03→23:28; 01:41→01:41; 01:41→02:28 |
+| Amanda de Paula Silva | 2 | 01:42→01:43; 01:43→02:28 |
+| Anderson Guimarães | 2 | 23:02→23:02; 23:02→23:25 |
+| André Kamizono | 2 | 23:15→23:15; 23:15→00:24 |
+| André Muller Colaborando Com Seguros | 3 | 22:51→23:02; 23:15→23:15; 23:15→23:25 |
+| André Silva | 4 | 23:15→23:15; 23:15→23:25; 01:41→01:41; 01:41→02:28 |
+| Anelise Schiavo Franco Silvério | 4 | 23:14→23:15; 23:15→23:26; 01:41→01:41; 01:41→02:28 |
+| Angela Feil | 4 | 01:41→01:41; 01:41→01:45; 01:45→01:45; 01:45→02:28 |
+| Autonom.IA | 2 | 23:00→23:02; 23:02→23:35 |
+| Bruno Erick Fuchs | 2 | 01:45→01:45; 01:45→02:28 |
+| Bruno Gentil | 4 | 23:01→23:02; 23:02→23:41; 01:41→01:41; 01:41→02:28 |
+| Bruno SAL | 2 | 23:16→23:16; 23:16→23:26 |
+| Bruno's Fathom Notetaker | 2 | 23:14→23:15; 23:15→23:28 |
+| Caio Matsui Ribeiro | 2 | 01:43→01:44; 01:44→02:28 |
+| Camila Goulart | 2 | 23:01→23:02; 23:02→23:26 |
+| Carlos Candeira | 4 | 23:15→23:15; 23:15→23:23; 02:10→02:10; 02:10→02:11 |
+| Carlos Eduardo | 2 | 22:52→23:02; 23:02→23:25 |
+| Carlos La Yunta | 2 | 23:15→23:15; 23:15→23:24 |
+| Carolina Rosa | 2 | 22:49→23:03; 23:03→23:33 |
+| Claudia Dumont | 2 | 22:55→23:03; 23:03→23:26 |
+| Claudia PC | 2 | 22:49→23:03; 23:03→23:28 |
+| Claudia Pires De Castro | 4 | 22:55→23:03; 23:03→01:38; 01:42→01:43; 01:43→02:28 |
+| Cris França | 2 | 22:53→23:03; 23:03→23:26 |
+| Daiana Duarte | 2 | 23:15→23:15; 23:15→00:31 |
+| Daniel Lima | 2 | 23:00→23:03; 23:03→23:27 |
+| Daniela Campos | 2 | 22:58→23:03; 23:03→23:29 |
+| Davi Carelli | 4 | 22:58→23:03; 23:03→23:26; 01:43→01:43; 01:43→02:27 |
+| David | 4 | 22:53→23:03; 23:03→23:29; 01:43→01:43; 01:43→02:28 |
+| Dayana Critchii | 4 | 23:16→23:16; 23:16→23:26; 01:41→01:41; 01:41→02:28 |
+| Diego Andrade | 6 | 22:59→23:03; 23:03→23:11; 23:11→23:14; 23:14→23:15; 23:15→23:16; 23:16→23:17 |
+| Diego Diniz | 4 | 22:55→23:03; 23:03→23:39; 02:06→02:07; 02:07→02:28 |
+| Dr.Lucas's Fathom Notetaker | 4 | 22:57→23:02; 23:02→23:27; 01:43→01:43; 01:43→02:28 |
+| Edmilson Quesada | 2 | 23:02→23:03; 23:03→23:26 |
+| Edson Camargo | 2 | 01:44→01:44; 01:44→02:25 |
+| Edu Garretano | 2 | 23:16→23:16; 23:16→23:21 |
+| Eduardo Trindade | 2 | 23:00→23:03; 23:03→01:38 |
+| Eliezer Cardoso - BOB | 2 | 22:53→23:02; 23:02→23:24 |
+| Eliezer Cardoso -BOB | 2 | 01:44→01:44; 01:44→02:28 |
+| Ellen Dias | 3 | 22:56→23:01; 23:15→23:15; 23:15→23:19 |
+| Elyas Pedro F. de Aquino | 2 | 22:56→23:03; 23:03→23:26 |
+| Emanuela | 2 | 23:00→23:02; 23:02→23:29 |
+| Emanuela Barboza | 2 | 01:41→01:41; 01:41→02:28 |
+| Enio Souza | 2 | 22:50→23:03; 23:03→23:25 |
+| Erica Souza | 2 | 01:45→01:45; 01:45→02:28 |
+| Ethel Shuña ♾️ | 3 | 23:16→23:16; 01:41→01:41; 01:41→02:28 |
+| Everton Brasil | 4 | 23:03→23:03; 23:03→23:25; 01:43→01:44; 01:44→02:28 |
+| Fabiane Sanz ♾️ | 2 | 23:15→23:16; 23:16→23:26 |
+| Felipe Oliveira | 2 | 02:07→02:07; 02:07→02:28 |
+| Fernando de Santis | 2 | 01:43→01:44; 01:44→02:28 |
+| Fernando Melo | 2 | 22:50→23:03; 23:03→23:26 |
+| Filipe Costa | 2 | 22:52→23:03; 23:03→23:25 |
+| Fran Martins | 2 | 22:50→22:55; 22:55→23:25 |
+| Fran's Fathom Notetaker | 2 | 22:50→23:02; 23:02→23:36 |
+| Franci Guedes | 2 | 23:16→23:16; 23:16→23:28 |
+| Gabriel | 2 | 23:02→23:03; 23:03→23:25 |
+| Gabriel andrade do santos | 4 | 23:15→23:15; 23:15→23:25; 01:43→01:43; 01:43→02:28 |
+| Gabriel Gama | 4 | 23:16→23:16; 23:16→23:29; 01:41→01:41; 01:41→02:28 |
+| Gabriela Simoes | 2 | 22:59→23:02; 23:02→23:36 |
+| Gregory Jaboski | 2 | 23:01→23:02; 23:02→23:26 |
+| Helayne Damasio | 2 | 23:00→23:02; 23:02→23:29 |
+| Igor | 2 | 23:00→23:02; 23:02→23:31 |
+| Inacio Dutra | 2 | 23:02→23:03; 23:03→23:29 |
+| Ivan Furtado | 2 | 22:59→23:03; 23:03→23:28 |
+| Jaderson Visentini | 4 | 23:15→23:16; 23:16→23:29; 01:43→01:44; 01:44→02:03 |
+| Jancer | 4 | 22:59→23:03; 23:03→23:45; 01:43→01:44; 01:44→02:07 |
+| Jaynara | 2 | 23:16→23:16; 23:16→01:38 |
+| Johnny Moraiis | 4 | 23:15→23:15; 23:15→23:26; 01:41→01:41; 01:41→02:28 |
+| José Costacurta | 4 | 22:53→23:02; 23:02→23:25; 01:41→01:41; 01:41→02:26 |
+| João Duarte | 2 | 23:00→23:02; 23:02→23:24 |
+| João Luiz | 2 | 22:57→23:03; 23:03→23:26 |
+| João Marcos | 4 | 23:15→23:15; 23:15→23:24; 01:43→01:43; 01:43→02:28 |
+| João Ramos | 2 | 23:01→23:02; 23:02→23:25 |
+| Kallita Molino | 2 | 22:53→23:03; 23:03→01:37 |
+| Kleber Ribeiro | 2 | 22:58→23:02; 23:02→23:26 |
+| Kléber Fernandes | 2 | 22:49→23:02; 23:02→23:26 |
+| Laura Amorim | 2 | 23:00→23:02; 23:02→23:29 |
+| Leila T Miara | 2 | 23:01→23:02; 23:02→23:22 |
+| Leonardo Kaniak | 2 | 01:44→01:45; 01:45→02:28 |
+| LINCOLN FREIRE | 4 | 22:51→23:02; 22:58→23:02; 23:02→23:31; 23:02→01:38 |
+| Lou Ribas | 2 | 22:56→23:03; 23:03→01:38 |
+| Lucas | 7 | 22:45→22:45; 22:57→23:03; 22:59→23:03; 23:03→23:26; 23:03→23:26; 01:42→01:43; 01:43→02:28 |
+| Lucas Donny | 2 | 23:16→23:16; 23:16→23:29 |
+| Lucas Sousa | 2 | 01:46→01:46; 01:47→02:28 |
+| Luciana Robaina | 5 | 22:52→22:54; 22:54→23:03; 23:03→23:27; 01:52→01:52; 01:52→02:12 |
+| Luciano Eduardo Libardi | 2 | 22:57→23:03; 23:03→23:25 |
+| Luh_Arrais | 4 | 22:58→23:03; 23:03→01:37; 01:43→01:43; 01:43→02:28 |
+| luis fernando menezes cristo | 2 | 22:48→23:03; 23:03→23:37 |
+| Luiz Feitosa | 3 | 22:55→23:01; 23:02→23:02; 23:02→23:24 |
+| Luiz Henrique Cota | 2 | 22:59→23:02; 23:02→23:24 |
+| Luís Lopes | 2 | 23:02→23:02; 23:03→23:24 |
+| Marcelo Azevedo | 2 | 22:50→23:02; 23:03→23:27 |
+| Marcio Silva | 3 | 22:59→23:01; 01:42→01:43; 01:43→02:13 |
+| Marcos | 2 | 22:53→23:02; 23:02→23:31 |
+| Marcos's Fathom Notetaker | 2 | 23:14→23:15; 23:15→23:27 |
+| Mariana Cappelin | 2 | 23:15→23:15; 23:15→23:26 |
+| Mariana Lussari | 4 | 22:59→23:02; 23:02→23:23; 01:44→01:44; 01:44→02:28 |
+| Mario Sousa | 2 | 01:47→01:47; 01:47→02:28 |
+| Marisa Nogueira Campos | 4 | 22:51→23:02; 23:03→01:38; 01:42→01:42; 01:42→02:28 |
+| Marlise Saraiva | 2 | 23:14→23:15; 23:15→01:20 |
+| Mateus Mendes | 2 | 22:55→23:02; 23:02→23:33 |
+| Mateus Mendes Caetano | 2 | 02:22→02:22; 02:22→02:28 |
+| Nelson Rodrigues | 4 | 22:50→23:02; 23:00→23:02; 23:02→23:24; 23:02→01:38 |
+| Oskr's Notetaker | 2 | 23:14→23:15; 23:15→23:35 |
+| Paulo Andrade | 2 | 01:41→01:41; 01:41→02:28 |
+| Paulo Fernandes | 3 | 22:55→23:01; 23:01→23:02; 23:02→23:31 |
+| Pedagógico Academia Lendár[IA] | 3 | 22:38→22:55; 22:55→23:35; 01:41→01:49 |
+| Pedro Azevedo * | 2 | 22:55→23:03; 23:03→23:24 |
+| Rafael Cavalcanti | 2 | 23:01→23:02; 23:02→23:26 |
+| Rafael Zanetti | 2 | 23:00→23:02; 23:02→23:25 |
+| raynier silva | 4 | 22:50→23:02; 23:03→23:29; 01:42→01:43; 01:43→02:28 |
+| Renan Vieira | 4 | 23:16→23:16; 23:16→23:26; 01:44→01:44; 01:44→01:47 |
+| Renato Gomes | 2 | 22:59→23:02; 23:02→23:25 |
+| Reuniões Boa Vista | 2 | 22:58→23:03; 23:03→01:38 |
+| Ricardo Quirino | 4 | 23:02→23:03; 23:03→23:25; 01:42→01:43; 01:43→02:28 |
+| Ricardo Soares | 2 | 23:00→23:02; 23:02→23:39 |
+| Roberto Pinto | 2 | 23:00→23:02; 23:02→23:27 |
+| ROBERTO ZANETTA | 2 | 22:58→23:03; 23:03→23:25 |
+| Rodrigo Almeida | 5 | 22:55→22:56; 22:58→23:03; 23:03→23:28; 01:43→01:44; 01:44→02:28 |
+| Rodrigo Conceição | 3 | 22:49→23:02; 23:02→23:03; 23:03→23:24 |
+| Rodrigo Goltzman | 4 | 22:55→23:02; 23:02→23:24; 01:46→01:46; 01:46→02:28 |
+| Rodrigo Magina | 2 | 23:15→23:15; 23:15→23:17 |
+| Rold Andrade | 2 | 01:41→01:41; 01:41→02:28 |
+| Sandro Nogueira | 2 | 23:00→23:02; 23:02→23:27 |
+| Sergio rolemberg | 2 | 23:00→23:03; 23:03→23:27 |
+| Soraia Regina | 2 | 01:42→01:43; 01:43→02:28 |
+| Talles Souza | 2 | 02:24→02:24; 02:24→02:28 |
+| Talles's Fathom Notetaker | 2 | 02:24→02:24; 02:24→02:28 |
+| Telmo Junior | 3 | 23:00→23:03; 23:04→23:04; 23:04→23:32 |
+| Thiago | 2 | 22:59→23:02; 23:02→23:31 |
+| Valdey Araruna | 4 | 22:50→22:55; 22:54→22:54; 23:02→23:03; 23:03→00:24 |
+| Victor Soares | 6 | 22:58→23:03; 23:03→23:25; 01:43→01:43; 01:43→01:47; 01:49→02:00; 02:00→02:28 |
+| Vinicius Mafra | 2 | 23:00→23:02; 23:02→23:50 |
+| Virginia Lara Marçal | 2 | 22:56→23:03; 23:03→23:25 |
+| VLAMIR ALVES DOS ANJOS | 4 | 22:47→23:02; 23:02→23:27; 01:45→01:45; 01:45→02:28 |
+| Walter Pitman | 2 | 23:00→23:02; 23:02→23:28 |
+| Wellington Vasconcelos | 2 | 22:59→23:02; 23:03→23:24 |
+| Wenderson | 2 | 23:11→23:11; 23:11→23:25 |
+| Werney Lima | 2 | 23:01→23:03; 23:03→23:29 |
+| William Mayrer | 4 | 23:16→23:16; 23:16→23:29; 01:42→01:43; 01:43→02:28 |
+| Yan Lima | 5 | 23:00→23:01; 23:01→23:02; 23:02→23:27; 01:44→01:44; 01:44→01:59 |
+| Yara's Fathom Notetaker | 2 | 23:14→23:15; 23:15→23:27 |
+| Ândrius Gabriel | 6 | 22:59→23:03; 23:03→23:11; 23:14→23:15; 23:15→23:27; 01:41→01:41; 01:41→02:03 |
+
+---
+
 ## Equipe (9)
 
-| # | Nome no Zoom | Duração (min) |
-|---|-------------|---------------|
-| 1 | Academia de Lendários | 1 |
-| 2 | Adavio Tittoni | 74 |
-| 3 | Adriano De Marqui | 182 |
-| 4 | Bruno Gentil | 85 |
-| 5 | Erica Souza | 43 |
-| 6 | Fran Martins | 30 |
-| 7 | Luh_Arrais | 200 |
-| 8 | Pedagógico Academia Lendár[IA] | 48 |
-| 9 | Talles Souza | 4 |
+| # | Nome | Duração (min) |
+|---|------|---------------|
+| 1 | Adavio Tittoni | 74 |
+| 2 | Adriano De Marqui | 182 |
+| 3 | Bruno Gentil | 85 |
+| 4 | Erica Souza | 43 |
+| 5 | Fran Martins | 30 |
+| 6 | Luh_Arrais | 200 |
+| 7 | Talles Souza | 4 |
+| 8 | Pedagógico Academia Lendár[IA] | — |
+| 9 | Academia de Lendários | — |
 
 ## Alunos Vinculados (87)
 
-| # | Vinculado | Nome no Zoom | Duração (min) | Aluno Cadastrado | Telefone | Email |
-|---|-----------|-------------|---------------|-----------------|----------|-------|
+| # | V | Nome no Zoom | Duração (min) | Aluno Cadastrado | Telefone | Email |
+|---|---|-------------|---------------|-----------------|----------|-------|
 | 1 | X | Alan Cichella | 15 | Alan Jones Cichella | 554691144429 | alanjonescichella@gmail.com |
 | 2 | X | Alexandre Pegoraro de Souza | 21 | Alexandre Pegoraro de Souza | 5514998482174 | xand.pegoraro@gmail.com |
 | 3 | X | Alexandre Rosa | 176 | Alexandre Antunes da Rosa | 555192716066 | aar.advogado@icloud.com |
@@ -113,69 +293,71 @@
 | 86 | X | William Mayrer | 58 | William Mayrer | 555496089390 | wmayrer@gmail.com |
 | 87 | X | Yan Lima | 40 | Yan Lima | 557186801998 | whicher765@gmail.com |
 
-## Sem Vínculo (59)
+## Sem Vínculo (61)
 
 | # | Nome no Zoom | Duração (min) | Email Zoom |
 |---|-------------|---------------|-----------|
 | 1 | @dr.lucasmoraes | 68 | — |
 | 2 | A.T.M. | 58 | — |
-| 3 | ALUIZIO  JR | 45 | — |
-| 4 | ALUIZIO C JR | 21 | — |
-| 5 | André Muller Colaborando Com Seguros | 11 | — |
-| 6 | Autonom.IA | 33 | — |
-| 7 | Bruno SAL | 10 | — |
-| 8 | Camila Goulart | 23 | — |
-| 9 | Carlos Candeira | 9 | — |
-| 10 | Carlos Eduardo | 22 | — |
-| 11 | Carolina Rosa | 31 | — |
-| 12 | Claudia PC | 25 | — |
-| 13 | Cris França | 24 | — |
-| 14 | Daiana Duarte | 76 | — |
-| 15 | David | 72 | — |
-| 16 | Denis de Paula | 0 | — |
-| 17 | Diego Diniz | 57 | — |
-| 18 | Edu Garretano | 5 | — |
-| 19 | Eduardo Trindade | 155 | — |
-| 20 | Elyas Pedro F. de Aquino | 24 | — |
-| 21 | Emanuela Barboza | 47 | — |
-| 22 | Gabriel andrade do santos | 55 | — |
-| 23 | Gabriela Simoes | 33 | — |
-| 24 | Igor | 29 | — |
-| 25 | Isis Marques | 0 | — |
-| 26 | Jancer | 66 | — |
-| 27 | Jaynara | 142 | — |
-| 28 | Johnny Moraiis | 58 | — |
-| 29 | José Costacurta | 68 | — |
-| 30 | João Duarte | 22 | — |
-| 31 | João Marcos | 54 | — |
-| 32 | João Ramos | 22 | — |
-| 33 | Kleber Ribeiro | 24 | — |
-| 34 | Kléber Fernandes | 24 | — |
-| 35 | Lou Ribas | 155 | — |
-| 36 | Lucas | 68 | — |
-| 37 | Lucas Donny | 13 | — |
-| 38 | Luciana Robaina | 44 | — |
-| 39 | luis fernando menezes cristo | 35 | — |
-| 40 | Luiz Feitosa | 22 | — |
-| 41 | Luiz Leal | 0 | — |
-| 42 | Marcos | 29 | — |
-| 43 | Marina | 1 | — |
-| 44 | Marlise Saraiva | 125 | — |
-| 45 | Mateus Mendes | 31 | — |
-| 46 | Rafael Zanetti | 22 | — |
-| 47 | Reuniões Boa Vista | 155 | — |
-| 48 | Ricardo Quirino | 67 | — |
-| 49 | Ricardo Soares | 36 | — |
-| 50 | Roberto Pinto | 25 | — |
-| 51 | ROBERTO ZANETTA | 23 | — |
-| 52 | Rodrigo Conceição | 22 | — |
-| 53 | Rodrigo Goltzman | 64 | — |
-| 54 | Sandro Nogueira | 24 | — |
-| 55 | Sergio rolemberg | 25 | — |
-| 56 | Vinicius Mafra | 48 | — |
-| 57 | Walter Pitman | 25 | — |
-| 58 | Wenderson | 14 | — |
-| 59 | Ândrius Gabriel | 34 | — |
+| 3 | Academia de Lendários | 1 | — |
+| 4 | ALUIZIO  JR | 45 | — |
+| 5 | ALUIZIO C JR | 21 | — |
+| 6 | André Muller Colaborando Com Seguros | 11 | — |
+| 7 | Autonom.IA | 33 | — |
+| 8 | Bruno SAL | 10 | — |
+| 9 | Camila Goulart | 23 | — |
+| 10 | Carlos Candeira | 9 | — |
+| 11 | Carlos Eduardo | 22 | — |
+| 12 | Carolina Rosa | 31 | — |
+| 13 | Claudia PC | 25 | — |
+| 14 | Cris França | 24 | — |
+| 15 | Daiana Duarte | 76 | — |
+| 16 | David | 72 | — |
+| 17 | Denis de Paula | 0 | — |
+| 18 | Diego Diniz | 57 | — |
+| 19 | Edu Garretano | 5 | — |
+| 20 | Eduardo Trindade | 155 | — |
+| 21 | Elyas Pedro F. de Aquino | 24 | — |
+| 22 | Emanuela Barboza | 47 | — |
+| 23 | Gabriel andrade do santos | 55 | — |
+| 24 | Gabriela Simoes | 33 | — |
+| 25 | Igor | 29 | — |
+| 26 | Isis Marques | 0 | — |
+| 27 | Jancer | 66 | — |
+| 28 | Jaynara | 142 | — |
+| 29 | Johnny Moraiis | 58 | — |
+| 30 | José Costacurta | 68 | — |
+| 31 | João Duarte | 22 | — |
+| 32 | João Marcos | 54 | — |
+| 33 | João Ramos | 22 | — |
+| 34 | Kleber Ribeiro | 24 | — |
+| 35 | Kléber Fernandes | 24 | — |
+| 36 | Lou Ribas | 155 | — |
+| 37 | Lucas | 68 | — |
+| 38 | Lucas Donny | 13 | — |
+| 39 | Luciana Robaina | 44 | — |
+| 40 | luis fernando menezes cristo | 35 | — |
+| 41 | Luiz Feitosa | 22 | — |
+| 42 | Luiz Leal | 0 | — |
+| 43 | Marcos | 29 | — |
+| 44 | Marina | 1 | — |
+| 45 | Marlise Saraiva | 125 | — |
+| 46 | Mateus Mendes | 31 | — |
+| 47 | Pedagógico Academia Lendár[IA] | 48 | pedagogico@academialendaria.ai |
+| 48 | Rafael Zanetti | 22 | — |
+| 49 | Reuniões Boa Vista | 155 | — |
+| 50 | Ricardo Quirino | 67 | — |
+| 51 | Ricardo Soares | 36 | — |
+| 52 | Roberto Pinto | 25 | — |
+| 53 | ROBERTO ZANETTA | 23 | — |
+| 54 | Rodrigo Conceição | 22 | — |
+| 55 | Rodrigo Goltzman | 64 | — |
+| 56 | Sandro Nogueira | 24 | — |
+| 57 | Sergio rolemberg | 25 | — |
+| 58 | Vinicius Mafra | 48 | — |
+| 59 | Walter Pitman | 25 | — |
+| 60 | Wenderson | 14 | — |
+| 61 | Ândrius Gabriel | 34 | — |
 
 ## IAs/Bots Filtrados (7)
 
@@ -195,9 +377,10 @@
 
 | Categoria | Quantidade |
 |-----------|-----------|
-| **Total no Zoom** | 162 |
-| **Equipe** | 9 |
-| **IAs/Bots** | 7 |
-| **Alunos (total)** | 146 |
-| **Alunos vinculados** | 87 |
-| **Alunos sem vínculo** | 59 |
+| Registros brutos Zoom (joins/leaves) | 427 |
+| Pessoas únicas | 162 |
+| Equipe | 9 |
+| IAs/Bots | 7 |
+| **Alunos únicos** | **148** |
+| Alunos vinculados (com telefone) | 87 |
+| Alunos sem vínculo | 61 |
