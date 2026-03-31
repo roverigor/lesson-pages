@@ -4,11 +4,24 @@
 - **Zoom Meeting ID:** 86983123360
 - **Host:** pedagogico@academialendaria.ai
 - **Duração total:** 228 min (180 + 48 reconexão)
-- **Participantes únicos:** 155
-- **Vinculados:** 87
-- **Sem vínculo:** 68
 
 ---
+
+## Equipe (9)
+
+| # | Nome no Zoom | Duração (min) |
+|---|-------------|---------------|
+| 1 | Academia de Lendários | 1 |
+| 2 | Adavio Tittoni | 74 |
+| 3 | Adriano De Marqui | 182 |
+| 4 | Bruno Gentil | 85 |
+| 5 | Erica Souza | 43 |
+| 6 | Fran Martins | 30 |
+| 7 | Luh_Arrais | 200 |
+| 8 | Pedagógico Academia Lendár[IA] | 48 |
+| 9 | Talles Souza | 4 |
+
+## Alunos Vinculados (87)
 
 | # | Vinculado | Nome no Zoom | Duração (min) | Aluno Cadastrado | Telefone | Email |
 |---|-----------|-------------|---------------|-----------------|----------|-------|
@@ -99,71 +112,92 @@
 | 85 | X | Werney Lima | 26 | Werney Antunes Lima | 558393504242 | werneyal7@gmail.com |
 | 86 | X | William Mayrer | 58 | William Mayrer | 555496089390 | wmayrer@gmail.com |
 | 87 | X | Yan Lima | 40 | Yan Lima | 557186801998 | whicher765@gmail.com |
-| 88 | | @dr.lucasmoraes | 68 | — | — | — |
-| 89 | | A.T.M. | 58 | — | — | — |
-| 90 | | Academia de Lendários | 1 | — | — | — |
-| 91 | | Adavio Tittoni | 74 | — | — | — |
-| 92 | | Adriano De Marqui | 182 | — | — | — |
-| 93 | | ALUIZIO  JR | 45 | — | — | — |
-| 94 | | ALUIZIO C JR | 21 | — | — | — |
-| 95 | | André Muller Colaborando Com Seguros | 11 | — | — | — |
-| 96 | | Autonom.IA | 33 | — | — | — |
-| 97 | | Bruno Gentil | 85 | — | — | — |
-| 98 | | Bruno SAL | 10 | — | — | — |
-| 99 | | Camila Goulart | 23 | — | — | — |
-| 100 | | Carlos Candeira | 9 | — | — | — |
-| 101 | | Carlos Eduardo | 22 | — | — | — |
-| 102 | | Carolina Rosa | 31 | — | — | — |
-| 103 | | Claudia PC | 25 | — | — | — |
-| 104 | | Cris França | 24 | — | — | — |
-| 105 | | Daiana Duarte | 76 | — | — | — |
-| 106 | | David | 72 | — | — | — |
-| 107 | | Denis de Paula | 0 | — | — | — |
-| 108 | | Diego Diniz | 57 | — | — | — |
-| 109 | | Edu Garretano | 5 | — | — | — |
-| 110 | | Eduardo Trindade | 155 | — | — | — |
-| 111 | | Elyas Pedro F. de Aquino | 24 | — | — | — |
-| 112 | | Emanuela Barboza | 47 | — | — | — |
-| 113 | | Erica Souza | 43 | — | — | — |
-| 114 | | Fran Martins | 30 | — | — | — |
-| 115 | | Gabriel andrade do santos | 55 | — | — | — |
-| 116 | | Gabriela Simoes | 33 | — | — | — |
-| 117 | | Igor | 29 | — | — | — |
-| 118 | | Isis Marques | 0 | — | — | — |
-| 119 | | Jancer | 66 | — | — | — |
-| 120 | | Jaynara | 142 | — | — | — |
-| 121 | | Johnny Moraiis | 58 | — | — | — |
-| 122 | | José Costacurta | 68 | — | — | — |
-| 123 | | João Duarte | 22 | — | — | — |
-| 124 | | João Marcos | 54 | — | — | — |
-| 125 | | João Ramos | 22 | — | — | — |
-| 126 | | Kleber Ribeiro | 24 | — | — | — |
-| 127 | | Kléber Fernandes | 24 | — | — | — |
-| 128 | | Lou Ribas | 155 | — | — | — |
-| 129 | | Lucas | 68 | — | — | — |
-| 130 | | Lucas Donny | 13 | — | — | — |
-| 131 | | Luciana Robaina | 44 | — | — | — |
-| 132 | | Luh_Arrais | 200 | — | — | — |
-| 133 | | luis fernando menezes cristo | 35 | — | — | — |
-| 134 | | Luiz Feitosa | 22 | — | — | — |
-| 135 | | Luiz Leal | 0 | — | — | — |
-| 136 | | Marcos | 29 | — | — | — |
-| 137 | | Marina | 1 | — | — | — |
-| 138 | | Marlise Saraiva | 125 | — | — | — |
-| 139 | | Mateus Mendes | 31 | — | — | — |
-| 140 | | Pedagógico Academia Lendár[IA] | 48 | — | — | pedagogico@academialendaria.ai |
-| 141 | | Rafael Zanetti | 22 | — | — | — |
-| 142 | | Reuniões Boa Vista | 155 | — | — | — |
-| 143 | | Ricardo Quirino | 67 | — | — | — |
-| 144 | | Ricardo Soares | 36 | — | — | — |
-| 145 | | Roberto Pinto | 25 | — | — | — |
-| 146 | | ROBERTO ZANETTA | 23 | — | — | — |
-| 147 | | Rodrigo Conceição | 22 | — | — | — |
-| 148 | | Rodrigo Goltzman | 64 | — | — | — |
-| 149 | | Sandro Nogueira | 24 | — | — | — |
-| 150 | | Sergio rolemberg | 25 | — | — | — |
-| 151 | | Talles Souza | 4 | — | — | — |
-| 152 | | Vinicius Mafra | 48 | — | — | — |
-| 153 | | Walter Pitman | 25 | — | — | — |
-| 154 | | Wenderson | 14 | — | — | — |
-| 155 | | Ândrius Gabriel | 34 | — | — | — |
+
+## Sem Vínculo (59)
+
+| # | Nome no Zoom | Duração (min) | Email Zoom |
+|---|-------------|---------------|-----------|
+| 1 | @dr.lucasmoraes | 68 | — |
+| 2 | A.T.M. | 58 | — |
+| 3 | ALUIZIO  JR | 45 | — |
+| 4 | ALUIZIO C JR | 21 | — |
+| 5 | André Muller Colaborando Com Seguros | 11 | — |
+| 6 | Autonom.IA | 33 | — |
+| 7 | Bruno SAL | 10 | — |
+| 8 | Camila Goulart | 23 | — |
+| 9 | Carlos Candeira | 9 | — |
+| 10 | Carlos Eduardo | 22 | — |
+| 11 | Carolina Rosa | 31 | — |
+| 12 | Claudia PC | 25 | — |
+| 13 | Cris França | 24 | — |
+| 14 | Daiana Duarte | 76 | — |
+| 15 | David | 72 | — |
+| 16 | Denis de Paula | 0 | — |
+| 17 | Diego Diniz | 57 | — |
+| 18 | Edu Garretano | 5 | — |
+| 19 | Eduardo Trindade | 155 | — |
+| 20 | Elyas Pedro F. de Aquino | 24 | — |
+| 21 | Emanuela Barboza | 47 | — |
+| 22 | Gabriel andrade do santos | 55 | — |
+| 23 | Gabriela Simoes | 33 | — |
+| 24 | Igor | 29 | — |
+| 25 | Isis Marques | 0 | — |
+| 26 | Jancer | 66 | — |
+| 27 | Jaynara | 142 | — |
+| 28 | Johnny Moraiis | 58 | — |
+| 29 | José Costacurta | 68 | — |
+| 30 | João Duarte | 22 | — |
+| 31 | João Marcos | 54 | — |
+| 32 | João Ramos | 22 | — |
+| 33 | Kleber Ribeiro | 24 | — |
+| 34 | Kléber Fernandes | 24 | — |
+| 35 | Lou Ribas | 155 | — |
+| 36 | Lucas | 68 | — |
+| 37 | Lucas Donny | 13 | — |
+| 38 | Luciana Robaina | 44 | — |
+| 39 | luis fernando menezes cristo | 35 | — |
+| 40 | Luiz Feitosa | 22 | — |
+| 41 | Luiz Leal | 0 | — |
+| 42 | Marcos | 29 | — |
+| 43 | Marina | 1 | — |
+| 44 | Marlise Saraiva | 125 | — |
+| 45 | Mateus Mendes | 31 | — |
+| 46 | Rafael Zanetti | 22 | — |
+| 47 | Reuniões Boa Vista | 155 | — |
+| 48 | Ricardo Quirino | 67 | — |
+| 49 | Ricardo Soares | 36 | — |
+| 50 | Roberto Pinto | 25 | — |
+| 51 | ROBERTO ZANETTA | 23 | — |
+| 52 | Rodrigo Conceição | 22 | — |
+| 53 | Rodrigo Goltzman | 64 | — |
+| 54 | Sandro Nogueira | 24 | — |
+| 55 | Sergio rolemberg | 25 | — |
+| 56 | Vinicius Mafra | 48 | — |
+| 57 | Walter Pitman | 25 | — |
+| 58 | Wenderson | 14 | — |
+| 59 | Ândrius Gabriel | 34 | — |
+
+## IAs/Bots Filtrados (7)
+
+| # | Nome |
+|---|------|
+| 1 | Bruno's Fathom Notetaker |
+| 2 | Dr.Lucas's Fathom Notetaker |
+| 3 | Fran's Fathom Notetaker |
+| 4 | Marcos's Fathom Notetaker |
+| 5 | Oskr's Notetaker |
+| 6 | Talles's Fathom Notetaker |
+| 7 | Yara's Fathom Notetaker |
+
+---
+
+## Resumo
+
+| Categoria | Quantidade |
+|-----------|-----------|
+| **Total no Zoom** | 162 |
+| **Equipe** | 9 |
+| **IAs/Bots** | 7 |
+| **Alunos (total)** | 146 |
+| **Alunos vinculados** | 87 |
+| **Alunos sem vínculo** | 59 |
