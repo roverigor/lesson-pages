@@ -86,6 +86,15 @@ async function getPastMeetingDetails(token: string, meetingUUID: string) {
 }
 
 // ─── Student Matching ───
+// GUARDRAILS:
+// 1. NEVER match by first name only — too many false positives
+// 2. NEVER match mentors/staff (is_mentor=true) as students
+// 3. Require first + last name match minimum
+// 4. Filter bots, hosts, notetakers before matching
+// 5. If multiple students match, prefer exact match, skip ambiguous
+// 6. Email match takes priority over name match
+
+const BOT_PATTERNS = /notetaker|fathom|read\.ai|fireflies|otter|autonom\.ia|bot\b|recording|reunio|pedagogico|academia/i;
 
 function normalize(str: string): string {
   return (str || "")
@@ -93,46 +102,112 @@ function normalize(str: string): string {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
     .trim();
+}
+
+function isBot(name: string): boolean {
+  return BOT_PATTERNS.test(name);
 }
 
 function matchStudents(
   participants: Array<{ name: string; email: string }>,
-  students: Array<{ id: string; name: string; phone: string }>
+  students: Array<{ id: string; name: string; phone: string; email?: string; is_mentor?: boolean }>
 ): Record<string, string> {
   const matches: Record<string, string> = {};
 
+  // Filter out mentors/staff from matching pool
+  const eligibleStudents = students.filter(s => !s.is_mentor);
+
+  // Build email lookup for priority matching
+  const studentsByEmail: Record<string, string> = {};
+  for (const s of eligibleStudents) {
+    if (s.email) studentsByEmail[s.email.toLowerCase()] = s.id;
+  }
+
+  // Count first names to detect ambiguity
+  const firstNameCount: Record<string, number> = {};
+  for (const s of eligibleStudents) {
+    const first = normalize(s.name).split(" ")[0];
+    if (first) firstNameCount[first] = (firstNameCount[first] || 0) + 1;
+  }
+
   for (const p of participants) {
     const pName = normalize(p.name);
-    if (!pName || pName.match(/notetaker|fathom|read\.ai|fireflies|otter/i)) continue;
+    const pEmail = (p.email || "").toLowerCase().trim();
 
-    for (const s of students) {
+    // Skip bots and notetakers
+    if (!pName || isBot(p.name)) continue;
+
+    const key = pEmail || pName;
+
+    // PRIORITY 1: Email match (most reliable)
+    if (pEmail && studentsByEmail[pEmail]) {
+      matches[key] = studentsByEmail[pEmail];
+      continue;
+    }
+
+    const pParts = pName.split(/\s+/).filter(w => w.length > 1);
+    if (pParts.length === 0) continue;
+
+    let bestMatch: { id: string; score: number } | null = null;
+
+    for (const s of eligibleStudents) {
       const sName = normalize(s.name);
       if (!sName) continue;
+      const sParts = sName.split(/\s+/).filter(w => w.length > 1);
+      if (sParts.length === 0) continue;
 
-      // Exact match
+      // LEVEL 1: Exact full name match (score 100)
       if (pName === sName) {
-        matches[p.email || pName] = s.id;
-        break;
+        bestMatch = { id: s.id, score: 100 };
+        break; // Perfect match, stop looking
       }
 
-      // First + last name match
-      const pParts = pName.split(/\s+/);
-      const sParts = sName.split(/\s+/);
-      if (pParts[0] === sParts[0] && pParts.length > 1 && sParts.length > 1) {
+      // LEVEL 2: First name + last name match (score 80)
+      // Both must have at least 2 parts
+      if (pParts.length >= 2 && sParts.length >= 2) {
+        const pFirst = pParts[0];
         const pLast = pParts[pParts.length - 1];
+        const sFirst = sParts[0];
         const sLast = sParts[sParts.length - 1];
-        if (pLast === sLast) {
-          matches[p.email || pName] = s.id;
-          break;
+
+        if (pFirst === sFirst && pLast === sLast && pFirst.length >= 3 && pLast.length >= 3) {
+          const score = 80;
+          if (!bestMatch || score > bestMatch.score) {
+            bestMatch = { id: s.id, score };
+          }
+          continue;
         }
       }
 
-      // First name only (if unique enough, 4+ chars)
-      if (pParts[0].length >= 4 && pParts[0] === sParts[0]) {
-        matches[p.email || pName] = s.id;
-        break;
+      // LEVEL 3: First name + any other name part match (score 60)
+      // Only if first name is NOT ambiguous (unique in the student list)
+      if (pParts.length >= 2 && sParts.length >= 2) {
+        const pFirst = pParts[0];
+        const sFirst = sParts[0];
+
+        if (pFirst === sFirst && pFirst.length >= 4 && (firstNameCount[pFirst] || 0) === 1) {
+          // Check if any other word matches
+          const pRest = new Set(pParts.slice(1));
+          const sRest = new Set(sParts.slice(1));
+          const commonWords = [...pRest].filter(w => sRest.has(w) && w.length >= 3);
+
+          if (commonWords.length > 0) {
+            const score = 60;
+            if (!bestMatch || score > bestMatch.score) {
+              bestMatch = { id: s.id, score };
+            }
+          }
+        }
       }
+
+      // NO LEVEL 4: We do NOT match by first name only
+    }
+
+    // Only accept matches with score >= 60
+    if (bestMatch && bestMatch.score >= 60) {
+      matches[key] = bestMatch.id;
     }
   }
 
@@ -178,8 +253,8 @@ serve(async (req: Request) => {
       );
     }
 
-    // Load students for matching
-    const studentQuery = sb.from("students").select("id, name, phone").eq("active", true);
+    // Load students for matching (include email and is_mentor for guardrails)
+    const studentQuery = sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true);
     if (cohort_id) studentQuery.eq("cohort_id", cohort_id);
     const { data: students } = await studentQuery;
 
