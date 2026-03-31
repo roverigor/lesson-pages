@@ -1593,7 +1593,8 @@ function updateMember(idx, role, mIdx, val) {
 
 function renderScheduleDays() {
   const container = document.getElementById('schedule-days-container');
-  const mentorOpts = mentorsList.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+  if (!container) return;
+  const mentorOpts = (mentorsList || []).map(m => `<option value="${m.id}">${m.name}</option>`).join('');
 
   container.innerHTML = classSchedules.map((day, idx) => `
     <div style="background:#0d0d0d;border:1px solid #1e1e1e;border-radius:10px;padding:14px;margin-bottom:10px">
@@ -1664,7 +1665,8 @@ function updateLinkedCohort(idx, field, val) {
 
 function renderLinkedCohorts() {
   const container = document.getElementById('linked-cohorts-container');
-  const cohortOpts = cohortsList.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  if (!container) return;
+  const cohortOpts = (cohortsList || []).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
   container.innerHTML = linkedCohorts.map((lc, idx) => {
     const cohort = cohortsList.find(c => c.id === lc.cohort_id);
@@ -1716,16 +1718,17 @@ function closeClassForm() {
 }
 
 async function editClass(id) {
+  try {
   const c = classesList.find(x => x.id === id);
-  if (!c) return;
+  if (!c) { console.error('Class not found:', id); return; }
   document.getElementById('class-form-container').style.display = '';
   document.getElementById('class-edit-id').value = c.id;
-  document.getElementById('class-name').value = c.name;
+  document.getElementById('class-name').value = c.name || '';
   document.getElementById('class-type').value = c.type || 'PS';
-  document.getElementById('class-start').value = c.start_date;
-  document.getElementById('class-end').value = c.end_date;
-  document.getElementById('class-time-start').value = c.time_start;
-  document.getElementById('class-time-end').value = c.time_end;
+  document.getElementById('class-start').value = c.start_date || '';
+  document.getElementById('class-end').value = c.end_date || '';
+  document.getElementById('class-time-start').value = c.time_start || '18:00';
+  document.getElementById('class-time-end').value = c.time_end || '20:00';
   document.getElementById('class-color').value = c.color || '#6366f1';
 
   // Load existing schedule from class_mentors
@@ -1751,6 +1754,7 @@ async function editClass(id) {
     access_until: lc.access_until,
   }));
   renderLinkedCohorts();
+  } catch(e) { console.error('editClass error:', e); showToast('Erro ao abrir turma: ' + e.message, 'error'); }
 }
 
 async function saveClassV2() {
