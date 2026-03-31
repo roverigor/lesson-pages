@@ -72,8 +72,17 @@ async function getMeetingInstances(token: string, meetingId: string) {
 async function getMeetingParticipants(token: string, meetingUUID: string) {
   // UUID must be double-encoded if it contains / or //
   const encoded = encodeURIComponent(encodeURIComponent(meetingUUID));
-  const data = await zoomGet(token, `/past_meetings/${encoded}/participants?page_size=300`);
-  return data.participants || [];
+  let allParticipants: Record<string, unknown>[] = [];
+  let nextToken = '';
+
+  do {
+    const url = `/past_meetings/${encoded}/participants?page_size=300${nextToken ? '&next_page_token=' + nextToken : ''}`;
+    const data = await zoomGet(token, url);
+    allParticipants = allParticipants.concat(data.participants || []);
+    nextToken = data.next_page_token || '';
+  } while (nextToken);
+
+  return allParticipants;
 }
 
 async function getPastMeetingDetails(token: string, meetingUUID: string) {
