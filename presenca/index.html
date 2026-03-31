@@ -133,9 +133,11 @@
       <div class="tabs" id="view-tabs">
         <button class="tab active" onclick="switchTab('meetings')">Reunioes</button>
         <button class="tab" onclick="switchTab('students')">Por Aluno</button>
+        <button class="tab" onclick="switchTab('cohort')">Por Turma</button>
         <button class="tab" onclick="switchTab('unmatched')">Vincular</button>
       </div>
       <a href="/" class="pill">Home</a>
+      <a href="/aulas" class="pill">Aulas</a>
       <a href="/calendario/admin" class="pill">Admin</a>
       <a href="/alunos" class="pill">Alunos</a>
       <span class="pill danger" onclick="handleLogout()">Sair</span>
@@ -163,6 +165,7 @@
       <table>
         <thead><tr>
           <th>Reuniao</th>
+          <th>Turma</th>
           <th>Data</th>
           <th>Participantes</th>
           <th>Matched</th>
@@ -186,6 +189,23 @@
           <th>Ultima presenca</th>
         </tr></thead>
         <tbody id="students-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- COHORT VIEW -->
+  <div id="cohort-view" style="display:none">
+    <div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap" id="cohort-filter-tabs"></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Aluno</th>
+          <th>Telefone</th>
+          <th>Email</th>
+          <th>Presencas</th>
+          <th>Origem</th>
+        </tr></thead>
+        <tbody id="cohort-body"></tbody>
       </table>
     </div>
   </div>
@@ -232,7 +252,9 @@ let meetings = [];
 let participants = [];
 let students = [];
 let cohorts = [];
+let recordings = [];
 let currentTab = 'meetings';
+let currentCohortFilter = 'all';
 let searchQuery = '';
 
 // ─── AUTH ───
@@ -261,14 +283,16 @@ async function showApp() {
 
 // ─── DATA ───
 async function loadAllData() {
-  const [m, s, c] = await Promise.all([
-    sb.from('zoom_meetings').select('*, zoom_participants(id, participant_name, participant_email, duration_minutes, matched, student_id, students(name, phone, cohort_id))').order('start_time', { ascending: false }),
+  const [m, s, c, r] = await Promise.all([
+    sb.from('zoom_meetings').select('*, cohorts(name), zoom_participants(id, participant_name, participant_email, duration_minutes, matched, student_id, students(name, phone, email, cohort_id))').order('start_time', { ascending: false }),
     sb.from('students').select('*, cohorts(name)').eq('active', true).eq('is_mentor', false).order('name'),
     sb.from('cohorts').select('*').order('name'),
+    sb.from('class_recordings').select('video_url, audio_url, meeting_id').order('recording_date', { ascending: false }),
   ]);
   meetings = m.data || [];
   students = s.data || [];
   cohorts = c.data || [];
+  recordings = r.data || [];
   renderAll();
 }
 
@@ -303,7 +327,7 @@ function renderMeetings() {
     return (m.topic || '').toLowerCase().includes(searchQuery);
   });
 
-  if (!filtered.length) { body.innerHTML = '<tr><td colspan="6" class="empty">Nenhuma reuniao sincronizada</td></tr>'; return; }
+  if (!filtered.length) { body.innerHTML = '<tr><td colspan="7" class="empty">Nenhuma reuniao sincronizada</td></tr>'; return; }
 
   body.innerHTML = filtered.map(m => {
     const parts = m.zoom_participants || [];
@@ -311,14 +335,21 @@ function renderMeetings() {
     const total = parts.length;
     const pct = total ? Math.round(matched / total * 100) : 0;
     const date = m.start_time ? new Date(m.start_time).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+    const cohortName = m.cohorts?.name || '—';
+    const rec = recordings.find(r => r.meeting_id === m.id);
+    const hasMedia = rec && (rec.video_url || rec.audio_url);
 
     return `<tr>
       <td style="font-weight:600;color:#ddd">${m.topic || '—'}</td>
+      <td><span class="badge badge-green" style="font-size:10px">${cohortName}</span></td>
       <td>${date}</td>
       <td>${total}</td>
       <td>${matched}/${total} <span class="pct-bar"><span class="pct-fill" style="width:${pct}%;background:${pct > 70 ? '#4ade80' : pct > 40 ? '#fbbf24' : '#f87171'}"></span></span></td>
       <td>${m.duration_minutes || '—'} min</td>
-      <td><button class="btn sm" onclick="showMeetingDetail('${m.id}')">Ver</button></td>
+      <td style="display:flex;gap:4px">
+        <button class="btn sm" onclick="showMeetingDetail('${m.id}')">Ver</button>
+        ${hasMedia ? '<a href="/aulas" class="btn sm" style="color:#a5b4fc;font-size:10px">Gravacao</a>' : ''}
+      </td>
     </tr>`;
   }).join('');
 }
@@ -330,10 +361,20 @@ function showMeetingDetail(meetingId) {
 
   const date = m.start_time ? new Date(m.start_time).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
 
+  const rec = recordings.find(r => r.meeting_id === meetingId);
+  const cohortName = m.cohorts?.name || '';
+  const mediaLinks = rec ? `<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+    ${rec.video_url ? `<a href="${rec.video_url}" target="_blank" class="btn sm" style="color:#a5b4fc;border-color:rgba(99,102,241,0.3)">Video</a>` : ''}
+    ${rec.audio_url ? `<a href="${rec.audio_url}" target="_blank" class="btn sm" style="color:#a5b4fc;border-color:rgba(99,102,241,0.3)">Audio</a>` : ''}
+    <a href="/aulas" class="btn sm" style="color:#4ade80;border-color:rgba(34,197,94,0.3)">Transcricao</a>
+  </div>` : '';
+
   document.getElementById('modal-content').innerHTML = `
     <div style="font-size:11px;color:#555;margin-bottom:4px">${date}</div>
     <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px">${m.topic || '—'}</div>
-    <div style="font-size:12px;color:#444;margin-bottom:20px">${parts.length} participantes · ${m.duration_minutes || '?'} min · Host: ${m.host_email || '—'}</div>
+    <div style="font-size:12px;color:#444;margin-bottom:8px">${parts.length} participantes · ${m.duration_minutes || '?'} min · Host: ${m.host_email || '—'}</div>
+    ${cohortName ? `<div style="font-size:11px;margin-bottom:12px"><span class="badge badge-green">${cohortName}</span></div>` : ''}
+    ${mediaLinks}
     <table style="width:100%">
       <thead><tr><th>Nome</th><th>Aluno vinculado</th><th>Duracao</th><th>Status</th></tr></thead>
       <tbody>${parts.map(p => {
@@ -505,12 +546,85 @@ function switchTab(tab) {
   document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
   document.getElementById('meetings-view').style.display = tab === 'meetings' ? '' : 'none';
   document.getElementById('students-view').style.display = tab === 'students' ? '' : 'none';
+  document.getElementById('cohort-view').style.display = tab === 'cohort' ? '' : 'none';
   document.getElementById('unmatched-view').style.display = tab === 'unmatched' ? '' : 'none';
+  if (tab === 'cohort') renderCohortView();
 }
 
 function handleSearch() {
   searchQuery = document.getElementById('search').value.toLowerCase();
   renderAll();
+}
+
+// ─── COHORT VIEW ───
+function renderCohortView() {
+  // Build cohort filter tabs
+  const tabsEl = document.getElementById('cohort-filter-tabs');
+  const cohortsWithStudents = cohorts.filter(c => students.some(s => s.cohort_id === c.id));
+
+  tabsEl.innerHTML = `<button class="btn ${currentCohortFilter === 'all' ? 'primary' : ''}" onclick="setCohortFilter('all')" style="font-size:11px">Todas</button>` +
+    cohortsWithStudents.map(c =>
+      `<button class="btn ${currentCohortFilter === c.id ? 'primary' : ''}" onclick="setCohortFilter('${c.id}')" style="font-size:11px">${c.name}</button>`
+    ).join('');
+
+  const body = document.getElementById('cohort-body');
+
+  // Filter students by cohort
+  let filtered = students;
+  if (currentCohortFilter !== 'all') {
+    filtered = students.filter(s => s.cohort_id === currentCohortFilter);
+  }
+
+  if (searchQuery) {
+    filtered = filtered.filter(s => `${s.name || ''} ${s.phone || ''} ${s.email || ''}`.toLowerCase().includes(searchQuery));
+  }
+
+  // Build attendance count per student
+  const attendanceCount = {};
+  for (const m of meetings) {
+    for (const p of (m.zoom_participants || [])) {
+      if (p.student_id) {
+        attendanceCount[p.student_id] = (attendanceCount[p.student_id] || 0) + 1;
+      }
+    }
+  }
+
+  // Deduplicate by student id (some may appear multiple times in diff meetings)
+  const seen = new Set();
+  const unique = filtered.filter(s => {
+    if (seen.has(s.id)) return false;
+    seen.add(s.id);
+    return true;
+  });
+
+  if (!unique.length) {
+    body.innerHTML = '<tr><td colspan="5" class="empty">Nenhum aluno nesta turma</td></tr>';
+    return;
+  }
+
+  body.innerHTML = unique.map(s => {
+    const color = getColor(s.name || s.phone);
+    const initials = getInitials(s.name || s.phone);
+    const displayName = s.name || '<span style="color:#333;font-style:italic">Sem nome</span>';
+    const phone = s.phone?.startsWith('pending_') ? '<span style="color:#333">Pendente</span>' : (s.phone || '—');
+    const email = s.email || '—';
+    const att = attendanceCount[s.id] || 0;
+    const origin = s.phone?.startsWith('pending_') ? '<span class="badge badge-yellow">Zoom</span>' :
+                   s.email ? '<span class="badge badge-green">CSV+WhatsApp</span>' : '<span class="badge" style="background:rgba(99,102,241,0.12);color:#a5b4fc">WhatsApp</span>';
+
+    return `<tr>
+      <td><span class="avatar" style="background:${color}">${initials}</span>${displayName}</td>
+      <td style="font-size:12px;font-family:monospace;color:#666">${phone}</td>
+      <td style="font-size:12px;color:#666">${email}</td>
+      <td>${att > 0 ? `<span style="color:#4ade80;font-weight:700">${att}</span>` : '<span style="color:#333">0</span>'}</td>
+      <td>${origin}</td>
+    </tr>`;
+  }).join('');
+}
+
+function setCohortFilter(id) {
+  currentCohortFilter = id;
+  renderCohortView();
 }
 
 // ─── UTILS ───
