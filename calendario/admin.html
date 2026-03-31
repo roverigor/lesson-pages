@@ -1719,8 +1719,10 @@ function closeClassForm() {
 
 async function editClass(id) {
   try {
+  console.log('editClass called with id:', id);
   const c = classesList.find(x => x.id === id);
   if (!c) { console.error('Class not found:', id); return; }
+  console.log('Found class:', c.name, '_mentors:', (c._mentors||[]).length, '_linkedCohorts:', (c._linkedCohorts||[]).length);
   document.getElementById('class-form-container').style.display = '';
   document.getElementById('class-edit-id').value = c.id;
   document.getElementById('class-name').value = c.name || '';
