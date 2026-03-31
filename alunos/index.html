@@ -338,13 +338,31 @@ async function showApp() {
 }
 
 // DATA
+let studentCohorts = []; // N:N mapping
+
 async function loadData() {
-  const [{ data: c }, { data: s }] = await Promise.all([
+  const [{ data: c }, { data: s }, { data: sc }] = await Promise.all([
     sb.from('cohorts').select('*').order('name'),
     sb.from('students').select('*, cohorts(name, whatsapp_group_jid)').order('name'),
+    sb.from('student_cohorts').select('student_id, cohort_id, cohorts(name)'),
   ]);
   cohorts = c || [];
   allStudents = s || [];
+  studentCohorts = sc || [];
+
+  // Attach all cohort names to each student (N:N)
+  for (const s of allStudents) {
+    const scs = studentCohorts.filter(sc => sc.student_id === s.id);
+    s._cohortNames = scs.map(sc => sc.cohorts?.name || '').filter(Boolean);
+    // Keep primary cohort from students.cohort_id
+    if (s.cohorts?.name && !s._cohortNames.includes(s.cohorts.name)) {
+      s._cohortNames.unshift(s.cohorts.name);
+    }
+    if (!s._cohortNames.length && s.cohorts?.name) {
+      s._cohortNames = [s.cohorts.name];
+    }
+  }
+
   renderStats();
   renderCohortTabs();
   renderTable();
@@ -377,14 +395,16 @@ function setTypeFilter(type) {
 // COHORT TABS
 function renderCohortTabs() {
   const tabs = document.getElementById('cohort-tabs');
+  // Count from N:N table
   const counts = {};
-  allStudents.forEach(s => {
-    const cn = s.cohorts?.name || 'Sem cohort';
+  for (const sc of studentCohorts) {
+    const cn = sc.cohorts?.name || 'Sem cohort';
     counts[cn] = (counts[cn] || 0) + 1;
-  });
+  }
   tabs.innerHTML = `<button class="cohort-tab ${currentCohort === 'all' ? 'active' : ''}" onclick="setCohort('all')">Todos (${allStudents.length})</button>` +
     cohorts.map(c => {
       const cnt = counts[c.name] || 0;
+      if (cnt === 0) return '';
       const cls = currentCohort === c.name ? 'active' : '';
       return `<button class="cohort-tab ${cls}" onclick="setCohort('${c.name}')">${c.name} (${cnt})</button>`;
     }).join('');
@@ -407,11 +427,14 @@ function handleSearch() {
 // FILTER
 function getFiltered() {
   return allStudents.filter(s => {
-    if (currentCohort !== 'all' && s.cohorts?.name !== currentCohort) return false;
+    if (currentCohort !== 'all') {
+      // Check N:N cohorts
+      if (!(s._cohortNames || []).includes(currentCohort)) return false;
+    }
     if (currentTypeFilter === 'students' && s.is_mentor) return false;
     if (currentTypeFilter === 'staff' && !s.is_mentor) return false;
     if (currentSearch) {
-      const hay = `${s.name || ''} ${s.phone}`.toLowerCase();
+      const hay = `${s.name || ''} ${s.phone} ${(s._cohortNames || []).join(' ')}`.toLowerCase();
       if (!hay.includes(currentSearch)) return false;
     }
     return true;
@@ -434,9 +457,11 @@ function renderTable() {
   }
 
   body.innerHTML = page.map(s => {
-    const cohortName = s.cohorts?.name || '—';
-    const isAdv = cohortName.includes('Advanced');
-    const badgeClass = isAdv ? 'cohort-adv' : 'cohort-fund';
+    const cohortNames = (s._cohortNames || []).length > 0 ? s._cohortNames : [s.cohorts?.name || '—'];
+    const cohortBadges = cohortNames.map(cn => {
+      const cls = cn.includes('Advanced') ? 'cohort-adv' : 'cohort-fund';
+      return `<span class="cohort-badge ${cls}" style="margin-right:2px">${cn}</span>`;
+    }).join('');
     const color = getColor(s.name || s.phone);
     const initials = getInitials(s.name || s.phone);
     const displayName = s.name || '<span style="color:#333;font-style:italic">Sem nome</span>';
@@ -451,7 +476,7 @@ function renderTable() {
       return `<tr class="editing">
         <td><input class="edit-input" id="edit-name" value="${s.name || ''}" placeholder="Nome do aluno"></td>
         <td><input class="edit-input" id="edit-phone" value="${s.phone}" placeholder="Telefone"></td>
-        <td><span class="cohort-badge ${badgeClass}">${cohortName}</span></td>
+        <td>${cohortBadges}</td>
         <td></td>
         <td></td>
         <td><div class="actions-cell">
@@ -464,7 +489,7 @@ function renderTable() {
     return `<tr>
       <td><div class="student-name"><div class="avatar" style="background:${color}">${initials}</div>${displayName}${staffBadge}</div></td>
       <td><span class="student-phone">${formatPhone(phone)}</span></td>
-      <td><span class="cohort-badge ${badgeClass}">${cohortName}</span></td>
+      <td>${cohortBadges}</td>
       <td><button class="action-btn ${staffBtnClass}" onclick="toggleStaff('${s.id}', ${!s.is_mentor})">${staffLabel}</button></td>
       <td><a href="${waLink}" target="_blank" class="action-btn whatsapp">Abrir</a></td>
       <td><div class="actions-cell">
