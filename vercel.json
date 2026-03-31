@@ -41,6 +41,10 @@
     {
       "source": "/api/zoom/callback",
       "destination": "/api/zoom/callback.html"
+    },
+    {
+      "source": "/presenca",
+      "destination": "/presenca/index.html"
     }
   ]
 }

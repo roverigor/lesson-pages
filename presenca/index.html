@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presenca de Alunos — Academia Lendaria</title>
+  <link rel="stylesheet" href="../templates/design-tokens-dark-premium.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-sans); background: #080808; color: #888; min-height: 100vh; }
+
+    /* LOGIN */
+    .login-overlay { position: fixed; inset: 0; background: #080808; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .login-overlay.hidden { display: none; }
+    .login-box { background: #111; border: 1px solid #222; border-radius: 16px; padding: 40px; width: 90%; max-width: 400px; text-align: center; }
+    .login-icon { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; }
+    .login-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .login-subtitle { font-size: 13px; color: #555; margin-bottom: 28px; }
+    .login-field { width: 100%; padding: 12px 16px; border-radius: 8px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd; font-size: 14px; font-family: var(--font-sans); margin-bottom: 12px; outline: none; }
+    .login-field:focus { border-color: #6366f1; }
+    .login-field::placeholder { color: #333; }
+    .login-btn { width: 100%; padding: 12px; border-radius: 8px; border: none; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font-sans); margin-top: 8px; }
+    .login-error { color: #ef4444; font-size: 12px; margin-top: 12px; display: none; }
+    .login-error.show { display: block; }
+
+    /* HEADER */
+    .header { background: #101010; border-bottom: 1px solid #1a1a1a; padding: 20px 32px; position: sticky; top: 0; z-index: 200; }
+    .header-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .header-title { display: flex; align-items: center; gap: 12px; flex: 1; }
+    .header-icon { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .header-title h1 { font-size: 18px; font-weight: 800; color: #fff; }
+    .header-title p { font-size: 12px; color: #444; margin-top: 1px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .pill { background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25); border-radius: 999px; padding: 8px 16px; font-size: 12px; font-weight: 600; color: #a5b4fc; text-decoration: none; display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
+    .pill:hover { background: rgba(99,102,241,0.2); }
+    .pill.danger { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.25); color: #fca5a5; }
+    .pill.green { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.25); color: #4ade80; }
+
+    /* TABS */
+    .tabs { display: flex; gap: 4px; background: #0d0d0d; padding: 4px; border-radius: 10px; border: 1px solid #1a1a1a; }
+    .tab { padding: 8px 16px; border-radius: 7px; font-size: 12px; font-weight: 600; color: #444; cursor: pointer; border: none; background: transparent; font-family: var(--font-sans); }
+    .tab:hover { color: #888; }
+    .tab.active { background: #1e1e2e; color: #a5b4fc; }
+
+    /* LAYOUT */
+    .layout { max-width: 1400px; margin: 0 auto; padding: 28px 32px 120px; }
+
+    /* STATS */
+    .stats { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .stat { background: #101010; border: 1px solid #1a1a1a; border-radius: 10px; padding: 14px 20px; flex: 1; min-width: 140px; }
+    .stat-num { font-size: 26px; font-weight: 800; color: #fff; line-height: 1; }
+    .stat-label { font-size: 11px; color: #444; margin-top: 2px; }
+
+    /* TOOLBAR */
+    .toolbar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    .search { flex: 1; min-width: 200px; padding: 10px 16px; border-radius: 8px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd; font-size: 13px; font-family: var(--font-sans); outline: none; }
+    .search:focus { border-color: #6366f1; }
+    .search::placeholder { color: #333; }
+    .btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #222; background: #1a1a1a; color: #888; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); }
+    .btn:hover { background: #222; color: #ccc; }
+    .btn.primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; color: #fff; }
+    .btn.sm { padding: 5px 10px; font-size: 11px; }
+
+    /* TABLE */
+    .table-wrap { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 12px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 12px 16px; font-size: 10px; font-weight: 700; color: #444; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid #1a1a1a; background: #0a0a0a; }
+    td { padding: 10px 16px; font-size: 13px; color: #aaa; border-bottom: 1px solid #111; }
+    tr:hover td { background: #101010; }
+
+    .badge { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+    .badge-green { background: rgba(34,197,94,0.12); color: #4ade80; }
+    .badge-red { background: rgba(239,68,68,0.12); color: #f87171; }
+    .badge-yellow { background: rgba(245,158,11,0.12); color: #fbbf24; }
+    .badge-gray { background: rgba(102,102,102,0.12); color: #666; }
+
+    .pct-bar { width: 60px; height: 6px; background: #1a1a1a; border-radius: 3px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 6px; }
+    .pct-fill { height: 100%; border-radius: 3px; }
+
+    .avatar { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; flex-shrink: 0; vertical-align: middle; margin-right: 8px; }
+
+    /* MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    .modal-overlay.show { display: flex; }
+    .modal { background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px; max-width: 600px; width: 95%; max-height: 80vh; overflow-y: auto; }
+    .modal-close { position: absolute; top: 16px; right: 16px; background: #1a1a1a; border: 1px solid #222; border-radius: 6px; color: #666; cursor: pointer; padding: 4px 10px; font-size: 12px; font-family: var(--font-sans); }
+
+    select.match-select { padding: 5px 8px; border-radius: 5px; background: #0a0a0a; border: 1px solid #333; color: #ddd; font-size: 12px; font-family: var(--font-sans); outline: none; max-width: 200px; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 2000; transition: all 0.3s; transform: translateY(80px); opacity: 0; font-family: var(--font-sans); }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #052e16; border: 1px solid #166534; color: #4ade80; }
+    .toast.error { background: #2d0a0a; border: 1px solid #7f1d1d; color: #f87171; }
+
+    .empty { text-align: center; padding: 60px 20px; color: #333; }
+
+    @media (max-width: 768px) {
+      .header { padding: 14px 16px; }
+      .layout { padding: 16px 12px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-icon">📊</div>
+    <div class="login-title">Presenca de Alunos</div>
+    <div class="login-subtitle">Acesse para visualizar presenca via Zoom</div>
+    <form onsubmit="handleLogin(event)">
+      <input class="login-field" type="email" id="login-email" placeholder="Email" required>
+      <input class="login-field" type="password" id="login-password" placeholder="Senha" required>
+      <button class="login-btn" type="submit" id="login-btn">Entrar</button>
+      <div class="login-error" id="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header" id="app-header" style="display:none">
+  <div class="header-inner">
+    <div class="header-title">
+      <div class="header-icon">📊</div>
+      <div>
+        <h1>Presenca de Alunos</h1>
+        <p>Dados do Zoom sincronizados com Supabase</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="tabs" id="view-tabs">
+        <button class="tab active" onclick="switchTab('meetings')">Reunioes</button>
+        <button class="tab" onclick="switchTab('students')">Por Aluno</button>
+        <button class="tab" onclick="switchTab('unmatched')">Vincular</button>
+      </div>
+      <a href="/" class="pill">Home</a>
+      <a href="/calendario/admin" class="pill">Admin</a>
+      <a href="/alunos" class="pill">Alunos</a>
+      <span class="pill danger" onclick="handleLogout()">Sair</span>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="layout" id="app-main" style="display:none">
+  <div class="stats" id="stats-bar"></div>
+
+  <!-- SYNC TOOLBAR -->
+  <div class="toolbar" id="sync-toolbar">
+    <input class="search" id="search" placeholder="Buscar..." oninput="handleSearch()">
+    <div style="display:flex;gap:6px;align-items:center">
+      <label style="font-size:11px;color:#555">Meeting ID:</label>
+      <input class="search" id="sync-meeting-id" placeholder="Ex: 86983123360" style="width:180px;min-width:auto">
+      <button class="btn primary" onclick="syncMeeting()" id="sync-btn">Sincronizar Zoom</button>
+    </div>
+  </div>
+
+  <!-- MEETINGS VIEW -->
+  <div id="meetings-view">
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Reuniao</th>
+          <th>Data</th>
+          <th>Participantes</th>
+          <th>Matched</th>
+          <th>Duracao</th>
+          <th>Acoes</th>
+        </tr></thead>
+        <tbody id="meetings-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- STUDENTS VIEW -->
+  <div id="students-view" style="display:none">
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Aluno</th>
+          <th>Cohort</th>
+          <th>Aulas presentes</th>
+          <th>Frequencia</th>
+          <th>Ultima presenca</th>
+        </tr></thead>
+        <tbody id="students-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- UNMATCHED VIEW -->
+  <div id="unmatched-view" style="display:none">
+    <div style="margin-bottom:16px;font-size:13px;color:#555">
+      Participantes do Zoom que nao foram vinculados automaticamente a um aluno. Selecione o aluno correto para vincular.
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Nome no Zoom</th>
+          <th>Email</th>
+          <th>Reuniao</th>
+          <th>Vincular a</th>
+          <th></th>
+        </tr></thead>
+        <tbody id="unmatched-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MEETING DETAIL MODAL -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal()">X fechar</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://gpufcipkajppykmnmdeh.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU';
+const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDM3MTU3OCwiZXhwIjoyMDg5OTQ3NTc4fQ.DCTw5wwbkA9A1QPbby3aGkoaGpHySqLDTwv-yyn13qE';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let meetings = [];
+let participants = [];
+let students = [];
+let cohorts = [];
+let currentTab = 'meetings';
+let searchQuery = '';
+
+// ─── AUTH ───
+async function handleLogin(e) {
+  e.preventDefault();
+  const err = document.getElementById('login-error');
+  err.classList.remove('show');
+  const { error } = await sb.auth.signInWithPassword({
+    email: document.getElementById('login-email').value,
+    password: document.getElementById('login-password').value,
+  });
+  if (error) { err.textContent = error.message; err.classList.add('show'); return; }
+  showApp();
+}
+async function handleLogout() { await sb.auth.signOut(); location.reload(); }
+async function checkSession() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) showApp();
+}
+async function showApp() {
+  document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('app-header').style.display = '';
+  document.getElementById('app-main').style.display = '';
+  await loadAllData();
+}
+
+// ─── DATA ───
+async function loadAllData() {
+  const [m, s, c] = await Promise.all([
+    sb.from('zoom_meetings').select('*, zoom_participants(id, participant_name, participant_email, duration_minutes, matched, student_id, students(name, phone, cohort_id))').order('start_time', { ascending: false }),
+    sb.from('students').select('*, cohorts(name)').eq('active', true).eq('is_mentor', false).order('name'),
+    sb.from('cohorts').select('*').order('name'),
+  ]);
+  meetings = m.data || [];
+  students = s.data || [];
+  cohorts = c.data || [];
+  renderAll();
+}
+
+// ─── RENDER ───
+function renderAll() {
+  renderStats();
+  renderMeetings();
+  renderStudents();
+  renderUnmatched();
+}
+
+function renderStats() {
+  const totalMeetings = meetings.length;
+  const totalParticipants = meetings.reduce((sum, m) => sum + (m.zoom_participants?.length || 0), 0);
+  const totalMatched = meetings.reduce((sum, m) => sum + (m.zoom_participants?.filter(p => p.matched).length || 0), 0);
+  const totalUnmatched = totalParticipants - totalMatched;
+
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat"><div class="stat-num">${totalMeetings}</div><div class="stat-label">Reunioes</div></div>
+    <div class="stat"><div class="stat-num">${totalParticipants}</div><div class="stat-label">Participacoes</div></div>
+    <div class="stat"><div class="stat-num" style="color:#4ade80">${totalMatched}</div><div class="stat-label">Vinculados</div></div>
+    <div class="stat"><div class="stat-num" style="color:#fbbf24">${totalUnmatched}</div><div class="stat-label">Sem vinculo</div></div>
+    <div class="stat"><div class="stat-num">${students.length}</div><div class="stat-label">Alunos</div></div>
+  `;
+}
+
+// ─── MEETINGS TAB ───
+function renderMeetings() {
+  const body = document.getElementById('meetings-body');
+  const filtered = meetings.filter(m => {
+    if (!searchQuery) return true;
+    return (m.topic || '').toLowerCase().includes(searchQuery);
+  });
+
+  if (!filtered.length) { body.innerHTML = '<tr><td colspan="6" class="empty">Nenhuma reuniao sincronizada</td></tr>'; return; }
+
+  body.innerHTML = filtered.map(m => {
+    const parts = m.zoom_participants || [];
+    const matched = parts.filter(p => p.matched).length;
+    const total = parts.length;
+    const pct = total ? Math.round(matched / total * 100) : 0;
+    const date = m.start_time ? new Date(m.start_time).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+
+    return `<tr>
+      <td style="font-weight:600;color:#ddd">${m.topic || '—'}</td>
+      <td>${date}</td>
+      <td>${total}</td>
+      <td>${matched}/${total} <span class="pct-bar"><span class="pct-fill" style="width:${pct}%;background:${pct > 70 ? '#4ade80' : pct > 40 ? '#fbbf24' : '#f87171'}"></span></span></td>
+      <td>${m.duration_minutes || '—'} min</td>
+      <td><button class="btn sm" onclick="showMeetingDetail('${m.id}')">Ver</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function showMeetingDetail(meetingId) {
+  const m = meetings.find(x => x.id === meetingId);
+  if (!m) return;
+  const parts = (m.zoom_participants || []).sort((a, b) => (b.duration_minutes || 0) - (a.duration_minutes || 0));
+
+  const date = m.start_time ? new Date(m.start_time).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+
+  document.getElementById('modal-content').innerHTML = `
+    <div style="font-size:11px;color:#555;margin-bottom:4px">${date}</div>
+    <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px">${m.topic || '—'}</div>
+    <div style="font-size:12px;color:#444;margin-bottom:20px">${parts.length} participantes · ${m.duration_minutes || '?'} min · Host: ${m.host_email || '—'}</div>
+    <table style="width:100%">
+      <thead><tr><th>Nome</th><th>Aluno vinculado</th><th>Duracao</th><th>Status</th></tr></thead>
+      <tbody>${parts.map(p => {
+        const sName = p.students?.name || '';
+        const badge = p.matched
+          ? `<span class="badge badge-green">Vinculado</span>`
+          : `<span class="badge badge-yellow">Sem vinculo</span>`;
+        return `<tr>
+          <td style="font-weight:500;color:#ddd">${p.participant_name || '—'}</td>
+          <td style="font-size:12px;color:#888">${sName || '—'}</td>
+          <td>${p.duration_minutes || 0} min</td>
+          <td>${badge}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
+  `;
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+// ─── STUDENTS TAB ───
+function renderStudents() {
+  const body = document.getElementById('students-body');
+
+  // Build attendance per student
+  const attendance = {};
+  for (const m of meetings) {
+    for (const p of (m.zoom_participants || [])) {
+      if (!p.student_id) continue;
+      if (!attendance[p.student_id]) attendance[p.student_id] = { count: 0, lastDate: null, totalMin: 0 };
+      attendance[p.student_id].count++;
+      attendance[p.student_id].totalMin += p.duration_minutes || 0;
+      const d = m.start_time ? new Date(m.start_time) : null;
+      if (d && (!attendance[p.student_id].lastDate || d > attendance[p.student_id].lastDate)) {
+        attendance[p.student_id].lastDate = d;
+      }
+    }
+  }
+
+  const totalMeetings = meetings.length || 1;
+  let rows = students.map(s => {
+    const att = attendance[s.id] || { count: 0, lastDate: null, totalMin: 0 };
+    const pct = Math.round(att.count / totalMeetings * 100);
+    const cohortName = s.cohorts?.name || '—';
+    const lastDate = att.lastDate ? att.lastDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '—';
+    const displayName = s.name || '<span style="color:#333;font-style:italic">Sem nome</span>';
+    return { s, att, pct, cohortName, lastDate, displayName };
+  });
+
+  // Filter
+  if (searchQuery) {
+    rows = rows.filter(r => `${r.s.name || ''} ${r.s.phone} ${r.cohortName}`.toLowerCase().includes(searchQuery));
+  }
+
+  // Sort by attendance desc
+  rows.sort((a, b) => b.att.count - a.att.count);
+
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="5" class="empty">Nenhum aluno encontrado</td></tr>'; return; }
+
+  body.innerHTML = rows.map(r => {
+    const color = getColor(r.s.name || r.s.phone);
+    const initials = getInitials(r.s.name || r.s.phone);
+    const pctColor = r.pct >= 70 ? '#4ade80' : r.pct >= 40 ? '#fbbf24' : '#f87171';
+
+    return `<tr>
+      <td><span class="avatar" style="background:${color}">${initials}</span>${r.displayName}</td>
+      <td><span class="badge badge-gray">${r.cohortName}</span></td>
+      <td>${r.att.count} / ${meetings.length}</td>
+      <td><span style="color:${pctColor};font-weight:700">${r.pct}%</span> <span class="pct-bar"><span class="pct-fill" style="width:${r.pct}%;background:${pctColor}"></span></span></td>
+      <td>${r.lastDate}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── UNMATCHED TAB ───
+function renderUnmatched() {
+  const body = document.getElementById('unmatched-body');
+  const unmatched = [];
+
+  for (const m of meetings) {
+    for (const p of (m.zoom_participants || [])) {
+      if (p.matched) continue;
+      const name = (p.participant_name || '').toLowerCase();
+      if (name.includes('notetaker') || name.includes('fathom') || name.includes('read.ai') || name.includes('fireflies') || name.includes('otter')) continue;
+      unmatched.push({ ...p, meetingTopic: m.topic, meetingDate: m.start_time });
+    }
+  }
+
+  if (!unmatched.length) {
+    body.innerHTML = '<tr><td colspan="5" class="empty">Todos os participantes estao vinculados!</td></tr>';
+    return;
+  }
+
+  // Build student options
+  const studentOpts = '<option value="">— Selecione aluno —</option>' +
+    students.map(s => `<option value="${s.id}">${s.name || s.phone} (${s.cohorts?.name || '?'})</option>`).join('');
+
+  // Filter
+  let filtered = unmatched;
+  if (searchQuery) {
+    filtered = unmatched.filter(p => `${p.participant_name || ''} ${p.participant_email || ''}`.toLowerCase().includes(searchQuery));
+  }
+
+  body.innerHTML = filtered.slice(0, 100).map(p => {
+    const date = p.meetingDate ? new Date(p.meetingDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '';
+    return `<tr>
+      <td style="font-weight:500;color:#ddd">${p.participant_name || '—'}</td>
+      <td style="font-size:12px;color:#666">${p.participant_email || '—'}</td>
+      <td style="font-size:11px;color:#555">${p.meetingTopic || ''} ${date}</td>
+      <td><select class="match-select" id="match-${p.id}">${studentOpts}</select></td>
+      <td><button class="btn sm" onclick="linkParticipant('${p.id}')">Vincular</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function linkParticipant(participantId) {
+  const select = document.getElementById('match-' + participantId);
+  const studentId = select?.value;
+  if (!studentId) { showToast('Selecione um aluno', 'error'); return; }
+
+  const { error } = await sb.from('zoom_participants')
+    .update({ student_id: studentId, matched: true })
+    .eq('id', participantId);
+
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+  showToast('Vinculado com sucesso!');
+  await loadAllData();
+}
+
+// ─── SYNC ───
+async function syncMeeting() {
+  const meetingId = document.getElementById('sync-meeting-id').value.trim();
+  if (!meetingId) { showToast('Informe o Meeting ID', 'error'); return; }
+
+  const btn = document.getElementById('sync-btn');
+  btn.disabled = true; btn.textContent = 'Sincronizando...';
+
+  try {
+    const res = await fetch(SUPABASE_URL + '/functions/v1/zoom-attendance', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SERVICE_KEY,
+      },
+      body: JSON.stringify({ meeting_id: meetingId }),
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      const total = data.instances?.reduce((s, i) => s + (i.participants || 0), 0) || 0;
+      const matched = data.instances?.reduce((s, i) => s + (i.matched || 0), 0) || 0;
+      showToast(`Sincronizado! ${total} participantes, ${matched} vinculados`);
+      await loadAllData();
+    } else {
+      showToast('Erro: ' + (data.error || 'desconhecido'), 'error');
+    }
+  } catch (err) {
+    showToast('Erro: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sincronizar Zoom';
+  }
+}
+
+// ─── TABS ───
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+  document.getElementById('meetings-view').style.display = tab === 'meetings' ? '' : 'none';
+  document.getElementById('students-view').style.display = tab === 'students' ? '' : 'none';
+  document.getElementById('unmatched-view').style.display = tab === 'unmatched' ? '' : 'none';
+}
+
+function handleSearch() {
+  searchQuery = document.getElementById('search').value.toLowerCase();
+  renderAll();
+}
+
+// ─── UTILS ───
+function getColor(name) {
+  const c = ['#6366f1','#10b981','#f59e0b','#ec4899','#06b6d4','#8b5cf6','#ef4444','#14b8a6','#f97316','#a855f7'];
+  let h = 0; for (const ch of (name || '')) h = (h * 31 + ch.charCodeAt(0)) % c.length;
+  return c[h];
+}
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+}
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// ─── INIT ───
+checkSession();
+</script>
+</body>
+</html>
