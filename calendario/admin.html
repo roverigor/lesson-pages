@@ -501,6 +501,16 @@
         <div id="schedule-days-container"></div>
       </div>
 
+      <!-- TURMAS VINCULADAS (PS → Cohorts) -->
+      <div style="margin-top:16px;border-top:1px solid #1e1e1e;padding-top:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <label style="font-size:13px;font-weight:700;color:#ddd">Turmas Vinculadas (acesso ao PS)</label>
+          <button class="att-btn present" onclick="addLinkedCohort()" style="padding:6px 12px;font-size:11px;background:rgba(6,182,212,0.12);border-color:rgba(6,182,212,0.25);color:#22d3ee">+ Turma</button>
+        </div>
+        <div style="font-size:11px;color:#444;margin-bottom:8px">Vincule turmas que têm acesso a este PS. O campo "Acesso até" define quando o acesso encerra (ex: 30 dias após fim das aulas).</div>
+        <div id="linked-cohorts-container"></div>
+      </div>
+
       <div style="display:flex;gap:6px;margin-top:16px;justify-content:flex-end">
         <button class="btn-save" onclick="saveClassV2()">Salvar Turma</button>
         <button class="att-btn delete" onclick="closeClassForm()" style="padding:10px 14px">Cancelar</button>
@@ -1417,22 +1427,29 @@ const WEEKDAY_NAMES = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','S
 let classesList = [];
 
 let mentorsList = [];
+let cohortsList = [];
 let classSchedules = []; // temp schedule days for current form
+let linkedCohorts = []; // temp linked cohorts for current form
 
 async function loadClasses() {
-  const [{ data: classes }, { data: mentors }, { data: cmData }] = await Promise.all([
+  const [{ data: classes }, { data: mentors }, { data: cmData }, { data: cohortsData }, { data: accessData }] = await Promise.all([
     sb.from('classes').select('*').order('name'),
     sb.from('mentors').select('id, name, role, active').eq('active', true).order('name'),
     sb.from('class_mentors').select('*').order('weekday'),
+    sb.from('cohorts').select('id, name, end_date').order('name'),
+    sb.from('class_cohort_access').select('*'),
   ]);
   classesList = classes || [];
   mentorsList = mentors || [];
+  cohortsList = cohortsData || [];
   classSchedules = [];
+  linkedCohorts = [];
   if (!staffList.length) await loadStaff();
 
-  // Attach mentors to each class
+  // Attach mentors and linked cohorts to each class
   for (const c of classesList) {
     c._mentors = (cmData || []).filter(cm => cm.class_id === c.id);
+    c._linkedCohorts = (accessData || []).filter(a => a.class_id === c.id);
   }
   renderClassesList();
 }
@@ -1517,6 +1534,23 @@ function renderClassesList() {
         ${c.time_start || ''}–${c.time_end || ''} | ${startFmt} a ${endFmt} | ${allDates.length} aulas
       </div>
       ${daysHtml}
+      ${(c._linkedCohorts || []).length > 0 ? `
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid #141414">
+        <div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Turmas vinculadas</div>
+        ${(c._linkedCohorts || []).map(lc => {
+          const cohort = cohortsList.find(x => x.id === lc.cohort_id);
+          const name = cohort ? cohort.name : '?';
+          const until = lc.access_until ? new Date(lc.access_until + 'T00:00:00').toLocaleDateString('pt-BR') : '?';
+          const isExpired = lc.access_until && new Date(lc.access_until) < new Date();
+          const daysLeft = lc.access_until ? Math.ceil((new Date(lc.access_until) - new Date()) / 86400000) : null;
+          const badge = isExpired
+            ? '<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(239,68,68,0.12);color:#f87171;font-weight:700">Encerrado</span>'
+            : daysLeft <= 15
+              ? '<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(245,158,11,0.12);color:#fbbf24;font-weight:700">' + daysLeft + ' dias</span>'
+              : '<span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,0.12);color:#4ade80;font-weight:700">' + daysLeft + ' dias</span>';
+          return '<div style="font-size:11px;color:#888;margin-bottom:2px">' + name + ' — até ' + until + ' ' + badge + '</div>';
+        }).join('')}
+      </div>` : ''}
       <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:8px">
         ${allDates.slice(0,30).map(d => `<span style="font-size:9px;padding:2px 5px;border-radius:3px;background:${(c.color||'#666')}15;border:1px solid ${(c.color||'#666')}30;color:${c.color||'#666'}">${fmtDate(d)}</span>`).join('')}
         ${allDates.length > 30 ? `<span style="font-size:9px;color:#333">+${allDates.length-30}</span>` : ''}
@@ -1603,6 +1637,62 @@ function renderMemberSection(dayIdx, role, label, mentorOpts, color) {
     </div>`;
 }
 
+// Linked cohorts builder
+function addLinkedCohort() {
+  linkedCohorts.push({ cohort_id: '', access_until: '' });
+  renderLinkedCohorts();
+}
+
+function removeLinkedCohort(idx) {
+  linkedCohorts.splice(idx, 1);
+  renderLinkedCohorts();
+}
+
+function updateLinkedCohort(idx, field, val) {
+  linkedCohorts[idx][field] = val;
+  // Auto-calculate access_until when cohort selected (end_date + 30 days)
+  if (field === 'cohort_id' && val) {
+    const cohort = cohortsList.find(c => c.id === val);
+    if (cohort && cohort.end_date && !linkedCohorts[idx].access_until) {
+      const end = new Date(cohort.end_date + 'T00:00:00');
+      end.setDate(end.getDate() + 30);
+      linkedCohorts[idx].access_until = end.toISOString().split('T')[0];
+      renderLinkedCohorts();
+    }
+  }
+}
+
+function renderLinkedCohorts() {
+  const container = document.getElementById('linked-cohorts-container');
+  const cohortOpts = cohortsList.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+  container.innerHTML = linkedCohorts.map((lc, idx) => {
+    const cohort = cohortsList.find(c => c.id === lc.cohort_id);
+    const isExpired = lc.access_until && new Date(lc.access_until) < new Date();
+    const daysLeft = lc.access_until ? Math.ceil((new Date(lc.access_until) - new Date()) / 86400000) : null;
+    const statusBadge = isExpired
+      ? '<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(239,68,68,0.12);color:#f87171;font-weight:700">Encerrado</span>'
+      : daysLeft !== null && daysLeft <= 15
+        ? `<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(245,158,11,0.12);color:#fbbf24;font-weight:700">${daysLeft} dias</span>`
+        : daysLeft !== null
+          ? `<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,0.12);color:#4ade80;font-weight:700">${daysLeft} dias</span>`
+          : '';
+
+    return `<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+      <select class="substitute-select" style="flex:1;padding:8px 10px" onchange="updateLinkedCohort(${idx},'cohort_id',this.value)">
+        <option value="">— Selecione turma —</option>
+        ${cohortOpts.replace(`value="${lc.cohort_id}"`, `value="${lc.cohort_id}" selected`)}
+      </select>
+      <div style="display:flex;align-items:center;gap:4px">
+        <label style="font-size:10px;color:#555;white-space:nowrap">Acesso até:</label>
+        <input type="date" class="login-field" style="margin:0;padding:6px 8px;width:150px;font-size:12px" value="${lc.access_until || ''}" onchange="updateLinkedCohort(${idx},'access_until',this.value)">
+      </div>
+      ${statusBadge}
+      <button class="att-btn delete" style="padding:4px 6px;font-size:10px" onclick="removeLinkedCohort(${idx})">✕</button>
+    </div>`;
+  }).join('') || '<div style="font-size:11px;color:#333;padding:8px">Nenhuma turma vinculada. Clique "+ Turma" para vincular.</div>';
+}
+
 function openClassForm() {
   document.getElementById('class-form-container').style.display = '';
   document.getElementById('class-edit-id').value = '';
@@ -1614,7 +1704,9 @@ function openClassForm() {
   document.getElementById('class-time-end').value = '20:00';
   document.getElementById('class-color').value = '#6366f1';
   classSchedules = [];
+  linkedCohorts = [];
   renderScheduleDays();
+  renderLinkedCohorts();
   document.getElementById('class-name').focus();
 }
 
@@ -1652,6 +1744,13 @@ async function editClass(id) {
 
   classSchedules = Object.values(byDay);
   renderScheduleDays();
+
+  // Load linked cohorts
+  linkedCohorts = (c._linkedCohorts || []).map(lc => ({
+    cohort_id: lc.cohort_id,
+    access_until: lc.access_until,
+  }));
+  renderLinkedCohorts();
 }
 
 async function saveClassV2() {
@@ -1700,6 +1799,16 @@ async function saveClassV2() {
   if (mentorRows.length > 0) {
     const { error } = await sb.from('class_mentors').insert(mentorRows);
     if (error) console.error('class_mentors insert error:', error);
+  }
+
+  // Save linked cohorts
+  await sb.from('class_cohort_access').delete().eq('class_id', classId);
+  const cohortRows = linkedCohorts
+    .filter(lc => lc.cohort_id && lc.access_until)
+    .map(lc => ({ class_id: classId, cohort_id: lc.cohort_id, access_until: lc.access_until }));
+  if (cohortRows.length > 0) {
+    const { error } = await sb.from('class_cohort_access').insert(cohortRows);
+    if (error) console.error('class_cohort_access insert error:', error);
   }
 
   showToast(id ? 'Turma atualizada!' : 'Turma criada!', 'success');
