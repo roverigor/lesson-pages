@@ -333,65 +333,101 @@ async function loadAttendanceData() {
 }
 
 // ═══════════════════════════════════════
-// DATA
+// DATA — Loaded from Supabase
 // ═══════════════════════════════════════
-const TEACHERS = [
-  { name:"Talles", total:45, assignments:[
-    {course:"PS Advanced T1",  role:"Professor", dates:["24/02","27/02","03/03","06/03","10/03","13/03","17/03","20/03","24/03","27/03","31/03","03/04"]},
-    {course:"PS Advanced T2",  role:"Professor", dates:["07/04","10/04","14/04","17/04","21/04","24/04","28/04","01/05","05/05","08/05","12/05","15/05","19/05","22/05","26/05","29/05"]},
-    {course:"Aulas Advanced T1",role:"Host",     dates:["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"]},
-    {course:"Aulas Advanced T2",role:"Host",     dates:["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"]},
-  ]},
-  { name:"José Amorim", total:25, assignments:[
-    {course:"PS Advanced T1",   role:"Professor", dates:["27/02","06/03","13/03","20/03","27/03","03/04"]},
-    {course:"PS Advanced T2",   role:"Professor", dates:["10/04","17/04","24/04","01/05","08/05","15/05","22/05","29/05"]},
-    {course:"Aulas Fund T1",    role:"Professor", dates:["12/02","16/02","19/02","23/02","26/02","02/03","05/03"]},
-    {course:"AIOS Fund (Manhã)", role:"Professor", dates:["21/02","28/02","07/03","14/03"]},
-    {course:"AIOS Fund (Tarde)", role:"Professor", dates:["21/02","28/02","07/03","14/03"]},
-  ]},
-  { name:"Sidney", total:11, assignments:[
-    {course:"PS Fundamentals",    role:"Professor", dates:["17/02","20/02","03/03","06/03","13/03","20/03","27/03"]},
-    {course:"AIOS Fund (Manhã)",  role:"Host",      dates:["21/02","28/02","07/03","14/03"]},
-  ]},
-  { name:"Rodrigo Feldman", total:11, assignments:[
-    {course:"PS Fundamentals",role:"Professor", dates:["13/02","20/02","24/02","27/02","06/03","10/03","13/03","17/03","20/03","24/03","27/03"]},
-  ]},
-  { name:"Bruno Gentil", total:16, assignments:[
-    {course:"PS Fundamentals",  role:"Professor", dates:["13/02","17/02","20/02","27/02","03/03","06/03","10/03","13/03","17/03","20/03","24/03","27/03"]},
-    {course:"AIOS Fund (Tarde)",role:"Host",      dates:["21/02","28/02","07/03","14/03"]},
-  ]},
-  { name:"Diego", total:14, assignments:[
-    {course:"PS Fundamentals",role:"Professor", dates:["17/02","24/02","03/03","10/03","17/03","24/03"]},
-    {course:"Aulas Fund T1",  role:"Host",      dates:["12/02","19/02","26/02","05/03"]},
-    {course:"Aulas Fund T3",  role:"Host",      dates:["05/03","12/03","19/03","26/03"]},
-  ]},
-  { name:"Adavio", total:8, assignments:[
-    {course:"Aulas Advanced T2",role:"Host",      dates:["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"]},
-  ]},
-  { name:"Alan Nicolas", total:9, assignments:[
-    {course:"Aulas Advanced T1",role:"Professor", dates:["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"]},
-  ]},
-  { name:"Adriano", total:25, assignments:[
-    {course:"Aulas Advanced T1",role:"Host",      dates:["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"]},
-    {course:"Aulas Advanced T2",role:"Professor", dates:["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"]},
-    {course:"Aulas Fund T3",   role:"Professor", dates:["02/03","05/03","09/03","12/03","16/03","19/03","23/03","26/03"]},
-  ]},
-  { name:"Fran", total:3, assignments:[
-    {course:"Aulas Fund T1",role:"Host", dates:["16/02","23/02","02/03"]},
-  ]},
-  { name:"Douglas", total:8, assignments:[
-    {course:"Aulas Fund T3",role:"Host", dates:["02/03","05/03","09/03","12/03","16/03","19/03","23/03","26/03"]},
-  ]},
-  { name:"Lucas Charão", total:7, assignments:[
-    {course:"Aulas Fund T1",role:"Host", dates:["12/02","16/02","19/02","23/02","26/02","02/03","05/03"]},
-  ]},
-  { name:"Pedro", total:1, assignments:[
-    {course:"Workshop VPS→ClickUp+CLI", role:"Professor", dates:["06/04"]},
-  ]},
-  { name:"Mission Control", total:1, assignments:[
-    {course:"Dashboard Mission Control", role:"Professor", dates:["31/03"]},
-  ]},
-];
+let TEACHERS = []; // Will be populated from Supabase
+
+function generateDatesForClass(startStr, endStr, weekday) {
+  const dates = [];
+  const start = new Date(startStr + 'T00:00:00');
+  const end = new Date(endStr + 'T00:00:00');
+  const d = new Date(start);
+  while (d.getDay() !== weekday) d.setDate(d.getDate() + 1);
+  while (d <= end) {
+    dates.push(`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`);
+    d.setDate(d.getDate() + 7);
+  }
+  return dates;
+}
+
+async function loadTeachersFromDB() {
+  const [{ data: classes }, { data: classMentors }, { data: mentors }] = await Promise.all([
+    sb.from('classes').select('*').eq('active', true).order('name'),
+    sb.from('class_mentors').select('*'),
+    sb.from('mentors').select('*').eq('active', true),
+  ]);
+
+  const mentorMap = {};
+  for (const m of (mentors || [])) mentorMap[m.id] = m;
+
+  // Build TEACHERS array from DB data
+  const teacherAssignments = {}; // mentorName -> assignments[]
+
+  for (const cls of (classes || [])) {
+    // Get mentors for this class from class_mentors
+    const cmEntries = (classMentors || []).filter(cm => cm.class_id === cls.id);
+
+    if (cmEntries.length > 0) {
+      // Group by weekday
+      const byWeekday = {};
+      for (const cm of cmEntries) {
+        const wd = cm.weekday != null ? cm.weekday : cls.weekday;
+        if (!byWeekday[wd]) byWeekday[wd] = [];
+        byWeekday[wd].push(cm);
+      }
+
+      for (const [wd, entries] of Object.entries(byWeekday)) {
+        const dates = generateDatesForClass(cls.start_date, cls.end_date, parseInt(wd));
+        for (const cm of entries) {
+          const mentor = mentorMap[cm.mentor_id];
+          if (!mentor) continue;
+          if (!teacherAssignments[mentor.name]) teacherAssignments[mentor.name] = [];
+          teacherAssignments[mentor.name].push({
+            course: cls.name,
+            role: cm.role || 'Professor',
+            dates: dates,
+          });
+        }
+      }
+    } else if (cls.professor || cls.host) {
+      // Fallback to old text fields
+      const dates = generateDatesForClass(cls.start_date, cls.end_date, cls.weekday);
+      if (cls.professor) {
+        if (!teacherAssignments[cls.professor]) teacherAssignments[cls.professor] = [];
+        teacherAssignments[cls.professor].push({ course: cls.name, role: 'Professor', dates });
+      }
+      if (cls.host) {
+        if (!teacherAssignments[cls.host]) teacherAssignments[cls.host] = [];
+        teacherAssignments[cls.host].push({ course: cls.name, role: 'Host', dates });
+      }
+    }
+  }
+
+  // Convert to TEACHERS array format
+  TEACHERS = Object.entries(teacherAssignments).map(([name, assignments]) => {
+    const total = assignments.reduce((sum, a) => sum + a.dates.length, 0);
+    return { name, total, assignments };
+  }).sort((a, b) => b.total - a.total);
+
+  // Also build COURSE_CFG dynamically from classes
+  const defaultColors = ['#6366f1','#f59e0b','#10b981','#06b6d4','#ec4899','#34d399','#22d3ee','#a855f7','#f97316','#8b5cf6'];
+  let ci = 0;
+  for (const cls of (classes || [])) {
+    const name = cls.name;
+    if (!COURSE_CFG[name]) {
+      const color = cls.color || defaultColors[ci % defaultColors.length];
+      const r = parseInt(color.slice(1,3),16);
+      const g = parseInt(color.slice(3,5),16);
+      const b = parseInt(color.slice(5,7),16);
+      COURSE_CFG[name] = {
+        color: color,
+        bg: `rgba(${r},${g},${b},0.08)`,
+        short: name.length > 20 ? name.substring(0, 18) + '...' : name,
+      };
+      ci++;
+    }
+  }
+}
 
 // ═══════════════════════════════════════
 // COURSE CONFIG
@@ -473,7 +509,7 @@ function buildEventsMap() {
   }
   return map;
 }
-let EVENTS = buildEventsMap();
+let EVENTS = {}; // Will be populated after DB load
 
 // ═══════════════════════════════════════
 // STATE
@@ -732,10 +768,11 @@ function goToMonth(year, month1) {
 // INIT
 // ═══════════════════════════════════════
 async function init() {
-  renderMentorPills();
-  renderStats();
+  // Load data from Supabase
+  await loadTeachersFromDB();
   await loadAttendanceData();
-  EVENTS = buildEventsMap(); // rebuild with overrides
+  EVENTS = buildEventsMap(); // build with DB data + overrides
+  renderMentorPills();
   renderStats();
   const now = new Date();
   const initMonth = (now.getFullYear()===2026 && now.getMonth()>=1 && now.getMonth()<=4)

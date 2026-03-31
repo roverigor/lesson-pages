@@ -339,7 +339,7 @@
       </div>
     </div>
     <div class="header-stats">
-      <div class="stat-pill"><strong>15</strong> mentores</div>
+      <div class="stat-pill" id="mentors-count-pill">carregando...</div>
       <div class="stat-pill" id="total-sessions-pill">calculando...</div>
       <div class="stat-pill" id="today-pill">calculando...</div>
       <a href="/" class="link-pill"><i data-lucide="home"></i> Home</a>
@@ -401,7 +401,13 @@
   </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const sb = window.supabase.createClient(
+  'https://gpufcipkajppykmnmdeh.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU'
+);
+
 // ── COURSE CONFIG ──
 const COURSE_CONFIG = {
   'ps-advanced':    { color: '#6366f1', label: 'PS Advanced' },
@@ -437,129 +443,79 @@ function getCourseType(courseName) {
 }
 
 // ── TEACHER DATA ──
-const TEACHERS = [
-  {
-    name: "Talles", total: 45,
-    role: "Professor (PS Advanced) + Host (Aulas Advanced T1/T2)",
-    assignments: [
-      { course: "PS Advanced T1", role: "Professor", schedule: "Ter e Sex | 18h-20h | 12 encontros",
-        dates: ["24/02","27/02","03/03","06/03","10/03","13/03","17/03","20/03","24/03","27/03","31/03","03/04"] },
-      { course: "PS Advanced T2", role: "Professor", schedule: "Ter e Sex | 18h-20h | 16 encontros",
-        dates: ["07/04","10/04","14/04","17/04","21/04","24/04","28/04","01/05","05/05","08/05","12/05","15/05","19/05","22/05","26/05","29/05"] },
-      { course: "Aulas Advanced T1", role: "Host", schedule: "Quartas | 18h-20h | 9 encontros",
-        dates: ["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"] },
-      { course: "Aulas Advanced T2", role: "Host", schedule: "Quartas | 18h-20h | 8 encontros",
-        dates: ["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"] },
-    ]
-  },
-  {
-    name: "José Amorim", total: 25,
-    role: "Professor (PS Advanced + Aulas Fund T1 + AIOS Fund)",
-    assignments: [
-      { course: "PS Advanced T1", role: "Professor", schedule: "Sextas | 18h-20h | 6 encontros",
-        dates: ["27/02","06/03","13/03","20/03","27/03","03/04"] },
-      { course: "PS Advanced T2", role: "Professor", schedule: "Sextas | 18h-20h | 8 encontros",
-        dates: ["10/04","17/04","24/04","01/05","08/05","15/05","22/05","29/05"] },
-      { course: "Aulas Fund T1", role: "Professor", schedule: "Qui e Seg | 18h-20h | 7 encontros",
-        dates: ["12/02","16/02","19/02","23/02","26/02","02/03","05/03"] },
-      { course: "AIOS Fundamentals", role: "Professor", schedule: "Sábados | 09h-12h / 14h-16h | 4 encontros",
-        dates: ["21/02","28/02","07/03","14/03"] },
-    ]
-  },
-  {
-    name: "Sidney", total: 11,
-    role: "Professor (PS Fundamentals) + Host (AIOS Fund)",
-    assignments: [
-      { course: "PS Fundamentals", role: "Professor", schedule: "Ter e Sex | 18h-20h | 7 encontros",
-        dates: ["17/02","20/02","03/03","06/03","13/03","20/03","27/03"] },
-      { course: "AIOS Fund (Manhã)", role: "Host", schedule: "Sábados | 09h-12h | 4 encontros",
-        dates: ["21/02","28/02","07/03","14/03"] },
-    ]
-  },
-  {
-    name: "Rodrigo Feldman", total: 11,
-    role: "Professor (PS Fundamentals)",
-    assignments: [
-      { course: "PS Fundamentals", role: "Professor", schedule: "Ter e Sex | 18h-20h | 11 encontros",
-        dates: ["13/02","20/02","24/02","27/02","06/03","10/03","13/03","17/03","20/03","24/03","27/03"] },
-    ]
-  },
-  {
-    name: "Bruno Gentil", total: 16,
-    role: "Professor (PS Fundamentals) + Host (AIOS Fund)",
-    assignments: [
-      { course: "PS Fundamentals", role: "Professor", schedule: "Ter e Sex | 18h-20h | 12 encontros",
-        dates: ["13/02","17/02","20/02","27/02","03/03","06/03","10/03","13/03","17/03","20/03","24/03","27/03"] },
-      { course: "AIOS Fund (Tarde)", role: "Host", schedule: "Sábados | 14h-16h | 4 encontros",
-        dates: ["21/02","28/02","07/03","14/03"] },
-    ]
-  },
-  {
-    name: "Diego", total: 14,
-    role: "Professor (PS Fundamentals) + Host (Aulas Fund T1/T3)",
-    assignments: [
-      { course: "PS Fundamentals", role: "Professor", schedule: "Terças | 18h-20h | 6 encontros",
-        dates: ["17/02","24/02","03/03","10/03","17/03","24/03"] },
-      { course: "Aulas Fund T1", role: "Host", schedule: "Quintas | 18h-20h | 4 encontros",
-        dates: ["12/02","19/02","26/02","05/03"] },
-      { course: "Aulas Fund T3", role: "Host", schedule: "Quintas | 18h-20h | 4 encontros",
-        dates: ["05/03","12/03","19/03","26/03"] },
-    ]
-  },
-  {
-    name: "Adavio", total: 8,
-    role: "Host (Aulas Advanced T2)",
-    assignments: [
-      { course: "Aulas Advanced T2", role: "Host", schedule: "Quartas | 18h-20h | 8 encontros",
-        dates: ["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"] },
-    ]
-  },
-  {
-    name: "Alan Nicolas", total: 9,
-    role: "Professor (Aulas Advanced T1)",
-    assignments: [
-      { course: "Aulas Advanced T1", role: "Professor", schedule: "Quartas | 18h-20h | 9 encontros",
-        dates: ["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"] },
-    ]
-  },
-  {
-    name: "Adriano", total: 25,
-    role: "Professor (Aulas Advanced T2 + Aulas Fund T3) + Host (Aulas Advanced T1)",
-    assignments: [
-      { course: "Aulas Advanced T1", role: "Host", schedule: "Quartas | 18h-20h | 9 encontros",
-        dates: ["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"] },
-      { course: "Aulas Advanced T2", role: "Professor", schedule: "Quartas | 18h-20h | 8 encontros",
-        dates: ["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"] },
-      { course: "Aulas Fund T3", role: "Professor", schedule: "Seg e Qui | 18h-20h | 8 encontros",
-        dates: ["02/03","05/03","09/03","12/03","16/03","19/03","23/03","26/03"] },
-    ]
-  },
-  {
-    name: "Fran", total: 3,
-    role: "Host (Aulas Fund T1)",
-    assignments: [
-      { course: "Aulas Fund T1", role: "Host", schedule: "Segundas | 18h-20h | 3 encontros",
-        dates: ["16/02","23/02","02/03"] },
-    ]
-  },
-  {
-    name: "Douglas", total: 8,
-    role: "Host (Aulas Fund T3)",
-    assignments: [
-      { course: "Aulas Fund T3", role: "Host", schedule: "Seg e Qui | 18h-20h | 8 encontros",
-        dates: ["02/03","05/03","09/03","12/03","16/03","19/03","23/03","26/03"] },
-    ]
-  },
-  {
-    name: "Lucas Charão", total: 7,
-    role: "Host (Aulas Fund T1)",
-    assignments: [
-      { course: "Aulas Fund T1", role: "Host", schedule: "Qui e Seg | 18h-20h | 7 encontros",
-        dates: ["12/02","16/02","19/02","23/02","26/02","02/03","05/03"] },
-    ]
-  },
-];
+let TEACHERS = []; // Loaded from Supabase
 
+const WD_NAMES = {0:'Dom',1:'Seg',2:'Ter',3:'Qua',4:'Qui',5:'Sex',6:'Sab'};
+
+function genDates(startStr, endStr, weekday) {
+  const dates = [];
+  const start = new Date(startStr + 'T00:00:00');
+  const end = new Date(endStr + 'T00:00:00');
+  const d = new Date(start);
+  while (d.getDay() !== weekday) d.setDate(d.getDate() + 1);
+  while (d <= end) {
+    dates.push(`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`);
+    d.setDate(d.getDate() + 7);
+  }
+  return dates;
+}
+
+async function loadTeachersFromDB() {
+  const [{ data: classes }, { data: classMentors }, { data: mentors }] = await Promise.all([
+    sb.from('classes').select('*').eq('active', true).order('name'),
+    sb.from('class_mentors').select('*'),
+    sb.from('mentors').select('*').eq('active', true),
+  ]);
+  const mentorMap = {};
+  for (const m of (mentors || [])) mentorMap[m.id] = m;
+
+  const teacherData = {};
+  for (const cls of (classes || [])) {
+    const cmEntries = (classMentors || []).filter(cm => cm.class_id === cls.id);
+    if (cmEntries.length > 0) {
+      const byWd = {};
+      for (const cm of cmEntries) {
+        const wd = cm.weekday != null ? cm.weekday : cls.weekday;
+        if (!byWd[wd]) byWd[wd] = [];
+        byWd[wd].push(cm);
+      }
+      for (const [wd, entries] of Object.entries(byWd)) {
+        const dates = genDates(cls.start_date, cls.end_date, parseInt(wd));
+        const wdNames = Object.entries(byWd).map(([w]) => WD_NAMES[w]).join(' e ');
+        const schedule = `${wdNames} | ${cls.time_start || '18:00'}-${cls.time_end || '20:00'} | ${dates.length} encontros`;
+        for (const cm of entries) {
+          const mentor = mentorMap[cm.mentor_id];
+          if (!mentor) continue;
+          if (!teacherData[mentor.name]) teacherData[mentor.name] = { assignments: [], roles: new Set() };
+          teacherData[mentor.name].assignments.push({ course: cls.name, role: cm.role, schedule, dates });
+          teacherData[mentor.name].roles.add(`${cm.role} (${cls.name})`);
+        }
+      }
+    } else if (cls.professor || cls.host) {
+      const dates = genDates(cls.start_date, cls.end_date, cls.weekday);
+      const schedule = `${WD_NAMES[cls.weekday] || '?'} | ${cls.time_start || '18:00'}-${cls.time_end || '20:00'} | ${dates.length} encontros`;
+      if (cls.professor) {
+        if (!teacherData[cls.professor]) teacherData[cls.professor] = { assignments: [], roles: new Set() };
+        teacherData[cls.professor].assignments.push({ course: cls.name, role: 'Professor', schedule, dates });
+        teacherData[cls.professor].roles.add(`Professor (${cls.name})`);
+      }
+      if (cls.host) {
+        if (!teacherData[cls.host]) teacherData[cls.host] = { assignments: [], roles: new Set() };
+        teacherData[cls.host].assignments.push({ course: cls.name, role: 'Host', schedule, dates });
+        teacherData[cls.host].roles.add(`Host (${cls.name})`);
+      }
+    }
+  }
+
+  TEACHERS = Object.entries(teacherData).map(([name, d]) => ({
+    name,
+    total: d.assignments.reduce((sum, a) => sum + a.dates.length, 0),
+    role: [...d.roles].join(' + '),
+    assignments: d.assignments,
+  })).sort((a, b) => b.total - a.total);
+}
+
+// Legacy data removed — now loaded from Supabase
 // ── DATE UTILITIES ──
 function parseDate(ddmm) {
   const [d, m] = ddmm.split('/').map(Number);
@@ -691,6 +647,7 @@ function renderAssignment(a) {
 
 function renderStats() {
   const totalSessions = TEACHERS.reduce((sum, t) => sum + t.total, 0);
+  document.getElementById('mentors-count-pill').innerHTML = `<strong>${TEACHERS.length}</strong> mentores`;
   document.getElementById('total-sessions-pill').innerHTML = `<strong>${totalSessions}</strong> encontros escalados`;
 
   // Find today's sessions
@@ -705,9 +662,13 @@ function renderStats() {
 }
 
 // ── INIT ──
-renderNav();
-renderCards();
-renderStats();
+async function init() {
+  await loadTeachersFromDB();
+  renderNav();
+  renderCards();
+  renderStats();
+}
+init();
 
 // Active nav on scroll
 const observer = new IntersectionObserver(entries => {
