@@ -1696,7 +1696,8 @@ function renderLinkedCohorts() {
 }
 
 function openClassForm() {
-  document.getElementById('class-form-container').style.display = '';
+  const form = document.getElementById('class-form-container');
+  form.setAttribute('style', 'display:block !important;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:16px');
   document.getElementById('class-edit-id').value = '';
   document.getElementById('class-name').value = '';
   document.getElementById('class-type').value = 'PS';
@@ -1713,19 +1714,20 @@ function openClassForm() {
 }
 
 function closeClassForm() {
-  document.getElementById('class-form-container').style.display = 'none';
+  document.getElementById('class-form-container').setAttribute('style', 'display:none');
   classSchedules = [];
+  linkedCohorts = [];
 }
 
-let _editClassLock = false;
-async function editClass(id) {
-  if (_editClassLock) return;
-  _editClassLock = true;
-  setTimeout(() => _editClassLock = false, 500);
-  try {
+function editClass(id) {
   const c = classesList.find(x => x.id === id);
-  if (!c) return;
-  document.getElementById('class-form-container').style.display = '';
+  if (!c) { alert('Turma não encontrada: ' + id); return; }
+
+  const form = document.getElementById('class-form-container');
+  form.style.display = 'block';
+  form.style.removeProperty('display');
+  form.setAttribute('style', 'display:block !important;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:16px');
+
   document.getElementById('class-edit-id').value = c.id;
   document.getElementById('class-name').value = c.name || '';
   document.getElementById('class-type').value = c.type || 'PS';
@@ -1738,7 +1740,7 @@ async function editClass(id) {
   // Load existing schedule from class_mentors
   const byDay = {};
   for (const cm of (c._mentors || [])) {
-    const wd = cm.weekday ?? c.weekday ?? 1;
+    const wd = cm.weekday != null ? cm.weekday : (c.weekday != null ? c.weekday : 1);
     if (!byDay[wd]) byDay[wd] = { weekday: wd, professors: [], mentors: [], hosts: [] };
     const roleKey = cm.role === 'Professor' ? 'professors' : cm.role === 'Host' ? 'hosts' : 'mentors';
     byDay[wd][roleKey].push(cm.mentor_id);
@@ -1755,10 +1757,12 @@ async function editClass(id) {
   // Load linked cohorts
   linkedCohorts = (c._linkedCohorts || []).map(lc => ({
     cohort_id: lc.cohort_id,
-    access_until: lc.access_until,
+    access_until: lc.access_until || '',
   }));
   renderLinkedCohorts();
-  } catch(e) { console.error('editClass error:', e); showToast('Erro ao abrir turma: ' + e.message, 'error'); }
+
+  // Scroll to form
+  form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 async function saveClassV2() {
