@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de Presenças — Equipe Pedagógica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: #080808; color: #888; min-height: 100vh; }
+
+    /* ── LOGIN ── */
+    .login-overlay {
+      position: fixed; inset: 0; background: #080808;
+      display: flex; align-items: center; justify-content: center; z-index: 9999;
+    }
+    .login-overlay.hidden { display: none; }
+    .login-box {
+      background: #111; border: 1px solid #222; border-radius: 16px;
+      padding: 40px; width: 90%; max-width: 400px; text-align: center;
+    }
+    .login-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 20px;
+    }
+    .login-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .login-subtitle { font-size: 13px; color: #555; margin-bottom: 28px; }
+    .login-field {
+      width: 100%; padding: 12px 16px; border-radius: 8px;
+      background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd;
+      font-size: 14px; font-family: 'Inter', sans-serif;
+      margin-bottom: 12px; outline: none; transition: border-color 0.15s;
+    }
+    .login-field:focus { border-color: #6366f1; }
+    .login-field::placeholder { color: #333; }
+    .login-btn {
+      width: 100%; padding: 12px; border-radius: 8px; border: none;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+      font-family: 'Inter', sans-serif; margin-top: 8px; transition: opacity 0.15s;
+    }
+    .login-btn:hover { opacity: 0.9; }
+    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .login-error { color: #ef4444; font-size: 12px; margin-top: 12px; display: none; }
+    .login-error.show { display: block; }
+
+    /* ── HEADER ── */
+    .header {
+      background: #101010; border-bottom: 1px solid #1a1a1a;
+      padding: 20px 32px; position: sticky; top: 0; z-index: 200;
+    }
+    .header-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .header-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+    }
+    .header-title { flex: 1; }
+    .header-title h1 { font-size: 17px; font-weight: 800; color: #fff; }
+    .header-title p { font-size: 12px; color: #444; margin-top: 1px; }
+    .btn-pill {
+      padding: 8px 16px; border-radius: 999px; border: 1px solid #222;
+      background: #111; color: #aaa; font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; gap: 6px;
+      transition: all 0.15s; white-space: nowrap; text-decoration: none;
+    }
+    .btn-pill:hover { border-color: #333; color: #ddd; }
+    .btn-pill.primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6); border-color: transparent; color: #fff;
+    }
+    .btn-pill.primary:hover { opacity: 0.9; }
+    .btn-pill.success { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.25); color: #4ade80; }
+    .btn-pill.success:hover { background: rgba(34,197,94,0.2); }
+
+    /* ── TABS ── */
+    .tab-bar {
+      max-width: 1400px; margin: 0 auto; padding: 0 32px;
+      display: flex; gap: 4px; border-bottom: 1px solid #1a1a1a;
+      background: #0c0c0c; position: sticky; top: 81px; z-index: 100;
+    }
+    .tab-btn {
+      padding: 14px 20px; font-size: 13px; font-weight: 600; color: #444;
+      cursor: pointer; border: none; background: transparent;
+      font-family: 'Inter', sans-serif; border-bottom: 2px solid transparent;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .tab-btn:hover { color: #888; }
+    .tab-btn.active { color: #a5b4fc; border-bottom-color: #6366f1; }
+
+    /* ── MAIN ── */
+    .main-wrap { max-width: 1400px; margin: 0 auto; padding: 28px 32px 80px; }
+
+    /* ── FILTERS ── */
+    .filters-bar {
+      background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 12px;
+      padding: 16px 20px; display: flex; gap: 12px; flex-wrap: wrap;
+      align-items: flex-end; margin-bottom: 24px;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 5px; }
+    .filter-label { font-size: 11px; font-weight: 600; color: #444; text-transform: uppercase; letter-spacing: 0.05em; }
+    .filter-input {
+      padding: 8px 12px; border-radius: 8px; background: #0d0d0d;
+      border: 1px solid #1e1e1e; color: #ccc; font-size: 13px;
+      font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.15s;
+      min-width: 140px;
+    }
+    .filter-input:focus { border-color: #6366f1; }
+    .filter-actions { display: flex; gap: 8px; align-items: flex-end; margin-left: auto; }
+
+    /* ── SUMMARY CARDS ── */
+    .summary-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .sum-card {
+      background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 10px;
+      padding: 16px 20px; flex: 1; min-width: 120px;
+    }
+    .sum-num { font-size: 28px; font-weight: 900; line-height: 1; color: #fff; }
+    .sum-label { font-size: 11px; color: #444; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .sum-card.green .sum-num { color: #4ade80; }
+    .sum-card.red .sum-num { color: #f87171; }
+    .sum-card.yellow .sum-num { color: #facc15; }
+
+    /* ── SECTION TITLES ── */
+    .section-title {
+      font-size: 13px; font-weight: 700; color: #555; text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 12px; margin-top: 28px;
+      padding-bottom: 8px; border-bottom: 1px solid #161616;
+    }
+
+    /* ── MEMBER CARD ── */
+    .member-card {
+      background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 12px;
+      margin-bottom: 16px; overflow: hidden;
+    }
+    .member-card-header {
+      padding: 16px 20px; display: flex; align-items: center; gap: 14px;
+      cursor: pointer; transition: background 0.1s;
+    }
+    .member-card-header:hover { background: #131313; }
+    .member-avatar {
+      width: 40px; height: 40px; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; font-size: 14px;
+      font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .member-info { flex: 1; }
+    .member-name { font-size: 15px; font-weight: 700; color: #e0e0e0; }
+    .member-meta { font-size: 12px; color: #444; margin-top: 2px; }
+    .member-stats { display: flex; gap: 16px; flex-shrink: 0; }
+    .mstat { text-align: center; }
+    .mstat-num { font-size: 18px; font-weight: 800; line-height: 1; }
+    .mstat-label { font-size: 10px; color: #444; }
+    .pct-badge {
+      padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; flex-shrink: 0;
+    }
+    .chevron { font-size: 14px; color: #333; transition: transform 0.2s; flex-shrink: 0; }
+    .chevron.open { transform: rotate(180deg); }
+    .member-body { display: none; padding: 0 20px 16px; }
+    .member-body.open { display: block; }
+
+    /* ── ATTENDANCE TABLE ── */
+    .att-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .att-table th {
+      text-align: left; padding: 8px 12px; font-size: 10px; font-weight: 700;
+      color: #444; text-transform: uppercase; letter-spacing: 0.05em;
+      border-bottom: 1px solid #1a1a1a; background: #0c0c0c;
+    }
+    .att-table td { padding: 10px 12px; border-bottom: 1px solid #111; vertical-align: middle; }
+    .att-table tr:last-child td { border-bottom: none; }
+    .att-table tr:hover td { background: #0d0d0d; }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
+    }
+    .status-present { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
+    .status-absent  { background: rgba(239,68,68,0.12);  color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+    .status-pending { background: rgba(100,100,100,0.1); color: #555;    border: 1px solid #1e1e1e; }
+    .role-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700;
+    }
+    .role-prof   { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+    .role-host   { background: rgba(100,100,100,0.1); color: #555; }
+    .role-mentor { background: rgba(250,204,21,0.12); color: #facc15; }
+    .comment-text { font-size: 11px; color: #555; font-style: italic; margin-top: 2px; }
+
+    /* ── CLASS CARD (Por Turma) ── */
+    .class-card {
+      background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 12px;
+      margin-bottom: 16px; overflow: hidden;
+    }
+    .class-card-header {
+      padding: 16px 20px; display: flex; align-items: center; gap: 14px;
+      cursor: pointer; transition: background 0.1s;
+    }
+    .class-card-header:hover { background: #131313; }
+    .class-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .class-name { font-size: 15px; font-weight: 700; color: #e0e0e0; flex: 1; }
+    .class-meta { font-size: 12px; color: #444; margin-top: 2px; }
+    .class-body { display: none; padding: 0 20px 16px; }
+    .class-body.open { display: block; }
+    .session-group { margin-bottom: 20px; }
+    .session-date-header {
+      font-size: 12px; font-weight: 700; color: #555; padding: 6px 0;
+      border-bottom: 1px solid #161616; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ── FULL TABLE ── */
+    .full-table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid #1a1a1a; }
+    .full-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .full-table th {
+      text-align: left; padding: 10px 14px; font-size: 10px; font-weight: 700;
+      color: #444; text-transform: uppercase; letter-spacing: 0.05em;
+      border-bottom: 1px solid #1a1a1a; background: #0c0c0c; white-space: nowrap;
+    }
+    .full-table td { padding: 10px 14px; border-bottom: 1px solid #111; vertical-align: middle; }
+    .full-table tr:last-child td { border-bottom: none; }
+    .full-table tr:hover td { background: #0d0d0d; }
+    .full-table .name-col { font-weight: 600; color: #ddd; }
+
+    /* ── EMPTY ── */
+    .empty-state { text-align: center; padding: 60px 20px; color: #333; font-size: 14px; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600;
+      max-width: 360px; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+    }
+    .toast.show { opacity: 1; pointer-events: auto; }
+    .toast.success { background: #052e16; border: 1px solid #166534; color: #4ade80; }
+    .toast.error   { background: #1c0a0a; border: 1px solid #7f1d1d; color: #f87171; }
+
+    /* ── PRINT STYLES ── */
+    @media print {
+      body { background: #fff !important; color: #000 !important; }
+      .header, .tab-bar, .filters-bar, .btn-pill, .no-print { display: none !important; }
+      .main-wrap { padding: 0 !important; }
+      .member-card, .class-card { border: 1px solid #ddd !important; background: #fff !important; break-inside: avoid; }
+      .member-card-header, .class-card-header { background: #f9f9f9 !important; }
+      .member-body, .class-body { display: block !important; }
+      .member-name, .class-name { color: #000 !important; }
+      .member-meta, .class-meta { color: #666 !important; }
+      .att-table th, .full-table th { background: #f0f0f0 !important; color: #000 !important; }
+      .att-table td, .full-table td { border-color: #ddd !important; color: #000 !important; }
+      .status-present { background: #f0fdf4 !important; color: #166534 !important; border-color: #bbf7d0 !important; }
+      .status-absent  { background: #fef2f2 !important; color: #991b1b !important; border-color: #fecaca !important; }
+      .sum-card { border: 1px solid #ddd !important; background: #fff !important; }
+      .sum-num { color: #000 !important; }
+      .sum-label { color: #666 !important; }
+      .print-header { display: block !important; }
+    }
+    .print-header { display: none; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-icon">📊</div>
+    <div class="login-title">Relatório de Presenças</div>
+    <div class="login-subtitle">Acesso restrito à coordenação</div>
+    <form onsubmit="handleLogin(event)">
+      <input class="login-field" type="email" id="login-email" placeholder="Email" autocomplete="email" required>
+      <input class="login-field" type="password" id="login-pw" placeholder="Senha" autocomplete="current-password" required>
+      <button class="login-btn" type="submit" id="login-btn">Entrar</button>
+      <div class="login-error" id="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- PRINT HEADER (visible only on print) -->
+<div class="print-header" style="padding:16px 0 24px; border-bottom:2px solid #000; margin-bottom:24px;">
+  <h1 style="font-size:20px;font-weight:800;color:#000">Relatório de Presenças — Equipe Pedagógica</h1>
+  <p id="print-subtitle" style="font-size:13px;color:#666;margin-top:4px"></p>
+</div>
+
+<!-- APP (hidden until login) -->
+<div id="app" style="display:none">
+  <div class="header">
+    <div class="header-inner">
+      <div class="header-icon">📊</div>
+      <div class="header-title">
+        <h1>Relatório de Presenças</h1>
+        <p id="report-period-label">Equipe Pedagógica</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center" class="no-print">
+        <button class="btn-pill success" onclick="exportCSV()">⬇ Exportar CSV</button>
+        <button class="btn-pill primary" onclick="window.print()">🖨 Imprimir</button>
+        <button class="btn-pill" onclick="handleLogout()">Sair</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar no-print">
+    <button class="tab-btn active" id="tab-member" onclick="switchTab('member')">Por Membro</button>
+    <button class="tab-btn" id="tab-full" onclick="switchTab('full')">Relatório Completo</button>
+    <button class="tab-btn" id="tab-class" onclick="switchTab('class')">Por Turma</button>
+  </div>
+
+  <div class="main-wrap">
+    <!-- FILTERS -->
+    <div class="filters-bar no-print">
+      <div class="filter-group">
+        <div class="filter-label">Data início</div>
+        <input class="filter-input" type="date" id="filter-start" onchange="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">Data fim</div>
+        <input class="filter-input" type="date" id="filter-end" onchange="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">Turma</div>
+        <select class="filter-input" id="filter-class" onchange="applyFilters()">
+          <option value="">Todas as turmas</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">Status</div>
+        <select class="filter-input" id="filter-status" onchange="applyFilters()">
+          <option value="">Todos</option>
+          <option value="present">Presença</option>
+          <option value="absent">Falta</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">Membro</div>
+        <select class="filter-input" id="filter-member" onchange="applyFilters()">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div class="filter-actions">
+        <button class="btn-pill" onclick="clearFilters()">Limpar</button>
+      </div>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="summary-bar" id="summary-bar">
+      <div class="sum-card"><div class="sum-num" id="s-total">—</div><div class="sum-label">Total de Aulas</div></div>
+      <div class="sum-card green"><div class="sum-num" id="s-present">—</div><div class="sum-label">Presenças</div></div>
+      <div class="sum-card red"><div class="sum-num" id="s-absent">—</div><div class="sum-label">Faltas</div></div>
+      <div class="sum-card yellow"><div class="sum-num" id="s-pct">—</div><div class="sum-label">Taxa de Presença</div></div>
+      <div class="sum-card"><div class="sum-num" id="s-members">—</div><div class="sum-label">Membros</div></div>
+    </div>
+
+    <!-- VIEWS -->
+    <div id="view-member"></div>
+    <div id="view-full" style="display:none"></div>
+    <div id="view-class" style="display:none"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://gpufcipkajppykmnmdeh.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── STATE ──────────────────────────────────────
+let allRecords     = []; // full data from DB
+let filtered       = []; // after filters applied
+let mentorMap      = {}; // id → { name, role }
+let classMap       = {}; // id → { name }
+let classMentorMap = {}; // `${mentor_id}_${class_id}` → role
+let currentTab     = 'member';
+
+const MENTOR_COLORS = ['#6366f1','#10b981','#f59e0b','#ec4899','#06b6d4','#8b5cf6','#ef4444','#14b8a6','#f97316','#a855f7','#22c55e','#3b82f6'];
+function mentorColor(name) { let h=0; for(const c of name) h=(h*31+c.charCodeAt(0))%MENTOR_COLORS.length; return MENTOR_COLORS[h]; }
+function initials(name) { return name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
+
+const CLASS_COLORS = ['#6366f1','#10b981','#f59e0b','#ec4899','#06b6d4','#8b5cf6','#ef4444','#14b8a6'];
+function classColor(name) { let h=0; for(const c of name) h=(h*31+c.charCodeAt(0))%CLASS_COLORS.length; return CLASS_COLORS[h]; }
+
+function fmtDate(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('pt-BR', { weekday: 'short', day:'2-digit', month:'2-digit', year:'numeric' });
+}
+function fmtDateShort(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── AUTH ───────────────────────────────────────
+async function checkAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) { document.getElementById('login-overlay').classList.add('hidden'); document.getElementById('app').style.display = ''; await loadData(); }
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  const { data, error } = await sb.auth.signInWithPassword({
+    email: document.getElementById('login-email').value.trim(),
+    password: document.getElementById('login-pw').value,
+  });
+  if (error) {
+    document.getElementById('login-error').textContent = error.message || 'Email ou senha incorretos';
+    document.getElementById('login-error').classList.add('show');
+    btn.disabled = false;
+    return;
+  }
+  document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('app').style.display = '';
+  await loadData();
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  location.reload();
+}
+
+// ── LOAD DATA ──────────────────────────────────
+async function loadData() {
+  showToast('Carregando dados…', 'success');
+
+  const [
+    { data: mentors },
+    { data: classes },
+    { data: classMentors },
+    { data: attendance },
+  ] = await Promise.all([
+    sb.from('mentors').select('id, name, role').eq('active', true).order('name'),
+    sb.from('classes').select('id, name').order('name'),
+    sb.from('class_mentors').select('mentor_id, class_id, role'),
+    sb.from('mentor_attendance').select('*').order('session_date', { ascending: false }),
+  ]);
+
+  // Build lookup maps
+  mentorMap = {};
+  (mentors || []).forEach(m => { mentorMap[m.id] = m; });
+
+  classMap = {};
+  (classes || []).forEach(c => { classMap[c.id] = c; });
+
+  classMentorMap = {};
+  (classMentors || []).forEach(cm => {
+    const key = `${cm.mentor_id}_${cm.class_id}`;
+    classMentorMap[key] = cm.role;
+  });
+
+  // Build enriched records
+  allRecords = (attendance || []).map(r => ({
+    ...r,
+    mentor_name:  mentorMap[r.mentor_id]?.name  || 'Desconhecido',
+    mentor_role:  mentorMap[r.mentor_id]?.role   || '—',
+    class_name:   classMap[r.class_id]?.name     || 'Turma desconhecida',
+    assigned_role: classMentorMap[`${r.mentor_id}_${r.class_id}`] || mentorMap[r.mentor_id]?.role || '—',
+  }));
+
+  // Populate filter dropdowns
+  const classSelect = document.getElementById('filter-class');
+  classSelect.innerHTML = '<option value="">Todas as turmas</option>';
+  (classes || []).forEach(c => {
+    classSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+  });
+
+  const memberSelect = document.getElementById('filter-member');
+  memberSelect.innerHTML = '<option value="">Todos</option>';
+  (mentors || []).forEach(m => {
+    memberSelect.innerHTML += `<option value="${m.id}">${m.name}</option>`;
+  });
+
+  // Default filter: current month
+  const today = new Date();
+  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+  const lastDay  = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+  document.getElementById('filter-start').value = firstDay;
+  document.getElementById('filter-end').value   = lastDay;
+
+  applyFilters();
+}
+
+// ── FILTERS ────────────────────────────────────
+function applyFilters() {
+  const start    = document.getElementById('filter-start').value;
+  const end      = document.getElementById('filter-end').value;
+  const classId  = document.getElementById('filter-class').value;
+  const status   = document.getElementById('filter-status').value;
+  const memberId = document.getElementById('filter-member').value;
+
+  filtered = allRecords.filter(r => {
+    if (start  && r.session_date < start)      return false;
+    if (end    && r.session_date > end)         return false;
+    if (classId  && r.class_id  !== classId)   return false;
+    if (status   && r.status    !== status)     return false;
+    if (memberId && r.mentor_id !== memberId)   return false;
+    return true;
+  });
+
+  updatePeriodLabel(start, end);
+  renderSummary();
+  renderCurrentTab();
+}
+
+function clearFilters() {
+  document.getElementById('filter-start').value = '';
+  document.getElementById('filter-end').value   = '';
+  document.getElementById('filter-class').value  = '';
+  document.getElementById('filter-status').value = '';
+  document.getElementById('filter-member').value = '';
+  applyFilters();
+}
+
+function updatePeriodLabel(start, end) {
+  let label = 'Equipe Pedagógica';
+  if (start && end) label = `${fmtDateShort(start)} a ${fmtDateShort(end)}`;
+  else if (start)   label = `A partir de ${fmtDateShort(start)}`;
+  else if (end)     label = `Até ${fmtDateShort(end)}`;
+  document.getElementById('report-period-label').textContent = label;
+  document.getElementById('print-subtitle').textContent = `Gerado em ${new Date().toLocaleDateString('pt-BR')} · ${label} · ${filtered.length} registros`;
+}
+
+// ── SUMMARY ────────────────────────────────────
+function renderSummary() {
+  const total   = filtered.length;
+  const present = filtered.filter(r => r.status === 'present').length;
+  const absent  = filtered.filter(r => r.status === 'absent').length;
+  const pct     = total > 0 ? Math.round((present / total) * 100) : 0;
+  const members = new Set(filtered.map(r => r.mentor_id)).size;
+
+  document.getElementById('s-total').textContent   = total;
+  document.getElementById('s-present').textContent = present;
+  document.getElementById('s-absent').textContent  = absent;
+  document.getElementById('s-pct').textContent     = total > 0 ? pct + '%' : '—';
+  document.getElementById('s-members').textContent = members;
+}
+
+// ── TABS ───────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  ['member','full','class'].forEach(t => {
+    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+    document.getElementById(`view-${t}`).style.display = t === tab ? '' : 'none';
+  });
+  renderCurrentTab();
+}
+
+function renderCurrentTab() {
+  if (currentTab === 'member') renderMemberView();
+  else if (currentTab === 'full') renderFullView();
+  else if (currentTab === 'class') renderClassView();
+}
+
+// ══════════════════════════════════════════════
+// TAB 1: POR MEMBRO
+// ══════════════════════════════════════════════
+function renderMemberView() {
+  const el = document.getElementById('view-member');
+
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty-state">Nenhum registro encontrado para os filtros selecionados.</div>';
+    return;
+  }
+
+  // Group by mentor
+  const byMentor = {};
+  for (const r of filtered) {
+    if (!byMentor[r.mentor_id]) byMentor[r.mentor_id] = { name: r.mentor_name, role: r.mentor_role, records: [] };
+    byMentor[r.mentor_id].records.push(r);
+  }
+
+  const sortedMentors = Object.entries(byMentor).sort((a, b) => a[1].name.localeCompare(b[1].name));
+
+  el.innerHTML = sortedMentors.map(([mentorId, data], idx) => {
+    const total   = data.records.length;
+    const present = data.records.filter(r => r.status === 'present').length;
+    const absent  = data.records.filter(r => r.status === 'absent').length;
+    const pct     = total > 0 ? Math.round((present / total) * 100) : 0;
+    const pctColor = pct >= 80 ? '#4ade80' : pct >= 50 ? '#f59e0b' : '#f87171';
+    const pctBg    = pct >= 80 ? 'rgba(34,197,94,0.12)' : pct >= 50 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)';
+
+    // Sort records by date descending
+    const sorted = [...data.records].sort((a, b) => b.session_date.localeCompare(a.session_date));
+
+    const rows = sorted.map(r => {
+      const roleBadge = roleTag(r.assigned_role);
+      const statusBadge = r.status === 'present'
+        ? '<span class="status-badge status-present">✓ Presente</span>'
+        : '<span class="status-badge status-absent">✗ Falta</span>';
+      const comment = r.comment ? `<div class="comment-text">${escHtml(r.comment)}</div>` : '';
+      return `<tr>
+        <td style="color:#aaa">${fmtDate(r.session_date)}</td>
+        <td style="color:#ddd;font-weight:600">${escHtml(r.class_name)}</td>
+        <td>${roleBadge}</td>
+        <td>${statusBadge}${comment}</td>
+      </tr>`;
+    }).join('');
+
+    const cardId = `mc-${idx}`;
+    return `
+      <div class="member-card">
+        <div class="member-card-header" onclick="toggleCard('${cardId}')">
+          <div class="member-avatar" style="background:${mentorColor(data.name)}">${initials(data.name)}</div>
+          <div class="member-info">
+            <div class="member-name">${escHtml(data.name)}</div>
+            <div class="member-meta">${escHtml(data.role)} · ${total} aula${total !== 1 ? 's' : ''} no período</div>
+          </div>
+          <div class="member-stats">
+            <div class="mstat"><div class="mstat-num" style="color:#4ade80">${present}</div><div class="mstat-label">Presenças</div></div>
+            <div class="mstat"><div class="mstat-num" style="color:#f87171">${absent}</div><div class="mstat-label">Faltas</div></div>
+            <div class="pct-badge" style="background:${pctBg};color:${pctColor};border:1px solid ${pctColor}33">${pct}%</div>
+          </div>
+          <div class="chevron" id="${cardId}-chevron">▼</div>
+        </div>
+        <div class="member-body" id="${cardId}-body">
+          <table class="att-table">
+            <thead><tr><th>Data</th><th>Turma</th><th>Função</th><th>Status</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// TAB 2: RELATÓRIO COMPLETO
+// ══════════════════════════════════════════════
+function renderFullView() {
+  const el = document.getElementById('view-full');
+
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty-state">Nenhum registro encontrado para os filtros selecionados.</div>';
+    return;
+  }
+
+  const sorted = [...filtered].sort((a, b) => {
+    const dateCompare = b.session_date.localeCompare(a.session_date);
+    if (dateCompare !== 0) return dateCompare;
+    return a.mentor_name.localeCompare(b.mentor_name);
+  });
+
+  const rows = sorted.map(r => {
+    const statusBadge = r.status === 'present'
+      ? '<span class="status-badge status-present">✓ Presente</span>'
+      : '<span class="status-badge status-absent">✗ Falta</span>';
+    return `<tr>
+      <td style="color:#aaa">${fmtDate(r.session_date)}</td>
+      <td class="name-col">${escHtml(r.mentor_name)}</td>
+      <td style="color:#555;font-size:12px">${escHtml(r.mentor_role)}</td>
+      <td style="color:#ddd">${escHtml(r.class_name)}</td>
+      <td>${roleTag(r.assigned_role)}</td>
+      <td>${statusBadge}</td>
+      <td style="color:#555;font-size:12px;max-width:240px">${r.comment ? escHtml(r.comment) : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="full-table-wrap">
+      <table class="full-table">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Membro</th>
+            <th>Perfil</th>
+            <th>Turma</th>
+            <th>Função na Turma</th>
+            <th>Presença</th>
+            <th>Observação</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════
+// TAB 3: POR TURMA
+// ══════════════════════════════════════════════
+function renderClassView() {
+  const el = document.getElementById('view-class');
+
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty-state">Nenhum registro encontrado para os filtros selecionados.</div>';
+    return;
+  }
+
+  // Group by class
+  const byClass = {};
+  for (const r of filtered) {
+    if (!byClass[r.class_id]) byClass[r.class_id] = { name: r.class_name, records: [] };
+    byClass[r.class_id].records.push(r);
+  }
+
+  const sortedClasses = Object.entries(byClass).sort((a, b) => a[1].name.localeCompare(b[1].name));
+
+  el.innerHTML = sortedClasses.map(([classId, data], idx) => {
+    const total   = data.records.length;
+    const present = data.records.filter(r => r.status === 'present').length;
+    const absent  = data.records.filter(r => r.status === 'absent').length;
+    const pct     = total > 0 ? Math.round((present / total) * 100) : 0;
+    const pctColor = pct >= 80 ? '#4ade80' : pct >= 50 ? '#f59e0b' : '#f87171';
+    const pctBg    = pct >= 80 ? 'rgba(34,197,94,0.12)' : pct >= 50 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)';
+
+    // Group by session date
+    const byDate = {};
+    for (const r of data.records) {
+      if (!byDate[r.session_date]) byDate[r.session_date] = [];
+      byDate[r.session_date].push(r);
+    }
+
+    const datesSorted = Object.keys(byDate).sort((a, b) => b.localeCompare(a));
+
+    const sessionGroups = datesSorted.map(date => {
+      const sessionPresent = byDate[date].filter(r => r.status === 'present').length;
+      const sessionTotal   = byDate[date].length;
+
+      const rows = byDate[date]
+        .sort((a, b) => a.mentor_name.localeCompare(b.mentor_name))
+        .map(r => {
+          const statusBadge = r.status === 'present'
+            ? '<span class="status-badge status-present">✓ Presente</span>'
+            : '<span class="status-badge status-absent">✗ Falta</span>';
+          const comment = r.comment ? `<div class="comment-text">${escHtml(r.comment)}</div>` : '';
+          return `<tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="width:28px;height:28px;border-radius:50%;background:${mentorColor(r.mentor_name)};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0">${initials(r.mentor_name)}</div>
+                <div>
+                  <div style="font-weight:600;color:#ddd;font-size:13px">${escHtml(r.mentor_name)}</div>
+                  <div style="font-size:11px;color:#444">${escHtml(r.mentor_role)}</div>
+                </div>
+              </div>
+            </td>
+            <td>${roleTag(r.assigned_role)}</td>
+            <td>${statusBadge}${comment}</td>
+          </tr>`;
+        }).join('');
+
+      const pctSession = sessionTotal > 0 ? Math.round((sessionPresent / sessionTotal) * 100) : 0;
+      const pctSessionColor = pctSession >= 80 ? '#4ade80' : pctSession >= 50 ? '#f59e0b' : '#f87171';
+
+      return `<div class="session-group">
+        <div class="session-date-header">
+          <span style="color:#aaa;font-size:13px;font-weight:700">${fmtDate(date)}</span>
+          <span style="font-size:11px;color:${pctSessionColor}">${sessionPresent}/${sessionTotal} presente${sessionPresent !== 1 ? 's' : ''}</span>
+        </div>
+        <table class="att-table">
+          <thead><tr><th>Membro</th><th>Função</th><th>Presença</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+    }).join('');
+
+    const cardId = `cc-${idx}`;
+    const color  = classColor(data.name);
+
+    return `
+      <div class="class-card">
+        <div class="class-card-header" onclick="toggleCard('${cardId}')">
+          <div class="class-dot" style="background:${color}"></div>
+          <div style="flex:1">
+            <div class="class-name">${escHtml(data.name)}</div>
+            <div class="class-meta">${datesSorted.length} sessão${datesSorted.length !== 1 ? 'ões' : ''} · ${total} registro${total !== 1 ? 's' : ''}</div>
+          </div>
+          <div class="member-stats">
+            <div class="mstat"><div class="mstat-num" style="color:#4ade80">${present}</div><div class="mstat-label">Presenças</div></div>
+            <div class="mstat"><div class="mstat-num" style="color:#f87171">${absent}</div><div class="mstat-label">Faltas</div></div>
+            <div class="pct-badge" style="background:${pctBg};color:${pctColor};border:1px solid ${pctColor}33">${pct}%</div>
+          </div>
+          <div class="chevron" id="${cardId}-chevron">▼</div>
+        </div>
+        <div class="class-body" id="${cardId}-body">
+          ${sessionGroups}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── HELPERS ────────────────────────────────────
+function toggleCard(id) {
+  const body    = document.getElementById(`${id}-body`);
+  const chevron = document.getElementById(`${id}-chevron`);
+  const isOpen  = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chevron.classList.toggle('open', !isOpen);
+}
+
+function roleTag(role) {
+  if (!role || role === '—') return '<span style="color:#333">—</span>';
+  const cls = role === 'Professor' ? 'role-prof' : role === 'Host' ? 'role-host' : 'role-mentor';
+  return `<span class="role-badge ${cls}">${escHtml(role)}</span>`;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── CSV EXPORT ─────────────────────────────────
+function exportCSV() {
+  if (!filtered.length) { showToast('Nenhum dado para exportar', 'error'); return; }
+
+  const sorted = [...filtered].sort((a, b) => {
+    const d = b.session_date.localeCompare(a.session_date);
+    return d !== 0 ? d : a.mentor_name.localeCompare(b.mentor_name);
+  });
+
+  const header = ['Data', 'Membro', 'Perfil', 'Turma', 'Função na Turma', 'Presença', 'Observação'];
+  const rows = sorted.map(r => [
+    fmtDateShort(r.session_date),
+    r.mentor_name,
+    r.mentor_role,
+    r.class_name,
+    r.assigned_role,
+    r.status === 'present' ? 'Presente' : 'Falta',
+    r.comment || '',
+  ]);
+
+  const csv = [header, ...rows].map(row =>
+    row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')
+  ).join('\n');
+
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const start = document.getElementById('filter-start').value;
+  const end   = document.getElementById('filter-end').value;
+  const name  = `presencas_equipe${start ? '_' + start : ''}${end ? '_ate_' + end : ''}.csv`;
+  a.href = url; a.download = name; a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV exportado com sucesso!', 'success');
+}
+
+// ── INIT ───────────────────────────────────────
+checkAuth();
+</script>
+</body>
+</html>
