@@ -1840,7 +1840,7 @@ async function saveClassV2() {
 
   if (mentorRows.length > 0) {
     const { error } = await sb.from('class_mentors').insert(mentorRows);
-    if (error) console.error('class_mentors insert error:', error);
+    if (error) { showToast('Erro ao salvar equipe: ' + error.message, 'error'); return; }
   }
 
   // Save linked cohorts
@@ -1850,7 +1850,7 @@ async function saveClassV2() {
     .map(lc => ({ class_id: classId, cohort_id: lc.cohort_id, access_until: lc.access_until }));
   if (cohortRows.length > 0) {
     const { error } = await sb.from('class_cohort_access').insert(cohortRows);
-    if (error) console.error('class_cohort_access insert error:', error);
+    if (error) { showToast('Erro ao salvar turmas vinculadas: ' + error.message, 'error'); return; }
   }
 
   showToast(id ? 'Turma atualizada!' : 'Turma criada!', 'success');
