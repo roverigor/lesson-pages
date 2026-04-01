@@ -1432,16 +1432,41 @@ let classSchedules = []; // temp schedule days for current form
 let linkedCohorts = []; // temp linked cohorts for current form
 
 async function loadClasses() {
-  const [{ data: classes }, { data: mentors }, { data: cmData }, { data: cohortsData }, { data: accessData }] = await Promise.all([
+  const [{ data: classes }, { data: mentors }, { data: cmData }, { data: cohortsData }, { data: accessData }, { data: ccData }] = await Promise.all([
     sb.from('classes').select('*').order('name'),
     sb.from('mentors').select('id, name, role, active').eq('active', true).order('name'),
     sb.from('class_mentors').select('*').order('weekday'),
-    sb.from('cohorts').select('id, name, end_date').order('name'),
+    sb.from('cohorts').select('id, name, start_date, end_date').order('name'),
     sb.from('class_cohort_access').select('*'),
+    sb.from('class_cohorts').select('class_id, cohort_id'),
   ]);
   classesList = classes || [];
   mentorsList = mentors || [];
   cohortsList = cohortsData || [];
+
+  // Pre-compute last class date for each cohort (from class_cohorts schedule)
+  for (const cohort of cohortsList) {
+    const linkedClassIds = (ccData || []).filter(cc => cc.cohort_id === cohort.id).map(cc => cc.class_id);
+    const linkedClasses = (classes || []).filter(c => linkedClassIds.includes(c.id));
+    let lastDate = null;
+    for (const cls of linkedClasses) {
+      if (!cls.start_date || !cls.end_date) continue;
+      const classMentors = (cmData || []).filter(cm => cm.class_id === cls.id);
+      const weekdays = classMentors.length > 0
+        ? [...new Set(classMentors.map(cm => cm.weekday ?? cls.weekday).filter(w => w != null))]
+        : cls.weekday != null ? [cls.weekday] : [];
+      for (const wd of weekdays) {
+        const dates = generateDates(cls.start_date, cls.end_date, wd);
+        if (dates.length > 0) {
+          const maxDate = dates[dates.length - 1];
+          if (!lastDate || maxDate > lastDate) lastDate = maxDate;
+        }
+      }
+    }
+    // Fallback to cohort.end_date if no class schedule found
+    if (!lastDate && cohort.end_date) lastDate = new Date(cohort.end_date + 'T00:00:00');
+    cohort._lastClassDate = lastDate;
+  }
   classSchedules = [];
   linkedCohorts = [];
   if (!staffList.length) await loadStaff();
@@ -1655,13 +1680,14 @@ function removeLinkedCohort(idx) {
 
 function updateLinkedCohort(idx, field, val) {
   linkedCohorts[idx][field] = val;
-  // Auto-calculate access_until when cohort selected (end_date + 30 days)
+  // Auto-calculate access_until when cohort selected (última aula da turma + 30 dias)
   if (field === 'cohort_id' && val) {
     const cohort = cohortsList.find(c => c.id === val);
-    if (cohort && cohort.end_date && !linkedCohorts[idx].access_until) {
-      const end = new Date(cohort.end_date + 'T00:00:00');
-      end.setDate(end.getDate() + 30);
-      linkedCohorts[idx].access_until = end.toISOString().split('T')[0];
+    const refDate = cohort?._lastClassDate || (cohort?.end_date ? new Date(cohort.end_date + 'T00:00:00') : null);
+    if (refDate) {
+      const until = new Date(refDate);
+      until.setDate(until.getDate() + 30);
+      linkedCohorts[idx].access_until = until.toISOString().split('T')[0];
       renderLinkedCohorts();
     }
   }
