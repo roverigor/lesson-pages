@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Equipe Pedagógica — Academia Lendária</title>
+  <link rel="stylesheet" href="../templates/design-tokens-dark-premium.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-sans, 'Inter', sans-serif); background: #080808; color: #888; min-height: 100vh; }
+
+    /* ── LOGIN ── */
+    .login-overlay { position: fixed; inset: 0; background: #080808; display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+    .login-overlay.hidden { display: none; }
+    .login-box { background: #111; border: 1px solid #222; border-radius: 16px; padding: 40px 36px; width: 100%; max-width: 400px; text-align: center; }
+    .login-icon { width: 60px; height: 60px; border-radius: 16px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: inline-flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 20px; }
+    .login-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .login-subtitle { font-size: 13px; color: #555; margin-bottom: 32px; line-height: 1.6; }
+    .login-label { font-size: 11px; font-weight: 700; color: #444; text-transform: uppercase; letter-spacing: 0.06em; text-align: left; display: block; margin-bottom: 6px; }
+    .login-field { width: 100%; padding: 12px 16px; border-radius: 8px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd; font-size: 15px; font-family: inherit; margin-bottom: 16px; outline: none; transition: border-color 0.2s; }
+    .login-field:focus { border-color: #6366f1; }
+    .login-field::placeholder { color: #333; }
+    .login-btn { width: 100%; padding: 13px; border-radius: 8px; border: none; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity 0.2s; }
+    .login-btn:hover { opacity: 0.9; }
+    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .login-error { color: #f87171; font-size: 12px; margin-top: 12px; display: none; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 6px; padding: 8px 12px; }
+    .login-error.show { display: block; }
+    .login-hint { font-size: 11px; color: #333; margin-top: 16px; }
+
+    /* ── HEADER ── */
+    .header { background: #101010; border-bottom: 1px solid #1a1a1a; padding: 16px 24px; position: sticky; top: 0; z-index: 200; }
+    .header-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .header-icon { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+    .header-info h1 { font-size: 16px; font-weight: 800; color: #fff; }
+    .header-info p { font-size: 11px; color: #444; }
+    .header-user { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .user-name { font-size: 13px; font-weight: 600; color: #a5b4fc; }
+    .user-role { font-size: 10px; padding: 2px 8px; border-radius: 999px; background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.2); color: #818cf8; font-weight: 700; }
+    .logout-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid #222; background: transparent; color: #555; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .logout-btn:hover { color: #f87171; border-color: rgba(239,68,68,0.3); }
+
+    /* ── LAYOUT ── */
+    .layout { max-width: 900px; margin: 0 auto; padding: 28px 24px 100px; }
+
+    /* ── SECTION HEADER ── */
+    .section-title { font-size: 11px; font-weight: 700; color: #333; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid #141414; }
+
+    /* ── CLASS CARD ── */
+    .class-card { background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 14px; overflow: hidden; margin-bottom: 16px; transition: border-color 0.2s; }
+    .class-card:hover { border-color: #2a2a2a; }
+    .class-card-header { padding: 18px 20px 14px; display: flex; align-items: flex-start; gap: 14px; }
+    .class-color-bar { width: 4px; border-radius: 2px; min-height: 50px; flex-shrink: 0; }
+    .class-info { flex: 1; }
+    .class-name { font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .class-meta { font-size: 12px; color: #444; display: flex; gap: 12px; flex-wrap: wrap; }
+    .class-meta span { display: flex; align-items: center; gap: 4px; }
+    .class-status-area { flex-shrink: 0; text-align: right; }
+
+    /* ── STATUS BUTTONS ── */
+    .status-btns { display: flex; gap: 8px; }
+    .status-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #222; background: #141414; color: #555; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px; transition: all 0.15s; white-space: nowrap; }
+    .status-btn:hover { background: #1a1a1a; }
+    .status-btn.present.active { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.35); color: #4ade80; }
+    .status-btn.absent.active { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.35); color: #f87171; }
+    .status-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── COMMENT AREA ── */
+    .comment-area { padding: 0 20px 18px 38px; }
+    .comment-area.hidden { display: none; }
+    .comment-label { font-size: 10px; font-weight: 700; color: #333; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .comment-label span { color: #555; font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 11px; }
+    .comment-input { width: 100%; padding: 10px 14px; border-radius: 8px; background: #0a0a0a; border: 1px solid #1a1a1a; color: #ccc; font-size: 13px; font-family: inherit; resize: vertical; min-height: 70px; outline: none; transition: border-color 0.2s; }
+    .comment-input:focus { border-color: #4b4b6b; }
+    .comment-input::placeholder { color: #2a2a2a; }
+    .save-btn { margin-top: 10px; padding: 9px 20px; border-radius: 8px; border: none; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.25); color: #a5b4fc; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .save-btn:hover { background: rgba(99,102,241,0.25); }
+    .save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── SAVED BADGE ── */
+    .saved-badge { font-size: 11px; color: #4ade80; font-weight: 600; display: none; align-items: center; gap: 4px; margin-top: 8px; }
+    .saved-badge.show { display: flex; }
+    .saved-comment-preview { font-size: 11px; color: #555; font-style: italic; margin-top: 6px; padding: 6px 10px; background: #0a0a0a; border-radius: 6px; border-left: 2px solid #2a2a2a; display: none; }
+    .saved-comment-preview.show { display: block; }
+
+    /* ── SESSION ROW ── */
+    .sessions-list { padding: 0 20px 18px 38px; }
+    .session-date-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #111; }
+    .session-date-row:last-child { border-bottom: none; }
+    .session-date { font-size: 12px; color: #666; min-width: 90px; font-weight: 600; }
+    .session-today { color: #a5b4fc; }
+    .session-future { color: #555; }
+    .session-past { color: #333; }
+
+    /* ── EMPTY STATE ── */
+    .empty { text-align: center; padding: 60px 20px; color: #333; }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+    .empty-text { font-size: 14px; }
+
+    /* ── PERIOD TABS ── */
+    .period-tabs { display: flex; gap: 4px; margin-bottom: 24px; background: #0d0d0d; padding: 4px; border-radius: 10px; border: 1px solid #1a1a1a; width: fit-content; }
+    .period-tab { padding: 7px 16px; border-radius: 7px; font-size: 12px; font-weight: 600; color: #444; cursor: pointer; border: none; background: transparent; font-family: inherit; }
+    .period-tab.active { background: #1e1e2e; color: #a5b4fc; }
+
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 3000; transition: all 0.3s; transform: translateY(80px); opacity: 0; font-family: inherit; pointer-events: none; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #052e16; border: 1px solid #166534; color: #4ade80; }
+    .toast.error { background: #2d0a0a; border: 1px solid #7f1d1d; color: #f87171; }
+
+    @media (max-width: 600px) {
+      .layout { padding: 16px 14px 80px; }
+      .class-card-header { flex-direction: column; gap: 10px; }
+      .status-btns { flex-wrap: wrap; }
+      .comment-area, .sessions-list { padding-left: 20px; }
+      .header-inner { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-icon">🎓</div>
+    <div class="login-title">Equipe Pedagógica</div>
+    <div class="login-subtitle">Entre com seu número de telefone cadastrado para registrar sua presença nas aulas.</div>
+    <label class="login-label">Telefone</label>
+    <input class="login-field" id="login-phone" type="tel" placeholder="5511999999999" autocomplete="tel" inputmode="numeric">
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+    <div class="login-hint">Use o número no formato internacional sem espaços ou traços.<br>Ex: 5511999999999</div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header" id="main-header" style="display:none">
+  <div class="header-inner">
+    <div class="header-icon">🎓</div>
+    <div class="header-info">
+      <h1>Equipe Pedagógica</h1>
+      <p>Registro de presença e comentários</p>
+    </div>
+    <div class="header-user">
+      <div>
+        <div class="user-name" id="user-name-display">—</div>
+        <div style="text-align:right;margin-top:2px"><span class="user-role" id="user-role-display">—</span></div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="layout" id="main-layout" style="display:none">
+
+  <div class="period-tabs">
+    <button class="period-tab active" id="tab-upcoming" onclick="setTab('upcoming')">Próximas</button>
+    <button class="period-tab" id="tab-past" onclick="setTab('past')">Histórico</button>
+  </div>
+
+  <div id="classes-container">
+    <div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Carregando...</div></div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://gpufcipkajppykmnmdeh.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentMentor = null;
+let myClasses = [];
+let attendanceMap = {}; // key: classId_sessionDate → record
+let currentTab = 'upcoming';
+
+// ── HELPERS ──────────────────────────────────────────────────────────
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function generateDates(startStr, endStr, weekday) {
+  const dates = [];
+  const start = new Date(startStr + 'T00:00:00');
+  const end   = new Date(endStr   + 'T00:00:00');
+  const d = new Date(start);
+  while (d.getDay() !== weekday) d.setDate(d.getDate() + 1);
+  while (d <= end) { dates.push(d.toISOString().split('T')[0]); d.setDate(d.getDate() + 7); }
+  return dates;
+}
+
+function fmtDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────────
+async function doLogin() {
+  const raw = document.getElementById('login-phone').value.trim().replace(/\D/g, '');
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-error');
+  if (!raw) { showLoginError('Informe o número de telefone.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
+  err.classList.remove('show');
+
+  const { data, error } = await sb.from('mentors').select('*').eq('phone', raw).eq('active', true).single();
+
+  if (error || !data) {
+    showLoginError('Telefone não encontrado. Verifique o número ou entre em contato com a equipe.');
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+    return;
+  }
+
+  currentMentor = data;
+  localStorage.setItem('equipe_mentor_id', data.id);
+  localStorage.setItem('equipe_mentor_name', data.name);
+  localStorage.setItem('equipe_mentor_role', data.role);
+  localStorage.setItem('equipe_mentor_phone', raw);
+
+  startApp();
+}
+
+function showLoginError(msg) {
+  const err = document.getElementById('login-error');
+  err.textContent = msg;
+  err.classList.add('show');
+}
+
+function doLogout() {
+  localStorage.removeItem('equipe_mentor_id');
+  localStorage.removeItem('equipe_mentor_name');
+  localStorage.removeItem('equipe_mentor_role');
+  localStorage.removeItem('equipe_mentor_phone');
+  currentMentor = null;
+  myClasses = [];
+  attendanceMap = {};
+  document.getElementById('main-header').style.display = 'none';
+  document.getElementById('main-layout').style.display = 'none';
+  document.getElementById('login-overlay').classList.remove('hidden');
+  document.getElementById('login-phone').value = '';
+  document.getElementById('login-error').classList.remove('show');
+  document.getElementById('login-btn').disabled = false;
+  document.getElementById('login-btn').textContent = 'Entrar';
+}
+
+// ── APP START ─────────────────────────────────────────────────────────
+async function startApp() {
+  document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('main-header').style.display = 'block';
+  document.getElementById('main-layout').style.display = 'block';
+
+  const roleLabel = { Professor: 'Professor', Host: 'Host', Both: 'Professor & Host', Mentor: 'Mentor' };
+  document.getElementById('user-name-display').textContent = currentMentor.name;
+  document.getElementById('user-role-display').textContent = roleLabel[currentMentor.role] || currentMentor.role;
+
+  await loadMyClasses();
+}
+
+async function loadMyClasses() {
+  document.getElementById('classes-container').innerHTML =
+    '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Carregando aulas...</div></div>';
+
+  // Load class_mentors for this mentor
+  const { data: cmRows } = await sb
+    .from('class_mentors')
+    .select('class_id, role, weekday')
+    .eq('mentor_id', currentMentor.id);
+
+  if (!cmRows || cmRows.length === 0) {
+    document.getElementById('classes-container').innerHTML =
+      '<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Nenhuma aula vinculada ao seu perfil.</div></div>';
+    return;
+  }
+
+  const classIds = [...new Set(cmRows.map(r => r.class_id))];
+
+  // Load classes
+  const { data: classes } = await sb
+    .from('classes')
+    .select('*')
+    .in('id', classIds)
+    .eq('active', true)
+    .order('start_date');
+
+  myClasses = (classes || []).map(c => {
+    const myRows = cmRows.filter(r => r.class_id === c.id);
+    const weekdays = [...new Set(myRows.map(r => r.weekday ?? c.weekday).filter(w => w != null))];
+    const myRole = myRows[0]?.role || 'Professor';
+    const allDates = [];
+    for (const wd of weekdays) {
+      allDates.push(...generateDates(c.start_date, c.end_date, wd));
+    }
+    allDates.sort();
+    return { ...c, _weekdays: weekdays, _myRole: myRole, _allDates: allDates };
+  });
+
+  // Load my attendance records
+  const { data: attRows } = await sb
+    .from('mentor_attendance')
+    .select('*')
+    .eq('mentor_id', currentMentor.id)
+    .in('class_id', classIds);
+
+  attendanceMap = {};
+  for (const row of (attRows || [])) {
+    attendanceMap[`${row.class_id}_${row.session_date}`] = row;
+  }
+
+  renderClasses();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────
+function setTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-upcoming').classList.toggle('active', tab === 'upcoming');
+  document.getElementById('tab-past').classList.toggle('active', tab === 'past');
+  renderClasses();
+}
+
+function renderClasses() {
+  const todayStr = today();
+  const container = document.getElementById('classes-container');
+
+  // Filter sessions by tab
+  const items = []; // { class, sessionDate }
+  for (const c of myClasses) {
+    for (const d of c._allDates) {
+      if (currentTab === 'upcoming' && d >= todayStr) items.push({ cls: c, date: d });
+      if (currentTab === 'past'     && d <  todayStr) items.push({ cls: c, date: d });
+    }
+  }
+
+  if (currentTab === 'past') items.reverse();
+
+  if (items.length === 0) {
+    container.innerHTML = `<div class="empty"><div class="empty-icon">${currentTab === 'upcoming' ? '🎉' : '📋'}</div><div class="empty-text">${currentTab === 'upcoming' ? 'Nenhuma aula futura.' : 'Nenhuma aula passada.'}</div></div>`;
+    return;
+  }
+
+  // Group by class
+  const byClass = {};
+  for (const item of items) {
+    if (!byClass[item.cls.id]) byClass[item.cls.id] = { cls: item.cls, dates: [] };
+    byClass[item.cls.id].dates.push(item.date);
+  }
+
+  container.innerHTML = Object.values(byClass).map(({ cls, dates }) => {
+    const color = cls.color || '#6366f1';
+    const roleLabel = cls._myRole || 'Professor';
+
+    const sessionsHtml = dates.slice(0, currentTab === 'upcoming' ? 6 : 10).map(dateStr => {
+      const key = `${cls.id}_${dateStr}`;
+      const att = attendanceMap[key];
+      const isToday = dateStr === today();
+      const dateClass = isToday ? 'session-today' : (dateStr > today() ? 'session-future' : 'session-past');
+      const statusBadge = att
+        ? (att.status === 'present'
+            ? '<span style="font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(34,197,94,0.12);color:#4ade80;font-weight:700;border:1px solid rgba(34,197,94,0.2)">✓ Presente</span>'
+            : '<span style="font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(239,68,68,0.12);color:#f87171;font-weight:700;border:1px solid rgba(239,68,68,0.2)">✗ Falta</span>')
+        : '<span style="font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(102,102,102,0.08);color:#444;font-weight:700;border:1px solid #1a1a1a">Pendente</span>';
+
+      const commentPreview = att?.comment
+        ? `<span style="font-size:11px;color:#444;font-style:italic;margin-left:8px">"${att.comment}"</span>`
+        : '';
+
+      return `<div class="session-date-row" id="row-${cls.id}-${dateStr}">
+        <span class="session-date ${dateClass}">${fmtDate(dateStr)}${isToday ? ' <span style="font-size:9px;color:#6366f1;font-weight:800">HOJE</span>' : ''}</span>
+        <span id="badge-${cls.id}-${dateStr}">${statusBadge}</span>
+        ${commentPreview ? `<span id="cmt-preview-${cls.id}-${dateStr}">${commentPreview}</span>` : `<span id="cmt-preview-${cls.id}-${dateStr}"></span>`}
+        <button
+          onclick="openCheckIn('${cls.id}','${dateStr}','${color}')"
+          style="margin-left:auto;font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid #222;background:#141414;color:#555;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap"
+        >${att ? 'Editar' : 'Check'}</button>
+      </div>`;
+    }).join('');
+
+    const moreDates = dates.length > (currentTab === 'upcoming' ? 6 : 10);
+
+    return `<div class="class-card">
+      <div class="class-card-header">
+        <div class="class-color-bar" style="background:${color}"></div>
+        <div class="class-info">
+          <div class="class-name">${cls.name}</div>
+          <div class="class-meta">
+            <span>📅 ${new Date(cls.start_date+'T00:00:00').toLocaleDateString('pt-BR')} – ${new Date(cls.end_date+'T00:00:00').toLocaleDateString('pt-BR')}</span>
+            <span>🕐 ${cls.time_start || '—'}–${cls.time_end || '—'}</span>
+            <span style="color:${color};font-weight:700">${roleLabel}</span>
+          </div>
+        </div>
+      </div>
+      <div class="sessions-list">
+        <div style="font-size:10px;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">
+          ${currentTab === 'upcoming' ? 'Próximas aulas' : 'Aulas anteriores'} (${dates.length} total)
+        </div>
+        ${sessionsHtml}
+        ${moreDates ? `<div style="font-size:11px;color:#333;margin-top:8px;text-align:center">+ ${dates.length - (currentTab === 'upcoming' ? 6 : 10)} mais…</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── CHECK-IN MODAL ────────────────────────────────────────────────────
+let _checkClassId = null, _checkDate = null;
+
+function openCheckIn(classId, dateStr, color) {
+  _checkClassId = classId;
+  _checkDate = dateStr;
+
+  const key = `${classId}_${dateStr}`;
+  const att = attendanceMap[key];
+  const cls = myClasses.find(c => c.id === classId);
+
+  // Build modal
+  const existing = document.getElementById('checkin-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'checkin-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)';
+  modal.innerHTML = `
+    <div style="background:#111;border:1px solid #222;border-radius:16px;padding:28px;max-width:460px;width:100%;position:relative">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <div style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0"></div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#fff">${cls?.name || ''}</div>
+          <div style="font-size:12px;color:#555;margin-top:2px">${fmtDate(dateStr)}</div>
+        </div>
+        <button onclick="closeCheckIn()" style="margin-left:auto;background:#1a1a1a;border:1px solid #222;border-radius:6px;color:#555;cursor:pointer;padding:5px 10px;font-size:12px;font-family:inherit">✕ Fechar</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">Confirmar presença</div>
+      <div style="display:flex;gap:10px;margin-bottom:20px">
+        <button id="btn-present" onclick="selectStatus('present')"
+          style="flex:1;padding:14px;border-radius:10px;border:2px solid ${att?.status==='present' ? 'rgba(34,197,94,0.5)' : '#222'};background:${att?.status==='present' ? 'rgba(34,197,94,0.1)' : '#141414'};color:${att?.status==='present' ? '#4ade80' : '#555'};font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;transition:all 0.15s">
+          <span style="font-size:22px">✓</span>Presente
+        </button>
+        <button id="btn-absent" onclick="selectStatus('absent')"
+          style="flex:1;padding:14px;border-radius:10px;border:2px solid ${att?.status==='absent' ? 'rgba(239,68,68,0.5)' : '#222'};background:${att?.status==='absent' ? 'rgba(239,68,68,0.1)' : '#141414'};color:${att?.status==='absent' ? '#f87171' : '#555'};font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;transition:all 0.15s">
+          <span style="font-size:22px">✗</span>Falta
+        </button>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">
+          Comentário <span style="color:#333;font-weight:400;text-transform:none;letter-spacing:0">(opcional)</span>
+        </div>
+        <textarea id="checkin-comment" placeholder="Ex: Não vou poder comparecer pois estou viajando…"
+          style="width:100%;padding:10px 14px;border-radius:8px;background:#0a0a0a;border:1px solid #1a1a1a;color:#ccc;font-size:13px;font-family:inherit;resize:vertical;min-height:80px;outline:none"
+        >${att?.comment || ''}</textarea>
+      </div>
+
+      <button id="checkin-save-btn" onclick="saveCheckIn()"
+        style="width:100%;padding:12px;border-radius:8px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;opacity:${att ? '1' : '0.5'}"
+        ${!att ? 'disabled' : ''}
+      >Salvar</button>
+    </div>`;
+
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeCheckIn(); });
+
+  // Pre-select if existing
+  if (att) _selectedStatus = att.status;
+  else _selectedStatus = null;
+}
+
+let _selectedStatus = null;
+
+function selectStatus(status) {
+  _selectedStatus = status;
+  const pBtn = document.getElementById('btn-present');
+  const aBtn = document.getElementById('btn-absent');
+  const saveBtn = document.getElementById('checkin-save-btn');
+
+  if (status === 'present') {
+    pBtn.style.border = '2px solid rgba(34,197,94,0.5)';
+    pBtn.style.background = 'rgba(34,197,94,0.1)';
+    pBtn.style.color = '#4ade80';
+    aBtn.style.border = '2px solid #222';
+    aBtn.style.background = '#141414';
+    aBtn.style.color = '#555';
+  } else {
+    aBtn.style.border = '2px solid rgba(239,68,68,0.5)';
+    aBtn.style.background = 'rgba(239,68,68,0.1)';
+    aBtn.style.color = '#f87171';
+    pBtn.style.border = '2px solid #222';
+    pBtn.style.background = '#141414';
+    pBtn.style.color = '#555';
+  }
+  saveBtn.disabled = false;
+  saveBtn.style.opacity = '1';
+}
+
+function closeCheckIn() {
+  const modal = document.getElementById('checkin-modal');
+  if (modal) modal.remove();
+  _checkClassId = null; _checkDate = null; _selectedStatus = null;
+}
+
+async function saveCheckIn() {
+  if (!_selectedStatus) return;
+  const comment = (document.getElementById('checkin-comment').value || '').trim();
+  const btn = document.getElementById('checkin-save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+
+  const key = `${_checkClassId}_${_checkDate}`;
+  const existing = attendanceMap[key];
+
+  let error;
+  if (existing) {
+    const { error: e } = await sb.from('mentor_attendance')
+      .update({ status: _selectedStatus, comment: comment || null, updated_at: new Date().toISOString() })
+      .eq('id', existing.id);
+    error = e;
+    if (!e) attendanceMap[key] = { ...existing, status: _selectedStatus, comment: comment || null };
+  } else {
+    const { data, error: e } = await sb.from('mentor_attendance')
+      .insert({ mentor_id: currentMentor.id, class_id: _checkClassId, session_date: _checkDate, status: _selectedStatus, comment: comment || null })
+      .select().single();
+    error = e;
+    if (!e) attendanceMap[key] = data;
+  }
+
+  if (error) {
+    showToast('Erro ao salvar: ' + error.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Salvar';
+    return;
+  }
+
+  showToast(_selectedStatus === 'present' ? '✓ Presença confirmada!' : '✗ Falta registrada!', 'success');
+  closeCheckIn();
+  renderClasses();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+(async function init() {
+  const savedId    = localStorage.getItem('equipe_mentor_id');
+  const savedName  = localStorage.getItem('equipe_mentor_name');
+  const savedRole  = localStorage.getItem('equipe_mentor_role');
+  const savedPhone = localStorage.getItem('equipe_mentor_phone');
+
+  if (savedId && savedName) {
+    // Re-validate against DB
+    const { data } = await sb.from('mentors').select('*').eq('id', savedId).eq('active', true).single();
+    if (data) {
+      currentMentor = data;
+      startApp();
+      return;
+    }
+    doLogout();
+  }
+})();
+</script>
+</body>
+</html>
