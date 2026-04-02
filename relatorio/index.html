@@ -611,11 +611,12 @@ function renderMemberView() {
     return;
   }
 
-  // Group by mentor
+  // Group by mentor — use name as fallback key for legacy records without mentor_id
   const byMentor = {};
   for (const r of filtered) {
-    if (!byMentor[r.mentor_id]) byMentor[r.mentor_id] = { name: r.mentor_name, role: r.mentor_role, records: [] };
-    byMentor[r.mentor_id].records.push(r);
+    const key = r.mentor_id ?? `name:${r.mentor_name}`;
+    if (!byMentor[key]) byMentor[key] = { name: r.mentor_name, role: r.mentor_role, records: [] };
+    byMentor[key].records.push(r);
   }
 
   const sortedMentors = Object.entries(byMentor).sort((a, b) => a[1].name.localeCompare(b[1].name));
