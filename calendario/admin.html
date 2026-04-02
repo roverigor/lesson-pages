@@ -1458,26 +1458,36 @@ function editStaff(id) {
 }
 
 async function saveStaff() {
-  const id = document.getElementById('staff-edit-id').value;
-  const name = document.getElementById('staff-name').value.trim();
-  const email = document.getElementById('staff-email').value.trim();
-  const phone = document.getElementById('staff-phone').value.trim();
+  const id       = document.getElementById('staff-edit-id').value;
+  const name     = document.getElementById('staff-name').value.trim();
+  const email    = document.getElementById('staff-email').value.trim();
+  const rawPhone = document.getElementById('staff-phone').value.trim().replace(/\D/g, '');
   const category = document.getElementById('staff-category').value;
 
   if (!name) { showToast('Nome é obrigatório', 'error'); return; }
 
-  const record = { name, email: email || null, phone: phone || null, category };
+  const staffRecord  = { name, email: email || null, phone: rawPhone || null, category };
+  const mentorRole   = category === 'Host' ? 'Host' : category === 'Mentor' ? 'Mentor' : 'Professor';
+  const mentorRecord = { name, phone: rawPhone || null, role: mentorRole, active: true };
 
+  // ── Salva em staff ──
   if (id) {
-    const { error } = await sb.from('staff').update(record).eq('id', id);
+    const { error } = await sb.from('staff').update(staffRecord).eq('id', id);
     if (error) { showToast('Erro: ' + error.message, 'error'); return; }
-    showToast('Cadastro atualizado!', 'success');
   } else {
-    const { error } = await sb.from('staff').insert(record);
+    const { error } = await sb.from('staff').insert(staffRecord);
     if (error) { showToast('Erro: ' + error.message, 'error'); return; }
-    showToast('Cadastro criado!', 'success');
   }
 
+  // ── Sincroniza com mentors via RPC (nunca sobrescreve password_hash) ──
+  if (rawPhone) {
+    await sb.rpc('upsert_mentor_from_staff', { p_name: name, p_phone: rawPhone, p_role: mentorRole });
+  } else {
+    const { data: existing } = await sb.from('mentors').select('id').eq('name', name).single();
+    if (existing) await sb.from('mentors').update({ name, role: mentorRole }).eq('id', existing.id);
+  }
+
+  showToast(id ? 'Cadastro atualizado!' : 'Membro adicionado!', 'success');
   closeStaffForm();
   await loadStaff();
 }
