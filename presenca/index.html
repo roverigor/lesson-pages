@@ -446,15 +446,27 @@ function showMeetingDetail(meetingId) {
   }).join('');
 
   const unlinkedRows = unlinked.map(p => {
-    return `<div class="modal-link-row" id="modal-link-row-${p.id}">
-      <div class="modal-link-name" title="${p.participant_name || ''}">${p.participant_name || '—'}</div>
-      <input type="text" id="modal-picker-input-${p.id}" autocomplete="off"
-        placeholder="Buscar aluno..."
-        class="modal-link-input"
-        oninput="filterModalPicker('${p.id}', this)"
-        onfocus="filterModalPicker('${p.id}', this)">
-      <input type="hidden" id="modal-match-${p.id}" value="">
-      <button class="modal-link-btn" onclick="linkFromModal('${p.id}')">Vincular</button>
+    const safeName = (p.participant_name || '').replace(/'/g, "&#39;").replace(/"/g, '&quot;');
+    return `<div class="modal-link-row" id="modal-link-row-${p.id}" style="flex-direction:column;align-items:stretch;gap:6px;padding:12px 0">
+      <div style="font-size:13px;font-weight:600;color:#aaa;padding:0 2px">${p.participant_name || '—'}</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input type="text" id="modal-picker-input-${p.id}" autocomplete="off"
+          placeholder="Buscar aluno pelo nome..."
+          class="modal-link-input"
+          oninput="filterModalPicker('${p.id}', this)"
+          onfocus="filterModalPicker('${p.id}', this)">
+        <input type="hidden" id="modal-match-${p.id}" value="">
+        <button class="modal-link-btn" onclick="linkFromModal('${p.id}')">Vincular</button>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="font-size:10px;color:#3a3a3a;flex-shrink:0">ou telefone</span>
+        <input type="tel" id="modal-phone-${p.id}" autocomplete="off"
+          placeholder="5543999... (só números)"
+          style="flex:1;padding:6px 10px;background:#0a0a0a;border:1px solid #1e1e1e;border-radius:6px;color:#bbb;font-size:12px;font-family:inherit;outline:none;min-width:0"
+          onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#1e1e1e'">
+        <button class="modal-link-btn" style="border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.08);color:#4ade80"
+          onclick="registerAndLink('${p.id}', '${safeName}', 'modal-phone-${p.id}', 'modal-link-row-${p.id}', ${JSON.stringify(m.cohort_id||null)})">Cadastrar e vincular</button>
+      </div>
     </div>`;
   }).join('');
 
@@ -557,6 +569,77 @@ async function linkFromModal(participantId) {
 
 function closeModal() { document.getElementById('modal').classList.remove('show'); }
 
+// ─── REGISTER AND LINK (phone fallback) ───
+function _normalizePhone(raw) {
+  // Strip everything except digits
+  let d = (raw || '').replace(/\D/g, '');
+  // If starts with 0, remove it
+  if (d.startsWith('0')) d = d.slice(1);
+  // If Brazilian number without country code (10 or 11 digits), prepend 55
+  if (d.length === 10 || d.length === 11) d = '55' + d;
+  return d;
+}
+
+async function registerAndLink(participantId, participantName, phoneInputId, rowElId, cohortId) {
+  const phoneEl = document.getElementById(phoneInputId);
+  if (!phoneEl) return;
+  const raw = phoneEl.value.trim();
+  if (!raw) { showToast('Informe o telefone', 'error'); return; }
+
+  const phone = _normalizePhone(raw);
+  if (phone.length < 10) { showToast('Telefone inválido — mínimo 10 dígitos', 'error'); return; }
+
+  // 1. Try to find existing student by normalized phone (also try without country code)
+  const phoneVariants = [phone, phone.replace(/^55/, '')];
+  let existingStudent = students.find(s => {
+    const sp = _normalizePhone(s.phone || '');
+    return phoneVariants.some(v => sp === v || sp.endsWith(v) || v.endsWith(sp));
+  });
+
+  // 2. If not in memory, query Supabase (might be inactive)
+  if (!existingStudent) {
+    const { data: found } = await sb.from('students')
+      .select('id, name, phone, cohort_id, cohorts(name)')
+      .or(`phone.eq.${phone},phone.eq.+${phone},phone.eq.${phone.slice(2)}`)
+      .limit(1)
+      .maybeSingle();
+    if (found) existingStudent = found;
+  }
+
+  let studentId;
+
+  if (existingStudent) {
+    // Found — just link
+    studentId = existingStudent.id;
+    showToast(`Encontrado: ${existingStudent.name || phone} — vinculando...`);
+  } else {
+    // Not found — create new student
+    const { data: created, error: createErr } = await sb.from('students')
+      .insert({ name: participantName || null, phone, active: true, is_mentor: false, cohort_id: cohortId || null })
+      .select('id')
+      .single();
+    if (createErr) { showToast('Erro ao cadastrar: ' + createErr.message, 'error'); return; }
+    studentId = created.id;
+    showToast(`Aluno cadastrado com telefone ${phone}`);
+  }
+
+  // 3. Link participant
+  const { error: linkErr } = await sb.from('zoom_participants')
+    .update({ student_id: studentId, matched: true })
+    .eq('id', participantId);
+
+  if (linkErr) { showToast('Erro ao vincular: ' + linkErr.message, 'error'); return; }
+
+  showToast('Vinculado com sucesso!');
+
+  // Remove row if we have a rowElId (modal) or just reload
+  if (rowElId) {
+    const row = document.getElementById(rowElId);
+    if (row) row.remove();
+  }
+  loadAllData();
+}
+
 // ─── STUDENTS TAB ───
 function renderStudents() {
   const body = document.getElementById('students-body');
@@ -621,7 +704,7 @@ function renderUnmatched() {
       if (p.matched) continue;
       const name = (p.participant_name || '').toLowerCase();
       if (name.includes('notetaker') || name.includes('fathom') || name.includes('read.ai') || name.includes('fireflies') || name.includes('otter')) continue;
-      unmatched.push({ ...p, meetingTopic: m.topic, meetingDate: m.start_time });
+      unmatched.push({ ...p, meetingTopic: m.topic, meetingDate: m.start_time, meetingCohortId: m.cohort_id || null });
     }
   }
 
@@ -637,17 +720,31 @@ function renderUnmatched() {
   }
 
   body.innerHTML = filtered.slice(0, 100).map(p => {
+    const safeName = (p.participant_name || '').replace(/'/g, "&#39;").replace(/"/g, '&quot;');
+    const cohortArg = JSON.stringify(p.meetingCohortId || null);
     return `<tr>
-      <td style="font-weight:600;color:#ddd">${p.participant_name || '—'}</td>
+      <td style="font-weight:600;color:#ddd;vertical-align:top;padding-top:14px">${p.participant_name || '—'}</td>
       <td>
-        <input type="text" id="picker-input-${p.id}" autocomplete="off"
-          placeholder="Buscar por nome ou telefone..."
-          style="width:100%;min-width:200px;padding:6px 10px;background:#111;border:1px solid #2a2a2a;border-radius:6px;color:#ddd;font-size:12px;font-family:inherit;outline:none"
-          oninput="filterStudentPicker('${p.id}', this)"
-          onfocus="filterStudentPicker('${p.id}', this)">
-        <input type="hidden" id="match-${p.id}" value="">
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+          <input type="text" id="picker-input-${p.id}" autocomplete="off"
+            placeholder="Buscar por nome ou telefone..."
+            style="flex:1;min-width:160px;padding:6px 10px;background:#111;border:1px solid #2a2a2a;border-radius:6px;color:#ddd;font-size:12px;font-family:inherit;outline:none"
+            oninput="filterStudentPicker('${p.id}', this)"
+            onfocus="filterStudentPicker('${p.id}', this)">
+          <input type="hidden" id="match-${p.id}" value="">
+          <button class="btn sm" onclick="linkParticipant('${p.id}')">Vincular</button>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="font-size:10px;color:#333;flex-shrink:0">ou telefone</span>
+          <input type="tel" id="phone-${p.id}" autocomplete="off"
+            placeholder="5543999... (só números)"
+            style="flex:1;min-width:120px;padding:5px 8px;background:#0a0a0a;border:1px solid #1e1e1e;border-radius:6px;color:#bbb;font-size:12px;font-family:inherit;outline:none"
+            onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#1e1e1e'">
+          <button class="btn sm" style="border-color:rgba(16,185,129,0.3);color:#4ade80;background:rgba(16,185,129,0.06)"
+            onclick="registerAndLink('${p.id}', '${safeName}', 'phone-${p.id}', null, ${cohortArg})">Cadastrar e vincular</button>
+        </div>
       </td>
-      <td><button class="btn sm" onclick="linkParticipant('${p.id}')">Vincular</button></td>
+      <td></td>
     </tr>`;
   }).join('');
 }
