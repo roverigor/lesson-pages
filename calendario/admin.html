@@ -1927,6 +1927,7 @@ async function saveClassV2() {
   showToast(id ? 'Turma atualizada!' : 'Turma criada!', 'success');
   closeClassForm();
   await loadClasses();
+  renderAll(); // atualiza calendário com novos professores/mentores/hosts
 }
 
 async function deleteClass(id, name) {
@@ -1936,6 +1937,7 @@ async function deleteClass(id, name) {
   if (error) { showToast('Erro: ' + error.message, 'error'); return; }
   showToast(`Turma ${name} removida`, 'success');
   await loadClasses();
+  renderAll(); // atualiza calendário após exclusão
 }
 
 function renderReport() {
