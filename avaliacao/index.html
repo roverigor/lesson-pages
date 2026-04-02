@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Avaliação das Turmas · Academia Lendária</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0a0a; color: #e5e5e5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+    .header { background: #111; border-bottom: 1px solid #1a1a1a; padding: 20px 24px; display: flex; align-items: center; gap: 12px; }
+    .header-title { font-size: 18px; font-weight: 800; color: #fff; }
+    .header-sub { font-size: 12px; color: #555; margin-top: 2px; }
+
+    .container { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; }
+
+    .section-title { font-size: 11px; font-weight: 700; color: #444; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 16px; margin-top: 32px; }
+
+    /* OVERVIEW GRID */
+    .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 8px; }
+    .ov-card { background: #111; border: 1px solid #1a1a1a; border-radius: 12px; padding: 18px 20px; cursor: pointer; transition: border-color .15s; }
+    .ov-card:hover { border-color: #333; }
+    .ov-card.active { border-color: var(--c); }
+    .ov-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); display: inline-block; margin-right: 6px; }
+    .ov-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+    .ov-score { font-size: 32px; font-weight: 800; color: var(--c); line-height: 1; }
+    .ov-score-label { font-size: 10px; color: #444; margin-top: 3px; }
+    .ov-meta { font-size: 11px; color: #555; margin-top: 8px; }
+    .score-bar { height: 3px; border-radius: 2px; background: #1a1a1a; margin-top: 8px; overflow: hidden; }
+    .score-bar-fill { height: 100%; border-radius: 2px; background: var(--c); transition: width .6s ease; }
+
+    /* TURMA DETAIL */
+    .turma-detail { display: none; margin-top: 8px; }
+    .turma-detail.visible { display: block; }
+    .detail-card { background: #111; border: 1px solid #1a1a1a; border-radius: 12px; padding: 20px; }
+    .detail-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .detail-tag { font-size: 10px; padding: 3px 9px; border-radius: 999px; font-weight: 700; }
+
+    /* METRICS ROW */
+    .metrics-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    .metric-pill { background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 8px; padding: 10px 14px; flex: 1; min-width: 110px; }
+    .metric-pill-label { font-size: 10px; color: #555; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+    .metric-pill-val { font-size: 22px; font-weight: 800; margin-top: 2px; }
+
+    /* SESSIONS TABLE */
+    .sessions-title { font-size: 11px; font-weight: 700; color: #444; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
+    .session-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #141414; }
+    .session-row:last-child { border-bottom: none; }
+    .session-date { font-size: 12px; color: #888; min-width: 80px; font-weight: 600; }
+    .session-n { font-size: 11px; color: #444; min-width: 50px; }
+    .session-scores { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; }
+    .score-chip { font-size: 11px; padding: 3px 8px; border-radius: 5px; font-weight: 700; white-space: nowrap; }
+    .score-chip.high  { background: rgba(74,222,128,.12); color: #4ade80; }
+    .score-chip.mid   { background: rgba(245,158,11,.12); color: #f59e0b; }
+    .score-chip.low   { background: rgba(239,68,68,.12); color: #f87171; }
+    .session-salas { font-size: 10px; color: #444; }
+
+    /* COMMENTS */
+    .comments-toggle { background: none; border: 1px solid #1e1e1e; color: #666; font-size: 11px; padding: 5px 12px; border-radius: 6px; cursor: pointer; margin-top: 16px; }
+    .comments-toggle:hover { border-color: #333; color: #999; }
+    .comments-list { margin-top: 12px; display: none; }
+    .comments-list.open { display: block; }
+    .comment-item { background: #0d0d0d; border-left: 2px solid #222; padding: 10px 14px; margin-bottom: 8px; border-radius: 0 6px 6px 0; font-size: 12px; color: #888; line-height: 1.6; }
+
+    /* SALAS BREAKDOWN (PS Advanced) */
+    .salas-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid #141414; }
+    .sala-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 9px; background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 999px; margin: 3px; }
+
+    /* SENTIMENT */
+    .sentiment-section { margin-top: 20px; padding-top: 18px; border-top: 1px solid #141414; }
+    .sentiment-bars { display: flex; gap: 10px; margin-bottom: 14px; align-items: flex-end; }
+    .sent-bar-wrap { flex: 1; text-align: center; }
+    .sent-bar-track { background: #0d0d0d; border-radius: 4px; height: 60px; position: relative; overflow: hidden; display: flex; align-items: flex-end; }
+    .sent-bar-fill { width: 100%; border-radius: 4px; transition: height .6s ease; }
+    .sent-bar-label { font-size: 10px; color: #555; margin-top: 5px; font-weight: 600; }
+    .sent-bar-pct { font-size: 13px; font-weight: 800; margin-top: 2px; }
+    .themes-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .theme-tag { font-size: 11px; padding: 3px 10px; border-radius: 999px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #aaa; display: flex; align-items: center; gap: 5px; }
+    .theme-count { background: #1a1a1a; border-radius: 999px; padding: 1px 6px; font-size: 10px; color: #555; font-weight: 700; }
+
+    @media (max-width: 600px) {
+      .overview-grid { grid-template-columns: 1fr 1fr; }
+      .metrics-row { gap: 6px; }
+      .metric-pill { min-width: 80px; padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">📊 Avaliações das Turmas</div>
+    <div class="header-sub">NPS · CSAT · Pronto-Socorro · Academia Lendária</div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="section-title">Visão geral por turma</div>
+
+  <div class="overview-grid" id="overview-grid"></div>
+
+  <div id="detail-ps-advanced"  class="turma-detail"></div>
+  <div id="detail-ps-fund-t1"   class="turma-detail"></div>
+  <div id="detail-ps-fund-t2"   class="turma-detail"></div>
+  <div id="detail-fund-t3"      class="turma-detail"></div>
+</div>
+
+<script>
+const SENTIMENT = {
+  "ps_advanced":  {"total":31,"positivo":17,"negativo":1,"neutro":13,"pct_positivo":55,"temas":{"Monitores / Equipe":15,"Dúvidas Resolvidas":11,"Ritmo / Tempo":4,"Resultados / Confiança":4,"Conteúdo / AIOX":3}},
+  "ps_fund_t1":   {"total":23,"positivo":14,"negativo":3,"neutro":6,"pct_positivo":61,"temas":{"Engajamento dos Alunos":5,"Resultados / Confiança":2,"Dúvidas Resolvidas":2,"Foco / Organização":1,"Conteúdo / AIOX":1}},
+  "ps_fund_t2":   {"total":23,"positivo":14,"negativo":3,"neutro":6,"pct_positivo":61,"temas":{"Engajamento dos Alunos":5,"Resultados / Confiança":2,"Dúvidas Resolvidas":2,"Foco / Organização":1,"Conteúdo / AIOX":1}},
+  "fund_t3":      {"total":18,"positivo":8,"negativo":0,"neutro":10,"pct_positivo":44,"temas":{"Didática / Clareza":5,"Ritmo / Tempo":4,"Monitores / Equipe":3,"Engajamento dos Alunos":2,"Resultados / Confiança":2}}
+};
+
+const DATA = {"ps_advanced":{"name":"PS Advanced","color":"#6366f1","type":"nps_ps","sessions":[{"date":"2026-02-17","n":3,"satisfacao":5.0,"duvidas":5.0,"dominio":5.0,"salas":{"Business":2,"Avançado":1},"comentarios":["Muitas trocas boas!!","JOÃO LOZANO 1.000","O João, eu brinco que, ele não responde uma dúvida. Ele dá uma aula. E às vezes, dá aquele passo para trás na pergunta (mesmo que você já saiba sobre o ponto que ele está falando neste passo), para então darmos juntos 10 passos pra frente. E isso acaba não só ajudando a quem pergunta, mas a quem não pergunta e consegue gerar um contexto e, muitas das vezes, uma nova camada de conhecimento."]},{"date":"2026-02-20","n":13,"satisfacao":4.92,"duvidas":4.54,"dominio":5.0,"salas":{"Fundamentos":2,"Avançado":1},"comentarios":["Time com muita experiência prática","Super produtivo e profissional","José Amorin simplesmente sensacional como sempre. Os outros tambem","foi ótimo o bate papo, ainda falta tempo para chegar nas duvidas que estão aparecendo, logo deve chegar o momento","Esclareceu dúvidas, deu idéias, forneceu ferramentas, deu insights. Show!","Domínio do conteúdo, segurança e excelente didádica do Zé e do Talles! Foi muito bom!","Monitores ok, o pessoal é que mais desabafou do que produziu.","Uma dúvida ainda latente é como monetizar aquilo que já conseguimos fazer com o AIOS, mas não pode sair do AIOS...","Muitos insights para monetizar. José e Talles são tops!!","Hoje foi um pouco mais leve. Senti que boa parte do grupo ainda está com um pouco de dificuldade em absorver mas vejo que é uma questão de tempo pra 'entrar no sangue'. Estou muito confiante no AIOS.","Gostaria que o monitor ou o aluno mostrasse sua tela para explicar como resolver as dúvidas técnicas."]},{"date":"2026-02-21","n":1,"satisfacao":4.0,"duvidas":5.0,"dominio":4.0,"salas":{"Avançado":1},"comentarios":[]},{"date":"2026-02-24","n":9,"satisfacao":4.78,"duvidas":5.0,"dominio":5.0,"salas":{},"comentarios":["Respondeu minha duvida","Conseguir tirar minhas dúvidas.","Muito tempo perdido com dúvidas básicas. Talvez encaminhar usuário para um material de FAQ.","Bastante dúvidas resolvidas. Day e Talles sempre mandando bem.","Aprendi muito com as duvidas apresentadas por alguns alunos e com as demonstrações do Talles e as explicações da Day"]},{"date":"2026-03-06","n":4,"satisfacao":5.0,"duvidas":5.0,"dominio":5.0,"salas":{},"comentarios":["Temas abordados pelos integrantes tiveram orientações muito claras sobre como desenvolver com o framework AIOX.","na geral ajudou minha decisão de seguir com consultoria estratégica ia, e SDR, CRM.","Vejo que o pessoal está naturalmente entendendo melhor como é importante melhorar a documentação antes de implementar. Adavio e Talles mandam muito bem."]},{"date":"2026-03-10","n":6,"satisfacao":5.0,"duvidas":5.0,"dominio":5.0,"salas":{"Business":5},"comentarios":["Muitas idéias e sugestões valiosas","Day, Klaus e Érika fantásticos nos insights","Muito insites valiosos dos coordenadores Day, Klaus e Érica e dos participantes! Valeu muito!","Day, Klaus e Erica foram pivotais em atender dúvidas. Entrega sempre maior do que foi pedido! É nítida a cultura de excelência impregnada em todos os ambientes da AL. Nota 1000!"]},{"date":"2026-03-20","n":5,"satisfacao":5.0,"duvidas":5.0,"dominio":5.0,"salas":{},"comentarios":["Adavia como sempre deu show, parabens!","show, muito bom o PS","Adávio!! Muito atencioso. Dúvidas tiradas pertinentes ao atual momento AIOX, OpenClaw!! Docker; Super Adávio","Adavio tem uma didática excepcional e muito interesse em ajudar o aluno. Hoje foi um PS com muito aprendizado! Gratidão 🙏"]},{"date":"2026-03-27","n":1,"satisfacao":5.0,"duvidas":5.0,"dominio":5.0,"salas":{},"comentarios":["Muitas experiências de devs são sempre importantes."]}],"metrics":["satisfacao","duvidas","dominio"],"labels":{"satisfacao":"Satisfação","duvidas":"Dúvidas Resolvidas","dominio":"Domínio do Monitor"}},"ps_fund_t1":{"name":"PS Fundamentals T1","color":"#10b981","type":"nps_ps","sessions":[{"date":"2026-02-13","n":9,"nps":4.89,"clareza":4.67,"confianca":4.89,"duvidas":4.67,"dominio":4.78,"comentarios":["Para mim está ótimo, estou aprendendo com as duvidas de outros colegas.","Estamos muito no início mas a aula e a turma são ótimas. Uma verdadeira comunidade familiar em busca de conhecimento.","Sensacional!","O Grupo (alunos) ainda esta muito desnivelado.","Faltou a solução para um problema que muitos enfrentaram: não conseguir fixar a statusline no terminal."]},{"date":"2026-02-14","n":2,"nps":3.5,"clareza":3.5,"confianca":3.5,"duvidas":3.0,"dominio":3.5,"comentarios":["PS muito bagunçado. Demorou 15 min para iniciar seriamente. Falta total de foco. Uma hora falam que são dúvidas da aula anterior, aí já começam a viajar com outros temas. Os próprios mentores já deveriam saber os temas da aula anterior para que o PS não saia do foco."]},{"date":"2026-02-18","n":1,"nps":5.0,"clareza":5.0,"confianca":5.0,"duvidas":5.0,"dominio":5.0,"comentarios":["Por enquanto tudo certo."]},{"date":"2026-03-03","n":8,"nps":5.0,"clareza":5.0,"confianca":5.0,"duvidas":5.0,"dominio":5.0,"comentarios":["Nada! Os agentes desses nossos PSs são fenomenais. Parabéns e obrigada pela entrega!","Muito bom, várias dicas, ideias que ajudam bastante.","Hoje foi massa de mais! Muito aprendizado com as dicas e os erros e acertos dos outros.","O PS SALVA VIDAS !! Quero deixar meu agradecimento pela paciencia, conhecimento e atencao genuina."]},{"date":"2026-03-05","n":1,"nps":3.0,"clareza":3.0,"confianca":3.0,"duvidas":4.0,"dominio":3.0,"comentarios":["Melhor domínio sobre o assunto."]},{"date":"2026-03-13","n":1,"nps":5.0,"clareza":5.0,"confianca":5.0,"duvidas":5.0,"dominio":5.0,"comentarios":[]}],"metrics":["nps","clareza","confianca","duvidas","dominio"],"labels":{"nps":"Indicaria o PS","clareza":"Clareza","confianca":"Confiança","duvidas":"Dúvidas","dominio":"Domínio"}},"ps_fund_t2":{"name":"PS Fundamentals T2","color":"#f59e0b","type":"nps_ps","sessions":[{"date":"2026-03-03","n":2,"nps":5.0,"clareza":5.0,"confianca":4.5,"duvidas":5.0,"dominio":5.0,"comentarios":["Que todos os participantes permaneçam com os microfones desligados e só acionem após serem selecionados."]},{"date":"2026-03-13","n":1,"nps":5.0,"clareza":5.0,"confianca":5.0,"duvidas":5.0,"dominio":5.0,"comentarios":["Achei incrível tudo."]}],"metrics":["nps","clareza","confianca","duvidas","dominio"],"labels":{"nps":"Indicaria o PS","clareza":"Clareza","confianca":"Confiança","duvidas":"Dúvidas","dominio":"Domínio"}},"fund_t3":{"name":"CSAT · Cohort Fund T3","color":"#ec4899","type":"csat","sessions":[{"date":"2026-03-04","n":10,"clareza":4.7,"confianca":4.9,"comentarios":["Ser um pouco mais rapido!","Surreal a atenção do Adriano e alunos experientes… eu nunca programei na vida não sei nem pra onde anda kkk mais eles ensinam passo a passo","Mais tempo de aula.","por ser a primeira aula exige paciência dos participantes para todos estarem na mesma página","É muita novidade neste início, mas depois vai entrar no sangue e vai fluir bem. Aula excelente 👏🏼","Tentar passar a instalação antes e já ajustar no estilo plantão. Para nas aulas já começar a produzir"]},{"date":"2026-03-06","n":6,"clareza":4.83,"confianca":4.5,"comentarios":["Mais horas de aula.","A aula foi excelente! Professor Adriano explica com muita clareza e didática.","Estou com uma vontade imensa de aprender e estou achando tudo perfeito!","Acho que podemos focar mais no conteúdo do curso. Temos focado muito no potencial do AIOX.","aula show de bola...tudo perfeito"]},{"date":"2026-03-07","n":1,"clareza":5.0,"confianca":5.0,"comentarios":["Ser mais rápido na fala, fica mais dinâmico e produtivo na entrega da aula."]},{"date":"2026-03-14","n":1,"clareza":5.0,"confianca":4.0,"comentarios":["NADA. Pois a didática que o professor Adriano vem aplicando é excelente."]}],"metrics":["clareza","confianca"],"labels":{"clareza":"Clareza das Explicações","confianca":"Confiança para Aplicar"}}};
+
+const KEYS = ['ps_advanced','ps_fund_t1','ps_fund_t2','fund_t3'];
+const IDS  = {'ps_advanced':'detail-ps-advanced','ps_fund_t1':'detail-ps-fund-t1','ps_fund_t2':'detail-ps-fund-t2','fund_t3':'detail-fund-t3'};
+let activeKey = null;
+
+function scoreClass(v) {
+  if (v === null || v === undefined) return '';
+  return v >= 4.5 ? 'high' : v >= 3.5 ? 'mid' : 'low';
+}
+
+function avg(sessions, metric) {
+  const vals = sessions.map(s => s[metric]).filter(v => v !== null && v !== undefined);
+  return vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+}
+
+function mainMetric(key) {
+  const d = DATA[key];
+  return d.metrics[0];
+}
+
+function fmtDate(iso) {
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y.slice(2)}`;
+}
+
+function totalN(sessions) {
+  return sessions.reduce((a,s)=>a+s.n,0);
+}
+
+// ── OVERVIEW CARDS ────────────────────────────────────────────────
+function renderOverview() {
+  const grid = document.getElementById('overview-grid');
+  grid.innerHTML = KEYS.map(key => {
+    const d = DATA[key];
+    const m = mainMetric(key);
+    const score = avg(d.sessions, m);
+    const pct = score ? Math.round((score/5)*100) : 0;
+    const sc = scoreClass(score);
+    const colorMap = {high:'#4ade80', mid:'#f59e0b', low:'#f87171'};
+    const barColor = colorMap[sc] || d.color;
+    const typeLabel = d.type === 'csat' ? 'CSAT Aulas' : 'NPS Pronto-Socorro';
+    const n = totalN(d.sessions);
+    return `
+      <div class="ov-card" id="ov-${key}" style="--c:${d.color}" onclick="toggleDetail('${key}')">
+        <div class="ov-name"><span class="ov-dot"></span>${d.name}</div>
+        <div class="ov-score">${score !== null ? score.toFixed(2) : '—'}</div>
+        <div class="ov-score-label">${d.labels[m]} · média geral</div>
+        <div class="score-bar"><div class="score-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        <div class="ov-meta">${d.sessions.length} sessões · ${n} respostas · ${typeLabel}</div>
+      </div>`;
+  }).join('');
+}
+
+// ── TURMA DETAIL ──────────────────────────────────────────────────
+function renderDetail(key) {
+  const d = DATA[key];
+  const detailEl = document.getElementById(IDS[key]);
+
+  // Avg per metric
+  const metricsHtml = d.metrics.map(m => {
+    const a = avg(d.sessions, m);
+    const sc = scoreClass(a);
+    const colorMap = {high:'#4ade80', mid:'#f59e0b', low:'#f87171'};
+    const col = colorMap[sc] || d.color;
+    return `<div class="metric-pill">
+      <div class="metric-pill-label">${d.labels[m]}</div>
+      <div class="metric-pill-val" style="color:${col}">${a !== null ? a.toFixed(2) : '—'}</div>
+    </div>`;
+  }).join('');
+
+  // Sessions
+  const sessionsHtml = d.sessions.map(s => {
+    const scores = d.metrics.map(m => {
+      const v = s[m];
+      if (v === null || v === undefined) return '';
+      const sc = scoreClass(v);
+      return `<span class="score-chip ${sc}">${d.labels[m]}: ${v}</span>`;
+    }).join('');
+
+    const salasHtml = s.salas && Object.keys(s.salas).length > 0
+      ? Object.entries(s.salas).map(([sala, cnt]) => `<span class="sala-badge">🏠 ${sala} (${cnt})</span>`).join('')
+      : '';
+
+    return `<div class="session-row">
+      <div class="session-date">${fmtDate(s.date)}</div>
+      <div class="session-n">${s.n} resp.</div>
+      <div class="session-scores">${scores}${salasHtml ? `<div class="session-salas" style="width:100%;margin-top:4px">${salasHtml}</div>` : ''}</div>
+    </div>`;
+  }).join('');
+
+  // All comments
+  const allComments = d.sessions.flatMap(s => (s.comentarios || []).map(c => ({date: s.date, text: c})));
+  const commentsHtml = allComments.length > 0
+    ? `<button class="comments-toggle" onclick="toggleComments('${key}')">💬 Ver ${allComments.length} comentários</button>
+       <div class="comments-list" id="comments-${key}">
+         ${allComments.map(c => `<div class="comment-item"><span style="font-size:10px;color:#444;font-weight:600;margin-right:8px">${fmtDate(c.date)}</span>${esc(c.text)}</div>`).join('')}
+       </div>`
+    : '';
+
+  const typeLabel = d.type === 'csat' ? 'CSAT Aulas' : 'NPS Pronto-Socorro';
+  const typeBg = d.type === 'csat' ? 'rgba(236,72,153,.12)' : 'rgba(99,102,241,.12)';
+  const typeColor = d.type === 'csat' ? '#ec4899' : '#a5b4fc';
+
+  detailEl.innerHTML = `
+    <div class="detail-card" style="border-color:${d.color}22">
+      <div class="detail-header">
+        <div style="width:10px;height:10px;border-radius:50%;background:${d.color};flex-shrink:0"></div>
+        <div style="font-size:16px;font-weight:800;color:#fff">${d.name}</div>
+        <span class="detail-tag" style="background:${typeBg};color:${typeColor}">${typeLabel}</span>
+        <div style="margin-left:auto;font-size:11px;color:#444">${totalN(d.sessions)} respostas · ${d.sessions.length} sessões</div>
+      </div>
+      <div class="section-title" style="margin-top:0">Médias gerais</div>
+      <div class="metrics-row">${metricsHtml}</div>
+      <div class="sessions-title">Por sessão</div>
+      ${sessionsHtml}
+      ${sentHtml}
+      ${commentsHtml}
+    </div>`;
+}
+
+function toggleDetail(key) {
+  const detailEl = document.getElementById(IDS[key]);
+  const card = document.getElementById('ov-'+key);
+
+  if (activeKey === key) {
+    detailEl.classList.remove('visible');
+    card.classList.remove('active');
+    activeKey = null;
+    return;
+  }
+
+  // Close previous
+  if (activeKey) {
+    document.getElementById(IDS[activeKey]).classList.remove('visible');
+    document.getElementById('ov-'+activeKey).classList.remove('active');
+  }
+
+  renderDetail(key);
+  detailEl.classList.add('visible');
+  card.classList.add('active');
+  activeKey = key;
+
+  // Scroll to detail
+  setTimeout(() => detailEl.scrollIntoView({behavior:'smooth', block:'nearest'}), 50);
+}
+
+function toggleComments(key) {
+  const el = document.getElementById('comments-'+key);
+  const btn = el.previousElementSibling;
+  const isOpen = el.classList.toggle('open');
+  btn.textContent = isOpen ? '💬 Ocultar comentários' : `💬 Ver comentários`;
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+renderOverview();
+</script>
+</body>
+</html>
