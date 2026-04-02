@@ -431,12 +431,14 @@ async function loadData() {
     { data: mentors },
     { data: classes },
     { data: classMentors },
-    { data: attendance },
+    { data: newAttendance },
+    { data: legacyAttendance },
   ] = await Promise.all([
     sb.from('mentors').select('id, name, role').eq('active', true).order('name'),
     sb.from('classes').select('id, name').order('name'),
     sb.from('class_mentors').select('mentor_id, class_id, role'),
-    sb.from('mentor_attendance').select('*').gte('session_date', new Date(new Date().setMonth(new Date().getMonth()-6)).toISOString().split('T')[0]).order('session_date', { ascending: false }).limit(2000),
+    sb.from('mentor_attendance').select('*').order('session_date', { ascending: false }).limit(2000),
+    sb.from('attendance').select('lesson_date, course, teacher_name, role, status, notes').order('lesson_date', { ascending: false }).limit(2000),
   ]);
 
   // Build lookup maps
@@ -452,52 +454,95 @@ async function loadData() {
     classMentorMap[key] = cm.role;
   });
 
-  // Build enriched records
-  allRecords = (attendance || []).map(r => ({
+  // Reverse lookup by name (case-insensitive)
+  const mentorByName = {};
+  (mentors || []).forEach(m => { mentorByName[m.name.toLowerCase().trim()] = m; });
+  const classByName = {};
+  (classes || []).forEach(c => { classByName[c.name.toLowerCase().trim()] = c; });
+
+  // Enrich new records
+  const newRecords = (newAttendance || []).map(r => ({
     ...r,
-    mentor_name:  mentorMap[r.mentor_id]?.name  || 'Desconhecido',
-    mentor_role:  mentorMap[r.mentor_id]?.role   || '—',
-    class_name:   classMap[r.class_id]?.name     || 'Turma desconhecida',
+    mentor_name:   mentorMap[r.mentor_id]?.name  || 'Desconhecido',
+    mentor_role:   mentorMap[r.mentor_id]?.role   || '—',
+    class_name:    classMap[r.class_id]?.name     || 'Turma desconhecida',
     assigned_role: classMentorMap[`${r.mentor_id}_${r.class_id}`] || mentorMap[r.mentor_id]?.role || '—',
   }));
 
-  // Populate filter dropdowns
+  // Normalize legacy records (attendance table: teacher_name, course, lesson_date, role, status, notes)
+  const legacyRecords = (legacyAttendance || []).map(r => {
+    const mentorName = (r.teacher_name || '').trim() || 'Desconhecido';
+    const className  = (r.course || '').trim() || 'Turma desconhecida';
+    const mentorObj  = mentorByName[mentorName.toLowerCase()];
+    const classObj   = classByName[className.toLowerCase()];
+    return {
+      id:            `legacy_${r.lesson_date}_${r.teacher_name}_${r.course}`,
+      mentor_id:     mentorObj?.id || null,
+      class_id:      classObj?.id  || null,
+      session_date:  r.lesson_date,
+      status:        r.status,
+      comment:       r.notes || null,
+      mentor_name:   mentorName,
+      mentor_role:   mentorObj?.role || r.role || '—',
+      class_name:    className,
+      assigned_role: r.role || '—',
+    };
+  });
+
+  // Merge: new records take precedence; deduplicate by date|mentor|class
+  const seen = new Set();
+  allRecords = [];
+  for (const r of newRecords) {
+    const key = `${r.session_date}|${r.mentor_name}|${r.class_name}`;
+    seen.add(key);
+    allRecords.push(r);
+  }
+  for (const r of legacyRecords) {
+    const key = `${r.session_date}|${r.mentor_name}|${r.class_name}`;
+    if (!seen.has(key)) allRecords.push(r);
+  }
+
+  // Collect all unique class/member names (including legacy-only)
+  const allClassNames = new Set((classes || []).map(c => c.name));
+  legacyRecords.forEach(r => allClassNames.add(r.class_name));
+  const allMemberNames = new Set((mentors || []).map(m => m.name));
+  legacyRecords.forEach(r => allMemberNames.add(r.mentor_name));
+
+  // Populate filter dropdowns (filter by name, not ID)
   const classSelect = document.getElementById('filter-class');
   classSelect.innerHTML = '<option value="">Todas as turmas</option>';
-  (classes || []).forEach(c => {
-    classSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+  [...allClassNames].sort((a,b) => a.localeCompare(b)).forEach(name => {
+    classSelect.innerHTML += `<option value="${escHtml(name)}">${escHtml(name)}</option>`;
   });
 
   const memberSelect = document.getElementById('filter-member');
   memberSelect.innerHTML = '<option value="">Todos</option>';
-  (mentors || []).forEach(m => {
-    memberSelect.innerHTML += `<option value="${m.id}">${m.name}</option>`;
+  [...allMemberNames].filter(n => n !== 'Desconhecido').sort((a,b) => a.localeCompare(b)).forEach(name => {
+    memberSelect.innerHTML += `<option value="${escHtml(name)}">${escHtml(name)}</option>`;
   });
 
-  // Default filter: current month
-  const today = new Date();
-  const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-  const lastDay  = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
-  document.getElementById('filter-start').value = firstDay;
-  document.getElementById('filter-end').value   = lastDay;
+  // Default date: beginning of program → today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('filter-start').value = '2026-02-01';
+  document.getElementById('filter-end').value   = today;
 
   applyFilters();
 }
 
 // ── FILTERS ────────────────────────────────────
 function applyFilters() {
-  const start    = document.getElementById('filter-start').value;
-  const end      = document.getElementById('filter-end').value;
-  const classId  = document.getElementById('filter-class').value;
-  const status   = document.getElementById('filter-status').value;
-  const memberId = document.getElementById('filter-member').value;
+  const start      = document.getElementById('filter-start').value;
+  const end        = document.getElementById('filter-end').value;
+  const className  = document.getElementById('filter-class').value;
+  const status     = document.getElementById('filter-status').value;
+  const memberName = document.getElementById('filter-member').value;
 
   filtered = allRecords.filter(r => {
-    if (start  && r.session_date < start)      return false;
-    if (end    && r.session_date > end)         return false;
-    if (classId  && r.class_id  !== classId)   return false;
-    if (status   && r.status    !== status)     return false;
-    if (memberId && r.mentor_id !== memberId)   return false;
+    if (start      && r.session_date < start)         return false;
+    if (end        && r.session_date > end)            return false;
+    if (className  && r.class_name  !== className)     return false;
+    if (status     && r.status      !== status)        return false;
+    if (memberName && r.mentor_name !== memberName)    return false;
     return true;
   });
 
@@ -530,7 +575,7 @@ function renderSummary() {
   const present = filtered.filter(r => r.status === 'present').length;
   const absent  = filtered.filter(r => r.status === 'absent').length;
   const pct     = total > 0 ? Math.round((present / total) * 100) : 0;
-  const members = new Set(filtered.map(r => r.mentor_id)).size;
+  const members = new Set(filtered.map(r => r.mentor_name)).size;
 
   document.getElementById('s-total').textContent   = total;
   document.getElementById('s-present').textContent = present;
