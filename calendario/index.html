@@ -348,6 +348,22 @@ function generateDatesForClass(startStr, endStr, weekday) {
   return dates;
 }
 
+function generateDatesWithISO(startStr, endStr, weekday) {
+  const result = [];
+  const start = new Date(startStr + 'T00:00:00');
+  const end = new Date(endStr + 'T00:00:00');
+  const d = new Date(start);
+  while (d.getDay() !== weekday) d.setDate(d.getDate() + 1);
+  while (d <= end) {
+    result.push({
+      display: `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`,
+      iso: d.toISOString().split('T')[0],
+    });
+    d.setDate(d.getDate() + 7);
+  }
+  return result;
+}
+
 async function loadTeachersFromDB() {
   const [{ data: classes }, { data: classMentors }, { data: mentors }] = await Promise.all([
     sb.from('classes').select('*').eq('active', true).order('name'),
@@ -375,15 +391,22 @@ async function loadTeachersFromDB() {
       }
 
       for (const [wd, entries] of Object.entries(byWeekday)) {
-        const dates = generateDatesForClass(cls.start_date, cls.end_date, parseInt(wd));
+        const allDates = generateDatesWithISO(cls.start_date, cls.end_date, parseInt(wd));
         for (const cm of entries) {
           const mentor = mentorMap[cm.mentor_id];
           if (!mentor) continue;
+          // Filter dates by valid_from/valid_until (cycle versioning)
+          const filtered = allDates.filter(({ iso }) => {
+            if (cm.valid_from && iso < cm.valid_from) return false;
+            if (cm.valid_until && iso > cm.valid_until) return false;
+            return true;
+          });
+          if (filtered.length === 0) continue;
           if (!teacherAssignments[mentor.name]) teacherAssignments[mentor.name] = [];
           teacherAssignments[mentor.name].push({
             course: cls.name,
             role: cm.role || 'Professor',
-            dates: dates,
+            dates: filtered.map(d => d.display),
           });
         }
       }
