@@ -29,6 +29,9 @@ Thumbs.db
 .claude/settings.local.json
 .aiox/install-log.txt
 
+# Documentos com credenciais (LGPD)
+docs/logins-*.md
+
 # Dados pessoais de alunos/mentores (LGPD)
 alunos/Base\ alunos\ sistema\ interno/*.csv
 alunos/Base\ alunos\ sistema\ interno/
