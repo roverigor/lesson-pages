@@ -81,10 +81,46 @@
     .avatar { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; flex-shrink: 0; vertical-align: middle; margin-right: 8px; }
 
     /* MODAL */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(6px); padding: 16px; }
     .modal-overlay.show { display: flex; }
-    .modal { background: #111; border: 1px solid #222; border-radius: 16px; padding: 28px; max-width: 600px; width: 95%; max-height: 80vh; overflow-y: auto; }
-    .modal-close { position: absolute; top: 16px; right: 16px; background: #1a1a1a; border: 1px solid #222; border-radius: 6px; color: #666; cursor: pointer; padding: 4px 10px; font-size: 12px; font-family: var(--font-sans); }
+    .modal { background: #0e0e0e; border: 1px solid #1e1e1e; border-radius: 20px; width: 100%; max-width: 680px; max-height: 90vh; overflow-y: auto; position: relative; }
+    .modal-close { position: sticky; float: right; top: 16px; right: 16px; background: rgba(255,255,255,0.05); border: 1px solid #252525; border-radius: 8px; color: #555; cursor: pointer; padding: 5px 12px; font-size: 12px; font-family: var(--font-sans); z-index: 10; margin: 16px 16px 0 0; }
+    .modal-close:hover { color: #aaa; background: rgba(255,255,255,0.08); }
+
+    /* MODAL INNER COMPONENTS */
+    .modal-hero { padding: 24px 28px 20px; border-bottom: 1px solid #161616; }
+    .modal-meta-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+    .modal-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 8px; line-height: 1.2; }
+    .modal-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+    .modal-stat { background: #131313; border: 1px solid #1e1e1e; border-radius: 10px; padding: 12px 14px; }
+    .modal-stat-num { font-size: 22px; font-weight: 800; color: #fff; line-height: 1; }
+    .modal-stat-label { font-size: 10px; color: #444; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    .modal-media { padding: 14px 28px; border-bottom: 1px solid #161616; display: flex; gap: 8px; flex-wrap: wrap; background: #090909; }
+
+    .modal-section { padding: 20px 28px; }
+    .modal-section-title { font-size: 10px; font-weight: 700; color: #444; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .modal-section-title span { background: #1a1a1a; border-radius: 999px; padding: 2px 8px; font-size: 10px; color: #666; }
+    .modal-sep { border: none; border-top: 1px solid #161616; margin: 0 28px; }
+
+    .participant-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #0f0f0f; }
+    .participant-row:last-child { border-bottom: none; }
+    .participant-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .participant-info { flex: 1; min-width: 0; }
+    .participant-name { font-size: 13px; font-weight: 600; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .participant-sub { font-size: 11px; color: #555; margin-top: 1px; }
+    .participant-dur { text-align: right; flex-shrink: 0; }
+    .participant-dur-bar { width: 80px; height: 4px; background: #1a1a1a; border-radius: 2px; overflow: hidden; margin-top: 4px; }
+    .participant-dur-fill { height: 100%; border-radius: 2px; }
+    .participant-dur-label { font-size: 11px; color: #555; white-space: nowrap; }
+
+    .modal-link-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #0f0f0f; }
+    .modal-link-row:last-child { border-bottom: none; }
+    .modal-link-name { font-size: 13px; font-weight: 600; color: #888; flex-shrink: 0; min-width: 140px; max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .modal-link-input { flex: 1; padding: 7px 10px; background: #111; border: 1px solid #2a2a2a; border-radius: 6px; color: #ddd; font-size: 12px; font-family: inherit; outline: none; min-width: 0; }
+    .modal-link-input:focus { border-color: #6366f1; }
+    .modal-link-btn { padding: 7px 14px; border-radius: 6px; border: 1px solid rgba(99,102,241,0.3); background: rgba(99,102,241,0.1); color: #a5b4fc; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; flex-shrink: 0; }
+    .modal-link-btn:hover { background: rgba(99,102,241,0.2); }
 
     select.match-select { padding: 5px 8px; border-radius: 5px; background: #0a0a0a; border: 1px solid #333; color: #ddd; font-size: 12px; font-family: var(--font-sans); outline: none; max-width: 200px; }
 
@@ -231,8 +267,8 @@
 
 <!-- MEETING DETAIL MODAL -->
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
-  <div class="modal" style="position:relative">
-    <button class="modal-close" onclick="closeModal()">X fechar</button>
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕ fechar</button>
     <div id="modal-content"></div>
   </div>
 </div>
@@ -353,44 +389,170 @@ function renderMeetings() {
   }).join('');
 }
 
+function _modalInitials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(/\s+/);
+  return parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : name.slice(0,2).toUpperCase();
+}
+function _modalColor(name) {
+  const colors = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#3b82f6','#ef4444','#14b8a6'];
+  let h = 0; for (const c of (name||'')) h = (h * 31 + c.charCodeAt(0)) & 0xffffffff;
+  return colors[Math.abs(h) % colors.length];
+}
+
 function showMeetingDetail(meetingId) {
   const m = meetings.find(x => x.id === meetingId);
   if (!m) return;
-  const parts = (m.zoom_participants || []).sort((a, b) => (b.duration_minutes || 0) - (a.duration_minutes || 0));
+
+  // Store current modal meeting ID for in-modal linking
+  _modalMeetingId = meetingId;
+
+  const allParts = (m.zoom_participants || []).filter(p => {
+    const n = (p.participant_name || '').toLowerCase();
+    return !n.includes('notetaker') && !n.includes('fathom') && !n.includes('read.ai') && !n.includes('fireflies') && !n.includes('otter');
+  });
+  const linked = allParts.filter(p => p.matched).sort((a, b) => (b.duration_minutes||0) - (a.duration_minutes||0));
+  const unlinked = allParts.filter(p => !p.matched).sort((a, b) => (b.duration_minutes||0) - (a.duration_minutes||0));
+  const maxDur = Math.max(...allParts.map(p => p.duration_minutes || 0), 1);
 
   const date = m.start_time ? new Date(m.start_time).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
-
   const rec = recordings.find(r => r.meeting_id === meetingId);
   const cohortName = m.cohorts?.name || '';
-  const mediaLinks = rec ? `<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
-    ${rec.video_url ? `<a href="${rec.video_url}" target="_blank" class="btn sm" style="color:#a5b4fc;border-color:rgba(99,102,241,0.3)">Video</a>` : ''}
-    ${rec.audio_url ? `<a href="${rec.audio_url}" target="_blank" class="btn sm" style="color:#a5b4fc;border-color:rgba(99,102,241,0.3)">Audio</a>` : ''}
-    <a href="/aulas" class="btn sm" style="color:#4ade80;border-color:rgba(34,197,94,0.3)">Transcricao</a>
-  </div>` : '';
+  const pctLinked = allParts.length ? Math.round(linked.length / allParts.length * 100) : 0;
+  const pctColor = pctLinked >= 70 ? '#4ade80' : pctLinked >= 40 ? '#fbbf24' : '#f87171';
+
+  const mediaSection = rec ? `
+    <div class="modal-media">
+      ${rec.video_url ? `<a href="${rec.video_url}" target="_blank" class="btn sm" style="color:#a5b4fc;border-color:rgba(99,102,241,0.3)">▶ Video</a>` : ''}
+      ${rec.audio_url ? `<a href="${rec.audio_url}" target="_blank" class="btn sm" style="color:#a5b4fc;border-color:rgba(99,102,241,0.3)">♪ Audio</a>` : ''}
+      <a href="/aulas" class="btn sm" style="color:#4ade80;border-color:rgba(34,197,94,0.3)">✦ Transcricao</a>
+    </div>` : '';
+
+  const linkedRows = linked.map(p => {
+    const dur = p.duration_minutes || 0;
+    const pct = Math.round(dur / maxDur * 100);
+    const color = _modalColor(p.participant_name);
+    return `<div class="participant-row">
+      <div class="participant-avatar" style="background:${color}">${_modalInitials(p.participant_name)}</div>
+      <div class="participant-info">
+        <div class="participant-name">${p.participant_name || '—'}</div>
+        <div class="participant-sub">${p.students?.name || ''}</div>
+      </div>
+      <div class="participant-dur">
+        <div class="participant-dur-label">${dur} min</div>
+        <div class="participant-dur-bar"><div class="participant-dur-fill" style="width:${pct}%;background:#4ade80"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const unlinkedRows = unlinked.map(p => {
+    return `<div class="modal-link-row" id="modal-link-row-${p.id}">
+      <div class="modal-link-name" title="${p.participant_name || ''}">${p.participant_name || '—'}</div>
+      <input type="text" id="modal-picker-input-${p.id}" autocomplete="off"
+        placeholder="Buscar aluno..."
+        class="modal-link-input"
+        oninput="filterModalPicker('${p.id}', this)"
+        onfocus="filterModalPicker('${p.id}', this)">
+      <input type="hidden" id="modal-match-${p.id}" value="">
+      <button class="modal-link-btn" onclick="linkFromModal('${p.id}')">Vincular</button>
+    </div>`;
+  }).join('');
 
   document.getElementById('modal-content').innerHTML = `
-    <div style="font-size:11px;color:#555;margin-bottom:4px">${date}</div>
-    <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px">${m.topic || '—'}</div>
-    <div style="font-size:12px;color:#444;margin-bottom:8px">${parts.length} participantes · ${m.duration_minutes || '?'} min · Host: ${m.host_email || '—'}</div>
-    ${cohortName ? `<div style="font-size:11px;margin-bottom:12px"><span class="badge badge-green">${cohortName}</span></div>` : ''}
-    ${mediaLinks}
-    <table style="width:100%">
-      <thead><tr><th>Nome</th><th>Aluno vinculado</th><th>Duracao</th><th>Status</th></tr></thead>
-      <tbody>${parts.map(p => {
-        const sName = p.students?.name || '';
-        const badge = p.matched
-          ? `<span class="badge badge-green">Vinculado</span>`
-          : `<span class="badge badge-yellow">Sem vinculo</span>`;
-        return `<tr>
-          <td style="font-weight:500;color:#ddd">${p.participant_name || '—'}</td>
-          <td style="font-size:12px;color:#888">${sName || '—'}</td>
-          <td>${p.duration_minutes || 0} min</td>
-          <td>${badge}</td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table>
+    <div class="modal-hero">
+      <div class="modal-meta-row">
+        <span style="font-size:11px;color:#444">${date}</span>
+        ${cohortName ? `<span class="badge badge-green">${cohortName}</span>` : ''}
+      </div>
+      <div class="modal-title">${m.topic || '—'}</div>
+      <div style="font-size:11px;color:#444">Host: ${m.host_email || '—'}</div>
+      <div class="modal-stats-row">
+        <div class="modal-stat">
+          <div class="modal-stat-num">${allParts.length}</div>
+          <div class="modal-stat-label">Participantes</div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-num">${m.duration_minutes || '?'}</div>
+          <div class="modal-stat-label">Minutos</div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-num" style="color:${pctColor}">${pctLinked}%</div>
+          <div class="modal-stat-label">Vinculados</div>
+        </div>
+      </div>
+    </div>
+    ${mediaSection}
+    ${linked.length ? `
+    <div class="modal-section">
+      <div class="modal-section-title">Participantes identificados <span>${linked.length}</span></div>
+      ${linkedRows}
+    </div>` : ''}
+    ${linked.length && unlinked.length ? '<hr class="modal-sep">' : ''}
+    ${unlinked.length ? `
+    <div class="modal-section">
+      <div class="modal-section-title" style="color:#fbbf24">Sem vinculo <span style="background:rgba(245,158,11,0.15);color:#fbbf24">${unlinked.length}</span></div>
+      ${unlinkedRows}
+    </div>` : ''}
   `;
   document.getElementById('modal').classList.add('show');
+}
+
+let _modalMeetingId = null;
+
+function filterModalPicker(pid, inputEl) {
+  _pickerActivePid = pid;
+  document.getElementById(`modal-match-${pid}`).value = '';
+  const q = (inputEl.value || '').toLowerCase().trim();
+  const pool = q.length === 0
+    ? students.slice(0, 30)
+    : students.filter(s => (s.name || '').toLowerCase().includes(q) || (s.phone || '').includes(q)).slice(0, 30);
+
+  if (!pool.length) { _pickerDrop.style.display = 'none'; return; }
+
+  const rect = inputEl.getBoundingClientRect();
+  _pickerDrop.style.top  = (rect.bottom + 4) + 'px';
+  _pickerDrop.style.left = rect.left + 'px';
+  _pickerDrop.style.width = Math.max(rect.width, 260) + 'px';
+  _pickerDrop.style.display = '';
+
+  _pickerDrop.innerHTML = pool.map(s => {
+    const phone = s.phone ? `<span style="color:#555;font-size:11px"> · ${s.phone}</span>` : '';
+    const cohort = s.cohorts?.name ? `<span style="font-size:10px;color:#444;margin-left:6px">${s.cohorts.name}</span>` : '';
+    return `<div
+      onmousedown="selectModalPicker('${pid}','${s.id}','${(s.name||'').replace(/'/g,"&#39;")}')"
+      style="padding:9px 12px;font-size:12px;color:#ddd;cursor:pointer;border-bottom:1px solid #1e1e1e;display:flex;align-items:center;justify-content:space-between"
+      onmouseover="this.style.background='#1e1e2e'" onmouseout="this.style.background=''">
+      <span>${s.name || '—'}${phone}</span>${cohort}
+    </div>`;
+  }).join('');
+}
+
+function selectModalPicker(pid, studentId, studentName) {
+  const input = document.getElementById(`modal-picker-input-${pid}`);
+  if (input) input.value = studentName;
+  document.getElementById(`modal-match-${pid}`).value = studentId;
+  _pickerDrop.style.display = 'none';
+  _pickerActivePid = null;
+}
+
+async function linkFromModal(participantId) {
+  const hiddenEl = document.getElementById('modal-match-' + participantId);
+  const studentId = hiddenEl?.value;
+  if (!studentId) { showToast('Selecione um aluno primeiro', 'error'); return; }
+
+  const { error } = await sb.from('zoom_participants')
+    .update({ student_id: studentId, matched: true })
+    .eq('id', participantId);
+
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+
+  // Remove row from modal immediately
+  const row = document.getElementById(`modal-link-row-${participantId}`);
+  if (row) row.remove();
+  showToast('Vinculado!');
+
+  // Reload data in background
+  loadAllData();
 }
 
 function closeModal() { document.getElementById('modal').classList.remove('show'); }
