@@ -111,76 +111,98 @@ CREATE INDEX IF NOT EXISTS idx_notifications_cohort ON notifications(cohort_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_notifications_pending ON notifications(status) WHERE status = 'pending';
 
--- ─── 5. RLS POLICIES ───
+-- ─── 5. RLS POLICIES (idempotent via DROP IF EXISTS) ───
 
 ALTER TABLE mentors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE class_cohorts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE class_mentors ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
--- Mentors: leitura para autenticados, escrita para admin
+-- Mentors
+DROP POLICY IF EXISTS "Authenticated read mentors" ON mentors;
 CREATE POLICY "Authenticated read mentors" ON mentors
   FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Admin insert mentors" ON mentors;
 CREATE POLICY "Admin insert mentors" ON mentors
   FOR INSERT TO authenticated
   WITH CHECK ((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin');
+DROP POLICY IF EXISTS "Admin update mentors" ON mentors;
 CREATE POLICY "Admin update mentors" ON mentors
   FOR UPDATE TO authenticated
   USING ((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin');
+DROP POLICY IF EXISTS "Admin delete mentors" ON mentors;
 CREATE POLICY "Admin delete mentors" ON mentors
   FOR DELETE TO authenticated
   USING ((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin');
 
--- Class-Cohorts bridge: mesma policy
+-- Class-Cohorts bridge
+DROP POLICY IF EXISTS "Authenticated read class_cohorts" ON class_cohorts;
 CREATE POLICY "Authenticated read class_cohorts" ON class_cohorts
   FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Admin insert class_cohorts" ON class_cohorts;
 CREATE POLICY "Admin insert class_cohorts" ON class_cohorts
   FOR INSERT TO authenticated
   WITH CHECK ((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin');
+DROP POLICY IF EXISTS "Admin update class_cohorts" ON class_cohorts;
 CREATE POLICY "Admin update class_cohorts" ON class_cohorts
   FOR UPDATE TO authenticated
   USING ((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin');
+DROP POLICY IF EXISTS "Admin delete class_cohorts" ON class_cohorts;
 CREATE POLICY "Admin delete class_cohorts" ON class_cohorts
   FOR DELETE TO authenticated
   USING ((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin');
 
--- Class-Mentors bridge: mesma policy
+-- Class-Mentors bridge
+DROP POLICY IF EXISTS "Authenticated read class_mentors" ON class_mentors;
 CREATE POLICY "Authenticated read class_mentors" ON class_mentors
   FOR SELECT TO authenticated USING (true);
+DROP POLICY IF EXISTS "Admin insert class_mentors" ON class_mentors;
 CREATE POLICY "Admin insert class_mentors" ON class_mentors
   FOR INSERT TO authenticated
   WITH CHECK ((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin');
+DROP POLICY IF EXISTS "Admin update class_mentors" ON class_mentors;
 CREATE POLICY "Admin update class_mentors" ON class_mentors
   FOR UPDATE TO authenticated
   USING ((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin');
+DROP POLICY IF EXISTS "Admin delete class_mentors" ON class_mentors;
 CREATE POLICY "Admin delete class_mentors" ON class_mentors
   FOR DELETE TO authenticated
   USING ((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin');
 
--- Notifications: leitura admin-only (dados sensíveis), escrita admin + service_role
+-- Notifications: admin-only (dados sensíveis)
+DROP POLICY IF EXISTS "Admin read notifications" ON notifications;
 CREATE POLICY "Admin read notifications" ON notifications
   FOR SELECT TO authenticated
   USING ((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin');
+DROP POLICY IF EXISTS "Admin insert notifications" ON notifications;
 CREATE POLICY "Admin insert notifications" ON notifications
   FOR INSERT TO authenticated
   WITH CHECK ((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin');
+DROP POLICY IF EXISTS "Admin update notifications" ON notifications;
 CREATE POLICY "Admin update notifications" ON notifications
   FOR UPDATE TO authenticated
   USING ((auth.jwt() -> 'user_metadata' ->> 'role') = 'admin');
 
--- Service role bypass para Edge Function atualizar status
--- (service_role key ignora RLS por padrão, mas documentamos a intenção)
+-- ─── 6. TRIGGERS (idempotent) ───
 
--- ─── 6. TRIGGERS ───
-
--- updated_at automático (reutiliza function existente de schema.sql)
+DROP TRIGGER IF EXISTS mentors_updated_at ON mentors;
 CREATE TRIGGER mentors_updated_at
   BEFORE UPDATE ON mentors
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS notifications_updated_at ON notifications;
 CREATE TRIGGER notifications_updated_at
   BEFORE UPDATE ON notifications
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ─── 7. class_mentors fix: add weekday, update role check ───
+ALTER TABLE class_mentors ADD COLUMN IF NOT EXISTS weekday SMALLINT;
+ALTER TABLE class_mentors DROP CONSTRAINT IF EXISTS class_mentors_role_check;
+ALTER TABLE class_mentors ADD CONSTRAINT class_mentors_role_check
+  CHECK (role IN ('Professor', 'Host', 'Mentor'));
+-- NOTE: UNIQUE constraint omitted — existing data has duplicates that must be
+-- resolved manually before adding: ALTER TABLE class_mentors ADD CONSTRAINT
+-- class_mentors_class_id_mentor_id_role_weekday_key UNIQUE(class_id, mentor_id, role, weekday);
 
 -- ─── 7. SEED: MENTORS ───
 -- NOTA: Telefones reais foram removidos por segurança (LGPD).

@@ -397,19 +397,31 @@ serve(async (req: Request) => {
       );
     }
 
-    // Mark as processing
-    await sb
+    // Atomic guard: only mark 'processing' if still 'pending'
+    // Prevents duplicate processing on webhook retries
+    const { data: claimed } = await sb
       .from("notifications")
       .update({
         status: "processing",
         processed_at: new Date().toISOString(),
       })
-      .eq("id", notification.id);
+      .eq("id", notification.id)
+      .eq("status", "pending")
+      .select("id")
+      .single();
+
+    if (!claimed) {
+      return new Response(
+        JSON.stringify({ ok: false, reason: "Already processing or processed" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Process the notification
     const result = await processNotification(notification);
 
-    // Update with final status
+    // Update with final status — only increment retry_count on failure
+    const isFailed = result.finalStatus === "failed";
     await sb
       .from("notifications")
       .update({
@@ -421,20 +433,18 @@ serve(async (req: Request) => {
           result.finalStatus === "sent" || result.finalStatus === "partial"
             ? new Date().toISOString()
             : null,
-        retry_count: notification.retry_count + 1,
+        retry_count: isFailed ? notification.retry_count + 1 : notification.retry_count,
       })
       .eq("id", notification.id);
 
-    // If failed and retries remaining, reset to pending for retry
-    if (
-      result.finalStatus === "failed" &&
-      notification.retry_count + 1 < notification.max_retries
-    ) {
-      // Delay retry by re-inserting as pending after a brief wait
-      // (In production, use pg_cron or a scheduled function for exponential backoff)
-      console.log(
-        `Notification ${notification.id} failed, retry ${notification.retry_count + 1}/${notification.max_retries}`
-      );
+    if (isFailed) {
+      console.log(JSON.stringify({
+        level: "warn",
+        notification_id: notification.id,
+        event: "send_failed",
+        retry_count: notification.retry_count + 1,
+        max_retries: notification.max_retries,
+      }));
     }
 
     return new Response(
