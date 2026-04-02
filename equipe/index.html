@@ -124,12 +124,13 @@
   <div class="login-box">
     <div class="login-icon">🎓</div>
     <div class="login-title">Equipe Pedagógica</div>
-    <div class="login-subtitle">Entre com seu número de telefone cadastrado para registrar sua presença nas aulas.</div>
+    <div class="login-subtitle">Acesso restrito à equipe pedagógica. Use seu telefone e senha cadastrados.</div>
     <label class="login-label">Telefone</label>
     <input class="login-field" id="login-phone" type="tel" placeholder="5511999999999" autocomplete="tel" inputmode="numeric">
+    <label class="login-label">Senha</label>
+    <input class="login-field" id="login-password" type="password" placeholder="••••••••" autocomplete="current-password">
     <button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button>
     <div class="login-error" id="login-error"></div>
-    <div class="login-hint">Use o número no formato internacional sem espaços ou traços.<br>Ex: 5511999999999</div>
   </div>
 </div>
 
@@ -209,28 +210,30 @@ function showToast(msg, type = 'success') {
 
 // ── AUTH ──────────────────────────────────────────────────────────────
 async function doLogin() {
-  const raw = document.getElementById('login-phone').value.trim().replace(/\D/g, '');
-  const btn = document.getElementById('login-btn');
-  const err = document.getElementById('login-error');
-  if (!raw) { showLoginError('Informe o número de telefone.'); return; }
+  const raw      = document.getElementById('login-phone').value.trim().replace(/\D/g, '');
+  const password = document.getElementById('login-password').value;
+  const btn      = document.getElementById('login-btn');
+  if (!raw)      { showLoginError('Informe o número de telefone.'); return; }
+  if (!password) { showLoginError('Informe a senha.'); return; }
 
   btn.disabled = true;
   btn.textContent = 'Verificando...';
-  err.classList.remove('show');
+  document.getElementById('login-error').classList.remove('show');
 
-  const { data, error } = await sb.from('mentors').select('*').eq('phone', raw).eq('active', true).single();
+  // Autenticação server-side via RPC — o hash da senha NUNCA sai do banco
+  const { data, error } = await sb.rpc('authenticate_mentor', { p_phone: raw, p_password: password });
 
-  if (error || !data) {
-    showLoginError('Telefone não encontrado. Verifique o número ou entre em contato com a equipe.');
+  if (error || !data || data.length === 0) {
+    showLoginError('Telefone ou senha incorretos. Entre em contato com a equipe se precisar de acesso.');
     btn.disabled = false;
     btn.textContent = 'Entrar';
     return;
   }
 
-  currentMentor = data;
-  localStorage.setItem('equipe_mentor_id', data.id);
-  localStorage.setItem('equipe_mentor_name', data.name);
-  localStorage.setItem('equipe_mentor_role', data.role);
+  currentMentor = data[0];
+  localStorage.setItem('equipe_mentor_id',    currentMentor.id);
+  localStorage.setItem('equipe_mentor_name',  currentMentor.name);
+  localStorage.setItem('equipe_mentor_role',  currentMentor.role);
   localStorage.setItem('equipe_mentor_phone', raw);
 
   startApp();

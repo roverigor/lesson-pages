@@ -33,12 +33,18 @@ serve(async (req: Request) => {
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
 
-    // Action 1: Generate authorization URL
+    const sb = getSupabaseClient();
+
+    // Action 1: Generate authorization URL — store state in DB with TTL (P-004)
     if (action === "authorize") {
       const mentorId = url.searchParams.get("mentor_id") || "";
-      const state = btoa(JSON.stringify({ mentor_id: mentorId, ts: Date.now() }));
-      const authUrl = `https://zoom.us/oauth/authorize?response_type=code&client_id=${ZOOM_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${state}`;
+      const state = crypto.randomUUID();
 
+      // Persist state server-side; cleanup expired states
+      await sb.rpc("cleanup_oauth_states");
+      await sb.from("oauth_states").insert({ state, mentor_id: mentorId });
+
+      const authUrl = `https://zoom.us/oauth/authorize?response_type=code&client_id=${ZOOM_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${state}`;
       return new Response(JSON.stringify({ url: authUrl }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -51,57 +57,67 @@ serve(async (req: Request) => {
 
       if (!code) {
         return new Response(JSON.stringify({ ok: false, error: "No code provided" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+
+      // Validate state: must exist in DB and be < 10 minutes old (P-004)
+      const { data: stateRow } = await sb.from("oauth_states")
+        .select("mentor_id, created_at").eq("state", state).single();
+
+      if (!stateRow) {
+        return new Response(JSON.stringify({ ok: false, error: "Invalid or expired OAuth state. Please restart the authorization." }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const ageMs = Date.now() - new Date(stateRow.created_at).getTime();
+      if (ageMs > 10 * 60 * 1000) {
+        await sb.from("oauth_states").delete().eq("state", state);
+        return new Response(JSON.stringify({ ok: false, error: "OAuth state expired (> 10 min). Please restart." }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Consume state (one-time use)
+      await sb.from("oauth_states").delete().eq("state", state);
+      const mentorId = stateRow.mentor_id || null;
 
       // Exchange code for tokens
       const basicAuth = btoa(`${ZOOM_CLIENT_ID}:${ZOOM_CLIENT_SECRET}`);
       const tokenRes = await fetch("https://zoom.us/oauth/token", {
         method: "POST",
-        headers: {
-          "Authorization": `Basic ${basicAuth}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          grant_type: "authorization_code",
-          code: code,
-          redirect_uri: REDIRECT_URI,
-        }),
+        headers: { "Authorization": `Basic ${basicAuth}`, "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ grant_type: "authorization_code", code, redirect_uri: REDIRECT_URI }),
       });
 
       if (!tokenRes.ok) {
         const err = await tokenRes.text();
         return new Response(JSON.stringify({ ok: false, error: `Zoom token error: ${err}` }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
       const tokens = await tokenRes.json();
 
-      // Get user info
+      // Get user info — fail loudly if unavailable (P-033)
       const userRes = await fetch("https://api.zoom.us/v2/users/me", {
         headers: { "Authorization": `Bearer ${tokens.access_token}` },
       });
-      const user = userRes.ok ? await userRes.json() : null;
-
-      // Parse state to get mentor_id
-      let mentorId = null;
-      try {
-        const stateData = JSON.parse(atob(state || ""));
-        mentorId = stateData.mentor_id || null;
-      } catch { /* ignore */ }
+      if (!userRes.ok) {
+        return new Response(JSON.stringify({ ok: false, error: "Failed to fetch Zoom user info after token exchange." }), {
+          status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const user = await userRes.json();
 
       // Calculate expiry
       const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString();
 
       // Upsert token
-      const sb = getSupabaseClient();
       const { data, error } = await sb.from("zoom_tokens").upsert({
-        zoom_email: user?.email || "unknown",
-        zoom_account_id: user?.account_id || null,
+        zoom_email: user.email,
+        zoom_account_id: user.account_id || null,
         mentor_id: mentorId || null,
         access_token: tokens.access_token,
         refresh_token: tokens.refresh_token,

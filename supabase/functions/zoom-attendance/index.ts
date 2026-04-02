@@ -274,38 +274,24 @@ serve(async (req: Request) => {
       ? sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true).eq("cohort_id", cohort_id)
       : sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true));
 
-    const results = [];
-
-    for (const instance of instances) {
+    // Process instances in parallel with concurrency limit of 3 (P-007)
+    async function processInstance(instance: { uuid: string; start_time?: string }) {
       const uuid = instance.uuid;
 
-      // Check if already processed
       const { data: existing } = await sb.from("zoom_meetings")
-        .select("id")
-        .eq("zoom_uuid", uuid)
-        .single();
+        .select("id").eq("zoom_uuid", uuid).single();
+      if (existing) return { uuid, status: "already_processed", id: existing.id };
 
-      if (existing) {
-        results.push({ uuid, status: "already_processed", id: existing.id });
-        continue;
-      }
-
-      // Get meeting details
       const details = await getPastMeetingDetails(token, uuid);
-
-      // Get participants
-      let participants;
+      let participants: Record<string, string | number>[];
       try {
         participants = await getMeetingParticipants(token, uuid);
       } catch (err) {
-        results.push({ uuid, status: "error", error: String(err) });
-        continue;
+        return { uuid, status: "error", error: String(err) };
       }
 
-      // Filter out bots/notetakers — use centralized isBot() (P-034)
-      const realParticipants = participants.filter((p: Record<string, string>) => !isBot(p.name || ""));
+      const realParticipants = participants.filter((p) => !isBot((p.name as string) || ""));
 
-      // Save meeting
       const { data: meeting, error: meetingError } = await sb.from("zoom_meetings").insert({
         zoom_meeting_id: meeting_id,
         zoom_uuid: uuid,
@@ -320,22 +306,14 @@ serve(async (req: Request) => {
         cohort_id: cohort_id || null,
       }).select().single();
 
-      if (meetingError) {
-        results.push({ uuid, status: "error", error: meetingError.message });
-        continue;
-      }
+      if (meetingError) return { uuid, status: "error", error: meetingError.message };
 
-      // Match participants to students
       const studentMatches = matchStudents(
-        realParticipants.map((p: Record<string, string>) => ({
-          name: p.name || "",
-          email: p.user_email || "",
-        })),
+        realParticipants.map((p) => ({ name: (p.name as string) || "", email: (p.user_email as string) || "" })),
         students || []
       );
 
-      // Save participants — single batch insert (P-006)
-      const participantRows = realParticipants.map((p: Record<string, string | number>) => {
+      const participantRows = realParticipants.map((p) => {
         const key = (p.user_email as string) || normalize(p.name as string);
         const studentId = studentMatches[key] || null;
         return {
@@ -354,21 +332,29 @@ serve(async (req: Request) => {
         await sb.from("zoom_participants").insert(participantRows);
       }
 
-      const matched = participantRows.filter(r => r.matched).length;
-      const unmatched = participantRows.length - matched;
-
-      // Mark as processed
       await sb.from("zoom_meetings").update({ processed: true }).eq("id", meeting.id);
 
-      results.push({
+      const matched = participantRows.filter(r => r.matched).length;
+      return {
         uuid,
         status: "processed",
         meeting_id: meeting.id,
         topic: meeting.topic,
         participants: realParticipants.length,
         matched,
-        unmatched,
-      });
+        unmatched: participantRows.length - matched,
+      };
+    }
+
+    // Process in chunks of 3 to respect Zoom API rate limits
+    const CONCURRENCY = 3;
+    const results = [];
+    for (let i = 0; i < instances.length; i += CONCURRENCY) {
+      const chunk = instances.slice(i, i + CONCURRENCY);
+      const settled = await Promise.allSettled(chunk.map(processInstance));
+      for (const r of settled) {
+        results.push(r.status === "fulfilled" ? r.value : { uuid: "unknown", status: "error", error: String((r as PromiseRejectedResult).reason) });
+      }
     }
 
     return new Response(
