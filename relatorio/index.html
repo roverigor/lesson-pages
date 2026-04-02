@@ -629,6 +629,26 @@ function renderMemberView() {
     const pctColor = pct >= 80 ? '#4ade80' : pct >= 50 ? '#f59e0b' : '#f87171';
     const pctBg    = pct >= 80 ? 'rgba(34,197,94,0.12)' : pct >= 50 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)';
 
+    // Breakdown by role
+    const byRole = {};
+    for (const r of data.records) {
+      const role = r.assigned_role || '—';
+      if (!byRole[role]) byRole[role] = { present: 0, absent: 0 };
+      if (r.status === 'present') byRole[role].present++;
+      else byRole[role].absent++;
+    }
+    const roleBreakdown = Object.entries(byRole)
+      .filter(([role]) => ['Mentor','Host','Professor'].includes(role))
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([role, s]) => {
+        const roleColor = role === 'Professor' ? '#a5b4fc' : role === 'Host' ? '#9ca3af' : '#facc15';
+        return `<span style="font-size:10px;color:#555;margin-right:10px">
+          <span style="color:${roleColor};font-weight:700">${role}</span>
+          <span style="color:#4ade80;margin-left:3px">${s.present}✓</span>
+          <span style="color:#f87171;margin-left:3px">${s.absent}✗</span>
+        </span>`;
+      }).join('');
+
     // Sort records by date descending
     const sorted = [...data.records].sort((a, b) => b.session_date.localeCompare(a.session_date));
 
@@ -654,6 +674,7 @@ function renderMemberView() {
           <div class="member-info">
             <div class="member-name">${escHtml(data.name)}</div>
             <div class="member-meta">${escHtml(data.role)} · ${total} aula${total !== 1 ? 's' : ''} no período</div>
+            ${roleBreakdown ? `<div style="margin-top:4px">${roleBreakdown}</div>` : ''}
           </div>
           <div class="member-stats">
             <div class="mstat"><div class="mstat-num" style="color:#4ade80">${present}</div><div class="mstat-label">Presenças</div></div>
