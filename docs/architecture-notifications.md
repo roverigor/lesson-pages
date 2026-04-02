@@ -3,7 +3,7 @@
 **Projeto:** lesson-pages (lesson-pages.vercel.app)
 **Data:** 2026-03-30
 **Autor:** Aria (Architect Agent)
-**Status:** Draft - Aguardando implementacao
+**Status:** Implementado — EPIC-001 concluído em 2026-04-02
 
 ---
 

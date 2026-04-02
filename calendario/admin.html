@@ -532,36 +532,74 @@
     <div style="background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:24px">
       <div style="font-size:14px;font-weight:700;color:#ddd;margin-bottom:16px">Enviar novo aviso</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+        <!-- Tipo de notificação -->
         <div>
-          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Cohort / Grupo *</label>
-          <select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-cohort">
-            <option value="">— Selecione —</option>
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Tipo de notificação *</label>
+          <select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-type" onchange="onNotifyTypeChange()">
+            <option value="custom">Mensagem livre (custom)</option>
+            <option value="class_reminder">Lembrete de aula (class_reminder)</option>
+            <option value="group_announcement">Aviso para grupo (group_announcement)</option>
           </select>
         </div>
+
+        <!-- Tipo de destino -->
         <div>
-          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Tipo de envio *</label>
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Destino *</label>
           <select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-target">
             <option value="group">Grupo apenas</option>
             <option value="both">Grupo + Mentores individuais</option>
             <option value="individual">Mentores individuais apenas</option>
           </select>
         </div>
-        <div style="grid-column:1/-1">
-          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Mensagem *</label>
-          <textarea class="login-field" style="margin:0;min-height:120px;resize:vertical;font-size:13px;line-height:1.5" id="notify-message" placeholder="Use *negrito* para destacar. Variáveis: {{cohort_name}}, {{zoom_link}}, {{mentor_name}}"></textarea>
+
+        <!-- Cohort -->
+        <div>
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Cohort / Grupo *</label>
+          <select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-cohort" onchange="onNotifyCohortChange()">
+            <option value="">— Selecione —</option>
+          </select>
         </div>
+
+        <!-- Classe (visível só para class_reminder) -->
+        <div id="notify-class-wrap">
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Classe <span id="notify-class-req" style="color:#f87171">*</span></label>
+          <select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-class" onchange="onNotifyClassChange()">
+            <option value="">— Selecione —</option>
+          </select>
+        </div>
+
+        <!-- Template -->
+        <div style="grid-column:1/-1">
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">
+            Template da mensagem *
+            <span style="color:#444;font-weight:400;margin-left:6px">Variáveis: {{cohort_name}} {{zoom_link}} {{mentor_name}} {{class_name}} {{class_time_start}}</span>
+          </label>
+          <textarea class="login-field" style="margin:0;min-height:110px;resize:vertical;font-size:13px;line-height:1.5" id="notify-message" oninput="updateNotifyPreview()" placeholder="Digite a mensagem..."></textarea>
+        </div>
+
+        <!-- Preview -->
+        <div style="grid-column:1/-1" id="notify-preview-wrap" style="display:none">
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Preview (variáveis substituídas)</label>
+          <div id="notify-preview" style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:8px;padding:12px;font-size:13px;color:#888;line-height:1.6;white-space:pre-wrap;min-height:60px"></div>
+        </div>
+
+        <!-- Zoom link -->
         <div>
           <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Zoom Link (opcional)</label>
-          <input class="login-field" style="margin:0" type="url" id="notify-zoom" placeholder="https://zoom.us/j/...">
+          <input class="login-field" style="margin:0" type="url" id="notify-zoom" placeholder="https://zoom.us/j/..." oninput="updateNotifyPreview()">
         </div>
+
+        <!-- Botões -->
         <div style="display:flex;align-items:flex-end;gap:8px">
           <button class="btn-save" onclick="sendNotification()" id="notify-send-btn" style="flex:1">Enviar Aviso</button>
+          <button class="att-btn delete" onclick="resetNotifyForm()" style="padding:10px 14px">Cancelar</button>
         </div>
       </div>
     </div>
 
     <!-- HISTORY -->
-    <div style="font-size:14px;font-weight:700;color:#ddd;margin-bottom:12px">Historico de envios</div>
+    <div style="font-size:14px;font-weight:700;color:#ddd;margin-bottom:12px">Histórico de envios</div>
     <div id="notify-history"></div>
   </div>
 
@@ -2354,24 +2392,101 @@ function goToMonth(y, m) { renderGrid(y, m); }
 // NOTIFICATIONS / AVISOS
 // ═══════════════════════════════════════
 let notifyCohorts = [];
+let notifyClasses = [];
+
+const NOTIFY_TEMPLATES = {
+  custom:             '',
+  class_reminder:     'Olá! 👋 Lembrando que hoje tem *{{class_name}}* às {{class_time_start}}.\n\nProfessor(a): {{class_professor}}\nLink: {{zoom_link}}\n\n_Academia Lendária_ 🚀',
+  group_announcement: '📢 *Aviso — {{cohort_name}}*\n\n{{zoom_link}}\n\n_Academia Lendária_',
+};
 
 async function loadNotifyView() {
-  // Load cohorts for dropdown
-  const { data: cohorts } = await sb.from('cohorts').select('id, name, whatsapp_group_jid, zoom_link').eq('active', true).order('name');
+  const [{ data: cohorts }, { data: classes }] = await Promise.all([
+    sb.from('cohorts').select('id, name, whatsapp_group_jid, zoom_link').eq('active', true).order('name'),
+    sb.from('classes').select('id, name, time_start, time_end, professor, host').order('name'),
+  ]);
   notifyCohorts = cohorts || [];
-  const sel = document.getElementById('notify-cohort');
-  sel.innerHTML = '<option value="">— Selecione —</option>' +
-    notifyCohorts.map(c => `<option value="${c.id}" data-jid="${c.whatsapp_group_jid || ''}" data-zoom="${c.zoom_link || ''}">${c.name}</option>`).join('');
+  notifyClasses = classes || [];
 
-  // Auto-fill zoom when cohort changes
-  sel.onchange = () => {
-    const opt = sel.options[sel.selectedIndex];
-    const zoom = opt.dataset.zoom || '';
-    document.getElementById('notify-zoom').value = zoom;
+  document.getElementById('notify-cohort').innerHTML =
+    '<option value="">— Selecione —</option>' +
+    notifyCohorts.map(c => `<option value="${c.id}" data-jid="${c.whatsapp_group_jid || ''}" data-zoom="${c.zoom_link || ''}" data-name="${c.name}">${c.name}</option>`).join('');
+
+  document.getElementById('notify-class').innerHTML =
+    '<option value="">— Selecione —</option>' +
+    notifyClasses.map(c => `<option value="${c.id}" data-name="${c.name}" data-start="${c.time_start || ''}" data-prof="${c.professor || ''}">${c.name}</option>`).join('');
+
+  onNotifyTypeChange();
+  await loadNotifyHistory();
+}
+
+function onNotifyTypeChange() {
+  const type = document.getElementById('notify-type').value;
+  const classWrap = document.getElementById('notify-class-wrap');
+  const req = document.getElementById('notify-class-req');
+  classWrap.style.display = type === 'class_reminder' ? '' : 'none';
+  req.style.display = type === 'class_reminder' ? '' : 'none';
+
+  const tpl = NOTIFY_TEMPLATES[type] || '';
+  document.getElementById('notify-message').value = tpl;
+
+  // Set sensible default destination
+  if (type === 'class_reminder') document.getElementById('notify-target').value = 'both';
+  else if (type === 'individual') document.getElementById('notify-target').value = 'individual';
+  else document.getElementById('notify-target').value = 'group';
+
+  updateNotifyPreview();
+}
+
+function onNotifyCohortChange() {
+  const sel = document.getElementById('notify-cohort');
+  const opt = sel.options[sel.selectedIndex];
+  const zoom = opt?.dataset?.zoom || '';
+  if (zoom) document.getElementById('notify-zoom').value = zoom;
+  updateNotifyPreview();
+}
+
+function onNotifyClassChange() { updateNotifyPreview(); }
+
+function updateNotifyPreview() {
+  const template = document.getElementById('notify-message').value;
+  const previewWrap = document.getElementById('notify-preview-wrap');
+  const previewEl = document.getElementById('notify-preview');
+  if (!template.trim()) { previewWrap.style.display = 'none'; return; }
+
+  const cohortSel = document.getElementById('notify-cohort');
+  const cohortOpt = cohortSel.options[cohortSel.selectedIndex];
+  const classSel = document.getElementById('notify-class');
+  const classOpt = classSel.options[classSel.selectedIndex];
+  const zoom = document.getElementById('notify-zoom').value || '';
+
+  const vars = {
+    cohort_name:      cohortOpt?.dataset?.name || '',
+    zoom_link:        zoom,
+    class_name:       classOpt?.dataset?.name || '',
+    class_time_start: classOpt?.dataset?.start || '',
+    class_professor:  classOpt?.dataset?.prof || '',
+    mentor_name:      '(nome do mentor)',
   };
 
-  // Load history
-  await loadNotifyHistory();
+  let rendered = template;
+  for (const [k, v] of Object.entries(vars)) {
+    rendered = rendered.replaceAll(`{{${k}}}`, v);
+  }
+
+  previewWrap.style.display = '';
+  previewEl.textContent = rendered;
+}
+
+function resetNotifyForm() {
+  document.getElementById('notify-type').value = 'custom';
+  document.getElementById('notify-cohort').value = '';
+  document.getElementById('notify-class').value = '';
+  document.getElementById('notify-target').value = 'group';
+  document.getElementById('notify-message').value = '';
+  document.getElementById('notify-zoom').value = '';
+  document.getElementById('notify-preview-wrap').style.display = 'none';
+  onNotifyTypeChange();
 }
 
 async function loadNotifyHistory() {
@@ -2419,16 +2534,19 @@ async function loadNotifyHistory() {
 }
 
 async function sendNotification() {
-  const cohortId = document.getElementById('notify-cohort').value;
+  const notifType  = document.getElementById('notify-type').value;
+  const cohortId   = document.getElementById('notify-cohort').value;
+  const classId    = document.getElementById('notify-class').value || null;
   const targetType = document.getElementById('notify-target').value;
-  const message = document.getElementById('notify-message').value.trim();
-  const zoomLink = document.getElementById('notify-zoom').value.trim();
+  const message    = document.getElementById('notify-message').value.trim();
+  const zoomLink   = document.getElementById('notify-zoom').value.trim();
 
   if (!cohortId) { showToast('Selecione um cohort', 'error'); return; }
+  if (notifType === 'class_reminder' && !classId) { showToast('Selecione a classe para lembrete', 'error'); return; }
   if (!message) { showToast('Escreva a mensagem', 'error'); return; }
 
   const cohort = notifyCohorts.find(c => c.id === cohortId);
-  if (!cohort) { showToast('Cohort nao encontrado', 'error'); return; }
+  if (!cohort) { showToast('Cohort não encontrado', 'error'); return; }
 
   const btn = document.getElementById('notify-send-btn');
   btn.disabled = true;
@@ -2437,12 +2555,13 @@ async function sendNotification() {
   try {
     const { data: { user } } = await sb.auth.getUser();
     const { data, error } = await sb.from('notifications').insert({
-      type: 'custom',
+      type: notifType,
       cohort_id: cohortId,
+      class_id: classId,
       target_type: targetType,
       target_group_jid: cohort.whatsapp_group_jid,
       message_template: message,
-      metadata: { zoom_link: zoomLink || undefined },
+      metadata: zoomLink ? { zoom_link: zoomLink } : {},
       status: 'pending',
       created_by: user?.id ?? null,
     }).select().single();
@@ -2450,10 +2569,8 @@ async function sendNotification() {
     if (error) throw error;
 
     showToast('Aviso enviado! Processando...', 'success');
-    document.getElementById('notify-message').value = '';
-    document.getElementById('notify-zoom').value = '';
+    resetNotifyForm();
 
-    // Poll for status update
     setTimeout(async () => {
       const { data: updated } = await sb.from('notifications').select('status, error_message').eq('id', data.id).single();
       if (updated) {
