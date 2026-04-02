@@ -38,6 +38,7 @@
     <a href="/calendario/admin" class="back-link" id="back" style="display:none">Voltar ao painel</a>
   </div>
 
+  <script src="/js/config.js"></script>
   <script>
   async function handleCallback() {
     const params = new URLSearchParams(window.location.search);
@@ -65,11 +66,11 @@
     }
 
     try {
-      const res = await fetch('https://gpufcipkajppykmnmdeh.supabase.co/functions/v1/zoom-oauth?action=callback', {
+      const res = await fetch(window.SUPABASE_CONFIG.url + '/functions/v1/zoom-oauth?action=callback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU',
+          'Authorization': 'Bearer ' + window.SUPABASE_CONFIG.anonKey,
         },
         body: JSON.stringify({ code, state }),
       });

@@ -5,11 +5,15 @@
 
 const { execSync } = require('child_process');
 
-const EVOLUTION_URL = 'http://localhost:8084';
-const EVOLUTION_KEY = 'evo_acadlendaria_2026_secure_key';
-const INSTANCE = 'igor';
-const SUPABASE_URL = 'https://gpufcipkajppykmnmdeh.supabase.co';
+// Run: EVOLUTION_KEY=xxx SUPABASE_SERVICE_KEY=xxx node enrich-from-groups.js
+const EVOLUTION_URL = process.env.EVOLUTION_URL || 'http://localhost:8084';
+const EVOLUTION_KEY = process.env.EVOLUTION_KEY || '';
+const INSTANCE = process.env.EVOLUTION_INSTANCE || 'igor';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gpufcipkajppykmnmdeh.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+
+if (!EVOLUTION_KEY) { console.error('EVOLUTION_KEY env var required'); process.exit(1); }
+if (!SUPABASE_KEY)  { console.error('SUPABASE_SERVICE_KEY env var required'); process.exit(1); }
 
 const GROUPS = [
   '120363407322736559@g.us',

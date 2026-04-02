@@ -5,45 +5,22 @@
 // Or run on VPS: node seed-students.js (uses env vars)
 // ═══════════════════════════════════════
 
-const EVOLUTION_URL = 'http://localhost:8084';
-const EVOLUTION_KEY = 'evo_acadlendaria_2026_secure_key';
-const EVOLUTION_INSTANCE = 'igor';
+// Run: EVOLUTION_KEY=xxx SUPABASE_SERVICE_KEY=xxx node seed-students.js
+const EVOLUTION_URL = process.env.EVOLUTION_URL || 'http://localhost:8084';
+const EVOLUTION_KEY = process.env.EVOLUTION_KEY || '';
+const EVOLUTION_INSTANCE = process.env.EVOLUTION_INSTANCE || 'igor';
 
-const SUPABASE_URL = 'https://gpufcipkajppykmnmdeh.supabase.co';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gpufcipkajppykmnmdeh.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 
-// Known mentors - exclude from student list
-const MENTORS = new Set([
-  '554399250490',   // Igor
-  '5518988119126',  // Fran Martins
-  '558881102201',   // Michele
-  '554899748298',   // Lucas Rover
-  '5515997425595',  // Adriano De Marqui
-  '555191882447',   // Lucas Charao
-  '5511952961036',  // Feldman
-  '5521998628489',  // Douglas Machado
-  '555195763576',   // Gabriel Fofonka
-  '553599284346',   // Rogerio Travagin
-  '559281951096',   // Jose Carlos Amorim
-  '555180196127',   // Academia Lendaria
-  '5511915634642',  // Marllon Blando
-  '555191511178',   // Erica Souza
-  '553584239279',   // admin unknown
-  '554888740043',   // admin unknown
-  '556199496931',   // Sidney Fernandes
-  '558386181165',   // Diego Diniz
-  '5516996308617',  // Klaus Deor
-  '5511978031078',  // Day Cavalcanti
-  '558296838800',   // Adavio Tittoni
-  '554891642424',   // Alan Nicolas
-  '556499425822',   // Talles Souza
-  '556199331574',   // Bruno Gentil/SAL
-  '558881718135',   // Luh (admin)
-  '5521998742430',  // Daniel Viana (admin)
-  '5519984119147',  // Lory Cantelli (admin)
-  '5521985515119',  // admin
-  '554896172481',   // admin
-]);
+if (!EVOLUTION_KEY) { console.error('EVOLUTION_KEY env var required'); process.exit(1); }
+if (!SUPABASE_KEY)  { console.error('SUPABASE_SERVICE_KEY env var required'); process.exit(1); }
+
+// Known mentors phone list — loaded from MENTORS_PHONES env var (comma-separated) or from DB
+// Do NOT hardcode phone numbers in source (LGPD compliance)
+const MENTORS = new Set(
+  (process.env.MENTORS_PHONES || '').split(',').map(p => p.trim()).filter(Boolean)
+);
 
 const COHORT_GROUPS = [
   { name: 'Fundamental T1', jid: '120363407322736559@g.us' },

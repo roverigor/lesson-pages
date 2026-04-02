@@ -307,15 +307,13 @@
   </div>
 </div>
 
+<script src="/js/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
 <script>
 // ═══════════════════════════════════════
 // SUPABASE (read-only for substitutes display)
 // ═══════════════════════════════════════
-const sb = window.supabase.createClient(
-  'https://gpufcipkajppykmnmdeh.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU'
-);
+const sb = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
 let attendanceData = {}; // { "dd/mm|course|teacher": { status, substitute_name, substitute_role } }
 
 let overridesData = [];
