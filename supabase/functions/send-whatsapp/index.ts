@@ -139,6 +139,7 @@ async function processNotification(notification: NotificationRecord): Promise<{
   finalStatus: string;
   errorMessage: string | null;
   evolutionResponse: Record<string, unknown> | null;
+  evolutionMessageIds: string[];
   renderedMessage: string;
 }> {
   const sb = getSupabaseClient();
@@ -324,10 +325,16 @@ async function processNotification(notification: NotificationRecord): Promise<{
     finalStatus = "failed";
   }
 
+  // 7. Extract Evolution API message IDs for delivery tracking
+  const evolutionMessageIds = responses
+    .filter((r) => (r as { key?: { id?: string } }).key?.id)
+    .map((r) => ((r as { key: { id: string } }).key.id));
+
   return {
     finalStatus,
     errorMessage: errors.length > 0 ? errors.join(" | ") : null,
     evolutionResponse: responses.length > 0 ? { results: responses } : null,
+    evolutionMessageIds,
     renderedMessage,
   };
 }
@@ -429,6 +436,7 @@ serve(async (req: Request) => {
         message_rendered: result.renderedMessage,
         error_message: result.errorMessage,
         evolution_response: result.evolutionResponse,
+        evolution_message_ids: result.evolutionMessageIds,
         sent_at:
           result.finalStatus === "sent" || result.finalStatus === "partial"
             ? new Date().toISOString()
