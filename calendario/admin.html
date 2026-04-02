@@ -857,7 +857,10 @@ async function loadAttendance() {
 
   attendanceCache = {};
   for (const row of (data || [])) {
-    const key = `${row.lesson_date}|${row.course}|${row.teacher_name}`;
+    // lesson_date comes as ISO 'YYYY-MM-DD' from DB; convert to 'dd/mm' to match dateKey format
+    const [yyyy, mm, dd] = (row.lesson_date || '').split('-');
+    const dateShort = dd && mm ? `${dd}/${mm}` : row.lesson_date;
+    const key = `${dateShort}|${row.course}|${row.teacher_name}`;
     attendanceCache[key] = {
       id: row.id,
       status: row.status,
@@ -879,9 +882,12 @@ async function saveAttendance(records) {
   const upsertRows = records.map(rec => {
     const key = `${rec.lesson_date}|${rec.course}|${rec.teacher_name}`;
     const existing = attendanceCache[key];
+    // Convert 'dd/mm' dateKey to ISO 'YYYY-MM-DD' for the date column
+    const [dd, mm] = rec.lesson_date.split('/');
+    const isoDate = `${currentYear}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}`;
     return {
       ...(existing?.id ? { id: existing.id } : {}),
-      lesson_date: rec.lesson_date,
+      lesson_date: isoDate,
       course: rec.course,
       teacher_name: rec.teacher_name,
       role: rec.role,
