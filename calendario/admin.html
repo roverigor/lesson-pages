@@ -1369,7 +1369,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal({
 // ═══════════════════════════════════════
 // VIEW TOGGLE
 // ═══════════════════════════════════════
-function switchView(view) {
+async function switchView(view) {
   document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
   document.querySelector(`.view-btn[onclick="switchView('${view}')"]`).classList.add('active');
 
@@ -1383,6 +1383,12 @@ function switchView(view) {
   if (view === 'staff') loadStaff();
   if (view === 'classes') loadClasses();
   if (view === 'notify') loadNotifyView();
+  if (view === 'calendar') {
+    await loadClasses();
+    await loadOverrides();
+    await loadAttendance();
+    renderAll();
+  }
 }
 
 // ═══════════════════════════════════════
@@ -1924,7 +1930,8 @@ async function saveClassV2() {
 
   if (mentorRows.length > 0) {
     const { error } = await sb.from('class_mentors').insert(mentorRows);
-    if (error) { showToast('Erro ao salvar equipe: ' + error.message, 'error'); return; }
+    if (error) { showToast('Erro ao salvar equipe: ' + error.message, 'error'); }
+    // Não retorna — mesmo com erro parcial, atualiza o calendário
   }
 
   // Save linked cohorts
