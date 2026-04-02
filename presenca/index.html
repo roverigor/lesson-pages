@@ -469,11 +469,7 @@ function renderUnmatched() {
     return;
   }
 
-  // Build student options
-  const studentOpts = '<option value="">— Selecione aluno —</option>' +
-    students.map(s => `<option value="${s.id}">${s.name || s.phone} (${s.cohorts?.name || '?'})</option>`).join('');
-
-  // Filter
+  // Filter unmatched by search query (participant name)
   let filtered = unmatched;
   if (searchQuery) {
     filtered = unmatched.filter(p => `${p.participant_name || ''} ${p.participant_email || ''}`.toLowerCase().includes(searchQuery));
@@ -483,13 +479,66 @@ function renderUnmatched() {
     const date = p.meetingDate ? new Date(p.meetingDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '';
     return `<tr>
       <td style="font-weight:500;color:#ddd">${p.participant_name || '—'}</td>
-      <td style="font-size:12px;color:#666">${p.participant_email || '—'}</td>
       <td style="font-size:11px;color:#555">${p.meetingTopic || ''} ${date}</td>
-      <td><select class="match-select" id="match-${p.id}">${studentOpts}</select></td>
+      <td>
+        <div style="position:relative" id="picker-wrap-${p.id}">
+          <input type="text" id="picker-input-${p.id}" autocomplete="off"
+            placeholder="Buscar por nome ou telefone..."
+            style="width:100%;min-width:200px;padding:6px 10px;background:#111;border:1px solid #2a2a2a;border-radius:6px;color:#ddd;font-size:12px;font-family:inherit;outline:none"
+            oninput="filterStudentPicker('${p.id}')"
+            onfocus="showStudentPicker('${p.id}')">
+          <input type="hidden" id="match-${p.id}" value="">
+          <div id="picker-drop-${p.id}"
+            style="display:none;position:absolute;top:calc(100% + 2px);left:0;width:280px;max-height:220px;overflow-y:auto;background:#161616;border:1px solid #2a2a2a;border-radius:8px;z-index:500;box-shadow:0 8px 24px rgba(0,0,0,0.5)">
+          </div>
+        </div>
+      </td>
       <td><button class="btn sm" onclick="linkParticipant('${p.id}')">Vincular</button></td>
     </tr>`;
   }).join('');
 }
+
+function showStudentPicker(pid) { filterStudentPicker(pid); }
+
+function filterStudentPicker(pid) {
+  const input = document.getElementById(`picker-input-${pid}`);
+  const drop  = document.getElementById(`picker-drop-${pid}`);
+  const hidden = document.getElementById(`match-${pid}`);
+  if (!drop) return;
+  const q = (input.value || '').toLowerCase().trim();
+  hidden.value = ''; // clear on type
+
+  const pool = q.length === 0
+    ? students.slice(0, 30)
+    : students.filter(s => (s.name || '').toLowerCase().includes(q) || (s.phone || '').includes(q)).slice(0, 30);
+
+  if (!pool.length) { drop.style.display = 'none'; return; }
+  drop.style.display = '';
+  drop.innerHTML = pool.map(s => {
+    const cohortBadge = s.cohorts?.name ? `<span style="font-size:10px;color:#555;margin-left:4px">${s.cohorts.name}</span>` : '';
+    const phone = s.phone ? `<span style="color:#555;font-size:11px"> · ${s.phone}</span>` : '';
+    return `<div
+      onmousedown="selectStudentPicker('${pid}','${s.id}','${(s.name||'').replace(/'/g,"&#39;")}')"
+      style="padding:9px 12px;font-size:12px;color:#ddd;cursor:pointer;border-bottom:1px solid #1e1e1e;display:flex;align-items:center;justify-content:space-between"
+      onmouseover="this.style.background='#1e1e1e'" onmouseout="this.style.background=''">
+      <span>${s.name || '—'}${phone}</span>${cohortBadge}
+    </div>`;
+  }).join('');
+}
+
+function selectStudentPicker(pid, studentId, studentName) {
+  document.getElementById(`picker-input-${pid}`).value = studentName;
+  document.getElementById(`match-${pid}`).value = studentId;
+  const drop = document.getElementById(`picker-drop-${pid}`);
+  if (drop) drop.style.display = 'none';
+}
+
+// Close all dropdowns on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('[id^="picker-wrap-"]')) {
+    document.querySelectorAll('[id^="picker-drop-"]').forEach(d => d.style.display = 'none');
+  }
+});
 
 async function linkParticipant(participantId) {
   const select = document.getElementById('match-' + participantId);
