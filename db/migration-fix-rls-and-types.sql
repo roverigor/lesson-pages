@@ -41,37 +41,45 @@ CREATE POLICY "Admin delete mentor_attendance"
   );
 
 -- ─── 2. Fix attendance.lesson_date — TEXT → DATE ───
--- Converte os valores existentes (formato esperado: 'YYYY-MM-DD' ou 'DD/MM/YYYY')
--- Backup seguro: renomeia coluna antiga, cria nova, migra, remove antiga
+-- Converte os valores existentes. Executa em 3 passos seguros.
 
-ALTER TABLE attendance ADD COLUMN lesson_date_new DATE;
+-- PASSO 1: Verificar quais valores não convertem (diagnóstico — rode antes)
+-- SELECT lesson_date, count(*) FROM attendance
+-- WHERE lesson_date !~ '^\d{4}-\d{2}-\d{2}$'
+--   AND lesson_date !~ '^\d{2}/\d{2}/\d{4}$'
+-- GROUP BY 1;
 
--- Tenta converter TEXT → DATE (assume formato ISO YYYY-MM-DD)
--- Se houver formatos diferentes, ajuste o CASE abaixo
+-- PASSO 2: Adicionar coluna nova nullable
+ALTER TABLE attendance ADD COLUMN IF NOT EXISTS lesson_date_new DATE;
+
+-- PASSO 3: Converter os valores que correspondem a formatos conhecidos
+-- Valores não reconhecidos ficam NULL (veja PASSO 1 acima para identificar)
 UPDATE attendance
 SET lesson_date_new = CASE
-  WHEN lesson_date ~ '^\d{4}-\d{2}-\d{2}$' THEN lesson_date::DATE
-  WHEN lesson_date ~ '^\d{2}/\d{2}/\d{4}$' THEN to_date(lesson_date, 'DD/MM/YYYY')
+  WHEN lesson_date ~ '^\d{4}-\d{2}-\d{2}$'         THEN lesson_date::DATE
+  WHEN lesson_date ~ '^\d{2}/\d{2}/\d{4}$'          THEN to_date(lesson_date, 'DD/MM/YYYY')
+  WHEN lesson_date ~ '^\d{2}-\d{2}-\d{4}$'          THEN to_date(lesson_date, 'DD-MM-YYYY')
+  -- fallback: tenta cast direto (pode falhar para formatos desconhecidos)
   ELSE NULL
-END;
+END
+WHERE lesson_date_new IS NULL;
 
--- Recria index na nova coluna
-DROP INDEX IF EXISTS idx_attendance_date;
-CREATE INDEX idx_attendance_date_new ON attendance(lesson_date_new);
+-- PASSO 4: Deletar ou corrigir rows com lesson_date_new NULL antes de continuar
+-- Se houver NULLs, rode o diagnóstico acima e ajuste os dados primeiro.
+-- Para deletar registros inválidos (cuidado!):
+-- DELETE FROM attendance WHERE lesson_date_new IS NULL;
 
--- Troca as colunas
-ALTER TABLE attendance DROP COLUMN lesson_date;
-ALTER TABLE attendance RENAME COLUMN lesson_date_new TO lesson_date;
-ALTER TABLE attendance ALTER COLUMN lesson_date SET NOT NULL;
+-- PASSO 5: Só execute se não houver NULLs em lesson_date_new
+-- Verifique primeiro: SELECT count(*) FROM attendance WHERE lesson_date_new IS NULL;
+-- Se retornar 0, pode prosseguir:
 
--- Recria o index com o nome original
-DROP INDEX IF EXISTS idx_attendance_date_new;
-CREATE INDEX idx_attendance_date ON attendance(lesson_date);
-
--- Recria a constraint UNIQUE
-ALTER TABLE attendance
-  DROP CONSTRAINT IF EXISTS attendance_lesson_date_course_teacher_name_key;
-
-ALTER TABLE attendance
-  ADD CONSTRAINT attendance_lesson_date_course_teacher_name_key
-  UNIQUE (lesson_date, course, teacher_name);
+-- DROP INDEX IF EXISTS idx_attendance_date;
+-- ALTER TABLE attendance DROP COLUMN lesson_date;
+-- ALTER TABLE attendance RENAME COLUMN lesson_date_new TO lesson_date;
+-- ALTER TABLE attendance ALTER COLUMN lesson_date SET NOT NULL;
+-- CREATE INDEX idx_attendance_date ON attendance(lesson_date);
+-- ALTER TABLE attendance
+--   DROP CONSTRAINT IF EXISTS attendance_lesson_date_course_teacher_name_key;
+-- ALTER TABLE attendance
+--   ADD CONSTRAINT attendance_lesson_date_course_teacher_name_key
+--   UNIQUE (lesson_date, course, teacher_name);
