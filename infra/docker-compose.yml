@@ -1,0 +1,13 @@
+services:
+  lesson-pages:
+    image: lesson-pages:latest
+    container_name: lesson-pages
+    restart: unless-stopped
+    ports:
+      - "3080:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lesson-pages.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.lesson-pages.entrypoints=websecure"
+      - "traefik.http.routers.lesson-pages.tls.certresolver=letsencrypt"
+      - "traefik.http.services.lesson-pages.loadbalancer.server.port=80"
