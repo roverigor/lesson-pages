@@ -736,9 +736,16 @@ function buildEventsFromDB() {
 
     for (const wd of weekdays) {
       const dates = generateDates(c.start_date, c.end_date, wd);
-      const dayMentors = mentors.filter(cm => (cm.weekday ?? c.weekday) === wd);
 
       for (const date of dates) {
+        const isoDate = date.toISOString().split('T')[0];
+        const dayMentors = mentors.filter(cm => {
+          if ((cm.weekday ?? c.weekday) !== wd) return false;
+          if (cm.valid_from && isoDate < cm.valid_from) return false;
+          if (cm.valid_until && isoDate > cm.valid_until) return false;
+          return true;
+        });
+
         const key = fmtDate(date);
         if (!map[key]) map[key] = {};
         if (!map[key][c.name]) map[key][c.name] = { course: c.name, mentors: [] };
@@ -1602,9 +1609,10 @@ function renderClassesList() {
     const endFmt = new Date(c.end_date + 'T00:00:00').toLocaleDateString('pt-BR');
     const typeBadge = c.type ? `<span style="font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(99,102,241,0.12);color:#a5b4fc;font-weight:700">${c.type}</span>` : '';
 
-    // Group mentors by weekday
+    // Group active mentors by weekday (valid_until IS NULL = current cycle)
     const byDay = {};
     for (const cm of (c._mentors || [])) {
+      if (cm.valid_until !== null && cm.valid_until !== undefined) continue; // skip closed cycles
       const wd = cm.weekday ?? c.weekday ?? 0;
       if (!byDay[wd]) byDay[wd] = [];
       byDay[wd].push({ name: getMentorName(cm.mentor_id), role: cm.role });
@@ -1617,6 +1625,18 @@ function renderClassesList() {
       if (c.professor) byDay[wd].push({ name: c.professor, role: 'Professor' });
       if (c.host) byDay[wd].push({ name: c.host, role: 'Host' });
     }
+
+    // Closed cycles info
+    const closedDates = [...new Set((c._mentors || [])
+      .filter(cm => cm.valid_until)
+      .map(cm => cm.valid_until)
+    )].sort();
+    const cyclesBadge = closedDates.length > 0
+      ? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">${closedDates.map(d => {
+          const fmt = new Date(d + 'T00:00:00').toLocaleDateString('pt-BR');
+          return `<span style="font-size:9px;padding:2px 7px;border-radius:4px;background:rgba(99,102,241,0.12);color:#a5b4fc;font-weight:700">🔒 Ciclo fechado ${fmt}</span>`;
+        }).join('')}</div>`
+      : '';
 
     const daysHtml = Object.entries(byDay).sort((a,b) => a[0]-b[0]).map(([wd, members]) => {
       const people = members.map(m => {
@@ -1642,6 +1662,7 @@ function renderClassesList() {
         </div>
         <div style="display:flex;gap:6px">
           <button class="att-btn" style="padding:6px 10px;font-size:11px" onclick="event.stopPropagation();editClass('${c.id}')">Editar</button>
+          <button class="att-btn" style="padding:6px 10px;font-size:11px;background:rgba(99,102,241,0.15);color:#a5b4fc;border-color:#6366f130" onclick="event.stopPropagation();closeClassCycle('${c.id}','${c.name}')">Fechar Ciclo</button>
           <button class="att-btn delete" style="padding:6px 8px" onclick="event.stopPropagation();deleteClass('${c.id}','${c.name}')">🗑</button>
         </div>
       </div>
@@ -1649,6 +1670,7 @@ function renderClassesList() {
         ${c.time_start || ''}–${c.time_end || ''} | ${startFmt} a ${endFmt} | ${allDates.length} aulas
       </div>
       ${daysHtml}
+      ${cyclesBadge}
       ${(c._linkedCohorts || []).length > 0 ? `
       <div style="margin-top:8px;padding-top:8px;border-top:1px solid #141414">
         <div style="font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Turmas vinculadas</div>
@@ -1912,19 +1934,22 @@ async function saveClassV2() {
     classId = data.id;
   }
 
-  // Save class_mentors: delete old, insert new
-  await sb.from('class_mentors').delete().eq('class_id', classId);
+  // Save class_mentors: only replace active records (valid_until IS NULL), preserve temporal boundary
+  const { data: activeRecords } = await sb.from('class_mentors')
+    .select('valid_from').eq('class_id', classId).is('valid_until', null).limit(1);
+  const activeValidFrom = activeRecords && activeRecords.length > 0 ? activeRecords[0].valid_from : '2000-01-01';
+  await sb.from('class_mentors').delete().eq('class_id', classId).is('valid_until', null);
 
   const mentorRows = [];
   for (const day of classSchedules) {
     for (const mId of day.professors) {
-      if (mId) mentorRows.push({ class_id: classId, mentor_id: mId, role: 'Professor', weekday: day.weekday });
+      if (mId) mentorRows.push({ class_id: classId, mentor_id: mId, role: 'Professor', weekday: day.weekday, valid_from: activeValidFrom });
     }
     for (const mId of day.mentors) {
-      if (mId) mentorRows.push({ class_id: classId, mentor_id: mId, role: 'Mentor', weekday: day.weekday });
+      if (mId) mentorRows.push({ class_id: classId, mentor_id: mId, role: 'Mentor', weekday: day.weekday, valid_from: activeValidFrom });
     }
     for (const mId of day.hosts) {
-      if (mId) mentorRows.push({ class_id: classId, mentor_id: mId, role: 'Host', weekday: day.weekday });
+      if (mId) mentorRows.push({ class_id: classId, mentor_id: mId, role: 'Host', weekday: day.weekday, valid_from: activeValidFrom });
     }
   }
 
@@ -1948,6 +1973,34 @@ async function saveClassV2() {
   closeClassForm();
   await loadClasses();
   renderAll(); // atualiza calendário com novos professores/mentores/hosts
+}
+
+async function closeClassCycle(classId, className) {
+  if (!confirm(`Fechar ciclo atual de "${className}"?\n\nA equipe atual será congelada. Você poderá editar livremente sem afetar o histórico.`)) return;
+
+  const today = new Date().toISOString().split('T')[0];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+
+  const { data: activeRows, error: fetchErr } = await sb.from('class_mentors')
+    .select('*').eq('class_id', classId).is('valid_until', null);
+  if (fetchErr) { showToast('Erro: ' + fetchErr.message, 'error'); return; }
+  if (!activeRows || activeRows.length === 0) { showToast('Nenhum mentor ativo nesta turma', 'error'); return; }
+
+  const { error: closeErr } = await sb.from('class_mentors')
+    .update({ valid_until: today }).eq('class_id', classId).is('valid_until', null);
+  if (closeErr) { showToast('Erro ao fechar ciclo: ' + closeErr.message, 'error'); return; }
+
+  const newRows = activeRows.map(r => ({
+    class_id: r.class_id, mentor_id: r.mentor_id, role: r.role,
+    weekday: r.weekday, valid_from: tomorrow, valid_until: null,
+  }));
+  const { error: insertErr } = await sb.from('class_mentors').insert(newRows);
+  if (insertErr) { showToast('Erro ao criar novo ciclo: ' + insertErr.message, 'error'); return; }
+
+  const closedDate = new Date(today + 'T00:00:00').toLocaleDateString('pt-BR');
+  showToast(`Ciclo fechado em ${closedDate}. Equipe pode ser editada livremente.`, 'success');
+  await loadClasses();
+  renderAll();
 }
 
 async function deleteClass(id, name) {
