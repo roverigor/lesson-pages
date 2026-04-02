@@ -212,17 +212,16 @@
 
   <!-- UNMATCHED VIEW -->
   <div id="unmatched-view" style="display:none">
-    <div style="margin-bottom:16px;font-size:13px;color:#555">
-      Participantes do Zoom que nao foram vinculados automaticamente a um aluno. Selecione o aluno correto para vincular.
+    <div style="margin-bottom:20px;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:16px 20px">
+      <div style="font-size:13px;font-weight:700;color:#ddd;margin-bottom:4px">Vincular nome do Zoom ao aluno no WhatsApp</div>
+      <div style="font-size:12px;color:#555">Cada vínculo é permanente — toda vez que esse nome entrar em qualquer reunião, o sistema já sabe quem é e qual o número de WhatsApp para envio de NPS e avisos.</div>
     </div>
     <div class="table-wrap">
       <table>
         <thead><tr>
           <th>Nome no Zoom</th>
-          <th>Email</th>
-          <th>Reuniao</th>
-          <th>Vincular a</th>
-          <th></th>
+          <th style="width:340px">Aluno no WhatsApp <span style="font-weight:400;color:#444;font-size:10px">— busque por nome ou telefone</span></th>
+          <th style="width:90px"></th>
         </tr></thead>
         <tbody id="unmatched-body"></tbody>
       </table>
@@ -476,10 +475,8 @@ function renderUnmatched() {
   }
 
   body.innerHTML = filtered.slice(0, 100).map(p => {
-    const date = p.meetingDate ? new Date(p.meetingDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '';
     return `<tr>
-      <td style="font-weight:500;color:#ddd">${p.participant_name || '—'}</td>
-      <td style="font-size:11px;color:#555">${p.meetingTopic || ''} ${date}</td>
+      <td style="font-weight:600;color:#ddd">${p.participant_name || '—'}</td>
       <td>
         <div style="position:relative" id="picker-wrap-${p.id}">
           <input type="text" id="picker-input-${p.id}" autocomplete="off"
