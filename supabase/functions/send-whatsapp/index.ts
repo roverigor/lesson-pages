@@ -12,9 +12,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "https://gpufcipkajppykmnmdeh.supabase.co";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
-const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL") ?? "http://194.163.179.68:8084";
-const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY") ?? "evo_acadlendaria_2026_secure_key";
-const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "igor";
+const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL") ?? "";
+const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY") ?? "";
+const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
 
 // ─── Types ───
 

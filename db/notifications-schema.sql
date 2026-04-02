@@ -182,24 +182,12 @@ CREATE TRIGGER notifications_updated_at
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 -- ─── 7. SEED: MENTORS ───
-INSERT INTO mentors (name, phone, role) VALUES
-  ('Talles',          '556499425822',    'Both'),
-  ('Jose Amorim',     '559281951096',    'Professor'),
-  ('Klaus',           '5516996308617',   'Professor'),
-  ('Day',             '5511978031078',   'Professor'),
-  ('Sidney',          '556199496931',    'Professor'),
-  ('Rodrigo Feldman', '5511952961036',   'Professor'),
-  ('Bruno Gentil',    '556199331574',    'Both'),
-  ('Diego',           '558386181165',    'Both'),
-  ('Adavio',          '558296838800',    'Professor'),
-  ('Alan Nicolas',    '554891642424',    'Professor'),
-  ('Adriano',         '5515997425595',   'Professor'),
-  ('Douglas',         '5521998628489',   'Host'),
-  ('Lucas Charao',    '555191882447',    'Host'),
-  ('Fran',            '5518988119126',   'Host')
-ON CONFLICT (phone) DO UPDATE SET
-  name = EXCLUDED.name,
-  role = EXCLUDED.role;
+-- NOTA: Telefones reais foram removidos por segurança (LGPD).
+-- Insira os mentores diretamente no Supabase Dashboard ou via script interno seguro.
+-- Exemplo de estrutura:
+-- INSERT INTO mentors (name, phone, role) VALUES
+--   ('Nome Mentor', '55XXXXXXXXXXX', 'Professor|Host|Both')
+-- ON CONFLICT (phone) DO UPDATE SET name = EXCLUDED.name, role = EXCLUDED.role;
 
 -- ─── 8. WEBHOOK SETUP (via Dashboard) ───
 -- Configure no Supabase Dashboard > Database > Webhooks:

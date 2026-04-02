@@ -241,11 +241,10 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
 <script>
 const SUPABASE_URL = 'https://gpufcipkajppykmnmdeh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU';
-const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDM3MTU3OCwiZXhwIjoyMDg5OTQ3NTc4fQ.DCTw5wwbkA9A1QPbby3aGkoaGpHySqLDTwv-yyn13qE';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let meetings = [];
@@ -518,7 +517,7 @@ async function syncMeeting() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + SERVICE_KEY,
+        'Authorization': 'Bearer ' + (await sb.auth.getSession()).data.session?.access_token,
       },
       body: JSON.stringify({ meeting_id: meetingId }),
     });
