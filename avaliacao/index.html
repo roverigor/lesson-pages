@@ -117,6 +117,17 @@ const KEYS = ['ps_advanced','ps_fund','fund_t3'];
 const IDS  = {'ps_advanced':'detail-ps-advanced','ps_fund':'detail-ps-fund','fund_t3':'detail-fund-t3'};
 let activeKey = null;
 
+const NEG_WORDS = ['bagunçado','bagunça','demorou','falta de foco','foco','monopoliza','não resolveram','problema','desnivelado','perdido','básico','lento','perde','não conseguiu','ruim','mal ','pior','errado','confuso','atrasou','critica','crítica','fraco','falhou','frustr','inadequ','péssimo','deixou a desejar'];
+const POS_WORDS = ['ótimo','excelente','fantástico','incrível','sensacional','parabéns','show','top','massa','maravilhoso','perfeito','muito bom','fenomenal','nota 1000','gratidão','obrigado','obrigada','adorei','amei','bacana','excepcional','didática','atencioso','insights','surreal','recomendo','valeu','ajudou','resolveu','tirou','aprendemos','salva','nota 10','nota1000'];
+function commentSentiment(text) {
+  const t = text.toLowerCase();
+  const neg = NEG_WORDS.some(w => t.includes(w));
+  const pos = POS_WORDS.some(w => t.includes(w));
+  if (neg && !pos) return 'negativo';
+  if (pos && !neg) return 'positivo';
+  return 'neutro';
+}
+
 function scoreClass(v) {
   if (v === null || v === undefined) return '';
   return v >= 4.5 ? 'high' : v >= 3.5 ? 'mid' : 'low';
@@ -209,7 +220,12 @@ function renderDetail(key) {
   const commentsHtml = allComments.length > 0
     ? `<button class="comments-toggle" onclick="toggleComments('${key}')">💬 Ver ${allComments.length} comentários</button>
        <div class="comments-list" id="comments-${key}">
-         ${allComments.map(c => `<div class="comment-item"><span style="font-size:10px;color:#444;font-weight:600;margin-right:8px">${fmtDate(c.date)}</span>${esc(c.text)}</div>`).join('')}
+         ${allComments.map(c => {
+           const sent = commentSentiment(c.text);
+           const borderColor = sent === 'negativo' ? '#f87171' : sent === 'positivo' ? '#4ade8030' : '#222';
+           const indicator = sent === 'negativo' ? '<span style="font-size:9px;background:rgba(248,113,113,.12);color:#f87171;padding:1px 6px;border-radius:4px;margin-right:6px;font-weight:700">⚠ negativo</span>' : '';
+           return `<div class="comment-item" style="border-left-color:${borderColor}"><span style="font-size:10px;color:#444;font-weight:600;margin-right:8px">${fmtDate(c.date)}</span>${indicator}${esc(c.text)}</div>`;
+         }).join('')}
        </div>`
     : '';
 
