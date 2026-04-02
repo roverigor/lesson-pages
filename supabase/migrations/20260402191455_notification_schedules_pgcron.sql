@@ -89,9 +89,9 @@ $$ LANGUAGE plpgsql STABLE;
 -- For each active schedule due to fire: insert notification + update timestamps.
 CREATE OR REPLACE FUNCTION process_notification_schedules() RETURNS void AS $$
 DECLARE
-  v_schedule  RECORD;
-  v_class     RECORD;
-  v_cohort    RECORD;
+  v_schedule         RECORD;
+  v_class_weekday    INTEGER;
+  v_class_time_start TIME;
 BEGIN
   FOR v_schedule IN
     SELECT s.*
@@ -101,16 +101,9 @@ BEGIN
       AND s.next_fire_at <= now()
       AND (s.last_fired_at IS NULL OR s.next_fire_at > s.last_fired_at)
   LOOP
-    -- Fetch class data
-    SELECT id, weekday, time_start, whatsapp_group_jid AS group_jid
-    INTO v_class
-    FROM classes c
-    LEFT JOIN class_cohorts cc ON cc.class_id = c.id AND cc.cohort_id = v_schedule.cohort_id
-    WHERE c.id = v_schedule.class_id;
-
-    -- Fetch cohort group JID if needed
-    SELECT whatsapp_group_jid INTO v_cohort
-    FROM cohorts WHERE id = v_schedule.cohort_id;
+    -- Fetch class weekday and time_start (no JOIN to avoid ambiguous id)
+    SELECT c.weekday, c.time_start INTO v_class_weekday, v_class_time_start
+    FROM classes c WHERE c.id = v_schedule.class_id;
 
     -- Duplicate guard: skip if notification already created in last 2 hours for same class+type
     IF NOT EXISTS (
@@ -140,14 +133,10 @@ BEGIN
         jsonb_build_object('schedule_id', v_schedule.id, 'automated', true)
       );
 
-      -- Mark as fired
+      -- Mark as fired and recalculate next occurrence
       UPDATE notification_schedules
       SET last_fired_at = now(),
-          next_fire_at  = calculate_next_fire_at(
-            (SELECT weekday FROM classes WHERE id = v_schedule.class_id),
-            (SELECT time_start FROM classes WHERE id = v_schedule.class_id),
-            v_schedule.hours_before
-          )
+          next_fire_at  = calculate_next_fire_at(v_class_weekday, v_class_time_start, v_schedule.hours_before)
       WHERE id = v_schedule.id;
     END IF;
   END LOOP;
