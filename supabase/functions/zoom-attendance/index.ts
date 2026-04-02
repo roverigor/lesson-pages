@@ -8,7 +8,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "https://gpufcipkajppykmnmdeh.supabase.co";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
 const ZOOM_S2S_ACCOUNT_ID = Deno.env.get("ZOOM_S2S_ACCOUNT_ID") ?? "";
@@ -50,14 +50,21 @@ async function getS2SToken(): Promise<string> {
 // ─── Zoom API Helpers ───
 
 async function zoomGet(token: string, path: string) {
-  const res = await fetch(`https://api.zoom.us/v2${path}`, {
-    headers: { "Authorization": `Bearer ${token}` },
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Zoom API ${path}: ${res.status} ${err}`);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10_000);
+  try {
+    const res = await fetch(`https://api.zoom.us/v2${path}`, {
+      headers: { "Authorization": `Bearer ${token}` },
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Zoom API ${path}: ${res.status} ${err}`);
+    }
+    return res.json();
+  } finally {
+    clearTimeout(timeout);
   }
-  return res.json();
 }
 
 async function getMeetingInstances(token: string, meetingId: string) {
@@ -263,9 +270,9 @@ serve(async (req: Request) => {
     }
 
     // Load students for matching (include email and is_mentor for guardrails)
-    const studentQuery = sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true);
-    if (cohort_id) studentQuery.eq("cohort_id", cohort_id);
-    const { data: students } = await studentQuery;
+    const { data: students } = await (cohort_id
+      ? sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true).eq("cohort_id", cohort_id)
+      : sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true));
 
     const results = [];
 
@@ -295,15 +302,8 @@ serve(async (req: Request) => {
         continue;
       }
 
-      // Filter out bots/notetakers
-      const realParticipants = participants.filter((p: Record<string, string>) => {
-        const name = (p.name || "").toLowerCase();
-        return !name.includes("notetaker") &&
-               !name.includes("fathom") &&
-               !name.includes("read.ai") &&
-               !name.includes("fireflies") &&
-               !name.includes("otter");
-      });
+      // Filter out bots/notetakers — use centralized isBot() (P-034)
+      const realParticipants = participants.filter((p: Record<string, string>) => !isBot(p.name || ""));
 
       // Save meeting
       const { data: meeting, error: meetingError } = await sb.from("zoom_meetings").insert({
@@ -334,28 +334,28 @@ serve(async (req: Request) => {
         students || []
       );
 
-      // Save participants
-      let matched = 0;
-      let unmatched = 0;
-
-      for (const p of realParticipants) {
-        const key = p.user_email || normalize(p.name);
+      // Save participants — single batch insert (P-006)
+      const participantRows = realParticipants.map((p: Record<string, string | number>) => {
+        const key = (p.user_email as string) || normalize(p.name as string);
         const studentId = studentMatches[key] || null;
-
-        await sb.from("zoom_participants").insert({
+        return {
           meeting_id: meeting.id,
-          participant_name: p.name || null,
-          participant_email: p.user_email || null,
-          join_time: p.join_time || null,
-          leave_time: p.leave_time || null,
-          duration_minutes: p.duration ? Math.round(p.duration / 60) : null,
+          participant_name: (p.name as string) || null,
+          participant_email: (p.user_email as string) || null,
+          join_time: (p.join_time as string) || null,
+          leave_time: (p.leave_time as string) || null,
+          duration_minutes: p.duration ? Math.round((p.duration as number) / 60) : null,
           student_id: studentId,
           matched: !!studentId,
-        });
+        };
+      });
 
-        if (studentId) matched++;
-        else unmatched++;
+      if (participantRows.length > 0) {
+        await sb.from("zoom_participants").insert(participantRows);
       }
+
+      const matched = participantRows.filter(r => r.matched).length;
+      const unmatched = participantRows.length - matched;
 
       // Mark as processed
       await sb.from("zoom_meetings").update({ processed: true }).eq("id", meeting.id);

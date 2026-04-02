@@ -807,7 +807,6 @@ async function handleLogin(e) {
 
   try {
     const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    console.log('Login result:', { data, error });
     if (error) {
       errEl.textContent = error.message || 'Email ou senha incorretos';
       errEl.classList.add('show');
@@ -845,9 +844,14 @@ function showApp() {
 // LOAD ATTENDANCE FROM SUPABASE
 // ═══════════════════════════════════════
 async function loadAttendance() {
+  // Filtra pelo semestre atual (últimos 6 meses) para evitar full-scan (P-010)
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
   const { data, error } = await sb
     .from('attendance')
-    .select('*');
+    .select('*')
+    .gte('lesson_date', sixMonthsAgo.toISOString().split('T')[0])
+    .limit(2000);
 
   if (error) { console.error('Load attendance error:', error); return; }
 
@@ -871,39 +875,32 @@ async function saveAttendance(records) {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { showToast('Sessão expirada. Faça login novamente.', 'error'); return false; }
 
-  for (const rec of records) {
+  // Batch upsert — única query ao invés de N queries (P-008)
+  const upsertRows = records.map(rec => {
     const key = `${rec.lesson_date}|${rec.course}|${rec.teacher_name}`;
     const existing = attendanceCache[key];
+    return {
+      ...(existing?.id ? { id: existing.id } : {}),
+      lesson_date: rec.lesson_date,
+      course: rec.course,
+      teacher_name: rec.teacher_name,
+      role: rec.role,
+      status: rec.status,
+      substitute_name: rec.substitute_name || null,
+      substitute_role: rec.substitute_role || null,
+      notes: rec.notes || null,
+      recorded_by: session.user.id,
+    };
+  });
 
-    if (existing && existing.id) {
-      const { error } = await sb
-        .from('attendance')
-        .update({
-          status: rec.status,
-          substitute_name: rec.substitute_name || null,
-          substitute_role: rec.substitute_role || null,
-          notes: rec.notes || null,
-        })
-        .eq('id', existing.id);
+  const { error: upsertError } = await sb
+    .from('attendance')
+    .upsert(upsertRows, { onConflict: 'lesson_date,course,teacher_name' });
 
-      if (error) { console.error('Update error:', error); showToast('Erro ao salvar: ' + error.message, 'error'); return false; }
-    } else {
-      const { error } = await sb
-        .from('attendance')
-        .insert({
-          lesson_date: rec.lesson_date,
-          course: rec.course,
-          teacher_name: rec.teacher_name,
-          role: rec.role,
-          status: rec.status,
-          substitute_name: rec.substitute_name || null,
-          substitute_role: rec.substitute_role || null,
-          notes: rec.notes || null,
-          recorded_by: session.user.id,
-        });
-
-      if (error) { console.error('Insert error:', error); showToast('Erro ao salvar: ' + error.message, 'error'); return false; }
-    }
+  if (upsertError) {
+    console.error('Upsert error:', upsertError);
+    showToast('Erro ao salvar: ' + upsertError.message, 'error');
+    return false;
   }
 
   await loadAttendance();

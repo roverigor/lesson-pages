@@ -9,7 +9,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
 // ─── Configuration ───
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "https://gpufcipkajppykmnmdeh.supabase.co";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
 const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL") ?? "";
@@ -337,7 +337,7 @@ async function processNotification(notification: NotificationRecord): Promise<{
 serve(async (req: Request) => {
   // CORS headers for Supabase
   const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Origin": "https://lesson-pages.vercel.app",
     "Access-Control-Allow-Headers":
       "authorization, x-client-info, apikey, content-type",
   };

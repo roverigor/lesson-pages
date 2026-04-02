@@ -495,7 +495,7 @@ function renderTable() {
       <td><a href="${waLink}" target="_blank" class="action-btn whatsapp">Abrir</a></td>
       <td><div class="actions-cell">
         <button class="action-btn edit" onclick="startEdit('${s.id}')">Editar</button>
-        <button class="action-btn delete" onclick="deleteStudent('${s.id}','${(s.name || s.phone).replace(/'/g, "\\'")}')">X</button>
+        <button class="action-btn delete" data-id="${s.id}" data-name="${(s.name || s.phone).replace(/"/g, '&quot;')}" onclick="deleteStudent(this.dataset.id, this.dataset.name)">X</button>
       </div></td>
     </tr>`;
   }).join('');
