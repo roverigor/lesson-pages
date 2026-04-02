@@ -78,6 +78,41 @@
     .theme-tag { font-size: 11px; padding: 3px 10px; border-radius: 999px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #aaa; display: flex; align-items: center; gap: 5px; }
     .theme-count { background: #1a1a1a; border-radius: 999px; padding: 1px 6px; font-size: 10px; color: #555; font-weight: 700; }
 
+    .btn-print { background: #1e1e2e; color: #a5b4fc; border: 1px solid #6366f130; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .btn-print:hover { background: #2a2a3e; }
+    .no-print { }
+    .print-header { display: none; }
+
+    @media print {
+      body { background: #fff !important; color: #000 !important; }
+      .header, .no-print { display: none !important; }
+      .container { padding: 0 !important; max-width: 100% !important; }
+      .ov-card { border: 1px solid #ddd !important; background: #f9f9f9 !important; break-inside: avoid; }
+      .ov-score { color: #000 !important; }
+      .ov-name, .ov-meta, .ov-score-label { color: #333 !important; }
+      .score-bar { background: #eee !important; }
+      .turma-detail { display: block !important; }
+      .detail-card { border: 1px solid #ddd !important; background: #fff !important; break-inside: avoid; margin-bottom: 24px; }
+      .metric-pill { border: 1px solid #ddd !important; background: #f9f9f9 !important; }
+      .metric-pill-label { color: #666 !important; }
+      .metric-pill-val { color: #000 !important; }
+      .session-date, .session-n { color: #333 !important; }
+      .score-chip { border: 1px solid #ddd !important; }
+      .score-chip.high  { background: #f0fdf4 !important; color: #166534 !important; }
+      .score-chip.mid   { background: #fffbeb !important; color: #92400e !important; }
+      .score-chip.low   { background: #fef2f2 !important; color: #991b1b !important; }
+      .comment-item { background: #f9f9f9 !important; color: #333 !important; border-left-width: 3px !important; }
+      .comments-list { display: block !important; }
+      .comments-toggle { display: none !important; }
+      .section-title, .sessions-title { color: #666 !important; }
+      .sentiment-section { border-top: 1px solid #ddd !important; }
+      .sent-bar-track { background: #eee !important; }
+      .theme-tag { border: 1px solid #ddd !important; color: #333 !important; background: #f9f9f9 !important; }
+      .theme-count { background: #eee !important; color: #666 !important; }
+      .print-header { display: block !important; }
+      .overview-grid { break-inside: avoid; }
+    }
+
     @media (max-width: 600px) {
       .overview-grid { grid-template-columns: 1fr 1fr; }
       .metrics-row { gap: 6px; }
@@ -87,10 +122,19 @@
 </head>
 <body>
 
+<!-- PRINT HEADER (visível só na impressão) -->
+<div class="print-header" style="padding:16px 0 24px;border-bottom:2px solid #000;margin-bottom:24px">
+  <h1 style="font-size:20px;font-weight:800;color:#000">Avaliações das Turmas — Academia Lendária</h1>
+  <p id="print-subtitle" style="font-size:13px;color:#666;margin-top:4px"></p>
+</div>
+
 <div class="header">
-  <div>
+  <div style="flex:1">
     <div class="header-title">📊 Avaliações das Turmas</div>
     <div class="header-sub">NPS · CSAT · Pronto-Socorro · Academia Lendária</div>
+  </div>
+  <div class="no-print" style="display:flex;align-items:center;gap:8px">
+    <button class="btn-print" onclick="printAll()">🖨 Imprimir</button>
   </div>
 </div>
 
@@ -319,6 +363,19 @@ function toggleComments(key) {
 
 function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function printAll() {
+  // Expande todos os detalhes e comentários antes de imprimir
+  KEYS.forEach(key => {
+    renderDetail(key);
+    document.getElementById(IDS[key]).classList.add('visible');
+    const commentsEl = document.getElementById('comments-' + key);
+    if (commentsEl) commentsEl.classList.add('open');
+  });
+  document.getElementById('print-subtitle').textContent =
+    `Gerado em ${new Date().toLocaleDateString('pt-BR')} · ${KEYS.length} turmas avaliadas`;
+  setTimeout(() => window.print(), 150);
 }
 
 renderOverview();
