@@ -29,6 +29,10 @@ Thumbs.db
 .claude/settings.local.json
 .aiox/install-log.txt
 
+# Backup files — nunca comitar (UX-M4)
+*.backup.*
+.env.backup.*
+
 # Documentos com credenciais (LGPD)
 docs/logins-*.md
 

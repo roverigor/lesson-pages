@@ -1649,7 +1649,7 @@ async function saveStaff() {
 }
 
 async function deleteStaff(id, name) {
-  if (!confirm(`Excluir ${name}?`)) return;
+  if (!confirm(`Excluir "${name}" do cadastro?\n\nEsta ação não pode ser desfeita.`)) return;
   const { error } = await sb.from('staff').delete().eq('id', id);
   if (error) { showToast('Erro: ' + error.message, 'error'); return; }
   showToast(`${name} removido`, 'success');
@@ -2301,11 +2301,11 @@ async function unlinkParticipant(partId) {
 }
 
 async function deleteClass(id, name) {
-  if (!confirm(`Excluir turma ${name}?`)) return;
+  if (!confirm(`Excluir a turma "${name}"?\n\nIsso vai remover todos os mentores e vínculos de cohort associados.\nEsta ação não pode ser desfeita.`)) return;
   await sb.from('class_mentors').delete().eq('class_id', id);
   const { error } = await sb.from('classes').delete().eq('id', id);
   if (error) { showToast('Erro: ' + error.message, 'error'); return; }
-  showToast(`Turma ${name} removida`, 'success');
+  showToast(`Turma "${name}" removida`, 'success');
   await loadClasses();
   renderAll(); // atualiza calendário após exclusão
 }
