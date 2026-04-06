@@ -108,7 +108,6 @@ function renderClassesList() {
         </div>
         <div style="display:flex;gap:6px">
           <button class="att-btn" style="padding:6px 10px;font-size:11px" onclick="event.stopPropagation();editClass('${c.id}')">Editar</button>
-          <button class="att-btn" style="padding:6px 10px;font-size:11px;background:rgba(99,102,241,0.15);color:#a5b4fc;border-color:#6366f130" onclick="event.stopPropagation();closeClassCycle('${c.id}','${c.name}')">Fechar Ciclo</button>
           <button class="att-btn" style="padding:6px 10px;font-size:11px;background:rgba(34,197,94,0.12);color:#4ade80;border-color:#22c55e30" onclick="event.stopPropagation();openNewCycle('${c.id}','${c.name}')">+ Novo Ciclo</button>
           <button class="att-btn delete" style="padding:6px 8px" onclick="event.stopPropagation();deleteClass('${c.id}','${c.name}')">🗑</button>
         </div>
@@ -416,7 +415,7 @@ async function saveClassV2() {
 }
 
 async function openNewCycle(classId, className) {
-  if (!confirm(`Abrir novo ciclo para "${className}"?\n\nO ciclo atual será fechado e um novo ciclo começará amanhã com a mesma equipe.`)) return;
+  if (!confirm(`Iniciar novo ciclo de presenças para "${className}"?\n\nO ciclo atual será fechado (histórico preservado) e um novo ciclo começará com a mesma equipe.\n\nUse o botão "↩ Reabrir" no badge do ciclo para voltar e editar um ciclo anterior.`)) return;
 
   await closeClassCycle(classId, className, true);
 }
