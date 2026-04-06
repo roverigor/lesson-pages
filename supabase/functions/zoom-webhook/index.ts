@@ -61,21 +61,38 @@ serve(async (req: Request) => {
   }
 
   // Handle Zoom's endpoint validation challenge
+  // Must respond BEFORE signature check — Zoom sends this to verify the URL is reachable
   if (payload.event === "endpoint.url_validation") {
     const plainToken = (payload.payload as Record<string, string>)?.plainToken ?? "";
-    const key = await crypto.subtle.importKey(
-      "raw",
-      new TextEncoder().encode(ZOOM_WEBHOOK_SECRET),
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"]
-    );
-    const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(plainToken));
-    const encryptedToken = Array.from(new Uint8Array(mac)).map(b => b.toString(16).padStart(2, "0")).join("");
-    return new Response(
-      JSON.stringify({ plainToken, encryptedToken }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+
+    if (!ZOOM_WEBHOOK_SECRET) {
+      // Secret not yet configured — return error so user knows to add it
+      return new Response(
+        JSON.stringify({ error: "ZOOM_WEBHOOK_SECRET not configured in Supabase secrets" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    try {
+      const key = await crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(ZOOM_WEBHOOK_SECRET),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign"]
+      );
+      const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(plainToken));
+      const encryptedToken = Array.from(new Uint8Array(mac)).map(b => b.toString(16).padStart(2, "0")).join("");
+      return new Response(
+        JSON.stringify({ plainToken, encryptedToken }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    } catch (e) {
+      return new Response(
+        JSON.stringify({ error: "HMAC computation failed: " + String(e) }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
   }
 
   // Verify signature for all other events
