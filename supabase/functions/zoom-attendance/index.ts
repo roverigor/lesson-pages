@@ -444,13 +444,14 @@ serve(async (req: Request) => {
     }
 
     // ── ACTION: rematch_all ───────────────────────────────────────────
-    // Re-runs matching on all zoom_participants where matched=false.
-    // Uses the improved fuzzy algorithm. Updates student_id + matched in bulk.
-    // body: { action: "rematch_all", cohort_id?: string }
+    // Re-runs matching on unmatched zoom_participants using improved fuzzy algorithm.
+    // Paginated — call with { offset: 0, limit: 150 } and repeat until has_more=false.
+    // body: { action: "rematch_all", cohort_id?: string, offset?: number, limit?: number }
     if (action === "rematch_all") {
       const sb = getSupabaseClient();
+      const { offset: rmOffset = 0, limit: rmLimit = 150 } = body as { offset?: number; limit?: number };
 
-      // Load all active students
+      // Load all active students once
       const { data: students } = await (cohort_id
         ? sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true).eq("cohort_id", cohort_id)
         : sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true));
@@ -462,52 +463,52 @@ serve(async (req: Request) => {
         );
       }
 
-      // Load all unmatched participants in pages of 500
-      let totalProcessed = 0;
-      let totalMatched = 0;
-      let page = 0;
-      const pageSize = 500;
+      // Fetch this page of unmatched participants
+      const { data: unmatched, error } = await sb
+        .from("zoom_participants")
+        .select("id, participant_name, participant_email")
+        .eq("matched", false)
+        .not("participant_name", "is", null)
+        .range(rmOffset, rmOffset + rmLimit - 1);
 
-      while (true) {
-        const query = sb
-          .from("zoom_participants")
-          .select("id, participant_name, participant_email, meeting_id")
-          .eq("matched", false)
-          .not("participant_name", "is", null)
-          .range(page * pageSize, (page + 1) * pageSize - 1);
-
-        const { data: unmatched, error } = await query;
-        if (error || !unmatched?.length) break;
-
-        // Run matching on this page
-        const { matches } = matchStudents(
-          unmatched.map(p => ({ name: p.participant_name || "", email: p.participant_email || "" })),
-          students
+      if (error) {
+        return new Response(
+          JSON.stringify({ ok: false, error: error.message }),
+          { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
-
-        // Build update list
-        const toUpdate: Array<{ id: string; student_id: string }> = [];
-        for (const p of unmatched) {
-          const key = p.participant_email || normalize(cleanParticipantName(p.participant_name || ""));
-          const studentId = matches[key];
-          if (studentId) toUpdate.push({ id: p.id, student_id: studentId });
-        }
-
-        // Update matched records individually (Supabase doesn't support bulk update by id list easily)
-        for (const u of toUpdate) {
-          await sb.from("zoom_participants")
-            .update({ student_id: u.student_id, matched: true })
-            .eq("id", u.id);
-        }
-
-        totalProcessed += unmatched.length;
-        totalMatched += toUpdate.length;
-        if (unmatched.length < pageSize) break;
-        page++;
       }
 
+      const page = unmatched || [];
+
+      // Run matching on this page
+      const { matches } = matchStudents(
+        page.map(p => ({ name: p.participant_name || "", email: p.participant_email || "" })),
+        students
+      );
+
+      // Update matched records
+      let newlyMatched = 0;
+      for (const p of page) {
+        const key = p.participant_email || normalize(cleanParticipantName(p.participant_name || ""));
+        const studentId = matches[key];
+        if (studentId) {
+          await sb.from("zoom_participants")
+            .update({ student_id: studentId, matched: true })
+            .eq("id", p.id);
+          newlyMatched++;
+        }
+      }
+
+      const hasMore = page.length === rmLimit;
       return new Response(
-        JSON.stringify({ ok: true, processed: totalProcessed, newly_matched: totalMatched }),
+        JSON.stringify({
+          ok: true,
+          offset: rmOffset,
+          processed: page.length,
+          newly_matched: newlyMatched,
+          has_more: hasMore,
+          next_offset: hasMore ? rmOffset + rmLimit : null,
+        }),
         { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
