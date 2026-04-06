@@ -68,6 +68,14 @@ const config = [
         autoMatchParticipants: 'readonly', // zoom.js
         loadAbstractsView: 'readonly',// abstracts.js
         loadSurveysView: 'readonly',  // surveys.js
+        prvNext: 'readonly',          // surveys.js preview
+        prvEnableNext: 'readonly',    // surveys.js preview
+        prvSelectNPS: 'readonly',     // surveys.js preview
+        prvSelectStar: 'readonly',    // surveys.js preview
+        prvHoverStar: 'readonly',     // surveys.js preview
+        prvUnhoverStar: 'readonly',   // surveys.js preview
+        prvSelectOption: 'readonly',  // surveys.js preview
+        prvSelectScale: 'readonly',   // surveys.js preview
         renderReport: 'readonly',     // views.js
         switchView: 'readonly',       // views.js
         getCfg: 'readonly',           // config.js

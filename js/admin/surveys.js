@@ -372,50 +372,177 @@ async function saveBuilder() {
   await loadSurveysView();
 }
 
-// ─── Preview ───
+// ─── Preview (flow sequencial — uma pergunta por vez) ───
 function previewBuilder() {
   const name  = document.getElementById('bld-name')?.value || 'Preview';
   const intro = document.getElementById('bld-intro')?.value || '';
+  const qs    = builderQuestions;
 
-  const screenHTML = (content) =>
-    `<div style="background:#0f0f0f;border:1px solid #1e1e1e;border-radius:14px;padding:28px 24px;margin-bottom:10px">${content}</div>`;
+  if (!qs.length) {
+    showToast('Adicione ao menos uma pergunta para ver o preview', 'error');
+    return;
+  }
 
-  const questionPreviews = builderQuestions.map((q, i) => {
-    const qt = Q_TYPES[q.type] || { icon: '?', label: q.type };
-    let widget = '';
+  // Screens: 0 = intro (se existir), 1..N = perguntas, N+1 = obrigado
+  let currentScreen = intro ? 0 : 1;
+  const totalScreens = qs.length + (intro ? 1 : 0) + 1; // intro + perguntas + obrigado
+
+  function pct() {
+    return Math.round((currentScreen / (totalScreens - 1)) * 100);
+  }
+
+  function buildQuestionWidget(q) {
     if (q.type === 'nps') {
-      widget = `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:14px">${Array.from({length:11},(_,n)=>`<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid #222;border-radius:7px;font-size:12px;font-weight:700;color:#555">${n}</div>`).join('')}</div><div style="display:flex;justify-content:space-between;font-size:10px;color:#444;margin-top:5px"><span>Nada satisfeito</span><span>Muito satisfeito</span></div>`;
-    } else if (q.type === 'csat') {
-      widget = `<div style="display:flex;gap:10px;margin-top:14px;justify-content:center">${'★★★★★'.split('').map(s=>`<span style="font-size:36px;color:#333">${s}</span>`).join('')}</div>`;
-    } else if (q.type === 'text') {
-      widget = `<textarea style="width:100%;margin-top:12px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;padding:10px;color:#555;font-size:13px;resize:none;height:80px" placeholder="${escHtml(q.placeholder||'Sua resposta...')}" disabled></textarea>`;
-    } else if (q.type === 'choice' || q.type === 'multi') {
-      widget = `<div style="margin-top:12px;display:flex;flex-direction:column;gap:7px">${(q.options||[]).map(o=>`<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px"><div style="width:14px;height:14px;border:2px solid #333;border-radius:${q.type==='multi'?'3px':'50%'}"></div><span style="font-size:13px;color:#888">${escHtml(o||'Opção')}</span></div>`).join('')}</div>`;
-    } else if (q.type === 'scale') {
+      return `<div style="display:grid;grid-template-columns:repeat(11,1fr);gap:5px;margin-bottom:8px">
+        ${Array.from({length:11},(_,n)=>{
+          const cls = n<=6?'#ef444440':n<=8?'#f59e0b40':'#22c55e40';
+          const col = n<=6?'#ef4444':n<=8?'#f59e0b':'#22c55e';
+          return `<button onclick="prvSelectNPS(this,${n})" data-v="${n}" style="aspect-ratio:1;border:1px solid #222;border-radius:8px;background:#0d0d0d;color:#555;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='${col}';this.style.color='${col}'" onmouseout="if(!this.classList.contains('sel')){this.style.borderColor='#222';this.style.color='#555'}">${n}</button>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#444;margin-bottom:24px"><span>Nada satisfeito</span><span>Muito satisfeito</span></div>`;
+    }
+    if (q.type === 'csat') {
+      return `<div style="display:flex;gap:12px;justify-content:center;margin-bottom:8px">
+        ${[1,2,3,4,5].map(n=>`<button onclick="prvSelectStar(this,${n})" data-v="${n}" style="font-size:40px;color:#222;background:none;border:none;cursor:pointer;transition:all .15s;line-height:1" onmouseover="prvHoverStar(${n})" onmouseout="prvUnhoverStar()">★</button>`).join('')}
+      </div>
+      <div id="prv-star-lbl" style="text-align:center;font-size:12px;color:#444;margin-bottom:24px;min-height:18px">Clique em uma estrela</div>`;
+    }
+    if (q.type === 'text') {
+      return `<textarea oninput="prvEnableNext()" style="width:100%;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:10px;padding:12px 14px;color:#ddd;font-size:14px;font-family:inherit;resize:none;min-height:90px;margin-bottom:20px;transition:border-color .15s" placeholder="${escHtml(q.placeholder||'Sua resposta...')}" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#1e1e1e'"></textarea>`;
+    }
+    if (q.type === 'choice' || q.type === 'multi') {
+      const isMulti = q.type === 'multi';
+      return `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+        ${(q.options||[]).map((o,oi)=>`
+          <div onclick="prvSelectOption(this,${isMulti})" style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:10px;cursor:pointer;transition:all .15s;user-select:none" onmouseover="if(!this.dataset.sel)this.style.borderColor='#333'" onmouseout="if(!this.dataset.sel)this.style.borderColor='#1e1e1e'">
+            <div style="width:18px;height:18px;border:2px solid #333;border-radius:${isMulti?'4px':'50%'};flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center" class="prv-dot"></div>
+            <span style="font-size:14px;color:#ccc">${escHtml(o||'Opção '+(oi+1))}</span>
+          </div>`).join('')}
+      </div>`;
+    }
+    if (q.type === 'scale') {
       const max = q.scale_max || 5;
-      widget = `<div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap">${Array.from({length:max},(_,n)=>`<div style="flex:1;min-width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:1px solid #222;border-radius:7px;font-size:12px;font-weight:700;color:#555">${n+1}</div>`).join('')}</div>`;
+      return `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px">
+        ${Array.from({length:max},(_,n)=>`<button onclick="prvSelectScale(this,${n+1})" style="flex:1;min-width:36px;height:44px;border:1px solid #222;border-radius:8px;background:#0d0d0d;color:#555;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit" onmouseover="if(!this.classList.contains('sel')){this.style.borderColor='#f97316';this.style.color='#f97316'}" onmouseout="if(!this.classList.contains('sel')){this.style.borderColor='#222';this.style.color='#555'}">${n+1}</button>`).join('')}
+      </div>`;
+    }
+    return '';
+  }
+
+  function renderScreen() {
+    const modal = document.getElementById('preview-modal');
+    if (!modal) return;
+
+    const isIntro   = intro && currentScreen === 0;
+    const isThanks  = currentScreen === totalScreens - 1;
+    const qIdx      = intro ? currentScreen - 1 : currentScreen - 1;
+    const q         = !isIntro && !isThanks ? qs[qIdx] : null;
+    const isLast    = !isIntro && !isThanks && qIdx === qs.length - 1;
+
+    let cardContent = '';
+
+    if (isIntro) {
+      cardContent = `
+        <div style="font-size:11px;color:#333;letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:20px">Academia Lendária</div>
+        <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:12px">Olá!</div>
+        <div style="font-size:14px;color:#666;line-height:1.7;margin-bottom:28px">${escHtml(intro)}</div>
+        <button id="prv-next" onclick="prvNext()" style="width:100%;background:#6366f1;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s">Começar</button>`;
+    } else if (isThanks) {
+      cardContent = `
+        <div style="width:72px;height:72px;background:rgba(34,197,94,.1);border:2px solid rgba(34,197,94,.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px;color:#22c55e">✓</div>
+        <div style="font-size:22px;font-weight:800;color:#fff;text-align:center;margin-bottom:8px">Obrigado!</div>
+        <div style="font-size:14px;color:#555;text-align:center">Sua avaliação foi registrada com sucesso.</div>`;
+    } else {
+      const isRequired = q.required !== false;
+      const needsSelection = q.type !== 'text' && q.type !== 'multi';
+      cardContent = `
+        <div style="font-size:11px;color:#333;letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:8px">Academia Lendária</div>
+        <div style="font-size:11px;color:#444;margin-bottom:10px;font-weight:600">Pergunta ${qIdx+1} de ${qs.length}</div>
+        <div style="font-size:20px;font-weight:800;color:#fff;line-height:1.35;margin-bottom:28px">${escHtml(q.label||'(sem texto)')}</div>
+        ${buildQuestionWidget(q)}
+        <button id="prv-next" onclick="prvNext()" ${(isRequired && needsSelection) ? 'disabled' : ''} style="width:100%;background:#6366f1;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s,opacity .15s;${(isRequired && needsSelection)?'opacity:.4;cursor:not-allowed':''}">${isLast ? 'Enviar' : 'Continuar'}</button>`;
     }
 
-    return screenHTML(`
-      <div style="font-size:10px;color:#444;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Pergunta ${i+1} de ${builderQuestions.length}</div>
-      <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.4">${escHtml(q.label||'(sem texto)')}</div>
-      ${widget}
-      <button style="margin-top:20px;width:100%;padding:12px;background:#6366f1;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:default">Continuar →</button>
-    `);
-  }).join('');
+    modal.querySelector('#prv-progress').style.width = pct() + '%';
+    modal.querySelector('#prv-card').innerHTML = cardContent;
+  }
 
-  const html = `<div id="preview-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:3000;display:flex;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto" onclick="if(event.target===this)document.getElementById('preview-modal').remove()">
-    <div style="width:min(480px,100%);padding-bottom:40px">
+  // Global helpers for preview interactions
+  window.prvNext = function() {
+    if (currentScreen < totalScreens - 1) { currentScreen++; renderScreen(); }
+  };
+  window.prvEnableNext = function() {
+    const btn = document.getElementById('prv-next');
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+  };
+  window.prvSelectNPS = function(btn, n) {
+    btn.closest('div').querySelectorAll('button').forEach(b => {
+      b.classList.remove('sel'); b.style.background = '#0d0d0d'; b.style.color = '#555'; b.style.borderColor = '#222';
+    });
+    btn.classList.add('sel');
+    const col = n<=6?'#ef4444':n<=8?'#f59e0b':'#22c55e';
+    btn.style.background = col; btn.style.borderColor = col; btn.style.color = '#fff';
+    prvEnableNext();
+  };
+  const STAR_LBL = ['','Muito insatisfeito','Insatisfeito','Regular','Satisfeito','Muito satisfeito'];
+  window.prvSelectStar = function(btn, n) {
+    const stars = btn.closest('div').querySelectorAll('button');
+    stars.forEach((b, i) => { b.style.color = i < n ? '#f59e0b' : '#222'; });
+    const lbl = document.getElementById('prv-star-lbl');
+    if (lbl) lbl.textContent = STAR_LBL[n] || '';
+    prvEnableNext();
+  };
+  window.prvHoverStar = function(n) {
+    document.querySelectorAll('#prv-card .prv-star-hover, #prv-card button[data-v]').forEach((b, i) => {
+      if (b.dataset && b.dataset.v) b.style.color = parseInt(b.dataset.v) <= n ? '#f59e0b' : '#222';
+    });
+  };
+  window.prvUnhoverStar = function() {};
+  window.prvSelectOption = function(el, isMulti) {
+    if (!isMulti) {
+      el.closest('div').querySelectorAll('[data-sel]').forEach(o => {
+        delete o.dataset.sel; o.style.borderColor = '#1e1e1e'; o.style.background = '#0d0d0d';
+        const dot = o.querySelector('.prv-dot');
+        if (dot) { dot.style.background = 'transparent'; dot.style.borderColor = '#333'; dot.innerHTML = ''; }
+      });
+    }
+    const selected = el.dataset.sel;
+    if (selected) {
+      delete el.dataset.sel; el.style.borderColor = '#1e1e1e'; el.style.background = '#0d0d0d';
+      const dot = el.querySelector('.prv-dot');
+      if (dot) { dot.style.background = 'transparent'; dot.style.borderColor = '#333'; dot.innerHTML = ''; }
+    } else {
+      el.dataset.sel = '1'; el.style.borderColor = '#6366f1'; el.style.background = 'rgba(99,102,241,.08)';
+      const dot = el.querySelector('.prv-dot');
+      if (dot) { dot.style.background = '#6366f1'; dot.style.borderColor = '#6366f1'; dot.innerHTML = isMulti ? '<span style="color:#fff;font-size:10px;font-weight:700">✓</span>' : '<span style="width:6px;height:6px;background:#fff;border-radius:50%;display:block"></span>'; }
+    }
+    const anySelected = !!el.closest('div').querySelector('[data-sel]');
+    if (anySelected) prvEnableNext();
+  };
+  window.prvSelectScale = function(btn, n) {
+    btn.closest('div').querySelectorAll('button').forEach(b => {
+      b.classList.remove('sel'); b.style.background = '#0d0d0d'; b.style.color = '#555'; b.style.borderColor = '#222';
+    });
+    btn.classList.add('sel'); btn.style.background = '#f97316'; btn.style.borderColor = '#f97316'; btn.style.color = '#fff';
+    prvEnableNext();
+  };
+
+  const html = `<div id="preview-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:3000;display:flex;align-items:center;justify-content:center;padding:24px">
+    <div style="width:min(480px,100%);display:flex;flex-direction:column;max-height:90vh">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="font-size:13px;font-weight:700;color:#6366f1">Preview — ${escHtml(name)}</div>
-        <button onclick="document.getElementById('preview-modal').remove()" style="background:#111;border:1px solid #222;color:#aaa;font-size:12px;padding:6px 14px;border-radius:7px;cursor:pointer">Fechar</button>
+        <div style="font-size:12px;font-weight:700;color:#6366f1;letter-spacing:.03em">Preview — ${escHtml(name)}</div>
+        <button onclick="document.getElementById('preview-modal').remove()" style="background:#111;border:1px solid #222;color:#888;font-size:12px;padding:5px 14px;border-radius:7px;cursor:pointer;font-family:inherit">Fechar</button>
       </div>
-      ${intro ? screenHTML(`<div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:8px">Olá! 👋</div><div style="font-size:14px;color:#888;line-height:1.6">${escHtml(intro)}</div><button style="margin-top:20px;width:100%;padding:12px;background:#6366f1;border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:default">Começar →</button>`) : ''}
-      ${questionPreviews || screenHTML('<div style="text-align:center;color:#444;padding:24px">Nenhuma pergunta adicionada</div>')}
-      ${screenHTML('<div style="text-align:center"><div style="font-size:48px">✓</div><div style="font-size:20px;font-weight:800;color:#fff;margin:12px 0 6px">Obrigado!</div><div style="font-size:13px;color:#555">Sua resposta foi registrada.</div></div>')}
+      <div style="height:3px;background:#111;border-radius:2px;margin-bottom:20px;overflow:hidden">
+        <div id="prv-progress" style="height:100%;background:#6366f1;border-radius:2px;transition:width .4s ease;width:0%"></div>
+      </div>
+      <div id="prv-card" style="background:#0f0f0f;border:1px solid #1e1e1e;border-radius:20px;padding:32px 28px;overflow-y:auto"></div>
     </div>
   </div>`;
+
   document.body.insertAdjacentHTML('beforeend', html);
+  renderScreen();
 }
 
 // ─── Dispatch Modal ───
