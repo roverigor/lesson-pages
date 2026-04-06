@@ -136,11 +136,97 @@ function isBot(name: string): boolean {
   return BOT_PATTERNS.test(name);
 }
 
+// Remove suffixes like " - 65 98111-6464" or " - BNI Alquimia" and phone-like patterns
+function cleanParticipantName(raw: string): string {
+  // Remove everything after " - " (space-dash-space) — often phone or location
+  let cleaned = raw.replace(/\s+-\s+.+$/, "").trim();
+  // Remove standalone phone number patterns (5+ consecutive digits with optional separators)
+  cleaned = cleaned.replace(/\s*[\+\(]?\d[\d\s\(\)\-\.]{4,}\d\s*/g, " ").trim();
+  return cleaned;
+}
+
+// ─── Jaro-Winkler similarity (pure TypeScript, no deps) ───
+function jaroWinkler(s1: string, s2: string): number {
+  if (s1 === s2) return 1.0;
+  const len1 = s1.length;
+  const len2 = s2.length;
+  if (len1 === 0 || len2 === 0) return 0.0;
+
+  const matchDist = Math.max(Math.floor(Math.max(len1, len2) / 2) - 1, 0);
+  const s1Matches = new Array(len1).fill(false);
+  const s2Matches = new Array(len2).fill(false);
+
+  let matches = 0;
+  let transpositions = 0;
+
+  for (let i = 0; i < len1; i++) {
+    const start = Math.max(0, i - matchDist);
+    const end = Math.min(i + matchDist + 1, len2);
+    for (let j = start; j < end; j++) {
+      if (s2Matches[j] || s1[i] !== s2[j]) continue;
+      s1Matches[i] = true;
+      s2Matches[j] = true;
+      matches++;
+      break;
+    }
+  }
+
+  if (matches === 0) return 0.0;
+
+  let k = 0;
+  for (let i = 0; i < len1; i++) {
+    if (!s1Matches[i]) continue;
+    while (!s2Matches[k]) k++;
+    if (s1[i] !== s2[k]) transpositions++;
+    k++;
+  }
+
+  const jaro =
+    (matches / len1 + matches / len2 + (matches - transpositions / 2) / matches) / 3;
+
+  // Winkler prefix bonus (up to 4 chars)
+  let prefix = 0;
+  for (let i = 0; i < Math.min(4, Math.min(len1, len2)); i++) {
+    if (s1[i] === s2[i]) prefix++;
+    else break;
+  }
+
+  return jaro + prefix * 0.1 * (1 - jaro);
+}
+
+// Compare full normalized names using Jaro-Winkler; returns similarity [0..1]
+function fuzzyNameSimilarity(pName: string, sName: string): number {
+  // Full string comparison
+  const full = jaroWinkler(pName, sName);
+  if (full >= 0.92) return full;
+
+  // Token-level: compare first tokens and last tokens independently
+  const pParts = pName.split(/\s+/);
+  const sParts = sName.split(/\s+/);
+  if (pParts.length < 2 || sParts.length < 2) return full;
+
+  const firstSim = jaroWinkler(pParts[0], sParts[0]);
+  const lastSim = jaroWinkler(pParts[pParts.length - 1], sParts[sParts.length - 1]);
+
+  // Both tokens must be highly similar
+  if (firstSim >= 0.88 && lastSim >= 0.88) {
+    return (firstSim + lastSim) / 2;
+  }
+
+  return full;
+}
+
+interface MatchResult {
+  matches: Record<string, string>;
+  nearMatches: Record<string, { candidateName: string; candidateId: string; score: number }>;
+}
+
 function matchStudents(
   participants: Array<{ name: string; email: string }>,
   students: Array<{ id: string; name: string; phone: string; email?: string; is_mentor?: boolean }>
-): Record<string, string> {
+): MatchResult {
   const matches: Record<string, string> = {};
+  const nearMatches: Record<string, { candidateName: string; candidateId: string; score: number }> = {};
 
   // Filter out mentors/staff from matching pool
   const eligibleStudents = students.filter(s => !s.is_mentor);
@@ -159,7 +245,9 @@ function matchStudents(
   }
 
   for (const p of participants) {
-    const pName = normalize(p.name);
+    // Apply name cleaning before normalization (removes phone/suffix noise)
+    const cleaned = cleanParticipantName(p.name);
+    const pName = normalize(cleaned);
     const pEmail = (p.email || "").toLowerCase().trim();
 
     // Skip bots and notetakers
@@ -176,7 +264,7 @@ function matchStudents(
     const pParts = pName.split(/\s+/).filter(w => w.length > 1);
     if (pParts.length === 0) continue;
 
-    let bestMatch: { id: string; score: number } | null = null;
+    let bestMatch: { id: string; score: number; name: string } | null = null;
 
     for (const s of eligibleStudents) {
       const sName = normalize(s.name);
@@ -186,12 +274,11 @@ function matchStudents(
 
       // LEVEL 1: Exact full name match (score 100)
       if (pName === sName) {
-        bestMatch = { id: s.id, score: 100 };
-        break; // Perfect match, stop looking
+        bestMatch = { id: s.id, score: 100, name: s.name };
+        break;
       }
 
-      // LEVEL 2: First name + last name match (score 80)
-      // Both must have at least 2 parts
+      // LEVEL 2: First name + last name exact match (score 80)
       if (pParts.length >= 2 && sParts.length >= 2) {
         const pFirst = pParts[0];
         const pLast = pParts[pParts.length - 1];
@@ -201,20 +288,18 @@ function matchStudents(
         if (pFirst === sFirst && pLast === sLast && pFirst.length >= 3 && pLast.length >= 3) {
           const score = 80;
           if (!bestMatch || score > bestMatch.score) {
-            bestMatch = { id: s.id, score };
+            bestMatch = { id: s.id, score, name: s.name };
           }
           continue;
         }
       }
 
-      // LEVEL 3: First name + any other name part match (score 60)
-      // Only if first name is NOT ambiguous (unique in the student list)
+      // LEVEL 3: First name (unique) + any other word match (score 60)
       if (pParts.length >= 2 && sParts.length >= 2) {
         const pFirst = pParts[0];
         const sFirst = sParts[0];
 
         if (pFirst === sFirst && pFirst.length >= 4 && (firstNameCount[pFirst] || 0) === 1) {
-          // Check if any other word matches
           const pRest = new Set(pParts.slice(1));
           const sRest = new Set(sParts.slice(1));
           const commonWords = [...pRest].filter(w => sRest.has(w) && w.length >= 3);
@@ -222,22 +307,37 @@ function matchStudents(
           if (commonWords.length > 0) {
             const score = 60;
             if (!bestMatch || score > bestMatch.score) {
-              bestMatch = { id: s.id, score };
+              bestMatch = { id: s.id, score, name: s.name };
             }
           }
         }
       }
 
-      // NO LEVEL 4: We do NOT match by first name only
+      // LEVEL 4: Fuzzy Jaro-Winkler (score 70, threshold >= 0.85)
+      // Applied only when participant has at least 2 name parts
+      if (pParts.length >= 2 && sParts.length >= 2 && (!bestMatch || bestMatch.score < 70)) {
+        const similarity = fuzzyNameSimilarity(pName, sName);
+        if (similarity >= 0.85) {
+          const score = Math.round(similarity * 70); // maps [0.85..1.0] → [59..70]
+          if (!bestMatch || score > bestMatch.score) {
+            bestMatch = { id: s.id, score, name: s.name };
+          }
+        } else if (similarity >= 0.75 && (!bestMatch)) {
+          // Near-match: record but don't accept
+          const prev = nearMatches[key];
+          if (!prev || similarity > prev.score) {
+            nearMatches[key] = { candidateName: s.name, candidateId: s.id, score: Math.round(similarity * 100) / 100 };
+          }
+        }
+      }
     }
 
-    // Only accept matches with score >= 60
     if (bestMatch && bestMatch.score >= 60) {
       matches[key] = bestMatch.id;
     }
   }
 
-  return matches;
+  return { matches, nearMatches };
 }
 
 // ─── Zoom Reports API: list all meetings for a user in a date range ───
@@ -343,6 +443,147 @@ serve(async (req: Request) => {
       );
     }
 
+    // ── ACTION: rematch_all ───────────────────────────────────────────
+    // Re-runs matching on all zoom_participants where matched=false.
+    // Uses the improved fuzzy algorithm. Updates student_id + matched in bulk.
+    // body: { action: "rematch_all", cohort_id?: string }
+    if (action === "rematch_all") {
+      const sb = getSupabaseClient();
+
+      // Load all active students
+      const { data: students } = await (cohort_id
+        ? sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true).eq("cohort_id", cohort_id)
+        : sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true));
+
+      if (!students?.length) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "No students found" }),
+          { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+
+      // Load all unmatched participants in pages of 500
+      let totalProcessed = 0;
+      let totalMatched = 0;
+      let page = 0;
+      const pageSize = 500;
+
+      while (true) {
+        const query = sb
+          .from("zoom_participants")
+          .select("id, participant_name, participant_email, meeting_id")
+          .eq("matched", false)
+          .not("participant_name", "is", null)
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        const { data: unmatched, error } = await query;
+        if (error || !unmatched?.length) break;
+
+        // Run matching on this page
+        const { matches } = matchStudents(
+          unmatched.map(p => ({ name: p.participant_name || "", email: p.participant_email || "" })),
+          students
+        );
+
+        // Build update list
+        const toUpdate: Array<{ id: string; student_id: string }> = [];
+        for (const p of unmatched) {
+          const key = p.participant_email || normalize(cleanParticipantName(p.participant_name || ""));
+          const studentId = matches[key];
+          if (studentId) toUpdate.push({ id: p.id, student_id: studentId });
+        }
+
+        // Update matched records individually (Supabase doesn't support bulk update by id list easily)
+        for (const u of toUpdate) {
+          await sb.from("zoom_participants")
+            .update({ student_id: u.student_id, matched: true })
+            .eq("id", u.id);
+        }
+
+        totalProcessed += unmatched.length;
+        totalMatched += toUpdate.length;
+        if (unmatched.length < pageSize) break;
+        page++;
+      }
+
+      return new Response(
+        JSON.stringify({ ok: true, processed: totalProcessed, newly_matched: totalMatched }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
+    // ── ACTION: transfer_to_attendance ────────────────────────────────
+    // Copies matched zoom_participants into student_attendance table.
+    // Skips duplicates via ON CONFLICT (student_id, class_date, zoom_meeting_id).
+    // body: { action: "transfer_to_attendance", cohort_id?: string }
+    if (action === "transfer_to_attendance") {
+      const sb = getSupabaseClient();
+
+      // Fetch matched participants with their meeting start_time and cohort_id
+      const { data: participants, error } = await sb
+        .from("zoom_participants")
+        .select("id, student_id, duration_minutes, meeting_id, zoom_meetings(id, start_time, cohort_id)")
+        .eq("matched", true)
+        .not("student_id", "is", null);
+
+      if (error) {
+        return new Response(
+          JSON.stringify({ ok: false, error: error.message }),
+          { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+
+      let inserted = 0;
+      let skipped = 0;
+
+      // Build rows for student_attendance
+      const rows = (participants || [])
+        .filter(p => {
+          const meeting = p.zoom_meetings as { id: string; start_time: string; cohort_id: string | null } | null;
+          return meeting?.start_time;
+        })
+        .map(p => {
+          const meeting = p.zoom_meetings as { id: string; start_time: string; cohort_id: string | null };
+          const classDate = meeting.start_time.slice(0, 10); // YYYY-MM-DD
+          return {
+            student_id: p.student_id,
+            class_date: classDate,
+            cohort_id: meeting.cohort_id || cohort_id || null,
+            zoom_meeting_id: meeting.id,
+            zoom_participant_id: p.id,
+            source: "zoom",
+            duration_minutes: p.duration_minutes || null,
+          };
+        });
+
+      // Apply optional cohort filter
+      const filteredRows = cohort_id
+        ? rows.filter(r => r.cohort_id === cohort_id)
+        : rows;
+
+      // Insert in batches of 100 using upsert (ignore conflicts)
+      const batchSize = 100;
+      for (let i = 0; i < filteredRows.length; i += batchSize) {
+        const batch = filteredRows.slice(i, i + batchSize);
+        const { error: insertErr, count } = await sb
+          .from("student_attendance")
+          .upsert(batch, { onConflict: "student_id,class_date,zoom_meeting_id", ignoreDuplicates: true })
+          .select("id", { count: "exact", head: true });
+
+        if (insertErr) {
+          skipped += batch.length;
+        } else {
+          inserted += count || 0;
+          skipped += batch.length - (count || 0);
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ ok: true, total: filteredRows.length, inserted, skipped }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     if (!meeting_id) {
       return new Response(
         JSON.stringify({ ok: false, error: "meeting_id required" }),
@@ -431,18 +672,19 @@ serve(async (req: Request) => {
 
       if (meetingError) return { uuid, status: "error", error: meetingError.message };
 
-      const studentMatches = matchStudents(
+      const { matches: studentMatches, nearMatches } = matchStudents(
         realParticipants.map((p) => ({ name: (p.name as string) || "", email: (p.user_email as string) || "" })),
         students || []
       );
 
       const participantRows = realParticipants.map((p) => {
-        const key = (p.user_email as string) || normalize(p.name as string);
+        const pEmail = (p.user_email as string) || "";
+        const key = pEmail || normalize(cleanParticipantName((p.name as string) || ""));
         const studentId = studentMatches[key] || null;
         return {
           meeting_id: meeting.id,
           participant_name: (p.name as string) || null,
-          participant_email: (p.user_email as string) || null,
+          participant_email: pEmail || null,
           join_time: (p.join_time as string) || null,
           leave_time: (p.leave_time as string) || null,
           duration_minutes: p.duration ? Math.round((p.duration as number) / 60) : null,
@@ -466,6 +708,7 @@ serve(async (req: Request) => {
         participants: realParticipants.length,
         matched,
         unmatched: participantRows.length - matched,
+        near_matches: Object.keys(nearMatches).length,
       };
     }
 
