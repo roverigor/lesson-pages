@@ -141,3 +141,182 @@ async function unlinkParticipant(partId) {
   showToast('Vínculo removido', 'success');
   await loadZoomParticipants();
 }
+
+// ═══════════════════════════════════════
+// ZOOM DISCOVER MEETINGS
+// ═══════════════════════════════════════
+function zoomDiscoverMeetings() {
+  const panel = document.getElementById('zoom-discover-panel');
+  panel.style.display = panel.style.display === 'none' ? '' : 'none';
+  if (panel.style.display !== 'none') {
+    const now = new Date();
+    const from = new Date(now - 90 * 24 * 60 * 60 * 1000);
+    document.getElementById('zoom-discover-from').value = from.toISOString().slice(0, 10);
+    document.getElementById('zoom-discover-to').value   = now.toISOString().slice(0, 10);
+  }
+}
+
+async function runZoomDiscover() {
+  const from = document.getElementById('zoom-discover-from').value;
+  const to   = document.getElementById('zoom-discover-to').value;
+  const el   = document.getElementById('zoom-discover-results');
+
+  if (!from || !to) { showToast('Informe o período', 'error'); return; }
+
+  el.innerHTML = '<div style="color:#555;font-size:13px;padding:8px 0">Consultando Zoom API...</div>';
+
+  try {
+    const res = await fetch(SUPABASE_URL + '/functions/v1/zoom-attendance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ action: 'list_meetings', from, to }),
+    });
+    const data = await res.json();
+
+    if (!data.ok) {
+      el.innerHTML = `<div style="color:#f87171;font-size:13px">${data.error || 'Erro desconhecido'}</div>`;
+      return;
+    }
+
+    const meetings = data.meetings || [];
+    if (!meetings.length) {
+      el.innerHTML = '<div style="color:#555;font-size:13px">Nenhuma reunião encontrada no período.</div>';
+      return;
+    }
+
+    el.innerHTML = `
+      <div style="font-size:12px;color:#555;margin-bottom:12px">${data.total_raw} sessões brutas → ${meetings.length} meeting IDs únicos</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="color:#555;text-align:left">
+          <th style="padding:6px 8px">Meeting ID</th>
+          <th style="padding:6px 8px">Tópico</th>
+          <th style="padding:6px 8px;text-align:center">Sessões</th>
+          <th style="padding:6px 8px;text-align:center">Participantes</th>
+          <th style="padding:6px 8px">Última</th>
+          <th style="padding:6px 8px"></th>
+        </tr></thead>
+        <tbody>
+          ${meetings.map(m => `
+            <tr style="border-top:1px solid #1e1e1e">
+              <td style="padding:8px;font-family:monospace;color:#7c7cff">${m.id}</td>
+              <td style="padding:8px;color:#ccc">${m.topic}</td>
+              <td style="padding:8px;text-align:center;color:#fff">${m.instances}</td>
+              <td style="padding:8px;text-align:center;color:#fff">${m.total_participants}</td>
+              <td style="padding:8px;color:#555">${m.latest?.slice(0,10)}</td>
+              <td style="padding:8px">
+                <button onclick="zoomImportMeeting('${m.id}')" style="background:#222;border:1px solid #333;color:#aaa;font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer">
+                  Importar
+                </button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch (err) {
+    el.innerHTML = `<div style="color:#f87171;font-size:13px">Erro: ${err.message}</div>`;
+  }
+}
+
+async function zoomImportMeeting(meetingId) {
+  showToast('Importando meeting ' + meetingId + '...', 'success');
+  let offset = 0;
+  let hasMore = true;
+  let totalProcessed = 0;
+
+  while (hasMore) {
+    const res = await fetch(SUPABASE_URL + '/functions/v1/zoom-attendance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ meeting_id: meetingId, offset, batch_size: 3 }),
+    });
+    const data = await res.json();
+    if (!data.ok) { showToast('Erro: ' + (data.error || 'desconhecido'), 'error'); return; }
+
+    const processed = (data.instances || []).filter(i => i.status === 'processed').length;
+    totalProcessed += processed;
+    hasMore = data.has_more;
+    offset = data.next_offset || 0;
+
+    if (hasMore) await new Promise(r => setTimeout(r, 500));
+  }
+
+  showToast(`✓ Importado! ${totalProcessed} sessões novas processadas.`, 'success');
+  await loadZoomMeetings();
+}
+
+// ═══════════════════════════════════════
+// ZOOM HOST POOL
+// ═══════════════════════════════════════
+function zoomShowHostPool() {
+  const panel = document.getElementById('zoom-host-pool');
+  panel.style.display = panel.style.display === 'none' ? '' : 'none';
+  if (panel.style.display !== 'none') loadHostPool();
+}
+
+async function loadHostPool() {
+  const el = document.getElementById('zoom-host-pool-list');
+  el.innerHTML = '<span style="color:#555;font-size:13px">Carregando...</span>';
+
+  const { data, error } = await sb.from('zoom_host_sessions')
+    .select('*')
+    .order('started_at', { ascending: false })
+    .limit(20);
+
+  if (error) { el.innerHTML = `<span style="color:#f87171;font-size:13px">${error.message}</span>`; return; }
+
+  if (!data?.length) {
+    el.innerHTML = '<span style="color:#555;font-size:13px">Nenhuma sessão registrada.</span>';
+    return;
+  }
+
+  const active   = data.filter(s => !s.released_at);
+  const released = data.filter(s => s.released_at);
+
+  const hostColors = { available: '#4ade80', busy: '#f59e0b' };
+
+  el.innerHTML = `
+    <div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+      <span style="font-size:13px;color:#888">
+        <span style="color:#f59e0b;font-weight:700;font-size:20px">${active.length}</span> ocupados
+      </span>
+      <span style="font-size:13px;color:#888">
+        <span style="color:#4ade80;font-weight:700;font-size:20px">${released.length}</span> liberados (histórico)
+      </span>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="color:#555">
+        <th style="padding:5px 8px;text-align:left">Host</th>
+        <th style="padding:5px 8px;text-align:left">Meeting</th>
+        <th style="padding:5px 8px;text-align:left">Início</th>
+        <th style="padding:5px 8px;text-align:left">Status</th>
+        <th style="padding:5px 8px"></th>
+      </tr></thead>
+      <tbody>
+        ${data.map(s => {
+          const isActive = !s.released_at;
+          const started = new Date(s.started_at).toLocaleString('pt-BR');
+          const status = isActive
+            ? '<span style="color:#f59e0b;font-weight:700">● Ativo</span>'
+            : `<span style="color:#4ade80">✓ ${s.released_by || 'liberado'}</span>`;
+          const releaseBtn = isActive
+            ? `<button onclick="zoomReleaseHost('${s.id}')" style="background:none;border:1px solid #333;color:#888;font-size:11px;padding:3px 8px;border-radius:4px;cursor:pointer">Liberar</button>`
+            : '';
+          return `<tr style="border-top:1px solid #1a1a1a">
+            <td style="padding:6px 8px;color:#ccc">${s.host_email}</td>
+            <td style="padding:6px 8px;color:#7c7cff;font-family:monospace">${s.meeting_id || '—'}</td>
+            <td style="padding:6px 8px;color:#555">${started}</td>
+            <td style="padding:6px 8px">${status}</td>
+            <td style="padding:6px 8px">${releaseBtn}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function zoomReleaseHost(sessionId) {
+  const { error } = await sb.from('zoom_host_sessions')
+    .update({ released_at: new Date().toISOString(), released_by: 'manual' })
+    .eq('id', sessionId);
+  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+  showToast('Host liberado manualmente', 'success');
+  await loadHostPool();
+}

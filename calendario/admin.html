@@ -688,13 +688,41 @@
 
   <!-- ═══ ZOOM VIEW ═══ -->
   <div id="zoom-view" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <h2 style="font-size:20px;font-weight:800;color:#fff">Vincular Participantes Zoom</h2>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <h2 style="font-size:20px;font-weight:800;color:#fff">Zoom</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="zoomDiscoverMeetings()" style="background:#1a1a2e;border:1px solid #3b3bff;color:#7c7cff;font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer">
+          🔍 Descobrir Reuniões
+        </button>
+        <button onclick="zoomShowHostPool()" style="background:#1a1a2e;border:1px solid #333;color:#aaa;font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer">
+          👥 Pool de Hosts
+        </button>
+      </div>
+    </div>
+
+    <!-- Host Pool Panel -->
+    <div id="zoom-host-pool" style="display:none;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <span style="font-size:13px;font-weight:700;color:#fff">Pool de Hosts — Sessões Ativas</span>
+        <button onclick="loadHostPool()" style="background:none;border:none;color:#555;cursor:pointer;font-size:12px">↺ Atualizar</button>
+      </div>
+      <div id="zoom-host-pool-list"><span style="color:#555;font-size:13px">Carregando...</span></div>
+    </div>
+
+    <!-- Discover Meetings Panel -->
+    <div id="zoom-discover-panel" style="display:none;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+        <span style="font-size:13px;font-weight:700;color:#fff">Descobrir Reuniões via Zoom API</span>
+        <input type="date" id="zoom-discover-from" style="background:#0a0a0a;border:1px solid #333;color:#ccc;padding:6px 10px;border-radius:6px;font-size:12px" />
+        <input type="date" id="zoom-discover-to"   style="background:#0a0a0a;border:1px solid #333;color:#ccc;padding:6px 10px;border-radius:6px;font-size:12px" />
+        <button onclick="runZoomDiscover()" style="background:#3b3bff;border:none;color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:6px;cursor:pointer">Buscar</button>
+      </div>
+      <div id="zoom-discover-results"></div>
     </div>
 
     <!-- Meeting selector -->
     <div style="background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:20px">
-      <label style="font-size:11px;color:#555;display:block;margin-bottom:6px">Reunião</label>
+      <label style="font-size:11px;color:#555;display:block;margin-bottom:6px">Reunião importada</label>
       <select id="zoom-meeting-select" class="substitute-select" style="width:100%;padding:12px 10px" onchange="loadZoomParticipants()">
         <option value="">— Selecione uma reunião —</option>
       </select>
