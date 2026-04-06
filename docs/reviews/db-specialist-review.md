@@ -18,8 +18,8 @@ O segundo ponto crítico é o estado da tabela `notifications`: há evidência d
 
 | ID | Débito | Severidade Confirmada | Horas | Prioridade | Notas |
 |---|---|---|---|---|---|
-| DB-NEW-C1 | `notifications.evolution_message_ids` e `delivered_at` sem DDL/migration documentada | CRÍTICO | 2h | P0 — resolver esta semana | Evidência: commit de delivery tracking merged sem migration correspondente |
-| DB-NEW-C2 | `notifications.status` CHECK constraint não inclui `delivered` e `read` | CRÍTICO | 1h | P0 — bloqueia funcionalidade de entrega | Updates do delivery-webhook provavelmente falham silenciosamente |
+| DB-NEW-C1 | `notifications.evolution_message_ids` e `delivered_at` — migration `20260402200000_delivery_status.sql` existe no repo; confirmar aplicação em produção via `supabase migration list` | MÉDIO *(reclassificado de CRÍTICO — migration existe)* | 0.5h | P2 — confirmar aplicação em produção | Migration com TEXT[] e TIMESTAMPTZ está presente; risco é de não ter sido aplicada via `db push` |
+| DB-NEW-C2 | `notifications.status` CHECK constraint — migration `20260402200000_delivery_status.sql` inclui `delivered` e `read`; confirmar aplicação em produção | MÉDIO *(reclassificado de CRÍTICO — migration existe)* | 0.5h | P2 — confirmar aplicação em produção | GIN index em `evolution_message_ids` também está na migration; confirmar `supabase db push` |
 | DB-C1 | `classes` sem schema file (tabela central referenciada por tudo) | ALTO | 3h | P1 | Sem DDL, RLS ou índices documentados para a tabela mais crítica do sistema |
 | DB-M1 | Sem migrations versionadas (arquivos SQL avulsos, não Supabase CLI) | ALTO | 4h | P1 | Impede reprodução do ambiente, rollback e auditoria de mudanças |
 | DB-NEW-M1 | `notification_schedules` sem schema file documentado | MÉDIO | 1h | P2 | Tabela funcional mas sem referência formal |
@@ -72,10 +72,12 @@ A: A migration existente define `CHECK (status IN ('pending', 'processing', 'sen
 
 | Categoria | Débitos | Horas | Custo (R$150/h) |
 |---|---|---|---|
-| Críticos (P0) | DB-NEW-C1, DB-NEW-C2 | 3h | R$ 450 |
+| Críticos (P0) | *(nenhum após reclassificação)* | 0h | R$ 0 |
 | Altos (P1) | DB-C1, DB-M1, DB-R2, DB-NEW-A2 | 9h | R$ 1.350 |
-| Médios (P2/P3) | DB-NEW-M1, DB-S1, DB-S2, DB-S3, DB-R1, DB-R3, DB-NEW-A1 | 12.5h | R$ 1.875 |
+| Médios (P2/P3) | DB-NEW-C1, DB-NEW-C2, DB-NEW-M1, DB-S1, DB-S2, DB-S3, DB-R1, DB-R3, DB-NEW-A1 | 13.5h | R$ 2.025 |
 | Baixos (P4) | DB-NEW-L1, DB-I1 | 1h | R$ 150 |
-| **Total** | **14 débitos** | **25.5h** | **R$ 3.825** |
+| **Total** | **14 débitos** | **23.5h** | **R$ 3.525** |
+
+> **Nota (2026-04-06):** DB-NEW-C1 e DB-NEW-C2 reclassificados de CRÍTICO para MÉDIO após confirmação de que a migration `20260402200000_delivery_status.sql` existe no repositório e inclui as colunas `evolution_message_ids TEXT[] DEFAULT '{}'`, `delivered_at TIMESTAMPTZ`, GIN index e CHECK constraint atualizado. O débito real é confirmar aplicação em produção via `supabase migration list`.
 
 > **Nota:** A investigação inicial com `supabase db diff` (DB-NEW-A2) pode revelar débitos adicionais não mapeados. Recomendo reservar 20% de buffer no planejamento da Fase 1.

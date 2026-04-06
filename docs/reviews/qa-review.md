@@ -8,7 +8,9 @@
 
 ### Gate Status: APPROVED COM RESSALVAS CRÍTICAS
 
-O assessment está aprovado para seguir para planejamento de resolução, com uma ressalva crítica que deve ser tratada antes de qualquer merge de nova feature: **a divergência de schema entre código e produção (DB-NEW-C1 + DB-NEW-C2) não foi confirmada empiricamente**. O delivery tracking do WhatsApp pode estar silenciosamente descartando confirmações de entrega. Esta condição deve ser verificada e documentada antes da próxima sprint.
+O assessment está aprovado para seguir para planejamento de resolução, com uma ressalva que deve ser tratada antes de qualquer merge de nova feature: **a aplicação da migration `20260402200000_delivery_status.sql` em produção não foi confirmada empiricamente**. A migration existe no repositório com as colunas e constraints corretas, mas pode não ter sido aplicada via `supabase db push`. Verificar via `supabase migration list` antes da próxima sprint.
+
+> **Atualização (2026-04-06):** DB-NEW-C1 e DB-NEW-C2 foram reclassificados de CRÍTICO para MÉDIO após confirmação de existência da migration no repositório. O risco residual é confirmar a aplicação em produção — não mais uma questão de schema inexistente.
 
 Justificativa para aprovação parcial: os débitos estão bem catalogados, as severidades são coerentes com a evidência disponível, as dependências entre itens foram mapeadas, e o plano de fases é tecnicamente viável. O assessment não omite problemas conhecidos e não subestima esforços críticos.
 
