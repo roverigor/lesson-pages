@@ -323,6 +323,7 @@ function editClass(id) {
 
   const byDay = {};
   for (const cm of (c._mentors || [])) {
+    if (cm.valid_until !== null && cm.valid_until !== undefined) continue;
     const wd = cm.weekday !== null ? cm.weekday : (c.weekday !== null ? c.weekday : 1);
     if (!byDay[wd]) byDay[wd] = { weekday: wd, professors: [], mentors: [], hosts: [] };
     const roleKey = cm.role === 'Professor' ? 'professors' : cm.role === 'Host' ? 'hosts' : 'mentors';
