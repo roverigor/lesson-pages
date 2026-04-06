@@ -377,7 +377,8 @@ async function saveClassV2() {
 
   const { data: activeRecords } = await sb.from('class_mentors')
     .select('valid_from').eq('class_id', classId).is('valid_until', null).limit(1);
-  const activeValidFrom = activeRecords && activeRecords.length > 0 ? activeRecords[0].valid_from : '2000-01-01';
+  const today = new Date().toISOString().split('T')[0];
+  const activeValidFrom = activeRecords && activeRecords.length > 0 ? activeRecords[0].valid_from : today;
   await sb.from('class_mentors').delete().eq('class_id', classId).is('valid_until', null);
 
   const mentorRows = [];
