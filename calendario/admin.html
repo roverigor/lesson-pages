@@ -333,29 +333,57 @@
   /* ═══════════════════════════════════════
      SURVEYS
   ═══════════════════════════════════════ */
-  .survey-card { background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:16px 18px;margin-bottom:10px;transition:border-color .15s; }
+  /* --- Cards --- */
+  .survey-card { background:#111;border:1px solid #1e1e1e;border-radius:14px;padding:18px 20px;margin-bottom:10px;transition:border-color .2s; }
   .survey-card:hover { border-color:#2a2a2a; }
-  .survey-card-header { display:flex;align-items:flex-start;gap:12px; }
-  .btn-xs { font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;border:none;cursor:pointer;font-family:var(--font-sans);white-space:nowrap; }
-  .btn-xs.btn-primary { background:#6366f1;color:#fff; }
-  .btn-xs.btn-ghost { background:transparent;color:#555;border:1px solid #222; }
-  .btn-xs.btn-ghost:hover { color:#999;border-color:#333; }
-  .btn-xs.btn-danger { background:transparent;color:#f87171;border:1px solid #3f1212; }
+  .survey-card-header { display:flex;align-items:center;gap:14px;flex-wrap:wrap; }
+
+  /* --- Botões pequenos (ações do card) --- */
+  .btn-xs { display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:5px 11px;border-radius:6px;border:1px solid transparent;cursor:pointer;font-family:var(--font-sans);white-space:nowrap;line-height:1.4;transition:all .15s; }
+  .btn-xs.btn-primary { background:#6366f1;color:#fff;border-color:#6366f1; }
+  .btn-xs.btn-primary:hover { background:#4f52d4;border-color:#4f52d4; }
+  .btn-xs.btn-ghost { background:transparent;color:#666;border-color:#252525; }
+  .btn-xs.btn-ghost:hover { color:#aaa;border-color:#333;background:#1a1a1a; }
+  .btn-xs.btn-danger { background:transparent;color:#f87171;border-color:#3f1212; }
   .btn-xs.btn-danger:hover { background:#3f1212; }
-  .modal-box { background:#111;border:1px solid #222;border-radius:16px;width:95%;max-height:85vh;overflow-y:auto; }
+
+  /* --- Modais --- */
+  .modal-box { background:#111;border:1px solid #222;border-radius:16px;width:min(480px,95vw);max-height:85vh;overflow-y:auto; }
   .modal-header { display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #1a1a1a;font-size:15px;font-weight:700;color:#fff; }
   .modal-close { background:none;border:none;color:#555;font-size:22px;cursor:pointer;line-height:1; }
   .modal-close:hover { color:#fff; }
   .modal-body { padding:20px 24px; }
   .modal-footer { padding:16px 24px;border-top:1px solid #1a1a1a;display:flex;justify-content:flex-end;gap:8px; }
+
+  /* --- Formulários --- */
   .form-group { margin-bottom:14px; }
-  .form-label { display:block;font-size:11px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px; }
-  .form-input { width:100%;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;padding:9px 12px;color:#ddd;font-size:13px;font-family:var(--font-sans);resize:vertical; }
+  .form-label { display:block;font-size:11px;color:#555;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px; }
+  .form-input { width:100%;background:#0a0a0a;border:1px solid #1e1e1e;border-radius:8px;padding:9px 12px;color:#ddd;font-size:13px;font-family:var(--font-sans);resize:vertical;transition:border-color .15s; }
   .form-input:focus { outline:none;border-color:#6366f1; }
-  .btn-primary { background:#6366f1;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-sans); }
+  select.form-input { appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23555' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px; }
+
+  /* --- Botões grandes --- */
+  .btn-primary { background:#6366f1;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-sans);transition:background .15s; }
   .btn-primary:hover { background:#4f52d4; }
-  .btn-secondary { background:transparent;color:#666;border:1px solid #222;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans); }
+  .btn-secondary { background:transparent;color:#666;border:1px solid #252525;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans);transition:all .15s; }
   .btn-secondary:hover { color:#999;border-color:#333; }
+  .btn-ghost-outline { background:transparent;color:#777;border:1px solid #2a2a2a;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans);transition:all .15s; }
+  .btn-ghost-outline:hover { color:#aaa;border-color:#444; }
+
+  /* --- Builder: checkbox customizado --- */
+  .q-required-label { display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#555;cursor:pointer;user-select:none; }
+  .q-required-label input[type=checkbox] { appearance:none;-webkit-appearance:none;width:14px;height:14px;border:1.5px solid #333;border-radius:3px;background:#0a0a0a;cursor:pointer;transition:all .15s;flex-shrink:0; }
+  .q-required-label input[type=checkbox]:checked { background:#6366f1;border-color:#6366f1;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='8' viewBox='0 0 10 8'%3E%3Cpath stroke='%23fff' stroke-width='1.5' fill='none' d='M1 4l3 3 5-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center; }
+
+  /* --- Builder: card de pergunta --- */
+  .q-card { background:#0d0d0d;border:1px solid #1e1e1e;border-radius:12px;padding:16px;margin-bottom:8px;transition:border-color .15s; }
+  .q-card:hover { border-color:#2a2a2a; }
+  .q-type-badge { display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.02em; }
+  .q-reorder-btn { display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1px solid #222;background:transparent;color:#444;cursor:pointer;font-size:12px;transition:all .15s;line-height:1; }
+  .q-reorder-btn:hover:not(:disabled) { border-color:#444;color:#888; }
+  .q-reorder-btn:disabled { opacity:.3;cursor:not-allowed; }
+  .q-delete-btn { display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;border:1px solid #3f1212;background:transparent;color:#f87171;cursor:pointer;font-size:12px;transition:all .15s;line-height:1; }
+  .q-delete-btn:hover { background:#3f1212; }
   </style>
 </head>
 <body>

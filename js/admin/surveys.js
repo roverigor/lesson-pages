@@ -63,19 +63,19 @@ function renderSurveysList() {
 
     return `<div class="survey-card" data-id="${s.id}">
       <div class="survey-card-header">
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+        <div style="flex:1;min-width:0;margin-right:12px">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px">
             <span style="font-size:14px;font-weight:700;color:#fff">${escHtml(s.name)}</span>
-            <span style="font-size:10px;padding:2px 9px;border-radius:999px;border:1px solid;color:${st.color};border-color:${st.color}40;background:${st.bg};font-weight:700">${st.label}</span>
+            <span style="font-size:10px;padding:2px 10px;border-radius:999px;border:1px solid;color:${st.color};border-color:${st.color}30;background:${st.bg};font-weight:700;letter-spacing:.03em">${st.label}</span>
           </div>
-          <div style="font-size:12px;color:#555">${escHtml(turma)}${dispatched ? ` · Disparado ${dispatched}` : ''}</div>
+          <div style="font-size:12px;color:#444">${escHtml(turma)}${dispatched ? ` · Disparado ${dispatched}` : ''}</div>
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;align-items:center">
-          ${s.status === 'draft' ? `<button class="btn-xs btn-ghost" onclick="openBuilder('${s.id}')">✏️ Editar</button>` : ''}
-          ${s.status !== 'closed' ? `<button class="btn-xs btn-primary" onclick="openDispatchModal('${s.id}')">📤 Disparar</button>` : ''}
-          <button class="btn-xs btn-ghost" onclick="openSurveysDrawer('${s.id}')">📈 Resultados</button>
-          <button class="btn-xs btn-ghost" onclick="exportSurveyCSV('${s.id}')" title="CSV">CSV</button>
-          <button class="btn-xs btn-ghost" onclick="exportSurveyMD('${s.id}')" title="MD">MD</button>
+        <div style="display:flex;gap:5px;flex-shrink:0;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+          ${s.status === 'draft' ? `<button class="btn-xs btn-ghost" onclick="openBuilder('${s.id}')">Editar</button>` : ''}
+          ${s.status !== 'closed' ? `<button class="btn-xs btn-primary" onclick="openDispatchModal('${s.id}')">Disparar</button>` : ''}
+          <button class="btn-xs btn-ghost" onclick="openSurveysDrawer('${s.id}')">Resultados</button>
+          <button class="btn-xs btn-ghost" onclick="exportSurveyCSV('${s.id}')">CSV</button>
+          <button class="btn-xs btn-ghost" onclick="exportSurveyMD('${s.id}')">MD</button>
           ${s.status === 'active' ? `<button class="btn-xs btn-danger" onclick="closeSurvey('${s.id}')">Encerrar</button>` : ''}
         </div>
       </div>
@@ -215,26 +215,26 @@ function renderQuestionList() {
             value="${escHtml(q.placeholder||'')}" oninput="updateQuestion(${i},'placeholder',this.value)">
         </div>` : '';
 
-    return `<div class="q-card" style="background:#111;border:1px solid #1e1e1e;border-radius:10px;padding:14px 16px;margin-bottom:8px">
+    return `<div class="q-card">
       <div style="display:flex;align-items:flex-start;gap:10px">
         <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${qt.color}22;color:${qt.color}">${qt.icon} ${qt.label}</span>
-            <span style="font-size:10px;color:#444">#${i+1}</span>
-            <label style="display:flex;align-items:center;gap:4px;font-size:10px;color:#555;cursor:pointer;margin-left:auto">
-              <input type="checkbox" ${q.required?'checked':''} onchange="updateQuestion(${i},'required',this.checked)" style="cursor:pointer">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+            <span class="q-type-badge" style="background:${qt.color}18;color:${qt.color};border:1px solid ${qt.color}30">${qt.label}</span>
+            <span style="font-size:10px;color:#3a3a3a;font-weight:600">#${i+1}</span>
+            <label class="q-required-label" style="margin-left:auto">
+              <input type="checkbox" ${q.required?'checked':''} onchange="updateQuestion(${i},'required',this.checked)">
               Obrigatória
             </label>
           </div>
-          <textarea class="form-input" rows="2" style="font-size:13px"
+          <textarea class="form-input" rows="2" style="font-size:13px;line-height:1.5"
             placeholder="Digite a pergunta..."
             oninput="updateQuestion(${i},'label',this.value)">${escHtml(q.label)}</textarea>
           ${optHTML}${scaleHTML}${textHTML}
         </div>
-        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
-          <button onclick="moveQuestion(${i},-1)" ${i===0?'disabled':''} style="background:none;border:1px solid #222;color:#555;width:28px;height:28px;border-radius:5px;cursor:pointer;font-size:13px">▲</button>
-          <button onclick="moveQuestion(${i},1)"  ${i===builderQuestions.length-1?'disabled':''} style="background:none;border:1px solid #222;color:#555;width:28px;height:28px;border-radius:5px;cursor:pointer;font-size:13px">▼</button>
-          <button onclick="removeQuestion(${i})" style="background:none;border:1px solid #3f1212;color:#f87171;width:28px;height:28px;border-radius:5px;cursor:pointer;font-size:13px">✕</button>
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-top:2px">
+          <button class="q-reorder-btn" onclick="moveQuestion(${i},-1)" ${i===0?'disabled':''}>▲</button>
+          <button class="q-reorder-btn" onclick="moveQuestion(${i},1)"  ${i===builderQuestions.length-1?'disabled':''}>▼</button>
+          <button class="q-delete-btn"  onclick="removeQuestion(${i})">✕</button>
         </div>
       </div>
     </div>`;
