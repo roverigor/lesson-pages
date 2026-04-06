@@ -207,8 +207,19 @@
     @media (max-width: 768px) {
       .header { padding: 14px 16px; }
       .layout { padding: 16px 12px 80px; }
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
       .students-table th:nth-child(4), .students-table td:nth-child(4) { display: none; }
       .stat-card { min-width: 120px; }
+      .search-input { min-width: 0; }
+      .toast { bottom: 16px; right: 12px; left: 12px; max-width: none; }
+    }
+    @media (max-width: 480px) {
+      .students-table th:nth-child(3), .students-table td:nth-child(3) { display: none; }
+      .students-table th:nth-child(5), .students-table td:nth-child(5) { display: none; }
+      .stats-row { flex-wrap: wrap; gap: 8px; }
+      .stat-card { min-width: 100px; flex: 1; }
+      .pagination { flex-direction: column; gap: 8px; }
+      .toolbar { gap: 6px; }
     }
   </style>
 </head>

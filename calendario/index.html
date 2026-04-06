@@ -230,6 +230,7 @@
     }
     @media (max-width: 768px) {
       .header { padding: 14px 16px; }
+      .header-inner { gap: 10px; }
       .legend-strip { padding: 10px 16px; }
       .cal-wrap { padding: 12px 10px; }
       .cal-cell { min-height: 80px; padding: 6px 4px; }
@@ -237,6 +238,18 @@
       .event-course { font-size: 9px; }
       .month-name { font-size: 22px; }
       .course-legend { display: none; }
+      .link-pill { padding: 6px 10px; font-size: 11px; }
+      .month-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    }
+    @media (max-width: 480px) {
+      .header-inner { flex-wrap: wrap; gap: 8px; }
+      .cal-cell { min-height: 56px; padding: 4px 2px; }
+      .cal-cell-num { font-size: 10px; }
+      .event { padding: 2px 4px; font-size: 8px; }
+      .event-course { font-size: 8px; }
+      .month-name { font-size: 18px; }
+      .weekday-label { font-size: 9px; }
+      .month-tabs .month-tab { padding: 6px 10px; font-size: 11px; }
     }
   </style>
 </head>
