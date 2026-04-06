@@ -520,12 +520,14 @@ serve(async (req: Request) => {
     if (action === "transfer_to_attendance") {
       const sb = getSupabaseClient();
 
-      // Fetch matched participants with their meeting start_time and cohort_id
+      // Fetch matched participants with their meeting start_time and cohort_id (paginated to avoid 1000-row limit)
+      const { tfOffset = 0, tfLimit = 1000 } = body as { tfOffset?: number; tfLimit?: number };
       const { data: participants, error } = await sb
         .from("zoom_participants")
         .select("id, student_id, duration_minutes, meeting_id, zoom_meetings(id, start_time, cohort_id)")
         .eq("matched", true)
-        .not("student_id", "is", null);
+        .not("student_id", "is", null)
+        .range(tfOffset, tfOffset + tfLimit - 1);
 
       if (error) {
         return new Response(
@@ -566,21 +568,37 @@ serve(async (req: Request) => {
       const batchSize = 100;
       for (let i = 0; i < filteredRows.length; i += batchSize) {
         const batch = filteredRows.slice(i, i + batchSize);
-        const { error: insertErr, count } = await sb
+        const { data: insertedData, error: insertErr } = await sb
           .from("student_attendance")
           .upsert(batch, { onConflict: "student_id,class_date,zoom_meeting_id", ignoreDuplicates: true })
-          .select("id", { count: "exact", head: true });
+          .select("id");
 
         if (insertErr) {
           skipped += batch.length;
         } else {
-          inserted += count || 0;
-          skipped += batch.length - (count || 0);
+          // ignoreDuplicates: true — only actually inserted rows are returned
+          inserted += insertedData?.length || 0;
+          skipped += batch.length - (insertedData?.length || 0);
         }
       }
 
+      // Also return current total in student_attendance for reference
+      const { count: totalInTable } = await sb
+        .from("student_attendance")
+        .select("id", { count: "exact", head: true });
+
+      const hasMoreTransfer = (participants?.length || 0) === tfLimit;
       return new Response(
-        JSON.stringify({ ok: true, total: filteredRows.length, inserted, skipped }),
+        JSON.stringify({
+          ok: true,
+          offset: tfOffset,
+          total_source: filteredRows.length,
+          inserted,
+          skipped,
+          has_more: hasMoreTransfer,
+          next_offset: hasMoreTransfer ? tfOffset + tfLimit : null,
+          total_in_table: totalInTable,
+        }),
         { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
