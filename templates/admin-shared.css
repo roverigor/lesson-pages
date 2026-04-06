@@ -1,0 +1,270 @@
+/**
+ * Admin Shared Styles — lesson-pages
+ * Common patterns used across admin/internal pages.
+ * Requires: design-tokens-dark-premium.css loaded first.
+ * Version: 1.0
+ */
+
+/* ── Login Overlay ───────────────────────────────────────────────────────────── */
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-bg-page);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.login-overlay.hidden { display: none; }
+
+.login-box {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-card);
+  border-radius: 16px;
+  padding: 40px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.login-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.login-title {
+  font-size: 20px;
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-text-headline);
+  margin-bottom: 6px;
+}
+
+.login-subtitle {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 28px;
+}
+
+.login-field {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: #0d0d0d;
+  border: 1px solid #1e1e1e;
+  color: var(--color-text-body-alt);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  margin-bottom: 12px;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.login-field:focus { border-color: #6366f1; }
+.login-field::placeholder { color: #333; }
+.login-field select { cursor: pointer; }
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-size: 14px;
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  margin-top: 8px;
+  transition: opacity var(--transition-fast);
+}
+.login-btn:hover { opacity: 0.9; }
+
+.login-error {
+  font-size: 12px;
+  color: #f87171;
+  margin-top: 8px;
+  min-height: 20px;
+}
+
+/* ── Toast Notification ──────────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  z-index: 2000;
+  transition: all 0.3s;
+  transform: translateY(80px);
+  opacity: 0;
+  font-family: var(--font-sans);
+  max-width: 320px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { background: #052e16; border: 1px solid #166534; color: #4ade80; }
+.toast.error   { background: #2d0a0a; border: 1px solid #7f1d1d; color: #f87171; }
+.toast.info    { background: #0f172a; border: 1px solid #1e3a5f; color: #60a5fa; }
+
+@media (max-width: 768px) {
+  .toast { bottom: 16px; right: 12px; left: 12px; max-width: none; }
+}
+
+/* ── Page Header ─────────────────────────────────────────────────────────────── */
+.admin-header {
+  background: #101010;
+  border-bottom: 1px solid #1a1a1a;
+  padding: 16px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-header-title {
+  font-size: 18px;
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-text-headline);
+  flex: 1;
+}
+
+.admin-header-sub {
+  font-size: 12px;
+  color: #555;
+  margin-top: 2px;
+}
+
+/* ── View Toggle Buttons ─────────────────────────────────────────────────────── */
+.view-toggle {
+  display: flex;
+  gap: 4px;
+  background: #0d0d0d;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid #1a1a1a;
+  flex-wrap: wrap;
+}
+
+.view-btn {
+  padding: 6px 14px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: #555;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+.view-btn:hover { color: var(--color-text-body-alt); }
+.view-btn.active {
+  background: #1e1e1e;
+  color: var(--color-text-headline);
+}
+
+/* ── Link Pill ───────────────────────────────────────────────────────────────── */
+.link-pill {
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: #a5b4fc;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+.link-pill:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+/* ── Content Layout ──────────────────────────────────────────────────────────── */
+.admin-content {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px 32px 80px;
+}
+
+@media (max-width: 768px) {
+  .admin-content { padding: 16px 12px 80px; }
+  .admin-header { padding: 12px 16px; }
+}
+
+/* ── Stats Row ───────────────────────────────────────────────────────────────── */
+.stats-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-card);
+  border-radius: 12px;
+  padding: 16px 20px;
+  min-width: 140px;
+}
+
+.stat-num {
+  font-size: 26px;
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-text-headline);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #444;
+  margin-top: 2px;
+}
+
+/* ── Section Headers ─────────────────────────────────────────────────────────── */
+.section-heading {
+  font-size: 20px;
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-text-headline);
+  margin-bottom: 20px;
+}
+
+.section-label {
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+  margin-top: 32px;
+}
+
+/* ── Substitute Select (dropdown) ────────────────────────────────────────────── */
+.substitute-select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #0d0d0d;
+  border: 1px solid #1e1e1e;
+  color: var(--color-text-body-alt);
+  font-size: 13px;
+  font-family: var(--font-sans);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+.substitute-select:focus { border-color: #444; }
