@@ -443,6 +443,47 @@ serve(async (req: Request) => {
       );
     }
 
+    // ── ACTION: dedup_participants ────────────────────────────────────
+    // Removes duplicate zoom_participants within the same meeting.
+    // Keeps the row with the longest duration; deletes reconnection entries.
+    // body: { action: "dedup_participants" }
+    if (action === "dedup_participants") {
+      const sb = getSupabaseClient();
+      const { data, error } = await sb.rpc("dedup_zoom_participants");
+      if (error) {
+        return new Response(
+          JSON.stringify({ ok: false, error: error.message }),
+          { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+      const result = data?.[0] || { deleted_count: 0, kept_count: 0 };
+      return new Response(
+        JSON.stringify({ ok: true, deleted: result.deleted_count, remaining: result.kept_count }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
+    // ── ACTION: propagate_links ───────────────────────────────────────
+    // For every participant_name/email already linked to a student,
+    // applies that link to all other meetings where the same name/email appears.
+    // Makes manual links persist across all meetings automatically.
+    // body: { action: "propagate_links" }
+    if (action === "propagate_links") {
+      const sb = getSupabaseClient();
+      const { data, error } = await sb.rpc("propagate_zoom_links");
+      if (error) {
+        return new Response(
+          JSON.stringify({ ok: false, error: error.message }),
+          { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+      const result = data?.[0] || { updated_count: 0 };
+      return new Response(
+        JSON.stringify({ ok: true, newly_linked: result.updated_count }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     // ── ACTION: rematch_all ───────────────────────────────────────────
     // Re-runs matching on unmatched zoom_participants using improved fuzzy algorithm.
     // Paginated — call with { offset: 0, limit: 150 } and repeat until has_more=false.
