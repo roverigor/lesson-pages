@@ -81,7 +81,7 @@ function renderClassesList() {
     const cyclesBadge = closedDates.length > 0
       ? `<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">${closedDates.map(d => {
           const fmt = new Date(d + 'T00:00:00').toLocaleDateString('pt-BR');
-          return `<span style="font-size:9px;padding:2px 7px;border-radius:4px;background:rgba(99,102,241,0.12);color:#a5b4fc;font-weight:700">🔒 Ciclo fechado ${fmt}</span>`;
+          return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:9px;padding:2px 7px;border-radius:4px;background:rgba(99,102,241,0.12);color:#a5b4fc;font-weight:700">🔒 Ciclo fechado ${fmt}<button onclick="event.stopPropagation();reopenClassCycle('${c.id}','${d}')" style="font-size:9px;padding:1px 5px;border-radius:3px;border:1px solid #6366f150;background:rgba(99,102,241,0.2);color:#a5b4fc;cursor:pointer;font-family:var(--font-sans);line-height:1">↩ Reabrir</button></span>`;
         }).join('')}</div>`
       : '';
 
@@ -438,6 +438,30 @@ async function closeClassCycle(classId, className) {
 
   const closedDate = new Date(today + 'T00:00:00').toLocaleDateString('pt-BR');
   showToast(`Ciclo fechado em ${closedDate}. Equipe pode ser editada livremente.`, 'success');
+  await loadClasses();
+  renderAll();
+}
+
+async function reopenClassCycle(classId, closedDate) {
+  const fmt = new Date(closedDate + 'T00:00:00').toLocaleDateString('pt-BR');
+  if (!confirm(`Reabrir ciclo fechado em ${fmt}?\n\nOs registros novos criados após o fechamento serão removidos e o ciclo anterior será restaurado.`)) return;
+
+  const dayAfter = new Date(new Date(closedDate + 'T00:00:00').getTime() + 86400000).toISOString().split('T')[0];
+
+  const { error: deleteErr } = await sb.from('class_mentors')
+    .delete()
+    .eq('class_id', classId)
+    .eq('valid_from', dayAfter)
+    .is('valid_until', null);
+  if (deleteErr) { showToast('Erro ao remover registros novos: ' + deleteErr.message, 'error'); return; }
+
+  const { error: reopenErr } = await sb.from('class_mentors')
+    .update({ valid_until: null })
+    .eq('class_id', classId)
+    .eq('valid_until', closedDate);
+  if (reopenErr) { showToast('Erro ao reabrir ciclo: ' + reopenErr.message, 'error'); return; }
+
+  showToast(`Ciclo de ${fmt} reaberto com sucesso.`, 'success');
   await loadClasses();
   renderAll();
 }
