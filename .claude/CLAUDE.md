@@ -352,6 +352,13 @@ npm run trace -- workflow-name
 - Keep README synchronized with actual behavior
 - Document breaking changes prominently
 
+## Epic Execution — Modo Autônomo
+
+- Quando um épico está em andamento, executar todas as stories em sequência **sem parar para pedir confirmação** entre elas
+- Ao concluir cada story: marcar checkboxes como Done, commit, push — e avançar imediatamente para a próxima
+- Só interromper para confirmação se: (a) houver bloqueador técnico real, (b) decisão arquitetural irreversível, ou (c) a story explicitamente exigir input do usuário (`elicit: true`)
+- Ao final do épico inteiro, apresentar resumo consolidado de tudo que foi feito
+
 ## VPS — lesson-pages (Contabo)
 
 - **IP:** `194.163.179.68`
