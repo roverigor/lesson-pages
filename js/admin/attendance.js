@@ -141,6 +141,8 @@ function renderGrid(year, month1) {
     if (dayNum < 1 || dayNum > daysInMonth) { html += '<div class="cal-cell empty"></div>'; continue; }
 
     const key = dateStr(dayNum, month1);
+    const isoKey = `${year}-${String(month1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+    const feriado = typeof FERIADOS_2026 !== 'undefined' ? FERIADOS_2026[isoKey] : null;
     const events = EVENTS[key] ? Object.values(EVENTS[key]) : [];
     const cellDate = new Date(year, month1-1, dayNum); cellDate.setHours(0,0,0,0);
     const isPast = cellDate < t;
@@ -148,12 +150,17 @@ function renderGrid(year, month1) {
 
     let classes = 'cal-cell';
     if (events.length) classes += ' has-events';
+    if (feriado) classes += ' is-holiday';
     if (isToday) classes += ' is-today';
     else if (isPast) classes += ' is-past';
 
     const attStatus = getDateAttStatus(key);
     const indicator = events.length
       ? `<span class="att-indicator att-${attStatus}" title="${attStatus === 'complete' ? 'Completo' : attStatus === 'partial' ? 'Parcial' : 'Sem registro'}"></span>`
+      : '';
+
+    const feriadoTag = feriado
+      ? `<div class="holiday-tag">🎉 ${feriado}</div>`
       : '';
 
     const eventsHTML = events.slice(0, 3).map(ev => {
@@ -165,6 +172,7 @@ function renderGrid(year, month1) {
       <div class="day-num ${events.length?'has-events':''}">
         ${dayNum} ${isToday ? '<span class="today-badge">Hoje</span>' : ''} ${indicator}
       </div>
+      ${feriadoTag}
       ${eventsHTML}
     </div>`;
   }
