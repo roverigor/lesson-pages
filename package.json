@@ -1,0 +1,18 @@
+{
+  "name": "lesson-pages",
+  "version": "1.0.0",
+  "description": "Academia Lendária — Calendário de Aulas e Painel Admin",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/smoke.test.mjs",
+    "test:watch": "node --test --watch tests/smoke.test.mjs",
+    "lint": "eslint js/",
+    "lint:fix": "eslint js/ --fix"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1"
+  }
+}

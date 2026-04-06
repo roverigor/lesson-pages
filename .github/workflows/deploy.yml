@@ -6,10 +6,39 @@ on:
   workflow_dispatch:
 
 jobs:
+  # ─── Job 1: Lint + Smoke Tests ────────────────────────────────────────────
+  test:
+    name: Lint & Smoke Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Smoke Tests
+        run: npm test
+        env:
+          APP_URL: https://calendario.igorrover.com.br
+
+  # ─── Job 2: Deploy (só executa se tests passaram) ─────────────────────────
   deploy:
     name: Build & Deploy
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    needs: test
 
     steps:
       - name: Checkout
