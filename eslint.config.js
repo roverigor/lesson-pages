@@ -24,6 +24,7 @@ const config = [
         URLSearchParams: 'readonly',
         AbortController: 'readonly',
         FormData: 'readonly',
+        Blob: 'readonly',
         localStorage: 'readonly',
         sessionStorage: 'readonly',
         navigator: 'readonly',
@@ -49,6 +50,9 @@ const config = [
         isFinite: 'readonly',
         encodeURIComponent: 'readonly',
         decodeURIComponent: 'readonly',
+        // ── Supabase client globals ──
+        SUPABASE_URL: 'readonly',     // supabase-client.js
+        SUPABASE_KEY: 'readonly',     // supabase-client.js
         // ── Admin module globals (defined across script files, loaded in order) ──
         sb: 'readonly',               // supabase-client.js
         showToast: 'readonly',        // utils.js
@@ -62,6 +66,7 @@ const config = [
         loadSchedulesView: 'readonly',// schedules.js
         loadZoomMeetings: 'readonly', // zoom.js
         loadAbstractsView: 'readonly',// abstracts.js
+        loadSurveysView: 'readonly',  // surveys.js
         renderReport: 'readonly',     // views.js
         switchView: 'readonly',       // views.js
         getCfg: 'readonly',           // config.js
