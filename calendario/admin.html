@@ -515,7 +515,7 @@
       </div>
 
       <div style="display:flex;gap:6px;margin-top:16px;justify-content:flex-end">
-        <button class="btn-save" onclick="saveClassV2()">Salvar Turma</button>
+        <button class="btn-save" id="save-class-btn" onclick="saveClassV2()">Salvar Turma</button>
         <button class="att-btn delete" onclick="closeClassForm()" style="padding:10px 14px">Cancelar</button>
       </div>
       <input type="hidden" id="class-edit-id" value="">
@@ -588,7 +588,14 @@
         <!-- Zoom link -->
         <div>
           <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Zoom Link (opcional)</label>
-          <input class="login-field" style="margin:0" type="url" id="notify-zoom" placeholder="https://zoom.us/j/..." oninput="updateNotifyPreview()">
+          <div style="display:flex;gap:6px;align-items:center">
+            <input class="login-field" style="margin:0;flex:1" type="url" id="notify-zoom" placeholder="https://zoom.us/j/..." oninput="updateNotifyPreview()">
+            <button type="button" id="copy-zoom-btn" onclick="copyZoomLink()" title="Copiar link"
+              style="display:none;padding:10px 12px;background:#1e1e1e;border:1px solid #333;border-radius:8px;color:#aaa;cursor:pointer;font-size:12px;white-space:nowrap;transition:background 0.15s"
+              onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background='#1e1e1e'">
+              📋 Copiar
+            </button>
+          </div>
         </div>
 
         <!-- Botões -->
@@ -1491,7 +1498,7 @@ async function saveAll() {
   btn.textContent = 'Salvar Presença';
 
   if (ok) {
-    showToast('Presença salva com sucesso!', 'success');
+    showToast(`Presença salva! ${records.length} registro${records.length !== 1 ? 's' : ''} salvos`, 'success');
     document.getElementById('saved-badge').classList.add('show');
     renderAll();
   }
@@ -2055,6 +2062,10 @@ async function saveClassV2() {
 
   if (!name || !start_date || !end_date) { showToast('Preencha nome e datas', 'error'); return; }
 
+  const saveBtn = document.getElementById('save-class-btn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Salvando...';
+
   // Use first weekday as main (for backwards compat)
   const weekday = classSchedules.length > 0 ? classSchedules[0].weekday : 1;
 
@@ -2063,10 +2074,10 @@ async function saveClassV2() {
   let classId = id;
   if (id) {
     const { error } = await sb.from('classes').update(record).eq('id', id);
-    if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+    if (error) { showToast('Erro: ' + error.message, 'error'); saveBtn.disabled = false; saveBtn.textContent = 'Salvar Turma'; return; }
   } else {
     const { data, error } = await sb.from('classes').insert(record).select().single();
-    if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+    if (error) { showToast('Erro: ' + error.message, 'error'); saveBtn.disabled = false; saveBtn.textContent = 'Salvar Turma'; return; }
     classId = data.id;
   }
 
@@ -2102,10 +2113,12 @@ async function saveClassV2() {
     .map(lc => ({ class_id: classId, cohort_id: lc.cohort_id, access_until: lc.access_until }));
   if (cohortRows.length > 0) {
     const { error } = await sb.from('class_cohort_access').insert(cohortRows);
-    if (error) { showToast('Erro ao salvar turmas vinculadas: ' + error.message, 'error'); return; }
+    if (error) { showToast('Erro ao salvar turmas vinculadas: ' + error.message, 'error'); saveBtn.disabled = false; saveBtn.textContent = 'Salvar Turma'; return; }
   }
 
   showToast(id ? 'Turma atualizada!' : 'Turma criada!', 'success');
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'Salvar Turma';
   closeClassForm();
   await loadClasses();
   renderAll(); // atualiza calendário com novos professores/mentores/hosts
@@ -2542,6 +2555,24 @@ function updateNotifyPreview() {
 
   previewWrap.style.display = '';
   previewEl.textContent = rendered;
+
+  // Mostra/oculta botão de copiar link Zoom
+  const copyBtn = document.getElementById('copy-zoom-btn');
+  if (copyBtn) copyBtn.style.display = zoom ? '' : 'none';
+}
+
+function copyZoomLink() {
+  const zoom = document.getElementById('notify-zoom').value;
+  if (!zoom) return;
+  navigator.clipboard.writeText(zoom).then(() => {
+    const btn = document.getElementById('copy-zoom-btn');
+    const original = btn.textContent;
+    btn.textContent = '✓ Copiado!';
+    btn.style.color = '#4ade80';
+    setTimeout(() => { btn.textContent = original; btn.style.color = '#aaa'; }, 2000);
+  }).catch(() => {
+    showToast('Não foi possível copiar — copie manualmente', 'error');
+  });
 }
 
 function resetNotifyForm() {
@@ -2634,15 +2665,17 @@ async function sendNotification() {
 
     if (error) throw error;
 
-    showToast('Aviso enviado! Processando...', 'success');
+    showToast(`Aviso enviado para ${cohort.name}! Aguardando confirmação...`, 'success');
     resetNotifyForm();
 
     setTimeout(async () => {
       const { data: updated } = await sb.from('notifications').select('status, error_message').eq('id', data.id).single();
       if (updated) {
-        if (updated.status === 'sent') showToast('Aviso entregue com sucesso!', 'success');
-        else if (updated.status === 'partial') showToast('Aviso parcialmente entregue', 'error');
+        if (updated.status === 'sent') showToast(`✓ Entregue para ${cohort.name}`, 'success');
+        else if (updated.status === 'delivered') showToast(`✓ Confirmado — recebido no dispositivo (${cohort.name})`, 'success');
+        else if (updated.status === 'partial') showToast(`Entrega parcial — ${cohort.name}`, 'error');
         else if (updated.status === 'failed') showToast('Falha: ' + (updated.error_message || 'erro desconhecido'), 'error');
+        else if (updated.status === 'processing') showToast('Ainda processando — confira o histórico', 'success');
       }
       await loadNotifyHistory();
     }, 5000);

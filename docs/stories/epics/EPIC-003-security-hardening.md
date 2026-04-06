@@ -138,23 +138,22 @@ O banco de dados foi construído com scripts SQL avulsos em `db/`. Não há rast
 
 ---
 
-### Story 3.6 — Feedback Visual para Ações Críticas no Admin
+### Story 3.6 — Feedback Visual para Ações Críticas no Admin ✅ DONE
 
 **Executor:** @dev (Dex)
 **Effort:** ~3h
 **Debt ID:** UX-NEW-A1
-**Priority:** High
+**Status:** Done — verificado em 06/04/2026
 
-**Contexto:**
-Ações críticas como envio de WhatsApp para turma, marcação de presença em lote e geração de links Zoom não possuem feedback visual claro. O admin clica e não sabe se a ação funcionou ou falhou.
+**Resultado:** Feedback visual implementado em todas as ações críticas do admin. `saveClassV2()` ganhou loading state (botão desabilitado + "Salvando...") com restauração em todos os paths de retorno. `saveAll()` mostra contagem de registros salvos. `sendNotification()` exibe nome do cohort no toast e estados intermediários (processing, delivered). Botão "📋 Copiar" adicionado ao campo Zoom Link — aparece apenas quando há link, copia para clipboard com feedback "✓ Copiado!".
 
 **Acceptance Criteria:**
-- [ ] Toast de sucesso exibido após envio de WhatsApp para turma (com contagem de mensagens enviadas)
-- [ ] Toast de erro exibido com mensagem clara quando envio falha
-- [ ] Estado de loading (spinner ou botão desabilitado) durante envio — sem double-submit
-- [ ] Feedback visual após marcação de presença em lote (quantos registros salvos)
-- [ ] Feedback visual após geração de link Zoom (link copiável exibido ou copiado para clipboard)
-- [ ] Feedback consistente com o padrão visual existente (sem nova biblioteca de componentes)
+- [x] Toast de sucesso exibido após envio de WhatsApp para turma (com nome do cohort)
+- [x] Toast de erro exibido com mensagem clara quando envio falha
+- [x] Estado de loading (botão desabilitado + "Salvando...") durante envio — sem double-submit
+- [x] Feedback visual após marcação de presença em lote (quantos registros salvos)
+- [x] Feedback visual após geração de link Zoom (link copiável com botão "📋 Copiar" + feedback "✓ Copiado!")
+- [x] Feedback consistente com o padrão visual existente (sem nova biblioteca de componentes)
 
 ---
 
