@@ -21,12 +21,8 @@
       padding: 24px 16px;
     }
 
-    .container {
-      width: 100%;
-      max-width: 520px;
-    }
+    .container { width: 100%; max-width: 520px; }
 
-    /* Progress bar */
     .progress-bar {
       height: 3px;
       background: #1a1a1a;
@@ -41,7 +37,6 @@
       transition: width .4s ease;
     }
 
-    /* Card */
     .card {
       background: #0f0f0f;
       border: 1px solid #1e1e1e;
@@ -58,6 +53,13 @@
       margin-bottom: 24px;
     }
 
+    .q-counter {
+      font-size: 11px;
+      color: #444;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
     .question {
       font-size: 22px;
       font-weight: 800;
@@ -66,7 +68,7 @@
       margin-bottom: 32px;
     }
 
-    /* NPS buttons */
+    /* NPS */
     .nps-grid {
       display: grid;
       grid-template-columns: repeat(11, 1fr);
@@ -124,14 +126,8 @@
       min-height: 18px;
     }
 
-    /* Follow-up */
-    .followup-label {
-      font-size: 14px;
-      font-weight: 600;
-      color: #ccc;
-      margin-bottom: 10px;
-    }
-    .followup-input {
+    /* Text */
+    .text-input {
       width: 100%;
       background: #0d0d0d;
       border: 1px solid #1e1e1e;
@@ -143,8 +139,83 @@
       resize: none;
       min-height: 100px;
       transition: border-color .15s;
+      margin-bottom: 20px;
     }
-    .followup-input:focus { outline: none; border-color: #6366f1; }
+    .text-input:focus { outline: none; border-color: #6366f1; }
+
+    /* Choice / Multi */
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .option-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: #0d0d0d;
+      border: 1px solid #1e1e1e;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      font-size: 14px;
+      color: #ccc;
+      user-select: none;
+    }
+    .option-item:hover { border-color: #333; }
+    .option-item.selected { border-color: #6366f1; background: rgba(99,102,241,.08); color: #fff; }
+    .option-dot {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #333;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .15s, background .15s;
+    }
+    .option-item.selected .option-dot { border-color: #6366f1; background: #6366f1; }
+    .option-item.selected .option-dot::after { content: ''; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
+    .option-sq {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #333;
+      border-radius: 4px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .15s, background .15s;
+    }
+    .option-item.selected .option-sq { border-color: #6366f1; background: #6366f1; }
+    .option-item.selected .option-sq::after { content: '✓'; color: #fff; font-size: 11px; font-weight: 700; }
+
+    /* Scale */
+    .scale-grid {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .scale-btn {
+      flex: 1;
+      min-width: 36px;
+      height: 44px;
+      border: 1px solid #222;
+      border-radius: 8px;
+      background: #0d0d0d;
+      color: #666;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: inherit;
+    }
+    .scale-btn:hover { border-color: #f97316; color: #fff; }
+    .scale-btn.selected { background: #f97316; border-color: #f97316; color: #fff; }
 
     /* CTA button */
     .cta-btn {
@@ -158,7 +229,7 @@
       font-weight: 700;
       cursor: pointer;
       font-family: inherit;
-      margin-top: 24px;
+      margin-top: 8px;
       transition: background .15s, opacity .15s;
     }
     .cta-btn:hover:not(:disabled) { background: #4f52d4; }
@@ -168,55 +239,30 @@
     .screen { display: none; }
     .screen.active { display: block; }
 
+    /* Intro */
+    .intro-title { font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 10px; }
+    .intro-sub   { font-size: 14px; color: #666; line-height: 1.7; margin-bottom: 28px; }
+
     /* Thank you */
     .thanks-icon {
-      width: 72px;
-      height: 72px;
+      width: 72px; height: 72px;
       background: rgba(34,197,94,.12);
       border: 2px solid rgba(34,197,94,.3);
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      margin: 0 auto 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; margin: 0 auto 20px;
     }
-    .thanks-title {
-      font-size: 24px;
-      font-weight: 800;
-      color: #fff;
-      text-align: center;
-      margin-bottom: 8px;
-    }
-    .thanks-sub {
-      font-size: 14px;
-      color: #555;
-      text-align: center;
-    }
+    .thanks-title { font-size: 24px; font-weight: 800; color: #fff; text-align: center; margin-bottom: 8px; }
+    .thanks-sub   { font-size: 14px; color: #555; text-align: center; }
 
     /* Error screen */
-    .error-icon {
-      font-size: 36px;
-      text-align: center;
-      margin-bottom: 16px;
-    }
-    .error-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: #fff;
-      text-align: center;
-      margin-bottom: 8px;
-    }
-    .error-msg {
-      font-size: 13px;
-      color: #555;
-      text-align: center;
-    }
+    .error-icon  { font-size: 36px; text-align: center; margin-bottom: 16px; }
+    .error-title { font-size: 18px; font-weight: 700; color: #fff; text-align: center; margin-bottom: 8px; }
+    .error-msg   { font-size: 13px; color: #555; text-align: center; }
 
     /* Spinner */
     .spinner {
-      width: 32px;
-      height: 32px;
+      width: 32px; height: 32px;
       border: 3px solid #1e1e1e;
       border-top-color: #6366f1;
       border-radius: 50%;
@@ -252,38 +298,24 @@
       <div class="error-msg" id="error-msg">Este link de avaliação é inválido, expirado ou já foi respondido.</div>
     </div>
 
-    <!-- Screen 1: Main question -->
+    <!-- Intro screen (optional) -->
+    <div class="screen" id="screen-intro">
+      <div class="brand">Academia Lendária</div>
+      <div class="intro-title">Olá! 👋</div>
+      <div class="intro-sub" id="intro-text"></div>
+      <button class="cta-btn" onclick="startQuestions()">Começar →</button>
+    </div>
+
+    <!-- Question screen -->
     <div class="screen" id="screen-question">
       <div class="brand">Academia Lendária</div>
+      <div class="q-counter" id="q-counter"></div>
       <div class="question" id="question-text"></div>
-
-      <!-- NPS -->
-      <div id="nps-widget" style="display:none">
-        <div class="nps-grid" id="nps-grid"></div>
-        <div class="nps-labels">
-          <span>Nada satisfeito</span>
-          <span>Muito satisfeito</span>
-        </div>
-      </div>
-
-      <!-- CSAT -->
-      <div id="csat-widget" style="display:none">
-        <div class="stars-row" id="stars-row"></div>
-        <div class="stars-label" id="stars-label">Clique em uma estrela</div>
-      </div>
-
-      <button class="cta-btn" id="btn-next-q" disabled onclick="goToFollowUp()">Continuar →</button>
+      <div id="q-widget"></div>
+      <button class="cta-btn" id="btn-next" disabled onclick="nextQuestion()">Continuar →</button>
     </div>
 
-    <!-- Screen 2: Follow-up (optional) -->
-    <div class="screen" id="screen-followup">
-      <div class="brand">Academia Lendária</div>
-      <div class="followup-label" id="followup-label">O que motivou sua nota?</div>
-      <textarea class="followup-input" id="followup-input" placeholder="Sua resposta (opcional)..."></textarea>
-      <button class="cta-btn" onclick="submitResponse()">Enviar avaliação 🚀</button>
-    </div>
-
-    <!-- Screen 3: Thank you -->
+    <!-- Thank you -->
     <div class="screen" id="screen-thanks">
       <div class="thanks-icon">✓</div>
       <div class="thanks-title">Obrigado!</div>
@@ -301,9 +333,11 @@
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  let surveyData = null;
-  let linkData   = null;
-  let selectedScore = null;
+  let surveyData  = null;
+  let linkData    = null;
+  let questions   = [];   // survey_questions ordered by position
+  let currentQIdx = 0;
+  let answers     = [];   // [{ question_id, value_text?, value_number?, value_options? }]
 
   const STAR_LABELS = ['', 'Muito insatisfeito', 'Insatisfeito', 'Regular', 'Satisfeito', 'Muito satisfeito'];
 
@@ -314,7 +348,7 @@
 
     const { data, error } = await sb
       .from('survey_links')
-      .select('id, token, used_at, survey_id, surveys(id, type, question, follow_up, status, name)')
+      .select('id, token, used_at, survey_id, students(id, name), surveys(id, type, name, question, follow_up, intro_text, status)')
       .eq('token', token)
       .single();
 
@@ -327,78 +361,265 @@
     linkData   = data;
     surveyData = data.surveys;
 
-    buildQuestion();
+    // Load questions from survey_questions table
+    const { data: qs } = await sb
+      .from('survey_questions')
+      .select('*')
+      .eq('survey_id', surveyData.id)
+      .order('position');
+
+    questions = qs || [];
+
+    // If no questions in new table, fall back to legacy single-question mode
+    if (questions.length === 0 && surveyData.question) {
+      questions = [{
+        id: '__legacy__',
+        type: surveyData.type === 'nps' ? 'nps' : 'csat',
+        label: surveyData.question,
+        required: true,
+        follow_up: surveyData.follow_up,
+        options: null,
+        scale_max: null,
+        placeholder: null,
+      }];
+      if (surveyData.follow_up) {
+        questions.push({
+          id: '__legacy_fu__',
+          type: 'text',
+          label: surveyData.follow_up,
+          required: false,
+          options: null,
+          scale_max: null,
+          placeholder: 'Sua resposta (opcional)...',
+        });
+      }
+    }
+
+    if (questions.length === 0) {
+      showError('Formulário vazio', 'Este formulário não possui perguntas.'); return;
+    }
+
+    // Show intro if exists
+    if (surveyData.intro_text) {
+      document.getElementById('intro-text').textContent = surveyData.intro_text;
+      showScreen('screen-intro');
+      setProgress(5);
+    } else {
+      startQuestions();
+    }
+  }
+
+  function startQuestions() {
+    currentQIdx = 0;
+    renderQuestion(currentQIdx);
     showScreen('screen-question');
-    setProgress(30);
   }
 
-  // ─── Build question UI ───
-  function buildQuestion() {
-    document.getElementById('question-text').textContent = surveyData.question;
+  // ─── Render question ───
+  function renderQuestion(idx) {
+    const q = questions[idx];
+    const total = questions.length;
 
-    if (surveyData.type === 'nps') {
-      const grid = document.getElementById('nps-grid');
-      grid.innerHTML = '';
-      for (let i = 0; i <= 10; i++) {
-        const cls = i <= 6 ? 'det' : i <= 8 ? 'neu' : 'pro';
-        const btn = document.createElement('button');
-        btn.className = `nps-btn ${cls}`;
-        btn.textContent = i;
-        btn.onclick = () => selectNPS(i, btn);
-        grid.appendChild(btn);
-      }
-      document.getElementById('nps-widget').style.display = '';
-    } else {
-      const row = document.getElementById('stars-row');
-      row.innerHTML = '';
-      for (let i = 1; i <= 5; i++) {
-        const btn = document.createElement('button');
-        btn.className = 'star-btn';
-        btn.textContent = '★';
-        btn.dataset.val = i;
-        btn.onclick = () => selectCSAT(i);
-        row.appendChild(btn);
-      }
-      document.getElementById('csat-widget').style.display = '';
+    document.getElementById('q-counter').textContent = `Pergunta ${idx + 1} de ${total}`;
+    document.getElementById('question-text').textContent = q.label;
+
+    const pct = Math.round(((idx) / total) * 80) + 10;
+    setProgress(pct);
+
+    const btnNext = document.getElementById('btn-next');
+    btnNext.textContent = idx === total - 1 ? 'Enviar avaliação 🚀' : 'Continuar →';
+    btnNext.disabled = q.required;   // disabled until answered (if required)
+
+    const widget = document.getElementById('q-widget');
+    widget.innerHTML = '';
+
+    if (q.type === 'nps') {
+      renderNPS(widget, q, idx);
+    } else if (q.type === 'csat') {
+      renderCSAT(widget, q, idx);
+    } else if (q.type === 'text') {
+      renderText(widget, q, idx);
+    } else if (q.type === 'choice') {
+      renderChoice(widget, q, idx);
+    } else if (q.type === 'multi') {
+      renderMulti(widget, q, idx);
+    } else if (q.type === 'scale') {
+      renderScale(widget, q, idx);
     }
   }
 
-  function selectNPS(score, clickedBtn) {
-    selectedScore = score;
-    document.querySelectorAll('.nps-btn').forEach(b => b.classList.remove('selected'));
-    clickedBtn.classList.add('selected');
-    document.getElementById('btn-next-q').disabled = false;
+  // ─── NPS ───
+  function renderNPS(container, q, idx) {
+    const grid = document.createElement('div');
+    grid.className = 'nps-grid';
+    for (let i = 0; i <= 10; i++) {
+      const cls = i <= 6 ? 'det' : i <= 8 ? 'neu' : 'pro';
+      const btn = document.createElement('button');
+      btn.className = `nps-btn ${cls}`;
+      btn.textContent = i;
+      btn.onclick = () => {
+        grid.querySelectorAll('.nps-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        setAnswer(idx, q.id, { value_number: i });
+        enableNext();
+      };
+      grid.appendChild(btn);
+    }
+    const labels = document.createElement('div');
+    labels.className = 'nps-labels';
+    labels.innerHTML = '<span>Nada satisfeito</span><span>Muito satisfeito</span>';
+    container.appendChild(grid);
+    container.appendChild(labels);
   }
 
-  function selectCSAT(score) {
-    selectedScore = score;
-    document.querySelectorAll('.star-btn').forEach((b, i) => {
-      b.classList.toggle('filled', i < score);
+  // ─── CSAT ───
+  function renderCSAT(container, q, idx) {
+    const row = document.createElement('div');
+    row.className = 'stars-row';
+    const lbl = document.createElement('div');
+    lbl.className = 'stars-label';
+    lbl.textContent = 'Clique em uma estrela';
+
+    for (let i = 1; i <= 5; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'star-btn';
+      btn.textContent = '★';
+      btn.dataset.val = i;
+      btn.onclick = () => {
+        row.querySelectorAll('.star-btn').forEach((b, bi) => b.classList.toggle('filled', bi < i));
+        lbl.textContent = STAR_LABELS[i] || '';
+        setAnswer(idx, q.id, { value_number: i });
+        enableNext();
+      };
+      row.appendChild(btn);
+    }
+    container.appendChild(row);
+    container.appendChild(lbl);
+  }
+
+  // ─── Text ───
+  function renderText(container, q, idx) {
+    const ta = document.createElement('textarea');
+    ta.className = 'text-input';
+    ta.placeholder = q.placeholder || 'Sua resposta...';
+    ta.oninput = () => {
+      setAnswer(idx, q.id, { value_text: ta.value.trim() || null });
+      if (!q.required) enableNext();
+      else document.getElementById('btn-next').disabled = !ta.value.trim();
+    };
+    // Non-required: enable immediately
+    if (!q.required) {
+      document.getElementById('btn-next').disabled = false;
+    }
+    container.appendChild(ta);
+  }
+
+  // ─── Choice (single) ───
+  function renderChoice(container, q, idx) {
+    const list = document.createElement('div');
+    list.className = 'options-list';
+    (q.options || []).forEach(opt => {
+      const item = document.createElement('div');
+      item.className = 'option-item';
+      item.innerHTML = `<div class="option-dot"></div><span>${escHtml(opt)}</span>`;
+      item.onclick = () => {
+        list.querySelectorAll('.option-item').forEach(i => i.classList.remove('selected'));
+        item.classList.add('selected');
+        setAnswer(idx, q.id, { value_text: opt });
+        enableNext();
+      };
+      list.appendChild(item);
     });
-    document.getElementById('stars-label').textContent = STAR_LABELS[score] || '';
-    document.getElementById('btn-next-q').disabled = false;
+    container.appendChild(list);
   }
 
-  function goToFollowUp() {
-    if (selectedScore === null) return;
+  // ─── Multi (multiple selection) ───
+  function renderMulti(container, q, idx) {
+    const selected = new Set();
+    const list = document.createElement('div');
+    list.className = 'options-list';
+    (q.options || []).forEach(opt => {
+      const item = document.createElement('div');
+      item.className = 'option-item';
+      item.innerHTML = `<div class="option-sq"></div><span>${escHtml(opt)}</span>`;
+      item.onclick = () => {
+        if (selected.has(opt)) {
+          selected.delete(opt);
+          item.classList.remove('selected');
+        } else {
+          selected.add(opt);
+          item.classList.add('selected');
+        }
+        const arr = [...selected];
+        setAnswer(idx, q.id, { value_options: arr.length ? arr : null });
+        if (!q.required) enableNext();
+        else document.getElementById('btn-next').disabled = selected.size === 0;
+      };
+      list.appendChild(item);
+    });
+    if (!q.required) document.getElementById('btn-next').disabled = false;
+    container.appendChild(list);
+  }
 
-    if (surveyData.follow_up) {
-      document.getElementById('followup-label').textContent = surveyData.follow_up;
-      showScreen('screen-followup');
-      setProgress(65);
+  // ─── Scale ───
+  function renderScale(container, q, idx) {
+    const max = q.scale_max || 5;
+    const grid = document.createElement('div');
+    grid.className = 'scale-grid';
+    for (let i = 1; i <= max; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'scale-btn';
+      btn.textContent = i;
+      btn.onclick = () => {
+        grid.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        setAnswer(idx, q.id, { value_number: i });
+        enableNext();
+      };
+      grid.appendChild(btn);
+    }
+    container.appendChild(grid);
+  }
+
+  // ─── Answer management ───
+  function setAnswer(idx, questionId, vals) {
+    answers[idx] = { question_id: questionId, ...vals };
+  }
+
+  function enableNext() {
+    document.getElementById('btn-next').disabled = false;
+  }
+
+  // ─── Navigation ───
+  function nextQuestion() {
+    if (currentQIdx < questions.length - 1) {
+      currentQIdx++;
+      renderQuestion(currentQIdx);
     } else {
-      submitResponse();
+      submitAllAnswers();
     }
   }
 
-  async function submitResponse() {
-    const feedback = document.getElementById('followup-input')?.value.trim() || null;
-    const token    = linkData.token;
+  // ─── Submit ───
+  async function submitAllAnswers() {
+    const btnNext = document.getElementById('btn-next');
+    btnNext.disabled = true;
+    btnNext.textContent = 'Enviando...';
+
+    const token = linkData.token;
+
+    // Build answers payload (exclude nulls from legacy placeholders)
+    const answersPayload = answers.filter(Boolean).map(a => ({
+      question_id: a.question_id,
+      value_text:    a.value_text    ?? null,
+      value_number:  a.value_number  ?? null,
+      value_options: a.value_options ?? null,
+    }));
 
     const res = await fetch(`${FUNCTIONS_URL}/submit-survey`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, score: selectedScore, feedback }),
+      body: JSON.stringify({ token, answers: answersPayload }),
     });
 
     const result = await res.json();
@@ -409,7 +630,7 @@
       const msgs = {
         token_already_used: 'Você já respondeu esta avaliação.',
         token_invalid: 'Link inválido ou expirado.',
-        score_out_of_range: 'Nota inválida.',
+        missing_fields: 'Dados incompletos. Tente novamente.',
       };
       showError('Erro ao enviar', msgs[result.error] || 'Tente novamente mais tarde.');
     }
@@ -430,6 +651,10 @@
 
   function setProgress(pct) {
     document.getElementById('progress').style.width = pct + '%';
+  }
+
+  function escHtml(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
   init();

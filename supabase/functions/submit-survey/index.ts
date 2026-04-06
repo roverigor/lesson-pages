@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════
 // Edge Function: submit-survey
 // Public endpoint — token-based, no auth required
-// Saves student survey response to student_nps
+// Saves to survey_responses + survey_answers
 // ═══════════════════════════════════════
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
@@ -16,11 +16,23 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-function sb() {
+function getClient() {
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }
+
+type AnswerPayload = {
+  question_id: string;
+  value_text?: string | null;
+  value_number?: number | null;
+  value_options?: string[] | null;
+};
+
+type Body = {
+  token?: string;
+  answers?: AnswerPayload[];
+};
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -34,7 +46,7 @@ serve(async (req: Request) => {
     });
   }
 
-  let body: { token?: string; score?: number; feedback?: string };
+  let body: Body;
   try {
     body = await req.json();
   } catch {
@@ -44,21 +56,21 @@ serve(async (req: Request) => {
     });
   }
 
-  const { token, score, feedback } = body;
+  const { token, answers } = body;
 
-  if (!token || score === undefined || score === null) {
+  if (!token || !answers || !Array.isArray(answers)) {
     return new Response(JSON.stringify({ error: "missing_fields" }), {
       status: 400,
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   }
 
-  const client = sb();
+  const client = getClient();
 
   // 1. Validate token
   const { data: link, error: linkErr } = await client
     .from("survey_links")
-    .select("id, survey_id, student_id, used_at, surveys(id, type, cohort_id, class_id, status)")
+    .select("id, survey_id, student_id, used_at, surveys(id, type, status)")
     .eq("token", token)
     .single();
 
@@ -76,14 +88,7 @@ serve(async (req: Request) => {
     });
   }
 
-  const survey = link.surveys as {
-    id: string;
-    type: string;
-    cohort_id: string | null;
-    class_id: string | null;
-    status: string;
-  } | null;
-
+  const survey = link.surveys as { id: string; type: string; status: string } | null;
   if (!survey || survey.status === "draft") {
     return new Response(JSON.stringify({ error: "survey_unavailable" }), {
       status: 400,
@@ -91,33 +96,45 @@ serve(async (req: Request) => {
     });
   }
 
-  // 2. Validate score range
-  const maxScore = survey.type === "nps" ? 10 : 5;
-  const minScore = survey.type === "nps" ? 0 : 1;
-  if (score < minScore || score > maxScore || !Number.isInteger(score)) {
-    return new Response(JSON.stringify({ error: "score_out_of_range" }), {
-      status: 400,
-      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-    });
-  }
+  // 2. Create survey_response
+  const { data: response, error: respErr } = await client
+    .from("survey_responses")
+    .insert({
+      survey_id: survey.id,
+      link_id: link.id,
+      student_id: link.student_id ?? null,
+      submitted_at: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
 
-  // 3. Insert response
-  const { error: insertErr } = await client.from("student_nps").insert({
-    survey_id: survey.id,
-    survey_type: survey.type,
-    student_id: link.student_id,
-    cohort_id: survey.cohort_id,
-    score,
-    feedback: feedback?.trim() || null,
-    responded_at: new Date().toISOString(),
-  });
-
-  if (insertErr) {
-    console.error("Insert error:", insertErr);
+  if (respErr || !response) {
+    console.error("survey_responses insert error:", respErr);
     return new Response(JSON.stringify({ error: "save_failed" }), {
       status: 500,
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
+  }
+
+  // 3. Insert survey_answers
+  if (answers.length > 0) {
+    const answerRows = answers
+      .filter(a => a.question_id && a.question_id !== "__legacy__" && a.question_id !== "__legacy_fu__")
+      .map(a => ({
+        response_id:   response.id,
+        question_id:   a.question_id,
+        value_text:    a.value_text    ?? null,
+        value_number:  a.value_number  ?? null,
+        value_options: a.value_options ?? null,
+      }));
+
+    if (answerRows.length > 0) {
+      const { error: answErr } = await client.from("survey_answers").insert(answerRows);
+      if (answErr) {
+        console.error("survey_answers insert error:", answErr);
+        // Don't fail the whole submission — mark token used anyway
+      }
+    }
   }
 
   // 4. Mark token as used
