@@ -142,8 +142,18 @@
 </div>
 
 <div class="container">
-  <div class="section-title">Visão geral por turma</div>
+  <!-- LIVE DB SURVEYS -->
+  <div id="live-surveys-section" style="display:none">
+    <div class="section-title" style="display:flex;align-items:center;gap:6px">
+      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#4ade80"></span>
+      Avaliações em tempo real
+    </div>
+    <div class="overview-grid" id="live-overview-grid"></div>
+    <div id="live-details"></div>
+    <div class="section-title" style="margin-top:32px">Histórico (Tally)</div>
+  </div>
 
+  <div class="section-title" id="legacy-section-title">Visão geral por turma</div>
   <div class="overview-grid" id="overview-grid"></div>
 
   <div id="detail-ps-advanced" class="turma-detail"></div>
@@ -151,6 +161,7 @@
   <div id="detail-fund-t3"     class="turma-detail"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
 <script>
 const SENTIMENT = {
   "ps_advanced":  {"total":31,"positivo":17,"negativo":1,"neutro":13,"pct_positivo":55,"temas":{"Monitores / Equipe":15,"Dúvidas Resolvidas":11,"Ritmo / Tempo":4,"Resultados / Confiança":4,"Conteúdo / AIOX":3}},
@@ -382,6 +393,125 @@ function printAll() {
 }
 
 renderOverview();
+
+// ─── Live DB Surveys ───
+(async function loadLiveSurveys() {
+  const SUPABASE_URL = 'https://gpufcipkajppykmnmdeh.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU';
+
+  let sb;
+  try {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } catch(e) { return; } // supabase sdk not loaded yet
+
+  const { data: surveys } = await sb
+    .from('surveys')
+    .select('id, name, type, status, cohorts(name), classes(name)')
+    .in('status', ['active', 'closed'])
+    .order('created_at', { ascending: false });
+
+  if (!surveys || surveys.length === 0) return;
+
+  const { data: responses } = await sb
+    .from('student_nps')
+    .select('survey_id, score, feedback, responded_at')
+    .in('survey_id', surveys.map(s => s.id));
+
+  const responsesBySurvey = {};
+  for (const r of (responses || [])) {
+    if (!responsesBySurvey[r.survey_id]) responsesBySurvey[r.survey_id] = [];
+    responsesBySurvey[r.survey_id].push(r);
+  }
+
+  document.getElementById('live-surveys-section').style.display = '';
+  document.getElementById('legacy-section-title').style.display = 'none';
+
+  const COLORS = ['#6366f1','#10b981','#f59e0b','#ec4899','#06b6d4','#8b5cf6'];
+  let activeLiveKey = null;
+
+  const cards = surveys.map((s, i) => {
+    const r = responsesBySurvey[s.id] || [];
+    const color = COLORS[i % COLORS.length];
+    const turma = s.cohorts?.name || s.classes?.name || '—';
+
+    let scoreDisplay = '—';
+    if (r.length > 0) {
+      if (s.type === 'nps') {
+        const prom = r.filter(x => x.score >= 9).length;
+        const detr = r.filter(x => x.score <= 6).length;
+        scoreDisplay = Math.round(((prom - detr) / r.length) * 100);
+      } else {
+        scoreDisplay = (r.reduce((a, x) => a + x.score, 0) / r.length).toFixed(1);
+      }
+    }
+
+    const pct = r.length > 0 ? Math.min(100, Math.abs(scoreDisplay) / (s.type === 'nps' ? 1 : 20) * 100) : 0;
+
+    return `<div class="ov-card" style="--c:${color}" onclick="toggleLiveDetail('${s.id}')">
+      <div class="ov-name"><span class="ov-dot"></span>${s.name}</div>
+      <div class="ov-score">${scoreDisplay}</div>
+      <div class="ov-score-label">${s.type === 'nps' ? 'NPS Score' : 'CSAT Média'}</div>
+      <div class="ov-meta">${turma} · ${r.length} respostas</div>
+      <div class="score-bar"><div class="score-bar-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('live-overview-grid').innerHTML = cards;
+
+  window.toggleLiveDetail = function(surveyId) {
+    const s = surveys.find(x => x.id === surveyId);
+    if (!s) return;
+    const r = responsesBySurvey[surveyId] || [];
+
+    if (activeLiveKey === surveyId) {
+      activeLiveKey = null;
+      document.getElementById('live-details').innerHTML = '';
+      return;
+    }
+    activeLiveKey = surveyId;
+
+    const comments = r.filter(x => x.feedback).map(x =>
+      `<div class="comment-item">${x.feedback}</div>`
+    ).join('') || '<div style="color:#444;font-size:12px;padding:8px 0">Nenhum comentário.</div>';
+
+    let scoreSection = '';
+    if (r.length > 0 && s.type === 'nps') {
+      const prom = r.filter(x => x.score >= 9).length;
+      const neut = r.filter(x => x.score >= 7 && x.score <= 8).length;
+      const detr = r.filter(x => x.score <= 6).length;
+      const nps  = Math.round(((prom - detr) / r.length) * 100);
+      const color = nps >= 50 ? '#4ade80' : nps >= 0 ? '#f59e0b' : '#f87171';
+      scoreSection = `
+        <div class="metrics-row">
+          <div class="metric-pill"><div class="metric-pill-label">NPS Score</div><div class="metric-pill-val" style="color:${color}">${nps}</div></div>
+          <div class="metric-pill"><div class="metric-pill-label">Promotores</div><div class="metric-pill-val" style="color:#4ade80">${prom}</div></div>
+          <div class="metric-pill"><div class="metric-pill-label">Neutros</div><div class="metric-pill-val" style="color:#f59e0b">${neut}</div></div>
+          <div class="metric-pill"><div class="metric-pill-label">Detratores</div><div class="metric-pill-val" style="color:#f87171">${detr}</div></div>
+        </div>`;
+    } else if (r.length > 0 && s.type === 'csat') {
+      const avg = (r.reduce((a, x) => a + x.score, 0) / r.length).toFixed(1);
+      scoreSection = `<div class="metrics-row">
+        <div class="metric-pill"><div class="metric-pill-label">Média CSAT</div><div class="metric-pill-val" style="color:#f59e0b">${avg}/5</div></div>
+        <div class="metric-pill"><div class="metric-pill-label">Respostas</div><div class="metric-pill-val">${r.length}</div></div>
+      </div>`;
+    }
+
+    const turma = s.cohorts?.name || s.classes?.name || '—';
+    document.getElementById('live-details').innerHTML = `
+      <div class="turma-detail visible">
+        <div class="detail-card">
+          <div class="detail-header">
+            <span style="font-size:15px;font-weight:700;color:#fff">${s.name}</span>
+            <span class="detail-tag" style="background:rgba(99,102,241,.12);color:#a5b4fc">${turma}</span>
+            <span class="detail-tag" style="background:rgba(99,102,241,.08);color:#666">${s.type.toUpperCase()}</span>
+          </div>
+          ${scoreSection}
+          <div class="sessions-title">Comentários (${r.filter(x=>x.feedback).length})</div>
+          <div class="comments-list open">${comments}</div>
+        </div>
+      </div>`;
+  };
+})();
 </script>
 </body>
 </html>

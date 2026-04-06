@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Avaliação · Academia Lendária</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #080808;
+      color: #ddd;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      height: 3px;
+      background: #1a1a1a;
+      border-radius: 2px;
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #6366f1;
+      border-radius: 2px;
+      transition: width .4s ease;
+    }
+
+    /* Card */
+    .card {
+      background: #0f0f0f;
+      border: 1px solid #1e1e1e;
+      border-radius: 20px;
+      padding: 36px 32px;
+    }
+
+    .brand {
+      font-size: 11px;
+      color: #333;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    .question {
+      font-size: 22px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.35;
+      margin-bottom: 32px;
+    }
+
+    /* NPS buttons */
+    .nps-grid {
+      display: grid;
+      grid-template-columns: repeat(11, 1fr);
+      gap: 5px;
+      margin-bottom: 8px;
+    }
+    .nps-btn {
+      aspect-ratio: 1;
+      border: 1px solid #222;
+      border-radius: 8px;
+      background: #0d0d0d;
+      color: #666;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: inherit;
+    }
+    .nps-btn:hover { border-color: #6366f1; color: #fff; }
+    .nps-btn.selected { background: #6366f1; border-color: #6366f1; color: #fff; }
+    .nps-btn.det.selected  { background: #ef4444; border-color: #ef4444; }
+    .nps-btn.neu.selected  { background: #f59e0b; border-color: #f59e0b; }
+    .nps-btn.pro.selected  { background: #22c55e; border-color: #22c55e; }
+    .nps-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #444;
+      margin-bottom: 28px;
+    }
+
+    /* CSAT stars */
+    .stars-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    .star-btn {
+      font-size: 42px;
+      cursor: pointer;
+      color: #222;
+      transition: all .15s;
+      background: none;
+      border: none;
+      line-height: 1;
+    }
+    .star-btn.filled { color: #f59e0b; }
+    .star-btn:hover  { transform: scale(1.15); }
+    .stars-label {
+      text-align: center;
+      font-size: 12px;
+      color: #444;
+      margin-bottom: 28px;
+      min-height: 18px;
+    }
+
+    /* Follow-up */
+    .followup-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ccc;
+      margin-bottom: 10px;
+    }
+    .followup-input {
+      width: 100%;
+      background: #0d0d0d;
+      border: 1px solid #1e1e1e;
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #ddd;
+      font-size: 14px;
+      font-family: inherit;
+      resize: none;
+      min-height: 100px;
+      transition: border-color .15s;
+    }
+    .followup-input:focus { outline: none; border-color: #6366f1; }
+
+    /* CTA button */
+    .cta-btn {
+      width: 100%;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 24px;
+      transition: background .15s, opacity .15s;
+    }
+    .cta-btn:hover:not(:disabled) { background: #4f52d4; }
+    .cta-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* Screens */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Thank you */
+    .thanks-icon {
+      width: 72px;
+      height: 72px;
+      background: rgba(34,197,94,.12);
+      border: 2px solid rgba(34,197,94,.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 20px;
+    }
+    .thanks-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .thanks-sub {
+      font-size: 14px;
+      color: #555;
+      text-align: center;
+    }
+
+    /* Error screen */
+    .error-icon {
+      font-size: 36px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .error-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .error-msg {
+      font-size: 13px;
+      color: #555;
+      text-align: center;
+    }
+
+    /* Spinner */
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #1e1e1e;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 32px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 480px) {
+      .card { padding: 28px 20px; }
+      .question { font-size: 18px; }
+      .nps-btn { font-size: 11px; }
+      .star-btn { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+
+  <div class="card">
+
+    <!-- Loading -->
+    <div class="screen active" id="screen-loading">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Error -->
+    <div class="screen" id="screen-error">
+      <div class="error-icon">😔</div>
+      <div class="error-title" id="error-title">Link inválido</div>
+      <div class="error-msg" id="error-msg">Este link de avaliação é inválido, expirado ou já foi respondido.</div>
+    </div>
+
+    <!-- Screen 1: Main question -->
+    <div class="screen" id="screen-question">
+      <div class="brand">Academia Lendária</div>
+      <div class="question" id="question-text"></div>
+
+      <!-- NPS -->
+      <div id="nps-widget" style="display:none">
+        <div class="nps-grid" id="nps-grid"></div>
+        <div class="nps-labels">
+          <span>Nada satisfeito</span>
+          <span>Muito satisfeito</span>
+        </div>
+      </div>
+
+      <!-- CSAT -->
+      <div id="csat-widget" style="display:none">
+        <div class="stars-row" id="stars-row"></div>
+        <div class="stars-label" id="stars-label">Clique em uma estrela</div>
+      </div>
+
+      <button class="cta-btn" id="btn-next-q" disabled onclick="goToFollowUp()">Continuar →</button>
+    </div>
+
+    <!-- Screen 2: Follow-up (optional) -->
+    <div class="screen" id="screen-followup">
+      <div class="brand">Academia Lendária</div>
+      <div class="followup-label" id="followup-label">O que motivou sua nota?</div>
+      <textarea class="followup-input" id="followup-input" placeholder="Sua resposta (opcional)..."></textarea>
+      <button class="cta-btn" onclick="submitResponse()">Enviar avaliação 🚀</button>
+    </div>
+
+    <!-- Screen 3: Thank you -->
+    <div class="screen" id="screen-thanks">
+      <div class="thanks-icon">✓</div>
+      <div class="thanks-title">Obrigado!</div>
+      <div class="thanks-sub">Sua avaliação foi registrada com sucesso.<br>Seu feedback nos ajuda a melhorar cada vez mais. 🚀</div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
+<script>
+  const SUPABASE_URL  = 'https://gpufcipkajppykmnmdeh.supabase.co';
+  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU';
+  const FUNCTIONS_URL = 'https://gpufcipkajppykmnmdeh.supabase.co/functions/v1';
+
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let surveyData = null;
+  let linkData   = null;
+  let selectedScore = null;
+
+  const STAR_LABELS = ['', 'Muito insatisfeito', 'Insatisfeito', 'Regular', 'Satisfeito', 'Muito satisfeito'];
+
+  // ─── Init ───
+  async function init() {
+    const token = new URLSearchParams(window.location.search).get('token');
+    if (!token) { showError('Link inválido', 'Nenhum token de avaliação encontrado no link.'); return; }
+
+    const { data, error } = await sb
+      .from('survey_links')
+      .select('id, token, used_at, survey_id, surveys(id, type, question, follow_up, status, name)')
+      .eq('token', token)
+      .single();
+
+    if (error || !data) { showError('Link inválido', 'Este link não existe ou expirou.'); return; }
+    if (data.used_at)   { showError('Já respondido', 'Você já respondeu a esta avaliação. Obrigado!'); return; }
+    if (!data.surveys || data.surveys.status === 'draft') {
+      showError('Avaliação indisponível', 'Esta avaliação ainda não está disponível.'); return;
+    }
+
+    linkData   = data;
+    surveyData = data.surveys;
+
+    buildQuestion();
+    showScreen('screen-question');
+    setProgress(30);
+  }
+
+  // ─── Build question UI ───
+  function buildQuestion() {
+    document.getElementById('question-text').textContent = surveyData.question;
+
+    if (surveyData.type === 'nps') {
+      const grid = document.getElementById('nps-grid');
+      grid.innerHTML = '';
+      for (let i = 0; i <= 10; i++) {
+        const cls = i <= 6 ? 'det' : i <= 8 ? 'neu' : 'pro';
+        const btn = document.createElement('button');
+        btn.className = `nps-btn ${cls}`;
+        btn.textContent = i;
+        btn.onclick = () => selectNPS(i, btn);
+        grid.appendChild(btn);
+      }
+      document.getElementById('nps-widget').style.display = '';
+    } else {
+      const row = document.getElementById('stars-row');
+      row.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'star-btn';
+        btn.textContent = '★';
+        btn.dataset.val = i;
+        btn.onclick = () => selectCSAT(i);
+        row.appendChild(btn);
+      }
+      document.getElementById('csat-widget').style.display = '';
+    }
+  }
+
+  function selectNPS(score, clickedBtn) {
+    selectedScore = score;
+    document.querySelectorAll('.nps-btn').forEach(b => b.classList.remove('selected'));
+    clickedBtn.classList.add('selected');
+    document.getElementById('btn-next-q').disabled = false;
+  }
+
+  function selectCSAT(score) {
+    selectedScore = score;
+    document.querySelectorAll('.star-btn').forEach((b, i) => {
+      b.classList.toggle('filled', i < score);
+    });
+    document.getElementById('stars-label').textContent = STAR_LABELS[score] || '';
+    document.getElementById('btn-next-q').disabled = false;
+  }
+
+  function goToFollowUp() {
+    if (selectedScore === null) return;
+
+    if (surveyData.follow_up) {
+      document.getElementById('followup-label').textContent = surveyData.follow_up;
+      showScreen('screen-followup');
+      setProgress(65);
+    } else {
+      submitResponse();
+    }
+  }
+
+  async function submitResponse() {
+    const feedback = document.getElementById('followup-input')?.value.trim() || null;
+    const token    = linkData.token;
+
+    const res = await fetch(`${FUNCTIONS_URL}/submit-survey`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, score: selectedScore, feedback }),
+    });
+
+    const result = await res.json();
+    if (result.success) {
+      showScreen('screen-thanks');
+      setProgress(100);
+    } else {
+      const msgs = {
+        token_already_used: 'Você já respondeu esta avaliação.',
+        token_invalid: 'Link inválido ou expirado.',
+        score_out_of_range: 'Nota inválida.',
+      };
+      showError('Erro ao enviar', msgs[result.error] || 'Tente novamente mais tarde.');
+    }
+  }
+
+  // ─── Helpers ───
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function showError(title, msg) {
+    document.getElementById('error-title').textContent = title;
+    document.getElementById('error-msg').textContent   = msg;
+    showScreen('screen-error');
+    setProgress(0);
+  }
+
+  function setProgress(pct) {
+    document.getElementById('progress').style.width = pct + '%';
+  }
+
+  init();
+</script>
+</body>
+</html>

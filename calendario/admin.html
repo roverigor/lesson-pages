@@ -330,6 +330,32 @@
       .day-event { display: none; }
       .month-name { font-size: 22px; }
     }
+  /* ═══════════════════════════════════════
+     SURVEYS
+  ═══════════════════════════════════════ */
+  .survey-card { background:#111;border:1px solid #1a1a1a;border-radius:12px;padding:16px 18px;margin-bottom:10px;transition:border-color .15s; }
+  .survey-card:hover { border-color:#2a2a2a; }
+  .survey-card-header { display:flex;align-items:flex-start;gap:12px; }
+  .btn-xs { font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;border:none;cursor:pointer;font-family:var(--font-sans);white-space:nowrap; }
+  .btn-xs.btn-primary { background:#6366f1;color:#fff; }
+  .btn-xs.btn-ghost { background:transparent;color:#555;border:1px solid #222; }
+  .btn-xs.btn-ghost:hover { color:#999;border-color:#333; }
+  .btn-xs.btn-danger { background:transparent;color:#f87171;border:1px solid #3f1212; }
+  .btn-xs.btn-danger:hover { background:#3f1212; }
+  .modal-box { background:#111;border:1px solid #222;border-radius:16px;width:95%;max-height:85vh;overflow-y:auto; }
+  .modal-header { display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #1a1a1a;font-size:15px;font-weight:700;color:#fff; }
+  .modal-close { background:none;border:none;color:#555;font-size:22px;cursor:pointer;line-height:1; }
+  .modal-close:hover { color:#fff; }
+  .modal-body { padding:20px 24px; }
+  .modal-footer { padding:16px 24px;border-top:1px solid #1a1a1a;display:flex;justify-content:flex-end;gap:8px; }
+  .form-group { margin-bottom:14px; }
+  .form-label { display:block;font-size:11px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px; }
+  .form-input { width:100%;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;padding:9px 12px;color:#ddd;font-size:13px;font-family:var(--font-sans);resize:vertical; }
+  .form-input:focus { outline:none;border-color:#6366f1; }
+  .btn-primary { background:#6366f1;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-sans); }
+  .btn-primary:hover { background:#4f52d4; }
+  .btn-secondary { background:transparent;color:#666;border:1px solid #222;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans); }
+  .btn-secondary:hover { color:#999;border-color:#333; }
   </style>
 </head>
 <body>
@@ -367,7 +393,7 @@
       <div class="view-toggle">
         <button class="view-btn active" onclick="switchView('calendar')">Calendário</button>
         <button class="view-btn" onclick="window.open('../relatorio/','_blank')">Relatório</button>
-        <button class="view-btn" onclick="window.open('../avaliacao/','_blank')">Avaliações</button>
+        <button class="view-btn" onclick="switchView('surveys')">Avaliações</button>
         <button class="view-btn" onclick="switchView('staff')">Cadastro</button>
         <button class="view-btn" onclick="switchView('classes')">Turmas</button>
         <button class="view-btn" onclick="switchView('notify')">Avisos</button>
@@ -812,6 +838,17 @@
 </div>
 
 <!-- ═══════════════════════════════════════
+     SURVEYS VIEW
+═══════════════════════════════════════ -->
+<div id="surveys-view" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <h2 style="font-size:20px;font-weight:800;color:#fff">Avaliações NPS / CSAT</h2>
+    <button class="btn-primary" onclick="openCreateSurveyModal()">+ Nova Avaliação</button>
+  </div>
+  <div id="surveys-list"></div>
+</div>
+
+<!-- ═══════════════════════════════════════
      ATTENDANCE MODAL
 ═══════════════════════════════════════ -->
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
@@ -842,6 +879,7 @@
 <script src="/js/admin/schedules.js"></script>
 <script src="/js/admin/zoom.js"></script>
 <script src="/js/admin/abstracts.js"></script>
+<script src="/js/admin/surveys.js"></script>
 <script src="/js/admin/views.js"></script>
 <script src="/js/admin/init.js"></script>
 <script src="https://unpkg.com/lucide@0.469.0"></script>
