@@ -109,6 +109,7 @@ function renderClassesList() {
         <div style="display:flex;gap:6px">
           <button class="att-btn" style="padding:6px 10px;font-size:11px" onclick="event.stopPropagation();editClass('${c.id}')">Editar</button>
           <button class="att-btn" style="padding:6px 10px;font-size:11px;background:rgba(34,197,94,0.12);color:#4ade80;border-color:#22c55e30" onclick="event.stopPropagation();openNewCycle('${c.id}','${c.name}')">+ Novo Ciclo</button>
+          <button class="att-btn" style="padding:6px 10px;font-size:11px;background:rgba(239,68,68,0.1);color:#f87171;border-color:#ef444430" onclick="event.stopPropagation();finalizeClass('${c.id}','${c.name}')">Encerrar Turma</button>
           <button class="att-btn delete" style="padding:6px 8px" onclick="event.stopPropagation();deleteClass('${c.id}','${c.name}')">🗑</button>
         </div>
       </div>
@@ -412,6 +413,26 @@ async function saveClassV2() {
   saveBtn.disabled = false;
   saveBtn.textContent = 'Salvar Turma';
   closeClassForm();
+  await loadClasses();
+  renderAll();
+}
+
+async function finalizeClass(classId, className) {
+  if (!confirm(`Encerrar a turma "${className}"?\n\nA equipe atual será encerrada e não haverá novo ciclo.\nA turma continuará aparecendo no calendário como histórico.\n\nUse "↩ Reabrir" no badge se precisar desfazer.`)) return;
+
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data: activeRows, error: fetchErr } = await sb.from('class_mentors')
+    .select('id').eq('class_id', classId).is('valid_until', null);
+  if (fetchErr) { showToast('Erro: ' + fetchErr.message, 'error'); return; }
+  if (!activeRows || activeRows.length === 0) { showToast('Nenhum mentor ativo nesta turma', 'error'); return; }
+
+  const { error } = await sb.from('class_mentors')
+    .update({ valid_until: today }).eq('class_id', classId).is('valid_until', null);
+  if (error) { showToast('Erro ao encerrar turma: ' + error.message, 'error'); return; }
+
+  const fmt = new Date(today + 'T00:00:00').toLocaleDateString('pt-BR');
+  showToast(`Turma "${className}" encerrada em ${fmt}. Histórico preservado no calendário.`, 'success');
   await loadClasses();
   renderAll();
 }
