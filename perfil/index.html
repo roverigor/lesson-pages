@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil de Presença</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --bg: #080808; --surface: #0d0d0d; --border: #1a1a1a;
+      --text: #ddd; --muted: #555; --accent: #6366f1;
+      --green: #4ade80; --red: #f87171; --yellow: #fbbf24;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-sans); min-height: 100vh; }
+
+    /* HEADER */
+    .header { background: #0a0a0a; border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .header-title { display: flex; align-items: center; gap: 12px; }
+    .header-title h1 { font-size: 16px; font-weight: 700; color: #eee; }
+    .header-title p { font-size: 12px; color: var(--muted); }
+    .nav { display: flex; gap: 8px; }
+    .nav a { font-size: 12px; color: var(--muted); text-decoration: none; padding: 5px 10px; border-radius: 6px; border: 1px solid transparent; transition: all 0.15s; }
+    .nav a:hover { color: #aaa; border-color: var(--border); }
+
+    /* SEARCH BAR */
+    .search-section { padding: 32px 24px 0; max-width: 680px; margin: 0 auto; }
+    .search-box { position: relative; }
+    .search-input {
+      width: 100%; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 14px; font-family: var(--font-sans);
+      outline: none; transition: border-color 0.15s;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: #333; }
+    .search-dropdown {
+      position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: #111; border: 1px solid #222; border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6); z-index: 100; max-height: 300px; overflow-y: auto; display: none;
+    }
+    .search-item {
+      padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #1a1a1a;
+      display: flex; align-items: center; gap: 10px; font-size: 13px;
+    }
+    .search-item:hover { background: #1a1a2e; }
+    .search-item:last-child { border-bottom: none; }
+    .search-item .avatar {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff;
+    }
+    .search-item .item-name { font-weight: 600; color: #ddd; }
+    .search-item .item-sub { font-size: 11px; color: var(--muted); }
+    .type-badge {
+      font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: 0.05em; margin-left: auto; flex-shrink: 0;
+    }
+    .type-student { background: rgba(99,102,241,0.12); color: #a5b4fc; }
+    .type-mentor  { background: rgba(251,191,36,0.12);  color: #fbbf24; }
+
+    /* MAIN LAYOUT */
+    .layout { max-width: 860px; margin: 24px auto; padding: 0 24px 80px; }
+
+    /* EMPTY STATE */
+    .empty-state { text-align: center; padding: 80px 20px; color: #2a2a2a; font-size: 14px; }
+    .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+
+    /* PROFILE HEADER */
+    .profile-header {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 24px; display: flex; align-items: center; gap: 20px; margin-bottom: 20px;
+    }
+    .profile-avatar {
+      width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: #fff;
+    }
+    .profile-name { font-size: 20px; font-weight: 700; color: #eee; }
+    .profile-meta { font-size: 12px; color: var(--muted); margin-top: 4px; display: flex; gap: 12px; flex-wrap: wrap; }
+    .profile-meta span { display: flex; align-items: center; gap: 4px; }
+
+    /* STATS GRID */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    @media (max-width: 600px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 16px; text-align: center;
+    }
+    .stat-value { font-size: 28px; font-weight: 800; color: #eee; line-height: 1; }
+    .stat-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px; }
+    .stat-value.green { color: var(--green); }
+    .stat-value.red   { color: var(--red); }
+    .stat-value.yellow { color: var(--yellow); }
+
+    /* ATTENDANCE BAR */
+    .attendance-bar-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; }
+    .bar-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+    .bar-track { height: 8px; background: #1a1a1a; border-radius: 999px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
+
+    /* HISTORY TABLE */
+    .section-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+    .history-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .history-table { width: 100%; border-collapse: collapse; }
+    .history-table th {
+      padding: 10px 14px; font-size: 10px; font-weight: 700; color: #333;
+      text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border);
+      text-align: left; background: #0a0a0a;
+    }
+    .history-table td { padding: 11px 14px; font-size: 12px; color: #aaa; border-bottom: 1px solid #111; }
+    .history-table tr:last-child td { border-bottom: none; }
+    .history-table tr:hover td { background: #101018; }
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px;
+    }
+    .status-present { background: rgba(34,197,94,0.1);  color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+    .status-absent  { background: rgba(239,68,68,0.1);  color: var(--red);   border: 1px solid rgba(239,68,68,0.2); }
+    .status-zoom    { background: rgba(99,102,241,0.1); color: #a5b4fc;       border: 1px solid rgba(99,102,241,0.2); }
+    .dur { font-family: 'SF Mono', monospace; font-size: 11px; color: #555; }
+    .cohort-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: rgba(6,182,212,0.08); color: #22d3ee; }
+
+    /* LOADING */
+    .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 2000; transition: all 0.3s; transform: translateY(80px); opacity: 0; font-family: var(--font-sans); }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #052e16; border: 1px solid #166534; color: var(--green); }
+    .toast.error   { background: #2d0a0a; border: 1px solid #7f1d1d; color: var(--red); }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-title">
+    <div>
+      <h1>Perfil de Presença</h1>
+      <p>Histórico individual de alunos e mentores</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <a href="/">Home</a>
+    <a href="/presenca">Presença</a>
+    <a href="/alunos">Alunos</a>
+    <a href="/relatorio">Relatório</a>
+  </nav>
+</header>
+
+<div class="search-section">
+  <div class="search-box">
+    <input class="search-input" id="search-input" placeholder="Buscar aluno ou mentor por nome ou telefone..." oninput="handleSearch()" autocomplete="off">
+    <div class="search-dropdown" id="search-dropdown"></div>
+  </div>
+</div>
+
+<div class="layout" id="main-content">
+  <div class="empty-state" id="empty-state">
+    <div class="icon">👤</div>
+    <div>Busque um aluno ou mentor para ver o histórico de presenças</div>
+  </div>
+  <div id="profile-area" style="display:none"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
+<script>
+const SUPABASE_URL = window.SUPABASE_CONFIG.url;
+const SUPABASE_KEY = window.SUPABASE_CONFIG.anonKey;
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let allStudents = [];
+let allMentors  = [];
+let searchTimer = null;
+
+// ─── INIT ───
+async function init() {
+  // Check for URL params: ?id=UUID&tipo=student|mentor
+  const params = new URLSearchParams(window.location.search);
+  const id   = params.get('id');
+  const tipo = params.get('tipo') || 'student';
+
+  const [{ data: s }, { data: m }] = await Promise.all([
+    sb.from('students').select('id, name, phone, cohort_id, aliases, cohorts(name)').eq('active', true).order('name'),
+    sb.from('mentors').select('id, name, phone, role, aliases').eq('active', true).order('name'),
+  ]);
+  allStudents = s || [];
+  allMentors  = m || [];
+
+  if (id) {
+    if (tipo === 'mentor') {
+      const mentor = allMentors.find(m => m.id === id);
+      if (mentor) loadMentorProfile(mentor);
+    } else {
+      const student = allStudents.find(s => s.id === id);
+      if (student) loadStudentProfile(student);
+    }
+  }
+}
+
+// ─── SEARCH ───
+function handleSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(runSearch, 180);
+}
+
+function runSearch() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  const drop = document.getElementById('search-dropdown');
+
+  if (q.length < 2) { drop.style.display = 'none'; return; }
+
+  const students = allStudents.filter(s => {
+    const aliasStr = (s.aliases || []).join(' ').toLowerCase();
+    return (s.name || '').toLowerCase().includes(q)
+      || (s.phone || '').includes(q)
+      || aliasStr.includes(q);
+  }).slice(0, 8);
+
+  const mentors = allMentors.filter(m => {
+    const aliasStr = (m.aliases || []).join(' ').toLowerCase();
+    return (m.name || '').toLowerCase().includes(q)
+      || (m.phone || '').includes(q)
+      || aliasStr.includes(q);
+  }).slice(0, 5);
+
+  if (!students.length && !mentors.length) { drop.style.display = 'none'; return; }
+
+  const rows = [
+    ...students.map(s => renderSearchItem(s, 'student')),
+    ...mentors.map(m => renderSearchItem(m, 'mentor')),
+  ].join('');
+
+  drop.innerHTML = rows;
+  drop.style.display = '';
+}
+
+function renderSearchItem(person, tipo) {
+  const color  = getColor(person.name || person.phone || '');
+  const initials = getInitials(person.name || '?');
+  const sub = tipo === 'student'
+    ? (person.phone || '') + (person.cohorts?.name ? ' · ' + person.cohorts.name : '')
+    : (person.role || 'Mentor') + (person.phone ? ' · ' + person.phone : '');
+  const badge = tipo === 'student'
+    ? `<span class="type-badge type-student">Aluno</span>`
+    : `<span class="type-badge type-mentor">Mentor</span>`;
+  return `<div class="search-item" onclick="selectPerson('${person.id}','${tipo}')">
+    <div class="avatar" style="background:${color}">${initials}</div>
+    <div>
+      <div class="item-name">${person.name || '—'}</div>
+      <div class="item-sub">${sub}</div>
+    </div>
+    ${badge}
+  </div>`;
+}
+
+function selectPerson(id, tipo) {
+  document.getElementById('search-dropdown').style.display = 'none';
+  const url = new URL(window.location);
+  url.searchParams.set('id', id);
+  url.searchParams.set('tipo', tipo);
+  window.history.pushState({}, '', url);
+
+  if (tipo === 'mentor') {
+    const mentor = allMentors.find(m => m.id === id);
+    if (mentor) loadMentorProfile(mentor);
+  } else {
+    const student = allStudents.find(s => s.id === id);
+    if (student) loadStudentProfile(student);
+  }
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-box')) {
+    document.getElementById('search-dropdown').style.display = 'none';
+  }
+});
+
+// ─── STUDENT PROFILE ───
+async function loadStudentProfile(student) {
+  showLoading();
+  const { data: participations } = await sb
+    .from('zoom_participants')
+    .select('id, participant_name, duration_minutes, join_time, leave_time, matched, zoom_meetings(id, topic, start_time, duration_minutes, cohorts(name))')
+    .eq('student_id', student.id)
+    .order('created_at', { ascending: false });
+
+  const rows = (participations || []).filter(p => p.zoom_meetings);
+  const total = rows.length;
+  const totalMin = rows.reduce((s, r) => s + (r.duration_minutes || 0), 0);
+  const avgMin = total > 0 ? Math.round(totalMin / total) : 0;
+
+  // Deduplicate by meeting
+  const byMeeting = new Map();
+  for (const r of rows) {
+    const mid = r.zoom_meetings.id;
+    if (!byMeeting.has(mid) || (r.duration_minutes || 0) > (byMeeting.get(mid).duration_minutes || 0)) {
+      byMeeting.set(mid, r);
+    }
+  }
+  const meetings = [...byMeeting.values()].sort((a, b) =>
+    new Date(b.zoom_meetings.start_time || 0) - new Date(a.zoom_meetings.start_time || 0)
+  );
+  const uniqueMeetings = meetings.length;
+  const totalMeetingMin = meetings.reduce((s, r) => s + (r.duration_minutes || 0), 0);
+  const avgMeetingMin = uniqueMeetings > 0 ? Math.round(totalMeetingMin / uniqueMeetings) : 0;
+
+  const color = getColor(student.name || student.phone || '');
+  const initials = getInitials(student.name || '?');
+  const cohortName = student.cohorts?.name || '—';
+  const aliasesStr = (student.aliases || []).length > 0
+    ? `<span>🏷 ${student.aliases.join(', ')}</span>` : '';
+
+  const pct = uniqueMeetings > 0 ? 100 : 0; // no "total expected" info, just show presence count
+  const barColor = '#6366f1';
+
+  const historyRows = meetings.map(r => {
+    const m = r.zoom_meetings;
+    const date = m.start_time ? new Date(m.start_time).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' }) : '—';
+    const dur = r.duration_minutes ? `${r.duration_minutes}min` : '—';
+    const topic = m.topic || '—';
+    const cohort = m.cohorts?.name ? `<span class="cohort-tag">${m.cohorts.name}</span>` : '';
+    return `<tr>
+      <td>${date}</td>
+      <td>${topic}</td>
+      <td>${cohort}</td>
+      <td><span class="status-pill status-zoom">✓ Zoom</span></td>
+      <td class="dur">${dur}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="5" style="text-align:center;color:#2a2a2a;padding:32px">Nenhuma presença registrada</td></tr>`;
+
+  renderProfile(`
+    <div class="profile-header">
+      <div class="profile-avatar" style="background:${color}">${initials}</div>
+      <div>
+        <div class="profile-name">${student.name || '—'}</div>
+        <div class="profile-meta">
+          <span>📱 ${student.phone || '—'}</span>
+          <span>🎓 ${cohortName}</span>
+          ${aliasesStr}
+        </div>
+      </div>
+      <span class="type-badge type-student" style="margin-left:auto;align-self:flex-start">Aluno</span>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value green">${uniqueMeetings}</div>
+        <div class="stat-label">Aulas presentes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${fmtDur(totalMeetingMin)}</div>
+        <div class="stat-label">Tempo total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${fmtDur(avgMeetingMin)}</div>
+        <div class="stat-label">Tempo médio/aula</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value yellow">${rows.length - uniqueMeetings}</div>
+        <div class="stat-label">Re-entradas detectadas</div>
+      </div>
+    </div>
+
+    <div class="section-title">Histórico de aulas</div>
+    <div class="history-wrap">
+      <table class="history-table">
+        <thead><tr>
+          <th>Data</th><th>Tópico / Aula</th><th>Cohort</th><th>Status</th><th>Duração</th>
+        </tr></thead>
+        <tbody>${historyRows}</tbody>
+      </table>
+    </div>
+  `);
+}
+
+// ─── MENTOR PROFILE ───
+async function loadMentorProfile(mentor) {
+  showLoading();
+  const { data: attendances } = await sb
+    .from('mentor_attendance')
+    .select('id, session_date, status, comment, classes(id, name)')
+    .eq('mentor_id', mentor.id)
+    .order('session_date', { ascending: false });
+
+  const rows = attendances || [];
+  const total   = rows.length;
+  const present = rows.filter(r => r.status === 'present').length;
+  const absent  = rows.filter(r => r.status === 'absent').length;
+  const pct     = total > 0 ? Math.round((present / total) * 100) : 0;
+  const barColor = pct >= 80 ? '#4ade80' : pct >= 60 ? '#fbbf24' : '#f87171';
+
+  const color    = getColor(mentor.name || '');
+  const initials = getInitials(mentor.name || '?');
+  const aliasesStr = (mentor.aliases || []).length > 0
+    ? `<span>🏷 ${mentor.aliases.join(', ')}</span>` : '';
+
+  const historyRows = rows.map(r => {
+    const date = r.session_date
+      ? new Date(r.session_date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit' })
+      : '—';
+    const cls = r.classes?.name || '—';
+    const statusCls = r.status === 'present' ? 'status-present' : 'status-absent';
+    const statusLabel = r.status === 'present' ? '✓ Presente' : '✗ Ausente';
+    const note = r.comment ? `<span style="font-size:11px;color:#444" title="${r.comment}"> · ${r.comment.slice(0,40)}${r.comment.length > 40 ? '…' : ''}</span>` : '';
+    return `<tr>
+      <td>${date}</td>
+      <td>${cls}</td>
+      <td><span class="status-pill ${statusCls}">${statusLabel}</span>${note}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="3" style="text-align:center;color:#2a2a2a;padding:32px">Nenhum registro encontrado</td></tr>`;
+
+  renderProfile(`
+    <div class="profile-header">
+      <div class="profile-avatar" style="background:${color}">${initials}</div>
+      <div>
+        <div class="profile-name">${mentor.name || '—'}</div>
+        <div class="profile-meta">
+          <span>📱 ${mentor.phone || '—'}</span>
+          <span>🎓 ${mentor.role || 'Mentor'}</span>
+          ${aliasesStr}
+        </div>
+      </div>
+      <span class="type-badge type-mentor" style="margin-left:auto;align-self:flex-start">Mentor</span>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">${total}</div>
+        <div class="stat-label">Sessões registradas</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value green">${present}</div>
+        <div class="stat-label">Presente</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value red">${absent}</div>
+        <div class="stat-label">Ausente</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value ${pct >= 80 ? 'green' : pct >= 60 ? 'yellow' : 'red'}">${pct}%</div>
+        <div class="stat-label">Taxa de presença</div>
+      </div>
+    </div>
+
+    <div class="attendance-bar-wrap">
+      <div class="bar-label">Taxa de presença</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${pct}%;background:${barColor}"></div>
+      </div>
+    </div>
+
+    <div class="section-title">Histórico de sessões</div>
+    <div class="history-wrap">
+      <table class="history-table">
+        <thead><tr><th>Data</th><th>Turma / Aula</th><th>Status</th></tr></thead>
+        <tbody>${historyRows}</tbody>
+      </table>
+    </div>
+  `);
+}
+
+// ─── HELPERS ───
+function showLoading() {
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('profile-area').style.display = 'none';
+  document.getElementById('profile-area').innerHTML = '<div class="loading">Carregando...</div>';
+  document.getElementById('profile-area').style.display = '';
+}
+
+function renderProfile(html) {
+  document.getElementById('empty-state').style.display = 'none';
+  const area = document.getElementById('profile-area');
+  area.innerHTML = html;
+  area.style.display = '';
+}
+
+function fmtDur(min) {
+  if (!min) return '—';
+  if (min < 60) return min + 'min';
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m > 0 ? `${h}h${m}min` : `${h}h`;
+}
+
+const PALETTE = ['#6366f1','#06b6d4','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6'];
+function getColor(s) { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) % PALETTE.length; return PALETTE[h]; }
+function getInitials(s) {
+  const parts = s.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return s.slice(0, 2).toUpperCase();
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type}`;
+  setTimeout(() => t.classList.add('show'), 10);
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+</body>
+</html>

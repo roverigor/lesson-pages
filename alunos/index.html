@@ -525,6 +525,7 @@ function renderTable() {
       <td><button class="action-btn ${staffBtnClass}" onclick="toggleStaff('${s.id}', ${!s.is_mentor})">${staffLabel}</button></td>
       <td><a href="${waLink}" target="_blank" class="action-btn whatsapp">Abrir</a></td>
       <td><div class="actions-cell">
+        <a href="/perfil/?id=${s.id}&tipo=student" class="action-btn" style="text-decoration:none" title="Ver histórico de presença">📊</a>
         <button class="action-btn edit" onclick="startEdit('${s.id}')">Editar</button>
         <button class="action-btn delete" data-id="${s.id}" data-name="${(s.name || s.phone).replace(/"/g, '&quot;')}" onclick="deleteStudent(this.dataset.id, this.dataset.name)">X</button>
       </div></td>

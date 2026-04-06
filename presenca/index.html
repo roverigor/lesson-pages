@@ -458,7 +458,9 @@ function showMeetingDetail(meetingId) {
       <div class="participant-avatar" style="background:${color}">${_modalInitials(p.participant_name)}</div>
       <div class="participant-info">
         <div class="participant-name">${p.participant_name || '—'}</div>
-        <div class="participant-sub">${p.students?.name || ''}</div>
+        <div class="participant-sub">${p.students?.name
+          ? `<a href="/perfil/?id=${p.student_id}&tipo=student" style="color:#6366f1;text-decoration:none;font-size:11px" title="Ver perfil de presença">${p.students.name} ↗</a>`
+          : ''}</div>
       </div>
       <div class="participant-dur">
         <div class="participant-dur-label">${dur} min</div>
