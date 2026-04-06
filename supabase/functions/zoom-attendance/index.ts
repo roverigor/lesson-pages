@@ -443,6 +443,21 @@ serve(async (req: Request) => {
       );
     }
 
+    // ── ACTION: mentor_unmatched_report ──────────────────────────────
+    // Returns all mentor names from DB and unmatched zoom participant names
+    // to diagnose why certain team members still appear in the unmatched list.
+    if (action === "mentor_unmatched_report") {
+      const sb = getSupabaseClient();
+      const [{ data: mentorList }, { data: unmatchedList }] = await Promise.all([
+        sb.from("mentors").select("name, phone, role").eq("active", true).order("name"),
+        sb.from("zoom_participants").select("participant_name, participant_email").eq("matched", false).not("participant_name", "is", null).limit(300),
+      ]);
+      return new Response(
+        JSON.stringify({ ok: true, mentors: mentorList, unmatched_sample: unmatchedList }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     // ── ACTION: fix_phones ───────────────────────────────────────────
     // Normalizes all student phone numbers to 55+DDD+number format.
     // Merges duplicates caused by same phone ± country code.
@@ -666,6 +681,25 @@ serve(async (req: Request) => {
           next_offset: hasMoreTransfer ? tfOffset + tfLimit : null,
           total_in_table: totalInTable,
         }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
+    // ── ACTION: mark_mentor_participants ─────────────────────────────
+    // Permanently marks zoom_participants that belong to mentors/staff as matched=true
+    // body: { action: "mark_mentor_participants" }
+    if (action === "mark_mentor_participants") {
+      const sb = getSupabaseClient();
+      const { data, error } = await sb.rpc("mark_mentor_participants");
+      if (error) {
+        return new Response(
+          JSON.stringify({ ok: false, error: error.message }),
+          { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+      const updated_count = Array.isArray(data) && data.length > 0 ? data[0].updated_count : 0;
+      return new Response(
+        JSON.stringify({ ok: true, updated_count }),
         { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
