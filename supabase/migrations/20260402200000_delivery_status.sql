@@ -9,19 +9,9 @@ ALTER TABLE public.notifications
   ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ;
 
 -- ─── 2. UPDATE STATUS CHECK CONSTRAINT ───
--- Drop existing constraint (name may vary) and re-add with delivered/read
-DO $$
-DECLARE v_constraint TEXT;
-BEGIN
-  SELECT conname INTO v_constraint
-  FROM pg_constraint
-  WHERE conrelid = 'public.notifications'::regclass
-    AND contype = 'c'
-    AND pg_get_constraintdef(oid) LIKE '%status IN%';
-  IF v_constraint IS NOT NULL THEN
-    EXECUTE 'ALTER TABLE public.notifications DROP CONSTRAINT ' || quote_ident(v_constraint);
-  END IF;
-END $$;
+-- Drop by known name (idempotent) then re-add with delivered/read
+ALTER TABLE public.notifications
+  DROP CONSTRAINT IF EXISTS notifications_status_check;
 
 ALTER TABLE public.notifications
   ADD CONSTRAINT notifications_status_check CHECK (status IN (
