@@ -456,7 +456,13 @@
   <!-- CLASSES VIEW -->
   <div id="classes-view" style="display:none">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <h2 style="font-size:20px;font-weight:800;color:#fff">Turmas</h2>
+      <div style="display:flex;align-items:center;gap:12px">
+        <h2 style="font-size:20px;font-weight:800;color:#fff">Turmas</h2>
+        <div style="display:flex;gap:4px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;padding:3px">
+          <button id="filter-active-btn" class="att-btn" onclick="setClassFilter('active')" style="padding:4px 12px;font-size:11px;background:rgba(34,197,94,0.15);color:#4ade80;border-color:#22c55e40">Ativas</button>
+          <button id="filter-inactive-btn" class="att-btn" onclick="setClassFilter('inactive')" style="padding:4px 12px;font-size:11px;background:transparent;color:#555;border-color:transparent">Inativas</button>
+        </div>
+      </div>
       <button class="btn-save" onclick="openClassForm()">+ Nova Turma</button>
     </div>
     <div id="class-form-container" style="display:none;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:16px">

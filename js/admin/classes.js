@@ -1,6 +1,23 @@
 // ═══════════════════════════════════════
 // CLASSES MANAGEMENT (Turmas)
 // ═══════════════════════════════════════
+let classFilter = 'active';
+
+function setClassFilter(filter) {
+  classFilter = filter;
+  const activeBtn = document.getElementById('filter-active-btn');
+  const inactiveBtn = document.getElementById('filter-inactive-btn');
+  if (activeBtn && inactiveBtn) {
+    activeBtn.style.background = filter === 'active' ? 'rgba(34,197,94,0.15)' : 'transparent';
+    activeBtn.style.color = filter === 'active' ? '#4ade80' : '#555';
+    activeBtn.style.borderColor = filter === 'active' ? '#22c55e40' : 'transparent';
+    inactiveBtn.style.background = filter === 'inactive' ? 'rgba(239,68,68,0.12)' : 'transparent';
+    inactiveBtn.style.color = filter === 'inactive' ? '#f87171' : '#555';
+    inactiveBtn.style.borderColor = filter === 'inactive' ? '#ef444440' : 'transparent';
+  }
+  renderClassesList();
+}
+
 async function loadClasses() {
   const [{ data: classes }, { data: mentors }, { data: cmData }, { data: cohortsData }, { data: accessData }, { data: ccData }] = await Promise.all([
     sb.from('classes').select('*').order('name'),
@@ -49,12 +66,15 @@ async function loadClasses() {
 }
 
 function renderClassesList() {
-  if (!classesList.length) {
-    document.getElementById('classes-list').innerHTML = '<div style="text-align:center;color:#333;padding:40px">Nenhuma turma cadastrada</div>';
+  const filtered = classesList.filter(c => classFilter === 'active' ? c.active !== false : c.active === false);
+
+  if (!filtered.length) {
+    const msg = classFilter === 'active' ? 'Nenhuma turma ativa' : 'Nenhuma turma inativa';
+    document.getElementById('classes-list').innerHTML = `<div style="text-align:center;color:#333;padding:40px">${msg}</div>`;
     return;
   }
 
-  const cards = classesList.map(c => {
+  const cards = filtered.map(c => {
     const startFmt = new Date(c.start_date + 'T00:00:00').toLocaleDateString('pt-BR');
     const endFmt = new Date(c.end_date + 'T00:00:00').toLocaleDateString('pt-BR');
     const typeBadge = c.type ? `<span style="font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(99,102,241,0.12);color:#a5b4fc;font-weight:700">${c.type}</span>` : '';
@@ -418,16 +438,20 @@ async function saveClassV2() {
 }
 
 async function finalizeClass(classId, className) {
-  if (!confirm(`Encerrar a turma "${className}"?\n\nA equipe atual será encerrada e não haverá novo ciclo.\nA turma continuará aparecendo no calendário como histórico.\n\nUse "↩ Reabrir" no badge se precisar desfazer.`)) return;
+  if (!confirm(`Encerrar a turma "${className}"?\n\nA turma será marcada como inativa e continuará aparecendo no calendário como histórico.`)) return;
 
   const today = new Date().toISOString().split('T')[0];
 
-  const { error } = await sb.from('class_mentors')
+  const { error: mentorErr } = await sb.from('class_mentors')
     .update({ valid_until: today }).eq('class_id', classId).is('valid_until', null);
-  if (error) { showToast('Erro ao encerrar turma: ' + error.message, 'error'); return; }
+  if (mentorErr) { showToast('Erro ao encerrar ciclo: ' + mentorErr.message, 'error'); return; }
+
+  const { error: classErr } = await sb.from('classes')
+    .update({ active: false }).eq('id', classId);
+  if (classErr) { showToast('Erro ao inativar turma: ' + classErr.message, 'error'); return; }
 
   const fmt = new Date(today + 'T00:00:00').toLocaleDateString('pt-BR');
-  showToast(`Turma "${className}" encerrada em ${fmt}. Histórico preservado no calendário.`, 'success');
+  showToast(`Turma "${className}" encerrada em ${fmt} e movida para Inativas.`, 'success');
   await loadClasses();
   renderAll();
 }
