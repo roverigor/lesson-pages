@@ -242,17 +242,18 @@ function matchStudents(
 
 // ─── Zoom Reports API: list all meetings for a user in a date range ───
 
-async function listReportMeetings(
+// Uses /v2/metrics/meetings (requires dashboard_meetings:read:admin scope)
+// Returns all past meetings in date range regardless of host
+async function listDashboardMeetings(
   token: string,
-  userId: string,
   from: string,
   to: string
-): Promise<Array<{ id: string; uuid: string; topic: string; start_time: string; duration: number; participants_count: number }>> {
-  let allMeetings: Array<{ id: string; uuid: string; topic: string; start_time: string; duration: number; participants_count: number }> = [];
+): Promise<Array<{ id: string; uuid: string; topic: string; host: string; start_time: string; end_time: string; duration: number; participants: number }>> {
+  let allMeetings: Array<{ id: string; uuid: string; topic: string; host: string; start_time: string; end_time: string; duration: number; participants: number }> = [];
   let nextToken = "";
 
   do {
-    const url = `/report/users/${userId}/meetings?from=${from}&to=${to}&page_size=300${nextToken ? "&next_page_token=" + nextToken : ""}`;
+    const url = `/metrics/meetings?type=past&from=${from}&to=${to}&page_size=300${nextToken ? "&next_page_token=" + nextToken : ""}`;
     const data = await zoomGet(token, url);
     allMeetings = allMeetings.concat(data.meetings || []);
     nextToken = data.next_page_token || "";
@@ -272,6 +273,41 @@ serve(async (req: Request) => {
     const body = await req.json();
     const { action, meeting_id, cohort_id, class_id } = body;
 
+    // ── ACTION: debug_scopes ──────────────────────────────────────────
+    // Tests multiple Zoom API endpoints to identify which scopes are active.
+    if (action === "debug_scopes") {
+      const token = await getS2SToken();
+      const tests = [
+        { scope: "user:read:admin",                    endpoint: "/users/me" },
+        { scope: "meeting:read:list_meetings:admin",   endpoint: "/users/me/meetings?type=previous_meetings&page_size=1" },
+        { scope: "report:read:user",                   endpoint: "/report/users/me/meetings?from=2026-04-01&to=2026-04-07&page_size=1" },
+        { scope: "report:read:admin",                  endpoint: "/report/users/me/meetings?from=2026-04-01&to=2026-04-07&page_size=1" },
+        { scope: "dashboard_meetings:read:admin",      endpoint: "/metrics/meetings?type=past&page_size=1&from=2026-04-01&to=2026-04-07" },
+        { scope: "recording:read:list_user_recordings:admin", endpoint: "/users/me/recordings?from=2026-04-01&to=2026-04-07&page_size=1" },
+      ];
+
+      const results: Record<string, { ok: boolean; status?: number; error?: string }> = {};
+      for (const t of tests) {
+        try {
+          const res = await fetch(`https://api.zoom.us/v2${t.endpoint}`, {
+            headers: { "Authorization": `Bearer ${token}` },
+          });
+          if (res.ok) {
+            results[t.scope] = { ok: true };
+          } else {
+            const body = await res.json().catch(() => ({}));
+            results[t.scope] = { ok: false, status: res.status, error: body.message || res.statusText };
+          }
+        } catch (e) {
+          results[t.scope] = { ok: false, error: String(e) };
+        }
+      }
+      return new Response(
+        JSON.stringify({ ok: true, scope_tests: results }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     // ── ACTION: list_meetings ──────────────────────────────────────────
     // Uses Zoom Reports API to discover all meetings for the host in a date range.
     // Does NOT require knowing the meeting_id in advance.
@@ -284,17 +320,18 @@ serve(async (req: Request) => {
       } = body as { user_id?: string; from?: string; to?: string };
 
       const token = await getS2SToken();
-      const meetings = await listReportMeetings(token, user_id, from, to);
+      // Use Dashboard Metrics API (dashboard_meetings:read:admin scope)
+      const meetings = await listDashboardMeetings(token, from, to);
 
       // Deduplicate by meeting_id (recurring meetings appear once per instance)
-      const byMeetingId: Record<string, { id: string; topic: string; instances: number; latest: string; total_participants: number }> = {};
+      const byMeetingId: Record<string, { id: string; topic: string; host: string; instances: number; latest: string; total_participants: number }> = {};
       for (const m of meetings) {
         const mid = String(m.id);
         if (!byMeetingId[mid]) {
-          byMeetingId[mid] = { id: mid, topic: m.topic, instances: 0, latest: m.start_time, total_participants: 0 };
+          byMeetingId[mid] = { id: mid, topic: m.topic, host: m.host || "", instances: 0, latest: m.start_time, total_participants: 0 };
         }
         byMeetingId[mid].instances += 1;
-        byMeetingId[mid].total_participants += m.participants_count || 0;
+        byMeetingId[mid].total_participants += m.participants || 0;
         if (m.start_time > byMeetingId[mid].latest) byMeetingId[mid].latest = m.start_time;
       }
 
