@@ -730,9 +730,22 @@ function renderUnmatched() {
       if (name.includes('notetaker') || name.includes('fathom') || name.includes('read.ai') || name.includes('fireflies') || name.includes('otter')) continue;
 
       // Check if this participant is a known mentor/equipe
-      const normName  = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      // Handles: exact match, first-name prefix, underscore→space, reverse prefix
+      const normName  = name.replace(/_/g, ' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
       const normPhone = _normalizePhone(p.participant_email || '');
-      const mentorMatch = _mentorByName.get(normName) || _mentorByPhone.get(normPhone);
+      const firstWord = normName.split(/\s+/)[0];
+
+      let mentorMatch = _mentorByName.get(normName) || _mentorByPhone.get(normPhone);
+      if (!mentorMatch && firstWord.length >= 3) {
+        mentorMatch = _mentorByName.get(firstWord);
+      }
+      if (!mentorMatch) {
+        for (const [mn, mentor] of _mentorByName) {
+          if (normName.startsWith(mn + ' ') || mn.startsWith(normName + ' ')) {
+            mentorMatch = mentor; break;
+          }
+        }
+      }
 
       unmatched.push({ ...p, meetingTopic: m.topic, meetingDate: m.start_time, meetingCohortId: m.cohort_id || null, isMentor: !!mentorMatch, mentorName: mentorMatch?.name });
     }
