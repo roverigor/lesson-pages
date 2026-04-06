@@ -104,6 +104,7 @@ async function loadBuilderData(surveyId) {
     document.getElementById('bld-name').value      = survey.name || '';
     document.getElementById('bld-cohort').value    = survey.cohort_id || '';
     document.getElementById('bld-intro').value     = survey.intro_text || '';
+    selectBuilderColor(survey.accent_color || '#6366f1');
   }
   builderQuestions = (questions || []).map(q => ({
     id: q.id, type: q.type, label: q.label, required: q.required,
@@ -113,9 +114,32 @@ async function loadBuilderData(surveyId) {
   renderQuestionList();
 }
 
+// Paleta de cores (mesma do MENTOR_COLORS do sistema)
+const SURVEY_COLORS = [
+  '#6366f1','#8b5cf6','#a855f7','#ec4899','#e11d48',
+  '#ef4444','#f97316','#f59e0b','#22c55e','#10b981',
+  '#14b8a6','#06b6d4','#0ea5e9','#3b82f6','#0891b2',
+];
+let builderColor = '#6366f1';
+
+function selectBuilderColor(color) {
+  builderColor = color;
+  document.querySelectorAll('.bld-color-swatch').forEach(s => {
+    const active = s.dataset.color === color;
+    s.style.outline      = active ? `2px solid ${color}` : 'none';
+    s.style.outlineOffset = active ? '2px' : '0';
+    s.style.transform    = active ? 'scale(1.2)' : 'scale(1)';
+  });
+}
+
 function renderBuilder() {
   const cohortOptions = surveysCohorts.map(c =>
     `<option value="${c.id}">${escHtml(c.name)}</option>`
+  ).join('');
+
+  const swatches = SURVEY_COLORS.map(c =>
+    `<button type="button" class="bld-color-swatch" data-color="${c}" onclick="selectBuilderColor('${c}')"
+      style="width:22px;height:22px;border-radius:50%;background:${c};border:none;cursor:pointer;transition:all .15s;flex-shrink:0"></button>`
   ).join('');
 
   const html = `<div id="survey-builder" style="background:#0d0d0d;border:1px solid #1e1e1e;border-radius:16px;padding:28px;margin-bottom:24px">
@@ -125,7 +149,7 @@ function renderBuilder() {
       <button onclick="closeBuilder()" style="background:none;border:none;color:#555;font-size:22px;cursor:pointer;line-height:1">×</button>
     </div>
 
-    <!-- Step 1: Config -->
+    <!-- Config -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
       <div class="form-group" style="margin:0">
         <label class="form-label">Nome do formulário *</label>
@@ -144,11 +168,19 @@ function renderBuilder() {
       <textarea id="bld-intro" class="form-input" rows="2" placeholder="Olá! Esta avaliação leva menos de 2 minutos..."></textarea>
     </div>
 
-    <!-- Step 2: Questions -->
+    <!-- Cor do formulário -->
+    <div class="form-group">
+      <label class="form-label">Cor do formulário</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px;background:#0a0a0a;border:1px solid #1e1e1e;border-radius:8px">
+        ${swatches}
+      </div>
+    </div>
+
+    <!-- Perguntas -->
     <div style="border-top:1px solid #1a1a1a;padding-top:20px;margin-top:4px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div style="font-size:12px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.06em">Perguntas</div>
-        <button onclick="openQTypePicker()" style="background:rgba(99,102,241,.12);border:1px dashed #6366f1;color:#a5b4fc;font-size:12px;font-weight:700;padding:6px 14px;border-radius:8px;cursor:pointer">+ Adicionar pergunta</button>
+        <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.06em">Perguntas</div>
+        <button onclick="openQTypePicker()" style="background:rgba(99,102,241,.12);border:1px dashed #6366f1;color:#a5b4fc;font-size:11px;font-weight:700;padding:6px 14px;border-radius:8px;cursor:pointer">+ Adicionar pergunta</button>
       </div>
       <div id="bld-question-list" style="min-height:48px"></div>
     </div>
@@ -156,13 +188,14 @@ function renderBuilder() {
     <!-- Footer -->
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid #1a1a1a">
       <button onclick="closeBuilder()" class="btn-secondary">Cancelar</button>
-      <button onclick="previewBuilder()" class="btn-ghost-outline">👁 Preview</button>
-      <button onclick="saveBuilder()" class="btn-primary">💾 Salvar rascunho</button>
+      <button onclick="previewBuilder()" class="btn-ghost-outline">Preview</button>
+      <button onclick="saveBuilder()" class="btn-primary">Salvar rascunho</button>
     </div>
   </div>`;
 
   const container = document.getElementById('surveys-list');
   container.insertAdjacentHTML('beforebegin', html);
+  selectBuilderColor(builderColor);
   renderQuestionList();
 }
 
@@ -170,6 +203,7 @@ function closeBuilder() {
   document.getElementById('survey-builder')?.remove();
   builderSurveyId = null;
   builderQuestions = [];
+  builderColor = '#6366f1';
 }
 
 // ─── Question List ───
@@ -337,12 +371,12 @@ async function saveBuilder() {
 
   if (surveyId) {
     // Update existing
-    await sb.from('surveys').update({ name, cohort_id: cohortId, intro_text: introText, type: surveyType }).eq('id', surveyId);
+    await sb.from('surveys').update({ name, cohort_id: cohortId, intro_text: introText, type: surveyType, accent_color: builderColor }).eq('id', surveyId);
   } else {
     // Create new
     const { data: created } = await sb.from('surveys').insert({
       name, type: surveyType, cohort_id: cohortId, intro_text: introText,
-      status: 'draft', created_by: email,
+      accent_color: builderColor, status: 'draft', created_by: email,
     }).select('id').single();
     if (!created) { showToast('Erro ao criar formulário', 'error'); return; }
     surveyId = created.id;

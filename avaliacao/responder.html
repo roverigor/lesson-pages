@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
   <style>
+    :root { --accent: #6366f1; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background: #080808;
@@ -32,7 +33,7 @@
     }
     .progress-fill {
       height: 100%;
-      background: #6366f1;
+      background: var(--accent);
       border-radius: 2px;
       transition: width .4s ease;
     }
@@ -87,8 +88,8 @@
       transition: all .15s;
       font-family: inherit;
     }
-    .nps-btn:hover { border-color: #6366f1; color: #fff; }
-    .nps-btn.selected { background: #6366f1; border-color: #6366f1; color: #fff; }
+    .nps-btn:hover { border-color: var(--accent); color: #fff; }
+    .nps-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
     .nps-btn.det.selected  { background: #ef4444; border-color: #ef4444; }
     .nps-btn.neu.selected  { background: #f59e0b; border-color: #f59e0b; }
     .nps-btn.pro.selected  { background: #22c55e; border-color: #22c55e; }
@@ -141,7 +142,7 @@
       transition: border-color .15s;
       margin-bottom: 20px;
     }
-    .text-input:focus { outline: none; border-color: #6366f1; }
+    .text-input:focus { outline: none; border-color: var(--accent); }
 
     /* Choice / Multi */
     .options-list {
@@ -165,7 +166,7 @@
       user-select: none;
     }
     .option-item:hover { border-color: #333; }
-    .option-item.selected { border-color: #6366f1; background: rgba(99,102,241,.08); color: #fff; }
+    .option-item.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); color: #fff; }
     .option-dot {
       width: 18px;
       height: 18px;
@@ -177,7 +178,7 @@
       justify-content: center;
       transition: border-color .15s, background .15s;
     }
-    .option-item.selected .option-dot { border-color: #6366f1; background: #6366f1; }
+    .option-item.selected .option-dot { border-color: var(--accent); background: var(--accent); }
     .option-item.selected .option-dot::after { content: ''; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
     .option-sq {
       width: 18px;
@@ -190,7 +191,7 @@
       justify-content: center;
       transition: border-color .15s, background .15s;
     }
-    .option-item.selected .option-sq { border-color: #6366f1; background: #6366f1; }
+    .option-item.selected .option-sq { border-color: var(--accent); background: var(--accent); }
     .option-item.selected .option-sq::after { content: '✓'; color: #fff; font-size: 11px; font-weight: 700; }
 
     /* Scale */
@@ -220,7 +221,7 @@
     /* CTA button */
     .cta-btn {
       width: 100%;
-      background: #6366f1;
+      background: var(--accent);
       color: #fff;
       border: none;
       border-radius: 12px;
@@ -264,7 +265,7 @@
     .spinner {
       width: 32px; height: 32px;
       border: 3px solid #1e1e1e;
-      border-top-color: #6366f1;
+      border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin .7s linear infinite;
       margin: 32px auto;
@@ -348,7 +349,7 @@
 
     const { data, error } = await sb
       .from('survey_links')
-      .select('id, token, used_at, survey_id, students(id, name), surveys(id, type, name, question, follow_up, intro_text, status)')
+      .select('id, token, used_at, survey_id, students(id, name), surveys(id, type, name, question, follow_up, intro_text, accent_color, status)')
       .eq('token', token)
       .single();
 
@@ -360,6 +361,11 @@
 
     linkData   = data;
     surveyData = data.surveys;
+
+    // Apply accent color
+    if (surveyData.accent_color) {
+      document.documentElement.style.setProperty('--accent', surveyData.accent_color);
+    }
 
     // Load questions from survey_questions table
     const { data: qs } = await sb
