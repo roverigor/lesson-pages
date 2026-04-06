@@ -240,6 +240,27 @@ function matchStudents(
   return matches;
 }
 
+// ─── Zoom Reports API: list all meetings for a user in a date range ───
+
+async function listReportMeetings(
+  token: string,
+  userId: string,
+  from: string,
+  to: string
+): Promise<Array<{ id: string; uuid: string; topic: string; start_time: string; duration: number; participants_count: number }>> {
+  let allMeetings: Array<{ id: string; uuid: string; topic: string; start_time: string; duration: number; participants_count: number }> = [];
+  let nextToken = "";
+
+  do {
+    const url = `/report/users/${userId}/meetings?from=${from}&to=${to}&page_size=300${nextToken ? "&next_page_token=" + nextToken : ""}`;
+    const data = await zoomGet(token, url);
+    allMeetings = allMeetings.concat(data.meetings || []);
+    nextToken = data.next_page_token || "";
+  } while (nextToken);
+
+  return allMeetings;
+}
+
 // ─── Main Handler ───
 
 serve(async (req: Request) => {
@@ -249,7 +270,41 @@ serve(async (req: Request) => {
 
   try {
     const body = await req.json();
-    const { meeting_id, cohort_id, class_id } = body;
+    const { action, meeting_id, cohort_id, class_id } = body;
+
+    // ── ACTION: list_meetings ──────────────────────────────────────────
+    // Uses Zoom Reports API to discover all meetings for the host in a date range.
+    // Does NOT require knowing the meeting_id in advance.
+    // body: { action: "list_meetings", user_id: "me"|email, from: "YYYY-MM-DD", to: "YYYY-MM-DD" }
+    if (action === "list_meetings") {
+      const {
+        user_id = "me",
+        from = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        to = new Date().toISOString().slice(0, 10),
+      } = body as { user_id?: string; from?: string; to?: string };
+
+      const token = await getS2SToken();
+      const meetings = await listReportMeetings(token, user_id, from, to);
+
+      // Deduplicate by meeting_id (recurring meetings appear once per instance)
+      const byMeetingId: Record<string, { id: string; topic: string; instances: number; latest: string; total_participants: number }> = {};
+      for (const m of meetings) {
+        const mid = String(m.id);
+        if (!byMeetingId[mid]) {
+          byMeetingId[mid] = { id: mid, topic: m.topic, instances: 0, latest: m.start_time, total_participants: 0 };
+        }
+        byMeetingId[mid].instances += 1;
+        byMeetingId[mid].total_participants += m.participants_count || 0;
+        if (m.start_time > byMeetingId[mid].latest) byMeetingId[mid].latest = m.start_time;
+      }
+
+      const summary = Object.values(byMeetingId).sort((a, b) => b.latest.localeCompare(a.latest));
+
+      return new Response(
+        JSON.stringify({ ok: true, from, to, total_raw: meetings.length, meetings: summary }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
 
     if (!meeting_id) {
       return new Response(
