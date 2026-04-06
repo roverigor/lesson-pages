@@ -69,6 +69,7 @@ const config = [
         loadAbstractsView: 'readonly',// abstracts.js
         loadSurveysView: 'readonly',  // surveys.js
         prvNext: 'readonly',          // surveys.js preview
+        prvBack: 'readonly',          // surveys.js preview
         prvEnableNext: 'readonly',    // surveys.js preview
         prvSelectNPS: 'readonly',     // surveys.js preview
         prvSelectStar: 'readonly',    // surveys.js preview

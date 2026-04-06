@@ -309,6 +309,7 @@
 
     <!-- Question screen -->
     <div class="screen" id="screen-question">
+      <button id="btn-back" onclick="prevQuestion()" style="display:none;background:none;border:none;color:#444;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;padding:0;margin-bottom:18px;transition:color .15s" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#444'">← Voltar</button>
       <div class="brand">Academia Lendária</div>
       <div class="q-counter" id="q-counter"></div>
       <div class="question" id="question-text"></div>
@@ -432,8 +433,12 @@
     const pct = Math.round(((idx) / total) * 80) + 10;
     setProgress(pct);
 
+    // Botão voltar: visível a partir da segunda pergunta
+    const btnBack = document.getElementById('btn-back');
+    btnBack.style.display = idx > 0 ? 'block' : 'none';
+
     const btnNext = document.getElementById('btn-next');
-    btnNext.textContent = idx === total - 1 ? 'Enviar avaliação 🚀' : 'Continuar →';
+    btnNext.textContent = idx === total - 1 ? 'Enviar avaliação' : 'Continuar →';
     btnNext.disabled = q.required;   // disabled until answered (if required)
 
     const widget = document.getElementById('q-widget');
@@ -603,6 +608,18 @@
       renderQuestion(currentQIdx);
     } else {
       submitAllAnswers();
+    }
+  }
+
+  function prevQuestion() {
+    if (currentQIdx > 0) {
+      currentQIdx--;
+      renderQuestion(currentQIdx);
+      // Re-habilita o próximo se já havia resposta salva
+      if (answers[currentQIdx]) enableNext();
+    } else if (surveyData.intro_text) {
+      showScreen('screen-intro');
+      setProgress(5);
     }
   }
 

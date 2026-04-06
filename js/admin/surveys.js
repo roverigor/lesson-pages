@@ -476,8 +476,14 @@ function previewBuilder() {
 
     let cardContent = '';
 
+    const canGoBack = currentScreen > (intro ? 0 : 1);
+    const backBtn = canGoBack
+      ? `<button onclick="prvBack()" style="background:none;border:none;color:#444;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;padding:0;margin-bottom:20px;display:flex;align-items:center;gap:6px;transition:color .15s" onmouseover="this.style.color='#aaa'" onmouseout="this.style.color='#444'">← Voltar</button>`
+      : '';
+
     if (isIntro) {
       cardContent = `
+        ${backBtn}
         <div style="font-size:11px;color:#333;letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:20px">Academia Lendária</div>
         <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:12px">Olá!</div>
         <div style="font-size:14px;color:#666;line-height:1.7;margin-bottom:28px">${escHtml(intro)}</div>
@@ -491,6 +497,7 @@ function previewBuilder() {
       const isRequired = q.required !== false;
       const needsSelection = q.type !== 'text' && q.type !== 'multi';
       cardContent = `
+        ${backBtn}
         <div style="font-size:11px;color:#333;letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:8px">Academia Lendária</div>
         <div style="font-size:11px;color:#444;margin-bottom:10px;font-weight:600">Pergunta ${qIdx+1} de ${qs.length}</div>
         <div style="font-size:20px;font-weight:800;color:#fff;line-height:1.35;margin-bottom:28px">${escHtml(q.label||'(sem texto)')}</div>
@@ -505,6 +512,9 @@ function previewBuilder() {
   // Global helpers for preview interactions
   window.prvNext = function() {
     if (currentScreen < totalScreens - 1) { currentScreen++; renderScreen(); }
+  };
+  window.prvBack = function() {
+    if (currentScreen > (intro ? 0 : 1)) { currentScreen--; renderScreen(); }
   };
   window.prvEnableNext = function() {
     const btn = document.getElementById('prv-next');
