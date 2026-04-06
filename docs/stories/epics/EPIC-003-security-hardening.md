@@ -75,23 +75,22 @@ As credenciais serão movidas para variáveis de ambiente seguras gerenciadas pe
 
 ---
 
-### Story 3.3 — Schema Completo e RLS da Tabela `classes`
+### Story 3.3 — Schema Completo e RLS da Tabela `classes` ✅ DONE
 
 **Executor:** @data-engineer (Dara)
 **Effort:** ~4h
 **Debt IDs:** DB-C1, DB-R2
-**Priority:** High
+**Status:** Done — verificado em 06/04/2026
 
-**Contexto:**
-A tabela `classes` é central para o funcionamento da plataforma mas não possui DDL documentado nem RLS implementada formalmente. Qualquer acidente de schema ou erro de permissão pode derrubar o calendário público e o controle de presença.
+**Resultado:** Migration `20260406120000_classes_schema_rls.sql` criada e aplicada em produção. Formaliza colunas `type/start_date/end_date` em `classes`, `valid_from/valid_until` em `class_mentors`, UNIQUE constraint em `class_cohort_access`, RLS completa com anon read para calendário público em classes/class_mentors/mentors, e RLS admin-only para class_cohort_access. Schema doc salvo em `supabase/docs/classes-schema.sql`.
 
 **Acceptance Criteria:**
-- [ ] DDL completo da tabela `classes` documentado (todos os campos, tipos, constraints, defaults)
-- [ ] Migration Supabase CLI criada em `supabase/migrations/` com o schema formal
-- [ ] RLS policies implementadas para `classes`: leitura pública para calendário, escrita restrita a mentores autenticados
-- [ ] Índices criados para os campos de consulta frequente (ex.: `lesson_date`, `mentor_id`)
-- [ ] Migration aplicada em produção via `supabase db push`
-- [ ] Schema file salvo em `supabase/docs/classes-schema.sql`
+- [x] DDL completo da tabela `classes` documentado (todos os campos, tipos, constraints, defaults)
+- [x] Migration Supabase CLI criada em `supabase/migrations/` com o schema formal
+- [x] RLS policies implementadas para `classes`: leitura pública para calendário, escrita restrita a admin
+- [x] Índices criados para os campos de consulta frequente (`start_date`, `end_date`, `type`, `valid_from`, ciclo ativo)
+- [x] Migration aplicada em produção via `supabase db push`
+- [x] Schema file salvo em `supabase/docs/classes-schema.sql`
 
 ---
 
