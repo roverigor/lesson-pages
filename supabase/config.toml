@@ -7,9 +7,6 @@
 # Este arquivo configura o Supabase CLI para o projeto lesson-pages.
 # Para detalhes sobre cada opção: https://supabase.com/docs/reference/cli/config
 
-[project]
-id = "gpufcipkajppykmnmdeh"
-
 [api]
 enabled = true
 port = 54321

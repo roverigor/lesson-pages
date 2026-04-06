@@ -341,10 +341,17 @@ async function processNotification(notification: NotificationRecord): Promise<{
 
 // ─── HTTP Handler ───
 
+const ALLOWED_ORIGINS = [
+  "https://lesson-pages.vercel.app",
+  "https://calendario.igorrover.com.br",
+];
+
 serve(async (req: Request) => {
-  // CORS headers for Supabase
+  const origin = req.headers.get("origin") ?? "";
   const corsHeaders = {
-    "Access-Control-Allow-Origin": "https://lesson-pages.vercel.app",
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin)
+      ? origin
+      : ALLOWED_ORIGINS[0],
     "Access-Control-Allow-Headers":
       "authorization, x-client-info, apikey, content-type",
   };

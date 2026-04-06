@@ -13,10 +13,20 @@ const ZOOM_CLIENT_ID = Deno.env.get("ZOOM_CLIENT_ID") ?? "";
 const ZOOM_CLIENT_SECRET = Deno.env.get("ZOOM_CLIENT_SECRET") ?? "";
 const REDIRECT_URI = "https://lesson-pages.vercel.app/api/zoom/callback";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://lesson-pages.vercel.app",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = [
+  "https://lesson-pages.vercel.app",
+  "https://calendario.igorrover.com.br",
+];
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") ?? "";
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin)
+      ? origin
+      : ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
+}
 
 function getSupabaseClient() {
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -26,7 +36,7 @@ function getSupabaseClient() {
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -46,7 +56,7 @@ serve(async (req: Request) => {
 
       const authUrl = `https://zoom.us/oauth/authorize?response_type=code&client_id=${ZOOM_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${state}`;
       return new Response(JSON.stringify({ url: authUrl }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -57,7 +67,7 @@ serve(async (req: Request) => {
 
       if (!code) {
         return new Response(JSON.stringify({ ok: false, error: "No code provided" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -67,7 +77,7 @@ serve(async (req: Request) => {
 
       if (!stateRow) {
         return new Response(JSON.stringify({ ok: false, error: "Invalid or expired OAuth state. Please restart the authorization." }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -75,7 +85,7 @@ serve(async (req: Request) => {
       if (ageMs > 10 * 60 * 1000) {
         await sb.from("oauth_states").delete().eq("state", state);
         return new Response(JSON.stringify({ ok: false, error: "OAuth state expired (> 10 min). Please restart." }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -94,7 +104,7 @@ serve(async (req: Request) => {
       if (!tokenRes.ok) {
         const err = await tokenRes.text();
         return new Response(JSON.stringify({ ok: false, error: `Zoom token error: ${err}` }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -106,7 +116,7 @@ serve(async (req: Request) => {
       });
       if (!userRes.ok) {
         return new Response(JSON.stringify({ ok: false, error: "Failed to fetch Zoom user info after token exchange." }), {
-          status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 502, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       const user = await userRes.json();
@@ -130,7 +140,7 @@ serve(async (req: Request) => {
       if (error) {
         return new Response(JSON.stringify({ ok: false, error: error.message }), {
           status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -140,7 +150,7 @@ serve(async (req: Request) => {
         name: user?.first_name + " " + user?.last_name,
         mentor_id: mentorId,
       }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -157,7 +167,7 @@ serve(async (req: Request) => {
 
       if (!token) {
         return new Response(JSON.stringify({ ok: false, error: "Token not found" }), {
-          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 404, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -177,7 +187,7 @@ serve(async (req: Request) => {
       if (!refreshRes.ok) {
         await sb.from("zoom_tokens").update({ active: false }).eq("id", token.id);
         return new Response(JSON.stringify({ ok: false, error: "Refresh failed, token deactivated" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -192,17 +202,17 @@ serve(async (req: Request) => {
       }).eq("id", token.id);
 
       return new Response(JSON.stringify({ ok: true, access_token: newTokens.access_token }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     return new Response(JSON.stringify({ ok: false, error: "Unknown action" }), {
-      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
 
   } catch (err) {
     return new Response(JSON.stringify({ ok: false, error: err instanceof Error ? err.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });
