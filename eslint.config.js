@@ -113,6 +113,7 @@ const config = [
         WEEKDAY_FULL: 'readonly',
         MONTHS: 'readonly',
         MONTH_NAMES: 'readonly',
+        FERIADOS_2026: 'readonly',    // config.js
       },
     },
     rules: {
