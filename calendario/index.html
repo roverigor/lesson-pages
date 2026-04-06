@@ -379,7 +379,7 @@ function generateDatesWithISO(startStr, endStr, weekday) {
 
 async function loadTeachersFromDB() {
   const [{ data: classes }, { data: classMentors }, { data: mentors }] = await Promise.all([
-    sb.from('classes').select('*').eq('active', true).order('name'),
+    sb.from('classes').select('*').order('name'),
     sb.from('class_mentors').select('*'),
     sb.from('mentors').select('*').eq('active', true),
   ]);
