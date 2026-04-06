@@ -94,7 +94,7 @@ As credenciais serão movidas para variáveis de ambiente seguras gerenciadas pe
 
 ---
 
-### Story 3.4 — Migrar Scripts SQL para Supabase CLI Migrations (parcial ✅)
+### Story 3.4 — Migrar Scripts SQL para Supabase CLI Migrations ✅ DONE
 
 **Executor:** @data-engineer (Dara)
 **Effort:** ~4h
@@ -111,9 +111,9 @@ O banco de dados foi construído com scripts SQL avulsos em `db/`. Não há rast
 - [x] `supabase migration list` mostra todas as 7 migrations com timestamps local e remote sincronizados
 
 **Acceptance Criteria restantes:**
-- [ ] `supabase/config.toml` criado com as configurações corretas do projeto
-- [ ] Scripts em `db/*.sql` convertidos para migrations numeradas (ou documentados como baseline)
-- [ ] Processo de aplicação de nova migration documentado em `supabase/docs/migrations-guide.md`
+- [x] `supabase/config.toml` criado com as configurações corretas do projeto
+- [x] Scripts em `db/*.sql` convertidos para migrations numeradas (ou documentados como baseline)
+- [x] Processo de aplicação de nova migration documentado em `supabase/docs/migrations-guide.md`
 
 ---
 
