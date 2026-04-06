@@ -396,10 +396,21 @@ async function saveClassV2() {
     classId = data.id;
   }
 
-  const { data: activeRecords } = await sb.from('class_mentors')
-    .select('valid_from').eq('class_id', classId).is('valid_until', null).limit(1);
+  const [{ data: activeRecords }, { data: closedRecords }] = await Promise.all([
+    sb.from('class_mentors').select('valid_from').eq('class_id', classId).is('valid_until', null).order('valid_from', { ascending: false }).limit(1),
+    sb.from('class_mentors').select('valid_until').eq('class_id', classId).not('valid_until', 'is', null).order('valid_until', { ascending: false }).limit(1),
+  ]);
+
   const today = new Date().toISOString().split('T')[0];
-  const activeValidFrom = activeRecords && activeRecords.length > 0 ? activeRecords[0].valid_from : today;
+  const latestClosedUntil = closedRecords && closedRecords.length > 0 ? closedRecords[0].valid_until : null;
+
+  let activeValidFrom = activeRecords && activeRecords.length > 0 ? activeRecords[0].valid_from : today;
+
+  // Guarantee: active cycle valid_from must always be strictly after the last closed cycle
+  if (latestClosedUntil && activeValidFrom <= latestClosedUntil) {
+    activeValidFrom = new Date(new Date(latestClosedUntil + 'T00:00:00').getTime() + 86400000).toISOString().split('T')[0];
+  }
+
   await sb.from('class_mentors').delete().eq('class_id', classId).is('valid_until', null);
 
   const mentorRows = [];
