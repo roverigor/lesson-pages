@@ -7,12 +7,15 @@
     "test": "node --test tests/smoke.test.mjs",
     "test:watch": "node --test --watch tests/smoke.test.mjs",
     "lint": "eslint js/",
-    "lint:fix": "eslint js/ --fix"
+    "lint:fix": "eslint js/ --fix",
+    "build": "node scripts/minify.mjs",
+    "build:check": "node scripts/minify.mjs --dry-run"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "devDependencies": {
-    "eslint": "^8.57.1"
+    "eslint": "^8.57.1",
+    "terser": "^5.36.0"
   }
 }

@@ -39,8 +39,8 @@ function buildEventsFromDB() {
     const mentors = c._mentors || [];
 
     const weekdays = mentors.length > 0
-      ? [...new Set(mentors.map(cm => cm.weekday ?? c.weekday).filter(w => w != null))]
-      : c.weekday != null ? [c.weekday] : [];
+      ? [...new Set(mentors.map(cm => cm.weekday ?? c.weekday).filter(w => w !== null))]
+      : c.weekday !== null ? [c.weekday] : [];
 
     for (const wd of weekdays) {
       const dates = generateDates(c.start_date, c.end_date, wd);
@@ -68,7 +68,7 @@ function buildEventsFromDB() {
     }
 
     // Fallback: classes with no class_mentors rows but old professor/host fields
-    if (mentors.length === 0 && (c.professor || c.host) && c.weekday != null) {
+    if (mentors.length === 0 && (c.professor || c.host) && c.weekday !== null) {
       const dates = generateDates(c.start_date, c.end_date, c.weekday);
       for (const date of dates) {
         const key = fmtDate(date);

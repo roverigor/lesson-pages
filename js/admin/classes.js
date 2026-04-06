@@ -22,8 +22,8 @@ async function loadClasses() {
       if (!cls.start_date || !cls.end_date) continue;
       const classMentors = (cmData || []).filter(cm => cm.class_id === cls.id);
       const weekdays = classMentors.length > 0
-        ? [...new Set(classMentors.map(cm => cm.weekday ?? cls.weekday).filter(w => w != null))]
-        : cls.weekday != null ? [cls.weekday] : [];
+        ? [...new Set(classMentors.map(cm => cm.weekday ?? cls.weekday).filter(w => w !== null))]
+        : cls.weekday !== null ? [cls.weekday] : [];
       for (const wd of weekdays) {
         const dates = generateDates(cls.start_date, cls.end_date, wd);
         if (dates.length > 0) {
@@ -94,7 +94,7 @@ function renderClassesList() {
     }).join('');
 
     const allDates = [];
-    const weekdays = Object.keys(byDay).length > 0 ? Object.keys(byDay).map(Number) : (c.weekday != null ? [c.weekday] : []);
+    const weekdays = Object.keys(byDay).length > 0 ? Object.keys(byDay).map(Number) : (c.weekday !== null ? [c.weekday] : []);
     for (const wd of weekdays) {
       allDates.push(...generateDates(c.start_date, c.end_date, wd));
     }
@@ -323,13 +323,13 @@ function editClass(id) {
 
   const byDay = {};
   for (const cm of (c._mentors || [])) {
-    const wd = cm.weekday != null ? cm.weekday : (c.weekday != null ? c.weekday : 1);
+    const wd = cm.weekday !== null ? cm.weekday : (c.weekday !== null ? c.weekday : 1);
     if (!byDay[wd]) byDay[wd] = { weekday: wd, professors: [], mentors: [], hosts: [] };
     const roleKey = cm.role === 'Professor' ? 'professors' : cm.role === 'Host' ? 'hosts' : 'mentors';
     byDay[wd][roleKey].push(cm.mentor_id);
   }
 
-  if (Object.keys(byDay).length === 0 && c.weekday != null) {
+  if (Object.keys(byDay).length === 0 && c.weekday !== null) {
     byDay[c.weekday] = { weekday: c.weekday, professors: [], mentors: [], hosts: [] };
   }
 

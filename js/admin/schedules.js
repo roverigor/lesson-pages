@@ -35,7 +35,7 @@ async function renderSchedulesList() {
   el.innerHTML = data.map(s => {
     const cls = s.classes?.name || '—';
     const coh = s.cohorts?.name || '—';
-    const wd  = s.classes?.weekday != null ? weekdays[s.classes.weekday] : '—';
+    const wd  = s.classes?.weekday !== null ? weekdays[s.classes.weekday] : '—';
     const ts  = s.classes?.time_start ? s.classes.time_start.slice(0,5) : '—';
     const nextFire = s.next_fire_at
       ? new Date(s.next_fire_at).toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })
