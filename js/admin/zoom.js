@@ -1,4 +1,177 @@
 // ═══════════════════════════════════════
+// FUZZY MATCHING — Jaro-Winkler
+// ═══════════════════════════════════════
+
+function jaroWinkler(a, b) {
+  if (a === b) return 1;
+  const la = a.length, lb = b.length;
+  if (!la || !lb) return 0;
+  const dist = Math.max(0, Math.floor(Math.max(la, lb) / 2) - 1);
+  const ma = new Array(la).fill(false);
+  const mb = new Array(lb).fill(false);
+  let matches = 0;
+  for (let i = 0; i < la; i++) {
+    const lo = Math.max(0, i - dist), hi = Math.min(i + dist + 1, lb);
+    for (let j = lo; j < hi; j++) {
+      if (mb[j] || a[i] !== b[j]) continue;
+      ma[i] = mb[j] = true; matches++; break;
+    }
+  }
+  if (!matches) return 0;
+  let t = 0, k = 0;
+  for (let i = 0; i < la; i++) {
+    if (!ma[i]) continue;
+    while (!mb[k]) k++;
+    if (a[i] !== b[k]) t++;
+    k++;
+  }
+  const jaro = (matches / la + matches / lb + (matches - t / 2) / matches) / 3;
+  let p = 0;
+  const max4 = Math.min(4, la, lb);
+  while (p < max4 && a[p] === b[p]) p++;
+  return jaro + p * 0.1 * (1 - jaro);
+}
+
+function normName(n) {
+  return n.toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Z\s]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
+
+function fuzzyScore(zoomName, studentName) {
+  const zn = normName(zoomName);
+  const sn = normName(studentName);
+  const full = jaroWinkler(zn, sn);
+  const zt = zn.split(' ').filter(w => w.length > 1);
+  const st = sn.split(' ').filter(w => w.length > 1);
+  if (!zt.length || !st.length) return full;
+  const first = jaroWinkler(zt[0], st[0]);
+  let token = first;
+  if (zt.length > 1 && st.length > 1) {
+    const last = jaroWinkler(zt[zt.length - 1], st[st.length - 1]);
+    token = (first * 0.6 + last * 0.4);
+  }
+  return Math.max(full, token);
+}
+
+function bestStudentMatch(participantName, students) {
+  let best = null, bestScore = 0;
+  for (const s of students) {
+    const score = fuzzyScore(participantName, s.name);
+    if (score > bestScore) { bestScore = score; best = s; }
+  }
+  return { student: best, score: bestScore };
+}
+
+// ─── Auto-Match ───
+const FUZZY_AUTO     = 0.92;
+const FUZZY_SUGGEST  = 0.80;
+
+async function autoMatchParticipants() {
+  const unmatched = zoomParticipantsData.filter(p => !p.matched);
+  if (!unmatched.length) { showToast('Nenhum participante sem vínculo', 'success'); return; }
+
+  const suggestions = [];
+  for (const p of unmatched) {
+    const { student, score } = bestStudentMatch(p.participant_name, zoomAllStudents);
+    if (student && score >= FUZZY_SUGGEST) {
+      suggestions.push({ p, student, score, auto: score >= FUZZY_AUTO });
+    }
+  }
+
+  if (!suggestions.length) {
+    showToast('Nenhuma sugestão com confiança suficiente (≥80%)', 'error');
+    return;
+  }
+
+  renderMatchModal(suggestions);
+}
+
+function renderMatchModal(suggestions) {
+  const auto    = suggestions.filter(s => s.auto);
+  const manual  = suggestions.filter(s => !s.auto);
+
+  const rowHTML = (s) => {
+    const pct  = Math.round(s.score * 100);
+    const color = s.auto ? '#4ade80' : '#f59e0b';
+    return `<tr data-pid="${s.p.id}" data-sid="${s.student.id}" class="fuzzy-row">
+      <td style="padding:8px 6px;font-size:12px;color:#ccc">${s.p.participant_name}</td>
+      <td style="padding:8px 6px;font-size:12px;color:#fff;font-weight:600">${s.student.name}</td>
+      <td style="padding:8px 6px;text-align:center">
+        <span style="font-size:11px;font-weight:700;color:${color};background:${color}22;padding:2px 8px;border-radius:999px">${pct}%</span>
+      </td>
+      <td style="padding:8px 6px;text-align:center">
+        <input type="checkbox" class="fuzzy-check" ${s.auto ? 'checked' : ''} style="width:16px;height:16px;cursor:pointer">
+      </td>
+    </tr>`;
+  };
+
+  const html = `<div id="fuzzy-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)closeFuzzyModal()">
+    <div style="background:#0f0f0f;border:1px solid #222;border-radius:16px;width:100%;max-width:680px;max-height:85vh;display:flex;flex-direction:column">
+      <div style="padding:20px 24px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#fff">Sugestões de Vínculo</div>
+          <div style="font-size:12px;color:#555;margin-top:2px">${auto.length} auto (≥92%) · ${manual.length} sugestões (80–91%) · total ${suggestions.length}</div>
+        </div>
+        <button onclick="closeFuzzyModal()" style="background:none;border:none;color:#555;font-size:22px;cursor:pointer">×</button>
+      </div>
+      <div style="overflow-y:auto;flex:1;padding:16px 24px">
+        <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+          <button onclick="selectAllFuzzy(true)"  style="font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;border:1px solid #333;background:transparent;color:#aaa;cursor:pointer">Marcar tudo</button>
+          <button onclick="selectAllFuzzy(false)" style="font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;border:1px solid #333;background:transparent;color:#aaa;cursor:pointer">Desmarcar tudo</button>
+        </div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="color:#444;font-size:11px;text-transform:uppercase;letter-spacing:.04em">
+            <th style="padding:6px;text-align:left">Zoom</th>
+            <th style="padding:6px;text-align:left">Aluno</th>
+            <th style="padding:6px;text-align:center">Confiança</th>
+            <th style="padding:6px;text-align:center">Aceitar</th>
+          </tr></thead>
+          <tbody>
+            ${[...auto, ...manual].map(rowHTML).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:16px 24px;border-top:1px solid #1a1a1a;display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="closeFuzzyModal()" style="padding:9px 18px;border-radius:8px;border:1px solid #222;background:transparent;color:#666;font-size:13px;font-weight:600;cursor:pointer">Cancelar</button>
+        <button onclick="applyFuzzyMatches()" style="padding:9px 18px;border-radius:8px;border:none;background:#6366f1;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Vincular selecionados</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeFuzzyModal() { document.getElementById('fuzzy-modal')?.remove(); }
+
+function selectAllFuzzy(checked) {
+  document.querySelectorAll('.fuzzy-check').forEach(cb => { cb.checked = checked; });
+}
+
+async function applyFuzzyMatches() {
+  const rows = document.querySelectorAll('.fuzzy-row');
+  const toLink = [];
+  rows.forEach(row => {
+    const cb = row.querySelector('.fuzzy-check');
+    if (cb && cb.checked) toLink.push({ pid: row.dataset.pid, sid: row.dataset.sid });
+  });
+
+  if (!toLink.length) { closeFuzzyModal(); return; }
+
+  let ok = 0, fail = 0;
+  for (const { pid, sid } of toLink) {
+    const { error } = await sb.from('zoom_participants')
+      .update({ student_id: sid, matched: true })
+      .eq('id', pid);
+    error ? fail++ : ok++;
+  }
+
+  closeFuzzyModal();
+  showToast(`✅ ${ok} vinculados${fail ? ` · ❌ ${fail} erros` : ''}`, ok ? 'success' : 'error');
+  await loadZoomParticipants();
+}
+
+// ═══════════════════════════════════════
 // ZOOM MATCHING
 // ═══════════════════════════════════════
 async function loadZoomMeetings() {
@@ -43,7 +216,7 @@ async function loadZoomParticipants() {
     <span style="font-size:13px;color:#888"><span style="color:#4ade80;font-weight:700;font-size:20px">${matched}</span> vinculados</span>
     <span style="font-size:13px;color:#888"><span style="color:#f87171;font-weight:700;font-size:20px">${unmatched}</span> não vinculados</span>
   `;
-  document.getElementById('zoom-search-wrap').style.display = '';
+  document.getElementById('zoom-search-wrap').style.display = 'flex';
   renderZoomParticipants();
 }
 

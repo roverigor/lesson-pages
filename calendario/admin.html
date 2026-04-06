@@ -758,10 +758,13 @@
     <div id="zoom-stats" style="display:none;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;gap:24px;flex-wrap:wrap">
     </div>
 
-    <!-- Search students -->
-    <div id="zoom-search-wrap" style="display:none;margin-bottom:16px">
-      <input id="zoom-student-search" type="text" class="login-field" style="margin:0;width:100%;max-width:380px"
-        placeholder="Filtrar participantes não vinculados..." oninput="filterZoomRows()" />
+    <!-- Search + Auto-match -->
+    <div id="zoom-search-wrap" style="display:none;margin-bottom:16px;gap:8px;align-items:center;flex-wrap:wrap">
+      <input id="zoom-student-search" type="text" class="login-field" style="margin:0;width:100%;max-width:320px"
+        placeholder="Filtrar participantes..." oninput="filterZoomRows()" />
+      <button onclick="autoMatchParticipants()" style="padding:8px 16px;border-radius:8px;border:1px solid #6366f1;background:rgba(99,102,241,.1);color:#a5b4fc;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">
+        ✨ Auto-vincular (Fuzzy)
+      </button>
     </div>
 
     <!-- Participants list -->

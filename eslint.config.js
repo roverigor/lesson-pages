@@ -65,6 +65,7 @@ const config = [
         loadNotifyView: 'readonly',   // notifications.js
         loadSchedulesView: 'readonly',// schedules.js
         loadZoomMeetings: 'readonly', // zoom.js
+        autoMatchParticipants: 'readonly', // zoom.js
         loadAbstractsView: 'readonly',// abstracts.js
         loadSurveysView: 'readonly',  // surveys.js
         renderReport: 'readonly',     // views.js
