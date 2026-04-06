@@ -172,6 +172,14 @@
       color: #ddd; font-size: 13px; font-family: var(--font-sans); outline: none; width: 100%;
     }
     .edit-input:focus { border-color: #6366f1; }
+    .alias-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25);
+      color: #a5b4fc; font-size: 10px; font-weight: 600; padding: 2px 7px;
+      border-radius: 999px; white-space: nowrap;
+    }
+    .aliases-cell { display: flex; flex-wrap: wrap; gap: 4px; }
+    .edit-hint { font-size: 10px; color: #444; margin-top: 3px; }
 
     .actions-cell { display: flex; gap: 4px; flex-wrap: nowrap; }
 
@@ -286,6 +294,7 @@
           <th>Aluno</th>
           <th>Telefone</th>
           <th>Cohort</th>
+          <th>Apelidos Zoom</th>
           <th>Tipo</th>
           <th>WhatsApp</th>
           <th>Acoes</th>
@@ -356,7 +365,7 @@ let studentCohorts = []; // N:N mapping
 async function loadData() {
   const [{ data: c }, { data: s }, { data: sc }] = await Promise.all([
     sb.from('cohorts').select('*').order('name'),
-    sb.from('students').select('*, cohorts(name, whatsapp_group_jid)').order('name'),
+    sb.from('students').select('*, cohorts(name, whatsapp_group_jid), aliases').order('name'),
     sb.from('student_cohorts').select('student_id, cohort_id, cohorts(name)'),
   ]);
   cohorts = c || [];
@@ -447,7 +456,8 @@ function getFiltered() {
     if (currentTypeFilter === 'students' && s.is_mentor) return false;
     if (currentTypeFilter === 'staff' && !s.is_mentor) return false;
     if (currentSearch) {
-      const hay = `${s.name || ''} ${s.phone} ${(s._cohortNames || []).join(' ')}`.toLowerCase();
+      const aliasStr = (Array.isArray(s.aliases) ? s.aliases : []).join(' ');
+      const hay = `${s.name || ''} ${s.phone} ${(s._cohortNames || []).join(' ')} ${aliasStr}`.toLowerCase();
       if (!hay.includes(currentSearch)) return false;
     }
     return true;
@@ -485,11 +495,19 @@ function renderTable() {
     const staffBtnClass = s.is_mentor ? 'staff active' : 'staff';
     const staffBadge = s.is_mentor ? '<span class="staff-badge">Equipe</span>' : '';
 
+    const aliasesArr = Array.isArray(s.aliases) ? s.aliases : [];
+    const aliasesTags = aliasesArr.map(a => `<span class="alias-tag">${a}</span>`).join('');
+    const aliasesCell = aliasesTags ? `<div class="aliases-cell">${aliasesTags}</div>` : '<span style="color:#2a2a2a;font-size:11px">—</span>';
+
     if (editingId === s.id) {
       return `<tr class="editing">
         <td><input class="edit-input" id="edit-name" value="${s.name || ''}" placeholder="Nome do aluno"></td>
         <td><input class="edit-input" id="edit-phone" value="${s.phone}" placeholder="Telefone"></td>
         <td>${cohortBadges}</td>
+        <td>
+          <input class="edit-input" id="edit-aliases" value="${aliasesArr.join(', ')}" placeholder="Apelido 1, Apelido 2...">
+          <div class="edit-hint">Nomes usados no Zoom, separados por vírgula</div>
+        </td>
         <td></td>
         <td></td>
         <td><div class="actions-cell">
@@ -503,6 +521,7 @@ function renderTable() {
       <td><div class="student-name"><div class="avatar" style="background:${color}">${initials}</div>${displayName}${staffBadge}</div></td>
       <td><span class="student-phone">${formatPhone(phone)}</span></td>
       <td>${cohortBadges}</td>
+      <td>${aliasesCell}</td>
       <td><button class="action-btn ${staffBtnClass}" onclick="toggleStaff('${s.id}', ${!s.is_mentor})">${staffLabel}</button></td>
       <td><a href="${waLink}" target="_blank" class="action-btn whatsapp">Abrir</a></td>
       <td><div class="actions-cell">
@@ -566,8 +585,10 @@ function cancelEdit() {
 async function saveEdit(id) {
   const name = document.getElementById('edit-name').value.trim();
   const phone = document.getElementById('edit-phone').value.trim();
+  const aliasesRaw = document.getElementById('edit-aliases').value;
+  const aliases = aliasesRaw.split(',').map(a => a.trim()).filter(Boolean);
   if (!phone) { showToast('Telefone obrigatorio', 'error'); return; }
-  const { error } = await sb.from('students').update({ name, phone }).eq('id', id);
+  const { error } = await sb.from('students').update({ name, phone, aliases }).eq('id', id);
   if (error) { showToast('Erro: ' + error.message, 'error'); return; }
   editingId = null;
   showToast('Aluno atualizado');

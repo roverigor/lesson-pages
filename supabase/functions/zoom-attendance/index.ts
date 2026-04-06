@@ -223,7 +223,7 @@ interface MatchResult {
 
 function matchStudents(
   participants: Array<{ name: string; email: string }>,
-  students: Array<{ id: string; name: string; phone: string; email?: string; is_mentor?: boolean }>
+  students: Array<{ id: string; name: string; phone: string; email?: string; is_mentor?: boolean; aliases?: string[] }>
 ): MatchResult {
   const matches: Record<string, string> = {};
   const nearMatches: Record<string, { candidateName: string; candidateId: string; score: number }> = {};
@@ -271,6 +271,23 @@ function matchStudents(
       if (!sName) continue;
       const sParts = sName.split(/\s+/).filter(w => w.length > 1);
       if (sParts.length === 0) continue;
+
+      // ALIAS CHECK: treat each alias as an alternate name to match against
+      const aliasNames = (s.aliases || []).map(a => normalize(a)).filter(Boolean);
+
+      // LEVEL 0: Exact alias match (score 100)
+      if (aliasNames.some(a => a === pName)) {
+        bestMatch = { id: s.id, score: 100, name: s.name };
+        break;
+      }
+
+      // LEVEL 0b: Participant starts with alias (e.g. "João Silva @handle" → alias "João Silva")
+      if (aliasNames.some(a => pName.startsWith(a + " ") || a.startsWith(pName + " "))) {
+        if (!bestMatch || bestMatch.score < 90) {
+          bestMatch = { id: s.id, score: 90, name: s.name };
+        }
+        continue;
+      }
 
       // LEVEL 1: Exact full name match (score 100)
       if (pName === sName) {
@@ -535,8 +552,8 @@ serve(async (req: Request) => {
 
       // Load all active students once
       const { data: students } = await (cohort_id
-        ? sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true).eq("cohort_id", cohort_id)
-        : sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true));
+        ? sb.from("students").select("id, name, phone, email, is_mentor, aliases").eq("active", true).eq("cohort_id", cohort_id)
+        : sb.from("students").select("id, name, phone, email, is_mentor, aliases").eq("active", true));
 
       if (!students?.length) {
         return new Response(
