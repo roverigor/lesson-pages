@@ -368,6 +368,7 @@
         <button class="view-btn" onclick="switchView('notify')">Avisos</button>
         <button class="view-btn" onclick="switchView('schedules')">Agendamentos</button>
         <button class="view-btn" onclick="switchView('zoom')">Zoom</button>
+        <button class="view-btn" onclick="switchView('abstracts')">Resumos</button>
       </div>
       <a href="/alunos" class="link-pill"><i data-lucide="users" style="width:14px;height:14px"></i> Alunos</a>
       <a href="/calendario" class="link-pill"><i data-lucide="calendar" style="width:14px;height:14px"></i> Calendário Público</a>
@@ -701,6 +702,74 @@
     <!-- Participants list -->
     <div id="zoom-participants-list"></div>
   </div>
+
+  <!-- ═══════════════════════════════════════
+       ABSTRACTS / RESUMO DE AULAS
+  ═══════════════════════════════════════ -->
+  <div id="abstracts-view" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h2 style="font-size:20px;font-weight:800;color:#fff">Resumos de Aulas</h2>
+      <button onclick="openAbstractForm()" style="padding:8px 18px;border-radius:8px;border:none;background:#6366f1;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-sans)">+ Novo Resumo</button>
+    </div>
+
+    <!-- Form -->
+    <div id="abstract-form-container" style="display:none;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:20px">
+      <div style="font-size:14px;font-weight:700;color:#ddd;margin-bottom:16px">Novo / Editar Resumo</div>
+      <input type="hidden" id="abstract-edit-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Slug (único, sem espaços)</label>
+          <input class="login-field" style="margin:0" id="abstract-slug" placeholder="aula-01, ps-17-02-2026, glossario...">
+        </div>
+        <div>
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Tipo</label>
+          <select class="login-field" style="margin:0" id="abstract-section-type">
+            <option value="lesson">Aula</option>
+            <option value="kb">Base de Conhecimento</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Título</label>
+          <input class="login-field" style="margin:0" id="abstract-title" placeholder="Título da aula">
+        </div>
+        <div>
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Data</label>
+          <input class="login-field" style="margin:0" type="date" id="abstract-date">
+        </div>
+        <div>
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Cor do Badge</label>
+          <select class="login-field" style="margin:0" id="abstract-badge-class">
+            <option value="green">Verde (Aula regular)</option>
+            <option value="purple">Roxo (PS / Preparatória)</option>
+            <option value="gray">Cinza (KB)</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Label do Badge</label>
+          <input class="login-field" style="margin:0" id="abstract-badge-label" placeholder="Aula 01, PS - PRONTO SOCORRO...">
+        </div>
+        <div>
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Ordem</label>
+          <input class="login-field" style="margin:0" type="number" id="abstract-sort" min="0">
+        </div>
+        <div>
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Cohort Tag</label>
+          <input class="login-field" style="margin:0" id="abstract-cohort" placeholder="Advanced-t1">
+        </div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Conteúdo HTML (body_html)</label>
+        <textarea class="login-field" id="abstract-body" style="margin:0;min-height:200px;resize:vertical;font-size:12px;font-family:monospace;line-height:1.5" placeholder="Cole o HTML do corpo da seção aqui..."></textarea>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="abstract-save-btn" onclick="saveAbstract()" style="padding:8px 20px;border-radius:8px;border:none;background:#6366f1;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-sans)">Salvar</button>
+        <button onclick="closeAbstractForm()" style="padding:8px 16px;border-radius:8px;border:1px solid #222;background:transparent;color:#888;font-size:13px;cursor:pointer;font-family:var(--font-sans)">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div id="abstracts-list"></div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -733,6 +802,7 @@
 <script src="/js/admin/notifications.js"></script>
 <script src="/js/admin/schedules.js"></script>
 <script src="/js/admin/zoom.js"></script>
+<script src="/js/admin/abstracts.js"></script>
 <script src="/js/admin/views.js"></script>
 <script src="/js/admin/init.js"></script>
 <script src="https://unpkg.com/lucide@0.469.0"></script>

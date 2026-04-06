@@ -12,6 +12,7 @@ async function switchView(view) {
   document.getElementById('notify-view').style.display = view === 'notify' ? '' : 'none';
   document.getElementById('schedules-view').style.display = view === 'schedules' ? '' : 'none';
   document.getElementById('zoom-view').style.display = view === 'zoom' ? '' : 'none';
+  document.getElementById('abstracts-view').style.display = view === 'abstracts' ? '' : 'none';
 
   if (view === 'report') renderReport();
   if (view === 'staff') loadStaff();
@@ -19,6 +20,7 @@ async function switchView(view) {
   if (view === 'notify') loadNotifyView();
   if (view === 'schedules') loadSchedulesView();
   if (view === 'zoom') loadZoomMeetings();
+  if (view === 'abstracts') loadAbstractsView();
   if (view === 'calendar') {
     await loadClasses();
     await loadOverrides();
