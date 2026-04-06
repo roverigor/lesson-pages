@@ -443,6 +443,32 @@ serve(async (req: Request) => {
       );
     }
 
+    // ── ACTION: fix_phones ───────────────────────────────────────────
+    // Normalizes all student phone numbers to 55+DDD+number format.
+    // Merges duplicates caused by same phone ± country code.
+    // Flags phones that cannot be normalized with phone_issue = '*invalid'.
+    // body: { action: "fix_phones" }
+    if (action === "fix_phones") {
+      const sb = getSupabaseClient();
+      const { data, error } = await sb.rpc("fix_student_phones");
+      if (error) {
+        return new Response(
+          JSON.stringify({ ok: false, error: error.message }),
+          { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+      const rows = data || [];
+      const summary = {
+        normalized: rows.filter((r: { action: string }) => r.action === "normalized").length,
+        merged:     rows.filter((r: { action: string }) => r.action === "merged").length,
+        flagged:    rows.filter((r: { action: string }) => r.action === "flagged").length,
+      };
+      return new Response(
+        JSON.stringify({ ok: true, summary, details: rows }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     // ── ACTION: dedup_participants ────────────────────────────────────
     // Removes duplicate zoom_participants within the same meeting.
     // Keeps the row with the longest duration; deletes reconnection entries.

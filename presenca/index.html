@@ -288,6 +288,10 @@ let participants = [];
 let students = [];
 let cohorts = [];
 let recordings = [];
+let mentors = [];
+// Lookup sets built from mentors table (normalized name → mentor object, normalized phone → mentor object)
+let _mentorByName = new Map();
+let _mentorByPhone = new Map();
 let currentTab = 'meetings';
 let currentCohortFilter = 'all';
 let searchQuery = '';
@@ -318,16 +322,29 @@ async function showApp() {
 
 // ─── DATA ───
 async function loadAllData() {
-  const [m, s, c, r] = await Promise.all([
+  const [m, s, c, r, mt] = await Promise.all([
     sb.from('zoom_meetings').select('*, cohorts(name), zoom_participants(id, participant_name, participant_email, duration_minutes, matched, student_id, students(name, phone, email, cohort_id))').order('start_time', { ascending: false }),
     sb.from('students').select('*, cohorts(name)').eq('active', true).eq('is_mentor', false).order('name'),
     sb.from('cohorts').select('*').order('name'),
     sb.from('class_recordings').select('video_url, audio_url, meeting_id').order('recording_date', { ascending: false }),
+    sb.from('mentors').select('id, name, phone, role').eq('active', true),
   ]);
   meetings = m.data || [];
   students = s.data || [];
   cohorts = c.data || [];
   recordings = r.data || [];
+  mentors = mt.data || [];
+
+  // Build mentor lookup maps for quick filtering in the unmatched list
+  _mentorByName  = new Map();
+  _mentorByPhone = new Map();
+  for (const mentor of mentors) {
+    const normName  = (mentor.name  || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    const normPhone = _normalizePhone(mentor.phone || '');
+    if (normName)  _mentorByName.set(normName, mentor);
+    if (normPhone) _mentorByPhone.set(normPhone, mentor);
+  }
+
   renderAll();
 }
 
@@ -515,9 +532,16 @@ function filterModalPicker(pid, inputEl) {
   _pickerActivePid = pid;
   document.getElementById(`modal-match-${pid}`).value = '';
   const q = (inputEl.value || '').toLowerCase().trim();
+  const qNormPhone = _normalizePhone(q);
   const pool = q.length === 0
     ? students.slice(0, 30)
-    : students.filter(s => (s.name || '').toLowerCase().includes(q) || (s.phone || '').includes(q)).slice(0, 30);
+    : students.filter(s => {
+        const sPhone = s.phone || '';
+        const sNorm = _normalizePhone(sPhone);
+        return (s.name || '').toLowerCase().includes(q)
+          || sPhone.includes(q)
+          || (qNormPhone.length >= 6 && (sNorm.includes(qNormPhone) || qNormPhone.includes(sNorm)));
+      }).slice(0, 30);
 
   if (!pool.length) { _pickerDrop.style.display = 'none'; return; }
 
@@ -704,7 +728,13 @@ function renderUnmatched() {
       if (p.matched) continue;
       const name = (p.participant_name || '').toLowerCase();
       if (name.includes('notetaker') || name.includes('fathom') || name.includes('read.ai') || name.includes('fireflies') || name.includes('otter')) continue;
-      unmatched.push({ ...p, meetingTopic: m.topic, meetingDate: m.start_time, meetingCohortId: m.cohort_id || null });
+
+      // Check if this participant is a known mentor/equipe
+      const normName  = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      const normPhone = _normalizePhone(p.participant_email || '');
+      const mentorMatch = _mentorByName.get(normName) || _mentorByPhone.get(normPhone);
+
+      unmatched.push({ ...p, meetingTopic: m.topic, meetingDate: m.start_time, meetingCohortId: m.cohort_id || null, isMentor: !!mentorMatch, mentorName: mentorMatch?.name });
     }
   }
 
@@ -719,7 +749,21 @@ function renderUnmatched() {
     filtered = unmatched.filter(p => `${p.participant_name || ''} ${p.participant_email || ''}`.toLowerCase().includes(searchQuery));
   }
 
-  body.innerHTML = filtered.slice(0, 100).map(p => {
+  // Separate mentors from actual unknowns for display
+  const realUnmatched = filtered.filter(p => !p.isMentor);
+  const mentorUnmatched = filtered.filter(p => p.isMentor);
+
+  const mentorRows = mentorUnmatched.slice(0, 50).map(p => `<tr style="opacity:0.5">
+    <td style="font-weight:600;color:#94a3b8;vertical-align:middle">${p.participant_name || '—'}</td>
+    <td>
+      <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);border-radius:20px;font-size:11px;color:#818cf8;font-weight:600">
+        ⚡ Equipe${p.mentorName ? ' · ' + p.mentorName : ''}
+      </span>
+    </td>
+    <td style="font-size:11px;color:#444">${p.meetingTopic || ''}</td>
+  </tr>`).join('');
+
+  const unmatchedRows = realUnmatched.slice(0, 100).map(p => {
     const safeName = (p.participant_name || '').replace(/'/g, "&#39;").replace(/"/g, '&quot;');
     const cohortArg = JSON.stringify(p.meetingCohortId || null);
     return `<tr>
@@ -744,9 +788,11 @@ function renderUnmatched() {
             onclick="registerAndLink('${p.id}', '${safeName}', 'phone-${p.id}', null, ${cohortArg})">Cadastrar e vincular</button>
         </div>
       </td>
-      <td></td>
+      <td style="font-size:11px;color:#555;vertical-align:top;padding-top:14px">${p.meetingTopic || ''}</td>
     </tr>`;
   }).join('');
+
+  body.innerHTML = (mentorRows ? `<tr><td colspan="3" style="padding:8px 12px;font-size:11px;color:#444;background:#0a0a0a;border-bottom:1px solid #1a1a1a">⚡ ${mentorUnmatched.length} membros da equipe (não precisam de vínculo)</td></tr>${mentorRows}<tr><td colspan="3" style="padding:8px 12px;font-size:11px;color:#555;background:#0a0a0a;border-bottom:1px solid #1a1a1a">👤 ${realUnmatched.length} participantes sem vínculo</td></tr>` : '') + unmatchedRows;
 }
 
 // Global floating dropdown — fixed position, escapes table overflow:hidden
@@ -763,10 +809,17 @@ function filterStudentPicker(pid, inputEl) {
   _pickerActivePid = pid;
   document.getElementById(`match-${pid}`).value = '';
   const q = (inputEl.value || '').toLowerCase().trim();
+  const qNormPhone2 = _normalizePhone(q);
 
   const pool = q.length === 0
     ? students.slice(0, 30)
-    : students.filter(s => (s.name || '').toLowerCase().includes(q) || (s.phone || '').includes(q)).slice(0, 30);
+    : students.filter(s => {
+        const sPhone = s.phone || '';
+        const sNorm = _normalizePhone(sPhone);
+        return (s.name || '').toLowerCase().includes(q)
+          || sPhone.includes(q)
+          || (qNormPhone2.length >= 6 && (sNorm.includes(qNormPhone2) || qNormPhone2.includes(sNorm)));
+      }).slice(0, 30);
 
   if (!pool.length) { _pickerDrop.style.display = 'none'; return; }
 
