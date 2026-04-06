@@ -402,16 +402,27 @@ async function saveClassV2() {
   ]);
 
   const today = new Date().toISOString().split('T')[0];
+  const yesterday = new Date(new Date(today + 'T00:00:00').getTime() - 86400000).toISOString().split('T')[0];
   const latestClosedUntil = closedRecords && closedRecords.length > 0 ? closedRecords[0].valid_until : null;
+  const hasActiveBeforeToday = activeRecords && activeRecords.length > 0 && activeRecords[0].valid_from < today;
 
-  let activeValidFrom = activeRecords && activeRecords.length > 0 ? activeRecords[0].valid_from : today;
+  let activeValidFrom = today;
 
-  // Guarantee: active cycle valid_from must always be strictly after the last closed cycle
-  if (latestClosedUntil && activeValidFrom <= latestClosedUntil) {
-    activeValidFrom = new Date(new Date(latestClosedUntil + 'T00:00:00').getTime() + 86400000).toISOString().split('T')[0];
+  if (latestClosedUntil !== null && hasActiveBeforeToday) {
+    // Turma com histórico de ciclo: ciclo ativo iniciou antes de hoje.
+    // Auto-fecha o ciclo atual (vira histórico) e inicia novo a partir de hoje.
+    const { error: autoCloseErr } = await sb.from('class_mentors')
+      .update({ valid_until: yesterday }).eq('class_id', classId).is('valid_until', null);
+    if (autoCloseErr) { showToast('Erro ao fechar ciclo automático: ' + autoCloseErr.message, 'error'); saveBtn.disabled = false; saveBtn.textContent = 'Salvar Turma'; return; }
+    // Registros agora fechados viram histórico — não deletar, só inserir novos com today
+  } else {
+    // Ciclo ativo começou hoje OU turma sem histórico de ciclo → delete + re-insert normalmente
+    await sb.from('class_mentors').delete().eq('class_id', classId).is('valid_until', null);
+    // Garante que valid_from não sobreponha ciclo fechado existente
+    if (latestClosedUntil && activeValidFrom <= latestClosedUntil) {
+      activeValidFrom = new Date(new Date(latestClosedUntil + 'T00:00:00').getTime() + 86400000).toISOString().split('T')[0];
+    }
   }
-
-  await sb.from('class_mentors').delete().eq('class_id', classId).is('valid_until', null);
 
   const mentorRows = [];
   for (const day of classSchedules) {
