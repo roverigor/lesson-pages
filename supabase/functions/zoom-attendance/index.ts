@@ -262,10 +262,25 @@ serve(async (req: Request) => {
     const token = await getS2SToken();
 
     // Get past instances of this meeting
-    const instances = await getMeetingInstances(token, meeting_id);
+    // Uses Zoom Reports API first (goes back 6 months), falls back to past_meetings API (≈30 days)
+    let instances: Array<{ uuid: string; start_time?: string }> = [];
 
+    // Try Zoom Reports API first — more reliable for historical data
+    try {
+      const from = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const to = new Date().toISOString().slice(0, 10);
+      const reportData = await zoomGet(token, `/report/meetings/${meeting_id}/participants?page_size=1`).catch(() => null);
+      // If past_meetings/instances works (recent), use it
+      const instData = await zoomGet(token, `/past_meetings/${meeting_id}/instances`).catch(() => null);
+      if (instData?.meetings?.length) {
+        instances = instData.meetings;
+      }
+    } catch {
+      // ignore, will try fallback below
+    }
+
+    // Fallback: try as direct UUID
     if (!instances.length) {
-      // Try as a single meeting UUID directly
       const details = await getPastMeetingDetails(token, meeting_id);
       if (details) {
         instances.push({ uuid: details.uuid, start_time: details.start_time });
@@ -279,12 +294,18 @@ serve(async (req: Request) => {
       );
     }
 
+    // Process at most `batch_size` instances per call to avoid WORKER_LIMIT
+    // Caller can paginate by passing `offset` (default 0)
+    const { offset = 0, batch_size = 3 } = body as { offset?: number; batch_size?: number };
+    const totalInstances = instances.length;
+    instances = instances.slice(offset, offset + batch_size);
+
     // Load students for matching (include email and is_mentor for guardrails)
     const { data: students } = await (cohort_id
       ? sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true).eq("cohort_id", cohort_id)
       : sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true));
 
-    // Process instances in parallel with concurrency limit of 3 (P-007)
+    // Process instances in parallel with concurrency limit of 2 (reduced to avoid WORKER_LIMIT)
     async function processInstance(instance: { uuid: string; start_time?: string }) {
       const uuid = instance.uuid;
 
@@ -356,19 +377,29 @@ serve(async (req: Request) => {
       };
     }
 
-    // Process in chunks of 3 to respect Zoom API rate limits
-    const CONCURRENCY = 3;
+    // Process sequentially to avoid WORKER_LIMIT on Supabase edge functions
     const results = [];
-    for (let i = 0; i < instances.length; i += CONCURRENCY) {
-      const chunk = instances.slice(i, i + CONCURRENCY);
-      const settled = await Promise.allSettled(chunk.map(processInstance));
+    for (const instance of instances) {
+      const settled = await Promise.allSettled([processInstance(instance)]);
       for (const r of settled) {
         results.push(r.status === "fulfilled" ? r.value : { uuid: "unknown", status: "error", error: String((r as PromiseRejectedResult).reason) });
       }
     }
 
+    const nextOffset = offset + batch_size;
+    const hasMore = nextOffset < totalInstances;
+
     return new Response(
-      JSON.stringify({ ok: true, meeting_id, instances: results }),
+      JSON.stringify({
+        ok: true,
+        meeting_id,
+        total_instances: totalInstances,
+        offset,
+        batch_size,
+        has_more: hasMore,
+        next_offset: hasMore ? nextOffset : null,
+        instances: results,
+      }),
       { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
 
