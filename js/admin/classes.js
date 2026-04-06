@@ -422,11 +422,6 @@ async function finalizeClass(classId, className) {
 
   const today = new Date().toISOString().split('T')[0];
 
-  const { data: activeRows, error: fetchErr } = await sb.from('class_mentors')
-    .select('id').eq('class_id', classId).is('valid_until', null);
-  if (fetchErr) { showToast('Erro: ' + fetchErr.message, 'error'); return; }
-  if (!activeRows || activeRows.length === 0) { showToast('Nenhum mentor ativo nesta turma', 'error'); return; }
-
   const { error } = await sb.from('class_mentors')
     .update({ valid_until: today }).eq('class_id', classId).is('valid_until', null);
   if (error) { showToast('Erro ao encerrar turma: ' + error.message, 'error'); return; }
@@ -452,13 +447,12 @@ async function closeClassCycle(classId, className, skipConfirm = false) {
   const { data: activeRows, error: fetchErr } = await sb.from('class_mentors')
     .select('*').eq('class_id', classId).is('valid_until', null);
   if (fetchErr) { showToast('Erro: ' + fetchErr.message, 'error'); return; }
-  if (!activeRows || activeRows.length === 0) { showToast('Nenhum mentor ativo nesta turma', 'error'); return; }
 
   const { error: closeErr } = await sb.from('class_mentors')
     .update({ valid_until: today }).eq('class_id', classId).is('valid_until', null);
   if (closeErr) { showToast('Erro ao fechar ciclo: ' + closeErr.message, 'error'); return; }
 
-  const newRows = activeRows.map(r => ({
+  const newRows = (activeRows || []).map(r => ({
     class_id: r.class_id, mentor_id: r.mentor_id, role: r.role,
     weekday: r.weekday, valid_from: tomorrow, valid_until: null,
   }));
