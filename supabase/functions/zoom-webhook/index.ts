@@ -152,7 +152,19 @@ serve(async (req: Request) => {
       .eq("processed", false)
       .is("end_time", null);
 
-    return new Response(JSON.stringify({ ok: true, event, meeting_id: meetingId }), {
+    // Enqueue for automatic import (process_after = 5 min to let Zoom generate the report)
+    const { error: queueError } = await sb.from("zoom_import_queue").insert({
+      meeting_id:    meetingId,
+      zoom_uuid:     uuid || null,
+      host_email:    hostEmail || null,
+      topic:         topic || null,
+      status:        "pending",
+      process_after: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+    });
+
+    if (queueError) console.error("zoom-webhook: queue insert error", queueError.message);
+
+    return new Response(JSON.stringify({ ok: true, event, meeting_id: meetingId, queued: !queueError }), {
       status: 200, headers: { "Content-Type": "application/json" },
     });
   }

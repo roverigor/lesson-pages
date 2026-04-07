@@ -279,16 +279,20 @@ document.addEventListener('click', e => {
 // ─── STUDENT PROFILE ───
 async function loadStudentProfile(student) {
   showLoading();
-  const { data: participations } = await sb
-    .from('zoom_participants')
-    .select('id, participant_name, duration_minutes, join_time, leave_time, matched, zoom_meetings(id, topic, start_time, duration_minutes, cohorts(name))')
-    .eq('student_id', student.id)
-    .order('created_at', { ascending: false });
+  const cohortId = student.cohort_id;
 
-  const rows = (participations || []).filter(p => p.zoom_meetings);
-  const total = rows.length;
+  const [participationsRes, totalMeetingsRes] = await Promise.all([
+    sb.from('zoom_participants')
+      .select('id, participant_name, duration_minutes, join_time, leave_time, matched, zoom_meetings(id, topic, start_time, duration_minutes, cohorts(name))')
+      .eq('student_id', student.id)
+      .order('created_at', { ascending: false }),
+    cohortId
+      ? sb.from('zoom_meetings').select('id', { count: 'exact', head: true }).eq('cohort_id', cohortId)
+      : Promise.resolve({ count: 0 }),
+  ]);
+
+  const rows = (participationsRes.data || []).filter(p => p.zoom_meetings);
   const totalMin = rows.reduce((s, r) => s + (r.duration_minutes || 0), 0);
-  const avgMin = total > 0 ? Math.round(totalMin / total) : 0;
 
   // Deduplicate by meeting
   const byMeeting = new Map();
@@ -305,14 +309,25 @@ async function loadStudentProfile(student) {
   const totalMeetingMin = meetings.reduce((s, r) => s + (r.duration_minutes || 0), 0);
   const avgMeetingMin = uniqueMeetings > 0 ? Math.round(totalMeetingMin / uniqueMeetings) : 0;
 
+  // Attendance rate (Story 6.3)
+  const totalExpected = totalMeetingsRes.count || 0;
+  const pct = totalExpected > 0 ? Math.round((uniqueMeetings / totalExpected) * 100) : null;
+  const barColor = pct === null ? '#6366f1' : pct >= 80 ? '#4ade80' : pct >= 60 ? '#fbbf24' : '#f87171';
+  const pctLabel = pct !== null ? `${pct}%` : '—';
+  const attendanceAlert = pct !== null && pct < 60
+    ? `<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px 14px;margin-top:14px;font-size:12px;color:#f87171">
+        ⚠️ Frequência abaixo do recomendado. Não perca a próxima aula!
+       </div>` : '';
+  const attendanceBarBlock = totalExpected > 0 ? `
+    <div class="attendance-bar-wrap" style="margin-top:16px">
+      <div class="bar-label" style="margin-bottom:6px;font-size:12px;color:#666">${uniqueMeetings} de ${totalExpected} aulas &nbsp;·&nbsp; <strong style="color:${barColor}">${pctLabel}</strong></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.min(pct||0,100)}%;background:${barColor}"></div></div>
+      ${attendanceAlert}
+    </div>` : '';
+
   const color = getColor(student.name || student.phone || '');
   const initials = getInitials(student.name || '?');
   const cohortName = student.cohorts?.name || '—';
-  const aliasesStr = (student.aliases || []).length > 0
-    ? `<span>🏷 ${student.aliases.join(', ')}</span>` : '';
-
-  const pct = uniqueMeetings > 0 ? 100 : 0; // no "total expected" info, just show presence count
-  const barColor = '#6366f1';
 
   const historyRows = meetings.map(r => {
     const m = r.zoom_meetings;
@@ -332,13 +347,13 @@ async function loadStudentProfile(student) {
   renderProfile(`
     <div class="profile-header">
       <div class="profile-avatar" style="background:${color}">${initials}</div>
-      <div>
+      <div style="flex:1">
         <div class="profile-name">${student.name || '—'}</div>
         <div class="profile-meta">
           <span>📱 ${student.phone || '—'}</span>
           <span>🎓 ${cohortName}</span>
-          ${aliasesStr}
         </div>
+        ${attendanceBarBlock}
       </div>
       <span class="type-badge type-student" style="margin-left:auto;align-self:flex-start">Aluno</span>
     </div>
@@ -349,16 +364,16 @@ async function loadStudentProfile(student) {
         <div class="stat-label">Aulas presentes</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">${fmtDur(totalMeetingMin)}</div>
-        <div class="stat-label">Tempo total</div>
+        <div class="stat-value ${pct !== null ? (pct >= 80 ? 'green' : pct >= 60 ? 'yellow' : 'red') : ''}">${pctLabel}</div>
+        <div class="stat-label">Taxa de frequência</div>
       </div>
       <div class="stat-card">
         <div class="stat-value">${fmtDur(avgMeetingMin)}</div>
         <div class="stat-label">Tempo médio/aula</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value yellow">${rows.length - uniqueMeetings}</div>
-        <div class="stat-label">Re-entradas detectadas</div>
+        <div class="stat-value">${fmtDur(totalMeetingMin)}</div>
+        <div class="stat-label">Tempo total</div>
       </div>
     </div>
 
@@ -371,7 +386,127 @@ async function loadStudentProfile(student) {
         <tbody>${historyRows}</tbody>
       </table>
     </div>
+
+    <!-- Nomes no Zoom — Story 6.5 -->
+    <div id="zoom-names-section" style="margin-top:24px">
+      <div class="section-title">Nomes no Zoom</div>
+      <div id="zoom-aliases-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <input id="zoom-alias-input" placeholder="Adicionar nome alternativo" style="flex:1;padding:9px 12px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;color:#ddd;font-size:13px;font-family:var(--font-sans);outline:none" onkeydown="if(event.key==='Enter')addStudentAlias('${student.id}')">
+        <button onclick="addStudentAlias('${student.id}')" style="padding:9px 16px;border-radius:8px;border:none;background:rgba(99,102,241,.15);color:#a5b4fc;font-size:12px;font-weight:700;cursor:pointer">Adicionar</button>
+      </div>
+      <div id="zoom-candidates-section" style="display:none">
+        <div style="font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Encontramos esses nomes não identificados na sua turma. É você?</div>
+        <div id="zoom-candidates-list"></div>
+      </div>
+    </div>
   `);
+
+  // Load aliases + candidates
+  renderStudentAliases(student.id, student.aliases || []);
+  if (cohortId) loadStudentCandidates(student.id, cohortId);
+}
+
+let _studentAliases = {};
+function renderStudentAliases(studentId, aliases) {
+  _studentAliases[studentId] = [...aliases];
+  const wrap = document.getElementById('zoom-aliases-wrap');
+  if (!wrap) return;
+  if (!aliases.length) {
+    wrap.innerHTML = '<span style="font-size:12px;color:#333;font-style:italic">(nenhum alias cadastrado)</span>';
+    return;
+  }
+  wrap.innerHTML = aliases.map(a =>
+    `<span style="display:inline-flex;align-items:center;gap:5px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:999px;padding:4px 12px;font-size:12px;color:#a5b4fc">
+      ${a}
+      <button onclick="removeStudentAlias('${studentId}','${a.replace(/'/g,"\\'")}','${encodeURIComponent(JSON.stringify(aliases))}')" style="background:none;border:none;color:#6366f1;cursor:pointer;font-size:14px;line-height:1;padding:0">×</button>
+    </span>`
+  ).join('');
+}
+
+async function addStudentAlias(studentId) {
+  const inp = document.getElementById('zoom-alias-input');
+  const alias = inp.value.trim();
+  if (!alias || alias.length < 3) { showToast('Alias deve ter ao menos 3 caracteres', 'error'); return; }
+  const current = _studentAliases[studentId] || [];
+  if (current.includes(alias)) { showToast('Alias já cadastrado', 'error'); return; }
+  const updated = [...current, alias];
+  const { error } = await sb.from('students').update({ aliases: updated }).eq('id', studentId);
+  if (error) { showToast('Erro ao salvar: ' + error.message, 'error'); return; }
+  _studentAliases[studentId] = updated;
+  inp.value = '';
+  renderStudentAliases(studentId, updated);
+  showToast('Alias adicionado');
+}
+
+async function removeStudentAlias(studentId, alias) {
+  const current = _studentAliases[studentId] || [];
+  const updated = current.filter(a => a !== alias);
+  const { error } = await sb.from('students').update({ aliases: updated }).eq('id', studentId);
+  if (error) { showToast('Erro ao remover: ' + error.message, 'error'); return; }
+  _studentAliases[studentId] = updated;
+  renderStudentAliases(studentId, updated);
+  showToast('Alias removido');
+}
+
+let _ignoredStudentCandidates = new Set();
+async function loadStudentCandidates(studentId, cohortId) {
+  const ZOOM_FN = window.SUPABASE_CONFIG?.functionsUrl
+    ? window.SUPABASE_CONFIG.functionsUrl + '/zoom-attendance'
+    : SUPABASE_URL.replace('supabase.co', 'supabase.co') + '/functions/v1/zoom-attendance';
+  try {
+    const res = await fetch(ZOOM_FN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify({ action: 'zoom_student_candidates', cohort_id: cohortId }),
+    });
+    const { candidates } = await res.json();
+    const visible = (candidates || []).filter(c => !_ignoredStudentCandidates.has(c.name));
+    const sec = document.getElementById('zoom-candidates-section');
+    const list = document.getElementById('zoom-candidates-list');
+    if (!sec || !list) return;
+    if (!visible.length) { sec.style.display = 'none'; return; }
+    sec.style.display = '';
+    list.innerHTML = visible.map(c => `
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #141414" id="cand-${CSS.escape(c.name)}">
+        <span style="flex:1;font-size:13px;color:#aaa">"${c.name}" <span style="color:#444;font-size:11px">· apareceu em ${c.meeting_count} reuniões</span></span>
+        <button onclick="linkStudentCandidate('${studentId}','${c.name.replace(/'/g,"\\'")}','${cohortId}')" style="padding:6px 14px;border-radius:6px;border:1px solid rgba(99,102,241,.3);background:rgba(99,102,241,.1);color:#a5b4fc;font-size:11px;font-weight:700;cursor:pointer">Sou eu</button>
+        <button onclick="ignoreStudentCandidate('${c.name.replace(/'/g,"\\'")}','${studentId}','${cohortId}')" style="padding:6px 10px;border-radius:6px;border:1px solid #1e1e1e;background:transparent;color:#555;font-size:11px;cursor:pointer">Ignorar</button>
+      </div>`).join('');
+  } catch(e) { /* silent */ }
+}
+
+async function linkStudentCandidate(studentId, candidateName, cohortId) {
+  const current = _studentAliases[studentId] || [];
+  const updated = [...current, candidateName];
+  const { error } = await sb.from('students').update({ aliases: updated }).eq('id', studentId);
+  if (error) { showToast('Erro ao vincular: ' + error.message, 'error'); return; }
+  _studentAliases[studentId] = updated;
+  renderStudentAliases(studentId, updated);
+
+  // Trigger rematch via edge function
+  try {
+    const ZOOM_FN = window.SUPABASE_CONFIG?.functionsUrl
+      ? window.SUPABASE_CONFIG.functionsUrl + '/zoom-attendance'
+      : SUPABASE_URL.replace('supabase.co', 'supabase.co') + '/functions/v1/zoom-attendance';
+    const res = await fetch(ZOOM_FN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify({ action: 'rematch_all' }),
+    });
+    const data = await res.json();
+    showToast(`Vinculado! ${data.updated || 0} presenças recuperadas`);
+  } catch { showToast('Vinculado! (rematch offline)'); }
+
+  // Remove candidate from list
+  const el = document.getElementById(`cand-${CSS.escape(candidateName)}`);
+  if (el) el.remove();
+}
+
+function ignoreStudentCandidate(candidateName, studentId, cohortId) {
+  _ignoredStudentCandidates.add(candidateName);
+  const el = document.getElementById(`cand-${CSS.escape(candidateName)}`);
+  if (el) el.remove();
 }
 
 // ─── MENTOR PROFILE ───

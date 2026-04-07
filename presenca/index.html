@@ -170,6 +170,7 @@
         <button class="tab active" onclick="switchTab('meetings')">Reunioes</button>
         <button class="tab" onclick="switchTab('students')">Por Aluno</button>
         <button class="tab" onclick="switchTab('cohort')">Por Turma</button>
+        <button class="tab" onclick="switchTab('dashboard')">Dashboard</button>
         <button class="tab" onclick="switchTab('unmatched')">Vincular</button>
       </div>
       <a href="/" class="pill">Home</a>
@@ -244,6 +245,51 @@
         <tbody id="cohort-body"></tbody>
       </table>
     </div>
+  </div>
+
+  <!-- DASHBOARD VIEW (Story 6.2) -->
+  <div id="dashboard-view" style="display:none">
+    <!-- Auto-import queue status -->
+    <div id="queue-status-bar" style="background:#101010;border:1px solid #1a1a1a;border-radius:10px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="font-size:12px;font-weight:700;color:#888">Importacao automatica</div>
+      <div id="queue-stats" style="font-size:12px;color:#555">Carregando...</div>
+      <button class="btn sm" onclick="loadQueueStatus()" style="margin-left:auto">Atualizar</button>
+    </div>
+
+    <!-- Cohort selector -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+      <label style="font-size:12px;color:#666;font-weight:600">Turma:</label>
+      <select id="dash-cohort-select" onchange="loadDashboard()" style="padding:8px 12px;border-radius:8px;background:#0d0d0d;border:1px solid #1e1e1e;color:#ddd;font-size:13px;font-family:var(--font-sans);outline:none;min-width:220px">
+        <option value="">Selecionar turma...</option>
+      </select>
+      <button class="btn sm" onclick="loadDashboard()">Carregar</button>
+    </div>
+
+    <!-- Dashboard content -->
+    <div id="dashboard-content" style="display:none">
+      <!-- KPI row -->
+      <div class="stats" id="dash-kpis" style="margin-bottom:20px"></div>
+
+      <!-- Weekly evolution -->
+      <div style="background:#101010;border:1px solid #1a1a1a;border-radius:12px;padding:20px;margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Evolucao Semanal</div>
+        <div id="weekly-chart" style="display:flex;gap:8px;align-items:flex-end;height:80px"></div>
+        <div id="weekly-labels" style="display:flex;gap:8px;margin-top:6px"></div>
+      </div>
+
+      <!-- At-risk students -->
+      <div style="background:#101010;border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:20px;margin-bottom:20px">
+        <div style="font-size:11px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Alunos em Risco <span id="risk-count" style="background:rgba(239,68,68,.12);border-radius:999px;padding:2px 8px;font-size:10px;color:#f87171"></span></div>
+        <div id="risk-list"></div>
+      </div>
+
+      <!-- All students -->
+      <div style="background:#101010;border:1px solid #1a1a1a;border-radius:12px;padding:20px">
+        <div style="font-size:11px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">Todos os Alunos</div>
+        <div id="all-students-list"></div>
+      </div>
+    </div>
+    <div id="dashboard-empty" style="text-align:center;padding:60px 20px;color:#333;display:none">Selecione uma turma para ver o dashboard</div>
   </div>
 
   <!-- UNMATCHED VIEW -->
@@ -955,11 +1001,13 @@ function switchTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
-  document.getElementById('meetings-view').style.display = tab === 'meetings' ? '' : 'none';
-  document.getElementById('students-view').style.display = tab === 'students' ? '' : 'none';
-  document.getElementById('cohort-view').style.display = tab === 'cohort' ? '' : 'none';
-  document.getElementById('unmatched-view').style.display = tab === 'unmatched' ? '' : 'none';
+  document.getElementById('meetings-view').style.display   = tab === 'meetings'   ? '' : 'none';
+  document.getElementById('students-view').style.display   = tab === 'students'   ? '' : 'none';
+  document.getElementById('cohort-view').style.display     = tab === 'cohort'     ? '' : 'none';
+  document.getElementById('dashboard-view').style.display  = tab === 'dashboard'  ? '' : 'none';
+  document.getElementById('unmatched-view').style.display  = tab === 'unmatched'  ? '' : 'none';
   if (tab === 'cohort') renderCohortView();
+  if (tab === 'dashboard') initDashboard();
 }
 
 function handleSearch() {
@@ -1052,6 +1100,132 @@ function showToast(msg, type = 'success') {
   const t = document.getElementById('toast');
   t.textContent = msg; t.className = `toast ${type} show`;
   setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// ─── DASHBOARD (Story 6.2) ───────────────────────────────────────────────
+const ZOOM_FN_URL = window.SUPABASE_CONFIG?.functionsUrl || `${SUPABASE_URL.replace('supabase.co','supabase.co')}/functions/v1/zoom-attendance`;
+let dashInitialized = false;
+
+function initDashboard() {
+  if (!dashInitialized) {
+    // Populate cohort selector
+    const sel = document.getElementById('dash-cohort-select');
+    cohorts.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.name;
+      sel.appendChild(opt);
+    });
+    dashInitialized = true;
+    loadQueueStatus();
+    document.getElementById('dashboard-empty').style.display = '';
+  }
+}
+
+async function loadQueueStatus() {
+  const { data: queue } = await sb.from('zoom_import_queue')
+    .select('status, processed_at, created_at')
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (!queue) return;
+  const pending = queue.filter(q => q.status === 'pending' || q.status === 'processing').length;
+  const done    = queue.filter(q => q.status === 'done').length;
+  const failed  = queue.filter(q => q.status === 'failed' || q.status === 'error').length;
+  const lastDone = queue.find(q => q.status === 'done');
+  const lastStr  = lastDone ? new Date(lastDone.processed_at).toLocaleString('pt-BR') : 'nenhuma';
+
+  document.getElementById('queue-stats').innerHTML =
+    `<span style="color:#4ade80">${done} importadas</span> &nbsp;|&nbsp; ` +
+    `<span style="color:#fbbf24">${pending} pendentes</span> &nbsp;|&nbsp; ` +
+    `<span style="color:${failed>0?'#f87171':'#555'}">${failed} com erro</span> &nbsp;|&nbsp; ` +
+    `<span style="color:#555">ultima: ${lastStr}</span>`;
+}
+
+async function loadDashboard() {
+  const cohortId = document.getElementById('dash-cohort-select').value;
+  if (!cohortId) { document.getElementById('dashboard-empty').style.display = ''; document.getElementById('dashboard-content').style.display = 'none'; return; }
+
+  document.getElementById('dashboard-empty').style.display = 'none';
+  document.getElementById('dashboard-content').style.display = '';
+  document.getElementById('dash-kpis').innerHTML = '<div style="color:#555;font-size:13px">Carregando...</div>';
+
+  const [sumRes, wkRes] = await Promise.all([
+    fetch(ZOOM_FN_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` }, body: JSON.stringify({ action: 'get_attendance_summary', cohort_id: cohortId }) }).then(r => r.json()),
+    fetch(ZOOM_FN_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` }, body: JSON.stringify({ action: 'get_attendance_summary', cohort_id: cohortId }) }).then(r => r.json()),
+  ]);
+
+  const summary = sumRes.summary || [];
+  const weekly  = sumRes.weekly  || wkRes.weekly || [];
+
+  if (!summary.length) {
+    document.getElementById('dash-kpis').innerHTML = '<div style="color:#555;font-size:13px;padding:20px">Nenhuma presenca registrada para esta turma ainda.</div>';
+    document.getElementById('risk-list').innerHTML = '';
+    document.getElementById('all-students-list').innerHTML = '';
+    return;
+  }
+
+  // KPIs
+  const avgPct = summary.reduce((s, r) => s + parseFloat(r.presence_pct || 0), 0) / summary.length;
+  const atRisk = summary.filter(r => parseFloat(r.presence_pct) < 60).length;
+  const perfect = summary.filter(r => parseFloat(r.presence_pct) >= 80).length;
+  document.getElementById('dash-kpis').innerHTML = `
+    <div class="stat"><div class="stat-num" style="color:#a5b4fc">${avgPct.toFixed(0)}%</div><div class="stat-label">Presenca media</div></div>
+    <div class="stat"><div class="stat-num">${summary.length}</div><div class="stat-label">Alunos</div></div>
+    <div class="stat"><div class="stat-num" style="color:#f87171">${atRisk}</div><div class="stat-label">Em risco (&lt;60%)</div></div>
+    <div class="stat"><div class="stat-num" style="color:#4ade80">${perfect}</div><div class="stat-label">Regular (&ge;80%)</div></div>
+  `;
+
+  // Weekly chart
+  renderWeeklyChart(weekly);
+
+  // Risk list
+  const risk = summary.filter(r => parseFloat(r.presence_pct) < 60);
+  document.getElementById('risk-count').textContent = risk.length;
+  document.getElementById('risk-list').innerHTML = risk.length
+    ? risk.map(r => renderStudentRow(r, true)).join('')
+    : '<div style="color:#555;font-size:13px">Nenhum aluno em risco</div>';
+
+  // All students
+  document.getElementById('all-students-list').innerHTML = summary.map(r => renderStudentRow(r, false)).join('');
+}
+
+function renderStudentRow(r, compact) {
+  const pct = parseFloat(r.presence_pct || 0);
+  const color = pct >= 80 ? '#4ade80' : pct >= 60 ? '#fbbf24' : '#f87171';
+  const initials = (r.student_name || '?').split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
+  const avatarColor = getColor(r.student_name);
+  const last3 = Array.isArray(r.last_3) ? r.last_3 : (typeof r.last_3 === 'string' ? JSON.parse(r.last_3) : []);
+  const last3Html = last3.map(d => `<span title="${d.date}" style="font-size:16px">${d.present ? '✅' : '❌'}</span>`).join('');
+  const consAbs = r.consecutive_abs || 0;
+  const absBadge = consAbs >= 2 ? `<span style="background:rgba(239,68,68,.15);color:#f87171;border-radius:999px;padding:2px 8px;font-size:10px;font-weight:700;margin-left:6px">${consAbs} faltas seguidas</span>` : '';
+
+  return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #141414">
+    <span style="width:28px;height:28px;border-radius:50%;background:${avatarColor};display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;flex-shrink:0">${initials}</span>
+    <span style="flex:1;font-size:13px;color:#ddd;font-weight:600">${r.student_name || '—'}${absBadge}</span>
+    <span style="font-size:13px;font-weight:800;color:${color};min-width:40px;text-align:right">${pct}%</span>
+    <div style="display:flex;gap:2px;min-width:64px">${last3Html}</div>
+    <div style="width:80px;height:6px;background:#1a1a1a;border-radius:3px;overflow:hidden"><div style="height:100%;width:${Math.min(pct,100)}%;background:${color};border-radius:3px"></div></div>
+  </div>`;
+}
+
+function renderWeeklyChart(weekly) {
+  const chart  = document.getElementById('weekly-chart');
+  const labels = document.getElementById('weekly-labels');
+  if (!weekly.length) { chart.innerHTML = '<div style="color:#333;font-size:12px">Sem dados semanais</div>'; labels.innerHTML = ''; return; }
+
+  const maxPct = Math.max(...weekly.map(w => parseFloat(w.presence_pct || 0)), 1);
+  chart.innerHTML = weekly.slice().reverse().map(w => {
+    const pct = parseFloat(w.presence_pct || 0);
+    const h = Math.round((pct / maxPct) * 70);
+    const color = pct >= 80 ? '#4ade80' : pct >= 60 ? '#fbbf24' : '#f87171';
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+      <span style="font-size:10px;color:${color};font-weight:700">${pct}%</span>
+      <div style="width:100%;background:${color};border-radius:4px 4px 0 0;height:${h}px;min-height:4px;opacity:0.8"></div>
+    </div>`;
+  }).join('');
+  labels.innerHTML = weekly.slice().reverse().map(w =>
+    `<div style="flex:1;text-align:center;font-size:9px;color:#444">${w.week_label || ''}</div>`
+  ).join('');
 }
 
 // ─── INIT ───

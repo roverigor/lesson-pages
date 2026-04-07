@@ -777,6 +777,190 @@ serve(async (req: Request) => {
       );
     }
 
+    // ── ACTION: zoom_student_candidates (Story 6.5) ──────────────────────
+    // Returns unmatched participant names appearing in 2+ meetings of a cohort
+    // body: { action: "zoom_student_candidates", cohort_id?: string }
+    if (action === "zoom_student_candidates") {
+      const sb = getSupabaseClient();
+      const cohortId: string | null = body.cohort_id ?? null;
+
+      // Build set of known student names + aliases for exclusion
+      const { data: studentList } = await sb
+        .from("students")
+        .select("name, aliases")
+        .eq("active", true);
+
+      const knownStudentNames = new Set<string>();
+      for (const s of (studentList || [])) {
+        knownStudentNames.add(normalize(s.name));
+        for (const alias of (s.aliases || [])) {
+          if (alias?.trim()) knownStudentNames.add(normalize(alias));
+        }
+      }
+
+      // Build set of known mentor names too (exclude mentors from student candidates)
+      const { data: mentorList2 } = await sb
+        .from("mentors")
+        .select("name, aliases")
+        .eq("active", true);
+
+      const knownMentorNames2 = new Set<string>();
+      for (const m of (mentorList2 || [])) {
+        knownMentorNames2.add(normalize(m.name));
+        for (const alias of (m.aliases || [])) {
+          if (alias?.trim()) knownMentorNames2.add(normalize(alias));
+        }
+      }
+
+      // Fetch unmatched participants, optionally scoped to cohort
+      let unmatchedQuery = sb
+        .from("zoom_participants")
+        .select("participant_name, meeting_id")
+        .eq("matched", false)
+        .not("participant_name", "is", null)
+        .limit(5000);
+
+      if (cohortId) {
+        // Get meeting IDs for this cohort
+        const { data: cohortMeetings } = await sb
+          .from("zoom_meetings")
+          .select("id")
+          .eq("cohort_id", cohortId);
+        const meetingIds = (cohortMeetings || []).map((m: { id: string }) => m.id);
+        if (meetingIds.length > 0) {
+          unmatchedQuery = unmatchedQuery.in("meeting_id", meetingIds);
+        }
+      }
+
+      const { data: unmatched2 } = await unmatchedQuery;
+
+      const nameToMeetings2 = new Map<string, Set<string>>();
+      for (const p of (unmatched2 || [])) {
+        const raw = p.participant_name?.trim();
+        if (!raw || isBot(raw)) continue;
+        const name = cleanParticipantName(raw);
+        if (!name || isBot(name)) continue;
+        if (!nameToMeetings2.has(name)) nameToMeetings2.set(name, new Set());
+        nameToMeetings2.get(name)!.add(String(p.meeting_id));
+      }
+
+      const studentCandidates: Array<{ name: string; meeting_count: number }> = [];
+      for (const [name, meetings] of nameToMeetings2) {
+        if (meetings.size < 2) continue;
+        if (knownStudentNames.has(normalize(name))) continue;
+        if (knownMentorNames2.has(normalize(name))) continue;
+        studentCandidates.push({ name, meeting_count: meetings.size });
+      }
+
+      studentCandidates.sort((a, b) => b.meeting_count - a.meeting_count);
+
+      return new Response(
+        JSON.stringify({ ok: true, candidates: studentCandidates }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
+    // ── ACTION: get_attendance_summary (Story 6.2) ────────────────────────
+    // Returns attendance summary for a cohort: rate per student + weekly evolution
+    // body: { action: "get_attendance_summary", cohort_id: string }
+    if (action === "get_attendance_summary") {
+      const sb = getSupabaseClient();
+      const cohortId: string = body.cohort_id;
+      if (!cohortId) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "cohort_id required" }),
+          { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: summary, error: summaryErr } = await sb.rpc("get_attendance_summary", { p_cohort_id: cohortId });
+      const { data: weekly, error: weeklyErr } = await sb.rpc("get_weekly_attendance", { p_cohort_id: cohortId, p_weeks: 8 });
+
+      if (summaryErr) {
+        return new Response(
+          JSON.stringify({ ok: false, error: summaryErr.message }),
+          { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ ok: true, summary: summary || [], weekly: weekly || [] }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
+    // ── ACTION: send_absence_alerts (Story 6.4) ───────────────────────────
+    // Sends WhatsApp alerts to students with 2+ consecutive absences
+    // body: { action: "send_absence_alerts" }
+    if (action === "send_absence_alerts") {
+      const sb = getSupabaseClient();
+      const EVOLUTION_URL = Deno.env.get("EVOLUTION_API_URL") ?? "";
+      const EVOLUTION_KEY = Deno.env.get("EVOLUTION_API_KEY") ?? "";
+      const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
+
+      if (!EVOLUTION_URL || !EVOLUTION_KEY) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "Evolution API not configured" }),
+          { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: alerts, error: alertErr } = await sb.rpc("get_consecutive_absences_needing_alert");
+      if (alertErr) {
+        return new Response(
+          JSON.stringify({ ok: false, error: alertErr.message }),
+          { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+
+      let sent = 0;
+      let failed = 0;
+      for (const a of (alerts || [])) {
+        if (!a.phone) continue;
+        const phone = a.phone.replace(/\D/g, "");
+        if (phone.length < 10) continue;
+
+        const msg = `Oi ${a.student_name}! 👋 Sentimos sua falta nas últimas ${a.consecutive_count} aulas de ${a.cohort_name}. Se precisar de ajuda ou tiver algum problema, fala com a gente. A turma te espera! 💪`;
+
+        try {
+          const evRes = await fetch(`${EVOLUTION_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "apikey": EVOLUTION_KEY },
+            body: JSON.stringify({ number: phone, text: msg }),
+          });
+
+          const status = evRes.ok ? "sent" : "error";
+          const errMsg = evRes.ok ? null : await evRes.text();
+
+          await sb.from("zoom_absence_alerts").insert({
+            student_id:        a.student_id,
+            cohort_id:         a.cohort_id,
+            consecutive_count: a.consecutive_count,
+            message_text:      msg,
+            whatsapp_status:   status,
+            error_message:     errMsg,
+          });
+
+          if (evRes.ok) sent++; else failed++;
+        } catch (e) {
+          await sb.from("zoom_absence_alerts").insert({
+            student_id:        a.student_id,
+            cohort_id:         a.cohort_id,
+            consecutive_count: a.consecutive_count,
+            message_text:      msg,
+            whatsapp_status:   "error",
+            error_message:     String(e),
+          });
+          failed++;
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ ok: true, sent, failed, total: (alerts || []).length }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     if (!meeting_id) {
       return new Response(
         JSON.stringify({ ok: false, error: "meeting_id required" }),
@@ -943,6 +1127,18 @@ serve(async (req: Request) => {
       // Non-critical — import already succeeded, just skip the feedback metrics
     }
 
+    // Update import queue status (Story 6.1 — auto-import callback)
+    try {
+      const allDone = results.every((r: { status: string }) => r.status === "processed" || r.status === "skipped");
+      await sb.rpc("update_zoom_import_queue", {
+        p_meeting_id: meeting_id,
+        p_status: allDone ? "done" : "error",
+        p_error_msg: allDone ? null : "One or more instances failed",
+      });
+    } catch {
+      // Non-critical — queue update failure does not affect the import result
+    }
+
     return new Response(
       JSON.stringify({
         ok: true,
@@ -960,6 +1156,19 @@ serve(async (req: Request) => {
     );
 
   } catch (err) {
+    // Update queue to error on import failure
+    try {
+      const sb2 = getSupabaseClient();
+      const body2 = await req.clone().json().catch(() => ({}));
+      if (body2?.meeting_id) {
+        await sb2.rpc("update_zoom_import_queue", {
+          p_meeting_id: body2.meeting_id,
+          p_status: "error",
+          p_error_msg: err instanceof Error ? err.message : "Unknown error",
+        });
+      }
+    } catch { /* ignore */ }
+
     return new Response(
       JSON.stringify({ ok: false, error: err instanceof Error ? err.message : "Unknown error" }),
       { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
