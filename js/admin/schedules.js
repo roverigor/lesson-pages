@@ -150,9 +150,10 @@ async function toggleSchedule(id, newActive) {
 }
 
 async function deleteSchedule(id) {
-  if (!confirm('Deletar este agendamento? Esta ação não pode ser desfeita.')) return;
-  const { error } = await sb.from('notification_schedules').delete().eq('id', id);
-  if (error) { showToast('Erro ao deletar', 'error'); return; }
-  showToast('Agendamento deletado', 'success');
-  await renderSchedulesList();
+  showDeleteConfirm('este agendamento', async () => {
+    const { error } = await sb.from('notification_schedules').delete().eq('id', id);
+    if (error) { showToast('Erro ao deletar', 'error'); return; }
+    showToast('Agendamento deletado', 'success');
+    await renderSchedulesList();
+  });
 }

@@ -443,11 +443,16 @@ async function loadTeachersFromDB() {
     return { name, total, assignments };
   }).sort((a, b) => b.total - a.total);
 
-  // Also build COURSE_CFG dynamically from classes
+  // Also build COURSE_CFG dynamically from classes + populate COURSE_TIMES
   const defaultColors = ['#6366f1','#f59e0b','#10b981','#06b6d4','#ec4899','#34d399','#22d3ee','#a855f7','#f97316','#8b5cf6'];
   let ci = 0;
   for (const cls of (classes || [])) {
     const name = cls.name;
+    const normalizedName = normalizeCourse(name);
+    // Populate COURSE_TIMES using normalized name (first occurrence wins)
+    if (!COURSE_TIMES[normalizedName] && (cls.time_start || cls.time_end)) {
+      COURSE_TIMES[normalizedName] = { start_time: cls.time_start || null, end_time: cls.time_end || null };
+    }
     if (!COURSE_CFG[name]) {
       const color = cls.color || defaultColors[ci % defaultColors.length];
       const r = parseInt(color.slice(1,3),16);
@@ -545,6 +550,7 @@ function buildEventsMap() {
   return map;
 }
 let EVENTS = {}; // Will be populated after DB load
+let COURSE_TIMES = {}; // { normalizedCourseName -> { start_time, end_time } } — populated from DB
 
 // ═══════════════════════════════════════
 // STATE
@@ -567,6 +573,29 @@ function parseDate(dd_mm) {
 }
 function dateStr(day, month1) { // month1 = 1-indexed
   return `${String(day).padStart(2,'0')}/${String(month1).padStart(2,'0')}`;
+}
+
+// Format HH:MM:SS → HH:MM (graceful fallback: null/undefined → '')
+function fmtTime(t) {
+  if (!t) return '';
+  return String(t).slice(0, 5); // "HH:MM:SS" → "HH:MM"
+}
+
+// Format time range for modal: "HH:MM – HH:MM" or '' if both null
+function fmtTimeRange(start, end) {
+  const s = fmtTime(start);
+  const e = fmtTime(end);
+  if (!s && !e) return '';
+  if (!s) return e;
+  if (!e) return s;
+  return `${s} – ${e}`;
+}
+
+// Format hour pill for event: "19h" or '' if null
+function fmtHourPill(t) {
+  if (!t) return '';
+  const h = String(t).slice(0, 2).replace(/^0/, ''); // "19:00" → "19"
+  return `${h}h`;
 }
 
 // ═══════════════════════════════════════
@@ -715,10 +744,14 @@ function renderGrid(year, month1) { // month1 = 1-indexed
         return `<span class="event-mentor ${isSub?'sub':(m.role==='Professor'?'prof':'host')}"
           style="color:${isActive?mentorColor(m.name):'#333'}">${m.name.split(' ')[0]}${isSub?' ↻':''}</span>`;
       }).join('');
+      const times = COURSE_TIMES[ev.course] || {};
+      const hourPill = fmtHourPill(times.start_time);
       return `<div class="event ${dimmed?'dimmed':''}"
         style="border-left-color:${cfg.color};background:${cfg.bg}"
         onclick="openModal('${key}')">
-        <div class="event-course" style="color:${cfg.color}">${cfg.short}</div>
+        <div class="event-course" style="color:${cfg.color};display:flex;align-items:center;gap:4px">
+          <span>${cfg.short}</span>${hourPill ? `<span style="font-size:8px;opacity:0.6;font-weight:500;flex-shrink:0">${hourPill}</span>` : ''}
+        </div>
         <div class="event-mentors">${mentorsHTML}</div>
       </div>`;
     }).join('');
@@ -773,8 +806,12 @@ function openModal(key) {
         <span class="modal-role-badge ${roleClass}">${roleLabel}</span>
       </div>`;
     }).join('');
+    const modalTimes = COURSE_TIMES[ev.course] || {};
+    const timeRange = fmtTimeRange(modalTimes.start_time, modalTimes.end_time);
     return `<div class="modal-session" style="border-left-color:${cfg.color}">
-      <div class="modal-session-course" style="color:${cfg.color}">${ev.course}</div>
+      <div class="modal-session-course" style="color:${cfg.color};display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span>${ev.course}</span>${timeRange ? `<span style="font-size:11px;font-weight:500;color:#555;background:#1a1a1a;border:1px solid #222;border-radius:4px;padding:1px 7px;white-space:nowrap">${timeRange}</span>` : ''}
+      </div>
       ${mentorsHTML}
     </div>`;
   }).join('');

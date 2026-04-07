@@ -208,6 +208,64 @@ async function sendNotification() {
   }
 }
 
+async function sendTestNotification() {
+  const message = document.getElementById('notify-message').value.trim();
+  if (!message) { showToast('Escreva a mensagem antes de testar', 'error'); return; }
+
+  const cohortId = document.getElementById('notify-cohort').value || null;
+  const classId  = document.getElementById('notify-class').value  || null;
+  const zoomLink = document.getElementById('notify-zoom').value.trim() || null;
+
+  const btn = document.getElementById('notify-test-btn');
+  const feedback = document.getElementById('notify-test-feedback');
+  btn.disabled = true;
+  btn.textContent = 'Enviando teste...';
+  feedback.style.display = 'none';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/send-whatsapp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token ?? SUPABASE_KEY}`,
+        'apikey': SUPABASE_KEY,
+      },
+      body: JSON.stringify({
+        action: 'test_notification',
+        message_template: message,
+        cohort_id: cohortId,
+        class_id: classId,
+        zoom_link: zoomLink,
+      }),
+    });
+
+    const result = await res.json();
+    feedback.style.display = '';
+
+    if (result.ok) {
+      feedback.style.background = 'rgba(34,197,94,0.08)';
+      feedback.style.border = '1px solid #166534';
+      feedback.style.color = '#4ade80';
+      feedback.textContent = `✓ Teste enviado para +55 43 99250-490`;
+    } else {
+      feedback.style.background = 'rgba(239,68,68,0.08)';
+      feedback.style.border = '1px solid #7f1d1d';
+      feedback.style.color = '#f87171';
+      feedback.textContent = `✕ Erro: ${result.error || 'Falha desconhecida'}`;
+    }
+  } catch (err) {
+    feedback.style.display = '';
+    feedback.style.background = 'rgba(239,68,68,0.08)';
+    feedback.style.border = '1px solid #7f1d1d';
+    feedback.style.color = '#f87171';
+    feedback.textContent = `✕ Erro: ${err.message}`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🧪 Testar';
+  }
+}
+
 async function resendNotification(id) {
   const { error } = await sb.from('notifications')
     .update({ status: 'pending' })

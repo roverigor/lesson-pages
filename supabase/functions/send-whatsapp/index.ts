@@ -346,6 +346,74 @@ const ALLOWED_ORIGINS = [
   "https://calendario.igorrover.com.br",
 ];
 
+// ─── Test Notification (Story 7.2) ───
+// Sends a WhatsApp message to the hardcoded test number only.
+// Does NOT insert into the notifications table.
+// TEST_PHONE is intentionally not configurable via UI or payload.
+
+const TEST_PHONE = "554399250490";
+
+async function handleTestNotification(
+  payload: Record<string, unknown>,
+  corsHeaders: Record<string, string>
+): Promise<Response> {
+  const sb = getSupabaseClient();
+  const { message_template, cohort_id, class_id, zoom_link } = payload as {
+    message_template?: string;
+    cohort_id?: string;
+    class_id?: string;
+    zoom_link?: string;
+  };
+
+  if (!message_template) {
+    return new Response(
+      JSON.stringify({ ok: false, error: "message_template is required" }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  // Build template vars from real DB data (same logic as processNotification)
+  const vars: Record<string, string | undefined> = {};
+
+  if (cohort_id) {
+    const { data: cohort } = await sb.from("cohorts").select("name, zoom_link").eq("id", cohort_id).single();
+    if (cohort) {
+      vars.cohort_name = cohort.name;
+      vars.zoom_link = (zoom_link || cohort.zoom_link) ?? undefined;
+    }
+  }
+  if (zoom_link) vars.zoom_link = zoom_link;
+
+  if (class_id) {
+    const { data: cls } = await sb.from("classes").select("name, time_start, time_end, professor, host, weekday").eq("id", class_id).single();
+    if (cls) {
+      vars.class_name = cls.name;
+      vars.class_time_start = cls.time_start;
+      vars.class_time_end = cls.time_end;
+      vars.class_professor = cls.professor ?? undefined;
+      vars.class_host = cls.host ?? undefined;
+      vars.class_weekday = WEEKDAY_NAMES[cls.weekday];
+    }
+  }
+
+  const rendered = renderTemplate(message_template, vars);
+
+  // Send ONLY to test number — never to real group or mentor
+  const result = await sendTextMessage(TEST_PHONE, `[TESTE]\n\n${rendered}`);
+
+  if (!result.success) {
+    return new Response(
+      JSON.stringify({ ok: false, error: result.error }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  return new Response(
+    JSON.stringify({ ok: true, rendered, test_phone: TEST_PHONE }),
+    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+}
+
 serve(async (req: Request) => {
   const origin = req.headers.get("origin") ?? "";
   const corsHeaders = {
@@ -365,6 +433,11 @@ serve(async (req: Request) => {
 
     // Parse webhook payload
     const payload = await req.json();
+
+    // Test notification — send to fixed number, no DB insert
+    if (payload.action === "test_notification") {
+      return handleTestNotification(payload, corsHeaders);
+    }
 
     // Database webhook sends: { type, table, record, schema, old_record }
     const record = payload.record as NotificationRecord | undefined;

@@ -151,9 +151,10 @@ async function toggleAbstract(id, published) {
 }
 
 async function deleteAbstract(id) {
-  if (!confirm('Deletar este resumo? Esta ação não pode ser desfeita.')) return;
-  const { error } = await sb.from('lesson_abstracts').delete().eq('id', id);
-  if (error) { showToast('Erro ao deletar', 'error'); return; }
-  showToast('Deletado', 'success');
-  await renderAbstractsList();
+  showDeleteConfirm('este resumo', async () => {
+    const { error } = await sb.from('lesson_abstracts').delete().eq('id', id);
+    if (error) { showToast('Erro ao deletar', 'error'); return; }
+    showToast('Deletado', 'success');
+    await renderAbstractsList();
+  });
 }

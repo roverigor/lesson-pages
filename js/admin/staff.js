@@ -102,9 +102,10 @@ async function saveStaff() {
 }
 
 async function deleteStaff(id, name) {
-  if (!confirm(`Excluir "${name}" do cadastro?\n\nEsta ação não pode ser desfeita.`)) return;
-  const { error } = await sb.from('staff').delete().eq('id', id);
-  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
-  showToast(`${name} removido`, 'success');
-  await loadStaff();
+  showDeleteConfirm(name, async () => {
+    const { error } = await sb.from('staff').delete().eq('id', id);
+    if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+    showToast(`${name} removido`, 'success');
+    await loadStaff();
+  });
 }

@@ -131,6 +131,9 @@
     <input class="login-field" id="login-password" type="password" placeholder="••••••••" autocomplete="current-password">
     <button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button>
     <div class="login-error" id="login-error"></div>
+    <div id="login-expired-banner" style="display:none;margin-top:14px;padding:10px 14px;border-radius:8px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);color:#fbbf24;font-size:12px;text-align:center">
+      ⏱ Sua sessão expirou. Faça login novamente.
+    </div>
   </div>
 </div>
 
@@ -266,10 +269,7 @@ async function doLogin() {
   }
 
   currentMentor = data[0];
-  localStorage.setItem('equipe_mentor_id',    currentMentor.id);
-  localStorage.setItem('equipe_mentor_name',  currentMentor.name);
-  localStorage.setItem('equipe_mentor_role',  currentMentor.role);
-  localStorage.setItem('equipe_mentor_phone', raw);
+  setMentorSession(currentMentor, raw);
 
   startApp();
 }
@@ -280,11 +280,8 @@ function showLoginError(msg) {
   err.classList.add('show');
 }
 
-function doLogout() {
-  localStorage.removeItem('equipe_mentor_id');
-  localStorage.removeItem('equipe_mentor_name');
-  localStorage.removeItem('equipe_mentor_role');
-  localStorage.removeItem('equipe_mentor_phone');
+function doLogout(expired = false) {
+  clearMentorSession();
   currentMentor = null;
   myClasses = [];
   attendanceMap = {};
@@ -553,6 +550,7 @@ function closeCheckIn() {
 
 async function saveCheckIn() {
   if (!_selectedStatus) return;
+  renewMentorSession();
   const comment = (document.getElementById('checkin-comment').value || '').trim();
   const btn = document.getElementById('checkin-save-btn');
   btn.disabled = true;
@@ -607,6 +605,7 @@ function renderZoomAliases() {
 }
 
 async function addZoomAlias() {
+  renewMentorSession();
   const input = document.getElementById('zoom-alias-input');
   const errEl = document.getElementById('zoom-alias-error');
   const alias = input.value.trim();
@@ -754,22 +753,64 @@ function ignoreCandidate(candidateName) {
   }
 }
 
+// ── SESSION TTL (Story 7.3) ────────────────────────────────────────────
+const SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8 hours
+
+function setMentorSession(mentor, phone) {
+  localStorage.setItem('equipe_mentor_id',      mentor.id);
+  localStorage.setItem('equipe_mentor_name',    mentor.name);
+  localStorage.setItem('equipe_mentor_role',    mentor.role);
+  localStorage.setItem('equipe_mentor_phone',   phone);
+  localStorage.setItem('equipe_session_expires', String(Date.now() + SESSION_TTL_MS));
+}
+
+function getMentorSession() {
+  const id      = localStorage.getItem('equipe_mentor_id');
+  const name    = localStorage.getItem('equipe_mentor_name');
+  const expires = Number(localStorage.getItem('equipe_session_expires') || '0');
+  if (!id || !name) return null;
+  if (Date.now() > expires) {
+    clearMentorSession();
+    return null;
+  }
+  return {
+    id,
+    name,
+    role:  localStorage.getItem('equipe_mentor_role'),
+    phone: localStorage.getItem('equipe_mentor_phone'),
+  };
+}
+
+function clearMentorSession() {
+  ['equipe_mentor_id', 'equipe_mentor_name', 'equipe_mentor_role',
+   'equipe_mentor_phone', 'equipe_session_expires'].forEach(k => localStorage.removeItem(k));
+}
+
+function renewMentorSession() {
+  if (localStorage.getItem('equipe_mentor_id')) {
+    localStorage.setItem('equipe_session_expires', String(Date.now() + SESSION_TTL_MS));
+  }
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────
 (async function init() {
-  const savedId    = localStorage.getItem('equipe_mentor_id');
-  const savedName  = localStorage.getItem('equipe_mentor_name');
-  const savedRole  = localStorage.getItem('equipe_mentor_role');
-  const savedPhone = localStorage.getItem('equipe_mentor_phone');
+  // Show expired banner if redirected with ?expired=1
+  if (new URLSearchParams(location.search).get('expired') === '1') {
+    document.getElementById('login-expired-banner').style.display = '';
+    history.replaceState({}, '', location.pathname);
+  }
 
-  if (savedId && savedName) {
+  const session = getMentorSession();
+  if (session) {
     // Re-validate against DB
-    const { data } = await sb.from('mentors').select('*').eq('id', savedId).eq('active', true).single();
+    const { data } = await sb.from('mentors').select('*').eq('id', session.id).eq('active', true).single();
     if (data) {
       currentMentor = data;
+      renewMentorSession();
       startApp();
       return;
     }
-    doLogout();
+    clearMentorSession();
   }
 })();
 </script>

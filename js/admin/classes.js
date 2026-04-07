@@ -536,11 +536,12 @@ async function reopenClassCycle(classId, closedDate) {
 }
 
 async function deleteClass(id, name) {
-  if (!confirm(`Excluir a turma "${name}"?\n\nIsso vai remover todos os mentores e vínculos de cohort associados.\nEsta ação não pode ser desfeita.`)) return;
-  await sb.from('class_mentors').delete().eq('class_id', id);
-  const { error } = await sb.from('classes').delete().eq('id', id);
-  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
-  showToast(`Turma "${name}" removida`, 'success');
-  await loadClasses();
-  renderAll();
+  showDeleteConfirm(`turma "${name}"`, async () => {
+    await sb.from('class_mentors').delete().eq('class_id', id);
+    const { error } = await sb.from('classes').delete().eq('id', id);
+    if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+    showToast(`Turma "${name}" removida`, 'success');
+    await loadClasses();
+    renderAll();
+  });
 }

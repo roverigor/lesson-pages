@@ -664,9 +664,13 @@
           </div>
         </div>
 
+        <!-- Feedback de teste -->
+        <div id="notify-test-feedback" style="display:none;padding:10px 12px;border-radius:8px;font-size:12px;margin-bottom:8px"></div>
+
         <!-- Botões -->
         <div style="display:flex;align-items:flex-end;gap:8px">
           <button class="btn-save" onclick="sendNotification()" id="notify-send-btn" style="flex:1">Enviar Aviso</button>
+          <button onclick="sendTestNotification()" id="notify-test-btn" style="padding:10px 16px;border-radius:8px;border:1px solid #444;background:#1e1e1e;color:#aaa;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans);transition:background 0.15s" onmouseover="this.style.background='#2a2a2a'" onmouseout="this.style.background='#1e1e1e'">🧪 Testar</button>
           <button class="att-btn delete" onclick="resetNotifyForm()" style="padding:10px 14px">Cancelar</button>
         </div>
       </div>
