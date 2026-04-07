@@ -469,7 +469,24 @@ async function loadTeachersFromDB() {
 
   const teacherData = {};
   for (const cls of (classes || [])) {
-    const cmEntries = (classMentors || []).filter(cm => cm.class_id === cls.id);
+    const rawCmEntries = (classMentors || []).filter(cm => cm.class_id === cls.id);
+
+    // Deduplicate: for the same (mentor_id, weekday, role) keep only the most current record
+    // Priority: valid_until=null (permanent) > latest valid_from
+    const sortedCm = [...rawCmEntries].sort((a, b) => {
+      const aActive = a.valid_until === null ? 1 : 0;
+      const bActive = b.valid_until === null ? 1 : 0;
+      if (aActive !== bActive) return bActive - aActive;
+      return new Date(b.valid_from || '2000-01-01') - new Date(a.valid_from || '2000-01-01');
+    });
+    const seen = new Set();
+    const cmEntries = [];
+    for (const cm of sortedCm) {
+      const wd = cm.weekday != null ? cm.weekday : cls.weekday;
+      const key = `${cm.mentor_id}-${wd}-${cm.role}`;
+      if (!seen.has(key)) { seen.add(key); cmEntries.push(cm); }
+    }
+
     if (cmEntries.length > 0) {
       const byWd = {};
       for (const cm of cmEntries) {
