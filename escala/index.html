@@ -466,6 +466,21 @@ function genDates(startStr, endStr, weekday) {
   return dates;
 }
 
+function genDatesWithISO(startStr, endStr, weekday) {
+  const result = [];
+  const start = new Date(startStr + 'T00:00:00');
+  const end = new Date(endStr + 'T00:00:00');
+  const d = new Date(start);
+  while (d.getDay() !== weekday) d.setDate(d.getDate() + 1);
+  while (d <= end) {
+    const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const display = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+    result.push({ iso, display });
+    d.setDate(d.getDate() + 7);
+  }
+  return result;
+}
+
 async function loadTeachersFromDB() {
   const [{ data: classes }, { data: classMentors }, { data: mentors }] = await Promise.all([
     sb.from('classes').select('*').eq('active', true).order('name'),
@@ -477,42 +492,35 @@ async function loadTeachersFromDB() {
 
   const teacherData = {};
   for (const cls of (classes || [])) {
-    const rawCmEntries = (classMentors || []).filter(cm => cm.class_id === cls.id);
-
-    // Deduplicate: for the same (mentor_id, weekday, role) keep only the most current record
-    // Priority: valid_until=null (permanent) > latest valid_from
-    const sortedCm = [...rawCmEntries].sort((a, b) => {
-      const aActive = a.valid_until === null ? 1 : 0;
-      const bActive = b.valid_until === null ? 1 : 0;
-      if (aActive !== bActive) return bActive - aActive;
-      return new Date(b.valid_from || '2000-01-01') - new Date(a.valid_from || '2000-01-01');
-    });
-    const seen = new Set();
-    const cmEntries = [];
-    for (const cm of sortedCm) {
-      const wd = cm.weekday != null ? cm.weekday : cls.weekday;
-      const key = `${cm.mentor_id}-${wd}-${cm.role}`;
-      if (!seen.has(key)) { seen.add(key); cmEntries.push(cm); }
-    }
+    const cmEntries = (classMentors || []).filter(cm => cm.class_id === cls.id);
 
     if (cmEntries.length > 0) {
-      const byWd = {};
+      // Group by (mentor_id, weekday, role) and filter dates by valid_from/valid_until
+      // This mirrors the calendar's logic exactly — same mentor on same dates
+      const grouped = {};
       for (const cm of cmEntries) {
         const wd = cm.weekday != null ? cm.weekday : cls.weekday;
-        if (!byWd[wd]) byWd[wd] = [];
-        byWd[wd].push(cm);
-      }
-      for (const [wd, entries] of Object.entries(byWd)) {
-        const dates = genDates(cls.start_date, cls.end_date, parseInt(wd));
-        const wdNames = Object.entries(byWd).map(([w]) => WD_NAMES[w]).join(' e ');
-        const schedule = `${wdNames} | ${cls.time_start || '18:00'}-${cls.time_end || '20:00'} | ${dates.length} encontros`;
-        for (const cm of entries) {
-          const mentor = mentorMap[cm.mentor_id];
-          if (!mentor) continue;
-          if (!teacherData[mentor.name]) teacherData[mentor.name] = { assignments: [], roles: new Set() };
-          teacherData[mentor.name].assignments.push({ course: cls.name, role: cm.role, schedule, dates, weekday: parseInt(wd) });
-          teacherData[mentor.name].roles.add(`${cm.role} (${cls.name})`);
+        const key = `${cm.mentor_id}-${wd}-${cm.role}`;
+        if (!grouped[key]) grouped[key] = { mentorId: cm.mentor_id, role: cm.role, wd: parseInt(wd), isoSet: new Set() };
+        const allDates = genDatesWithISO(cls.start_date, cls.end_date, parseInt(wd));
+        for (const { iso } of allDates) {
+          if (cm.valid_from && iso < cm.valid_from) continue;
+          if (cm.valid_until && iso > cm.valid_until) continue;
+          grouped[key].isoSet.add(iso);
         }
+      }
+      for (const group of Object.values(grouped)) {
+        if (group.isoSet.size === 0) continue;
+        const mentor = mentorMap[group.mentorId];
+        if (!mentor) continue;
+        const sortedDates = [...group.isoSet].sort().map(iso => {
+          const [, m, d] = iso.split('-');
+          return `${d}/${m}`;
+        });
+        const schedule = `${WD_NAMES[group.wd] || '?'} | ${cls.time_start || '18:00'}-${cls.time_end || '20:00'} | ${sortedDates.length} encontros`;
+        if (!teacherData[mentor.name]) teacherData[mentor.name] = { assignments: [], roles: new Set() };
+        teacherData[mentor.name].assignments.push({ course: cls.name, role: group.role, schedule, dates: sortedDates, weekday: group.wd });
+        teacherData[mentor.name].roles.add(`${group.role} (${cls.name})`);
       }
     } else if (cls.professor || cls.host) {
       const dates = genDates(cls.start_date, cls.end_date, cls.weekday);
