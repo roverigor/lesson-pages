@@ -184,6 +184,21 @@
     <div id="zoom-alias-error" style="font-size:11px;color:#f87171;margin-top:8px;display:none"></div>
   </div>
 
+  <!-- ZOOM VINCULAÇÃO -->
+  <div id="zoom-link-section" style="margin-top:28px;padding-top:24px;border-top:1px solid #141414">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px">
+      <div class="section-title" style="margin-bottom:0">🔍 Nomes não reconhecidos no Zoom</div>
+      <button id="zoom-link-load-btn" onclick="toggleZoomCandidates()"
+        style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #222;background:#111;color:#555;cursor:pointer;font-family:inherit;font-weight:600">
+        Ver candidatos
+      </button>
+    </div>
+    <div style="font-size:12px;color:#333;margin-bottom:14px;line-height:1.6">
+      Nomes que aparecem em múltiplas sessões do Zoom mas não foram reconhecidos. Se algum for seu nome alternativo, vincule aqui.
+    </div>
+    <div id="zoom-link-container" style="display:none"></div>
+  </div>
+
 </div>
 
 <!-- TOAST -->
@@ -633,6 +648,110 @@ async function removeZoomAlias(alias) {
   currentMentor.aliases = updated;
   renderZoomAliases();
   showToast('Nome removido.', 'success');
+}
+
+// ── ZOOM VINCULAÇÃO ───────────────────────────────────────────────────
+const ZOOM_FN_URL = 'https://gpufcipkajppykmnmdeh.supabase.co/functions/v1/zoom-attendance';
+let _candidatesLoaded = false;
+let _ignoredCandidates = new Set();
+
+async function toggleZoomCandidates() {
+  const container = document.getElementById('zoom-link-container');
+  const btn = document.getElementById('zoom-link-load-btn');
+  if (container.style.display !== 'none') {
+    container.style.display = 'none';
+    btn.textContent = 'Ver candidatos';
+    return;
+  }
+  container.style.display = 'block';
+  btn.textContent = 'Ocultar';
+  if (!_candidatesLoaded) await loadZoomCandidates();
+}
+
+async function loadZoomCandidates() {
+  const container = document.getElementById('zoom-link-container');
+  container.innerHTML = '<div style="font-size:12px;color:#444;padding:12px 0">Carregando...</div>';
+  try {
+    const res = await fetch(ZOOM_FN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ action: 'zoom_mentor_candidates' }),
+    });
+    const { ok, candidates } = await res.json();
+    if (!ok) throw new Error('Falha ao buscar candidatos');
+    _candidatesLoaded = true;
+    renderZoomCandidates(candidates || []);
+  } catch (e) {
+    container.innerHTML = `<div style="font-size:12px;color:#f87171;padding:12px 0">Erro: ${e.message}</div>`;
+  }
+}
+
+function renderZoomCandidates(candidates) {
+  const container = document.getElementById('zoom-link-container');
+  const visible = candidates.filter(c => !_ignoredCandidates.has(c.name));
+  if (visible.length === 0) {
+    container.innerHTML = '<div style="font-size:12px;color:#444;padding:12px 0">✅ Nenhum nome recorrente não identificado.</div>';
+    return;
+  }
+  container.innerHTML = visible.map(c => `
+    <div id="candidate-row-${encodeURIComponent(c.name)}"
+      style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border:1px solid #1a1a1a;border-radius:8px;margin-bottom:8px;background:#0d0d0d">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;color:#ccc">${c.name}</div>
+        <div style="font-size:11px;color:#444;margin-top:2px">apareceu em ${c.meeting_count} sessões</div>
+      </div>
+      <button onclick="linkCandidateToMe('${c.name.replace(/'/g, "\\'")}')"
+        style="padding:6px 14px;border-radius:6px;border:none;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.25);color:#a5b4fc;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">
+        Sou eu
+      </button>
+      <button onclick="ignoreCandidate('${c.name.replace(/'/g, "\\'")}')"
+        style="padding:6px 12px;border-radius:6px;border:1px solid #1e1e1e;background:transparent;color:#333;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap">
+        Ignorar
+      </button>
+    </div>
+  `).join('');
+}
+
+async function linkCandidateToMe(candidateName) {
+  const current = currentMentor.aliases || [];
+  if (current.some(a => a.toLowerCase() === candidateName.toLowerCase())) {
+    showToast('Este nome já está nos seus aliases.', 'success');
+    ignoreCandidate(candidateName);
+    return;
+  }
+
+  const updated = [...current, candidateName];
+  const { error } = await sb.from('mentors').update({ aliases: updated }).eq('id', currentMentor.id);
+  if (error) { showToast('Erro ao vincular: ' + error.message, 'error'); return; }
+
+  currentMentor.aliases = updated;
+  renderZoomAliases();
+
+  // Run mentor matching retroactively
+  try {
+    const res = await fetch(ZOOM_FN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ action: 'mark_mentor_participants' }),
+    });
+    const { updated_count } = await res.json();
+    showToast(`✓ "${candidateName}" vinculado! ${updated_count > 0 ? updated_count + ' registros atualizados.' : ''}`, 'success');
+  } catch {
+    showToast(`✓ "${candidateName}" vinculado aos seus aliases.`, 'success');
+  }
+
+  ignoreCandidate(candidateName);
+}
+
+function ignoreCandidate(candidateName) {
+  _ignoredCandidates.add(candidateName);
+  const row = document.getElementById('candidate-row-' + encodeURIComponent(candidateName));
+  if (row) row.remove();
+  // Check if container is now empty
+  const container = document.getElementById('zoom-link-container');
+  if (container && container.querySelectorAll('[id^="candidate-row-"]').length === 0) {
+    container.innerHTML = '<div style="font-size:12px;color:#444;padding:12px 0">✅ Nenhum nome recorrente não identificado.</div>';
+  }
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────
