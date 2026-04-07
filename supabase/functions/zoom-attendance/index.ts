@@ -721,6 +721,62 @@ serve(async (req: Request) => {
       );
     }
 
+    // ── ACTION: zoom_mentor_candidates ───────────────────────────────
+    // Returns unmatched participant names that appear in >= 2 distinct meetings
+    // and are not already known mentor names/aliases — likely staff not yet linked.
+    // body: { action: "zoom_mentor_candidates" }
+    if (action === "zoom_mentor_candidates") {
+      const sb = getSupabaseClient();
+
+      // Build set of known mentor names + aliases for exclusion
+      const { data: mentorList } = await sb
+        .from("mentors")
+        .select("name, aliases")
+        .eq("active", true);
+
+      const knownMentorNames = new Set<string>();
+      for (const m of (mentorList || [])) {
+        knownMentorNames.add(normalize(m.name));
+        for (const alias of (m.aliases || [])) {
+          if (alias?.trim()) knownMentorNames.add(normalize(alias));
+        }
+      }
+
+      // Fetch unmatched participants (limit to avoid timeout)
+      const { data: unmatched } = await sb
+        .from("zoom_participants")
+        .select("participant_name, meeting_id")
+        .eq("matched", false)
+        .not("participant_name", "is", null)
+        .limit(5000);
+
+      // Group by cleaned name, count distinct meeting_ids
+      const nameToMeetings = new Map<string, Set<string>>();
+      for (const p of (unmatched || [])) {
+        const raw = p.participant_name?.trim();
+        if (!raw || isBot(raw)) continue;
+        const name = cleanParticipantName(raw);
+        if (!name || isBot(name)) continue;
+        if (!nameToMeetings.has(name)) nameToMeetings.set(name, new Set());
+        nameToMeetings.get(name)!.add(String(p.meeting_id));
+      }
+
+      // Filter: >= 2 distinct meetings, not already a known mentor
+      const candidates: Array<{ name: string; meeting_count: number }> = [];
+      for (const [name, meetings] of nameToMeetings) {
+        if (meetings.size < 2) continue;
+        if (knownMentorNames.has(normalize(name))) continue;
+        candidates.push({ name, meeting_count: meetings.size });
+      }
+
+      candidates.sort((a, b) => b.meeting_count - a.meeting_count);
+
+      return new Response(
+        JSON.stringify({ ok: true, candidates }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     if (!meeting_id) {
       return new Response(
         JSON.stringify({ ok: false, error: "meeting_id required" }),
@@ -861,6 +917,32 @@ serve(async (req: Request) => {
     const nextOffset = offset + batch_size;
     const hasMore = nextOffset < totalInstances;
 
+    // Auto-run mentor matching after each import batch and collect feedback
+    let mentors_matched = 0;
+    let unmatched_remaining = 0;
+    try {
+      const { data: mentorMatchData } = await sb.rpc("mark_mentor_participants");
+      mentors_matched = Array.isArray(mentorMatchData) && mentorMatchData.length > 0
+        ? Number(mentorMatchData[0].updated_count)
+        : 0;
+
+      // Count unmatched participants in the meetings just processed
+      const processedMeetingIds = results
+        .filter((r: { status: string; meeting_id?: string }) => r.status === "processed" && r.meeting_id)
+        .map((r: { meeting_id: string }) => r.meeting_id);
+
+      if (processedMeetingIds.length > 0) {
+        const { count } = await sb
+          .from("zoom_participants")
+          .select("id", { count: "exact", head: true })
+          .in("meeting_id", processedMeetingIds)
+          .eq("matched", false);
+        unmatched_remaining = count ?? 0;
+      }
+    } catch {
+      // Non-critical — import already succeeded, just skip the feedback metrics
+    }
+
     return new Response(
       JSON.stringify({
         ok: true,
@@ -870,6 +952,8 @@ serve(async (req: Request) => {
         batch_size,
         has_more: hasMore,
         next_offset: hasMore ? nextOffset : null,
+        mentors_matched,
+        unmatched_remaining,
         instances: results,
       }),
       { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
