@@ -1,16 +1,17 @@
 // ═══════════════════════════════════════
 // Edge Function: zoom-webhook
 // Receives Zoom webhook events and updates host session pool
-// Events handled: meeting.started, meeting.ended, meeting.alert
+// Events handled: meeting.started, meeting.ended, meeting.alert, recording.completed
 // Signature verification: HMAC-SHA256 (Zoom webhook secret)
 // ═══════════════════════════════════════
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
-const SUPABASE_URL             = Deno.env.get("SUPABASE_URL") ?? "";
+const SUPABASE_URL              = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const ZOOM_WEBHOOK_SECRET      = Deno.env.get("ZOOM_WEBHOOK_SECRET") ?? "";
+const ZOOM_WEBHOOK_SECRET       = Deno.env.get("ZOOM_WEBHOOK_SECRET") ?? "";
+const ANTHROPIC_API_KEY         = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
 
 function getSupabaseClient() {
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -179,8 +180,169 @@ serve(async (req: Request) => {
     });
   }
 
+  // ── recording.completed ─────────────────────────────────────────────────
+  if (event === "recording.completed") {
+    const duration     = Number(object.duration ?? 0); // seconds
+    const shareUrl     = String(object.share_url ?? "");
+    const recordingFiles = (object.recording_files as Record<string, unknown>[] | undefined) ?? [];
+    const transcriptFile = recordingFiles.find((f) => (f.file_type as string) === "TRANSCRIPT");
+    const transcriptUrl  = transcriptFile ? String(transcriptFile.download_url ?? "") : "";
+
+    // Find cohort_id from host_email via zoom_host_sessions
+    let cohortId: string | null = null;
+    if (hostEmail) {
+      const { data: session } = await sb
+        .from("zoom_host_sessions")
+        .select("cohort_id")
+        .eq("host_email", hostEmail)
+        .not("cohort_id", "is", null)
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      cohortId = session?.cohort_id ?? null;
+    }
+
+    // UPSERT in class_recordings (dedup by meeting_id)
+    const { data: rec, error: recErr } = await sb
+      .from("class_recordings")
+      .upsert(
+        {
+          meeting_id:       meetingId,
+          cohort_id:        cohortId,
+          recording_date:   startTime ? startTime.split("T")[0] : new Date().toISOString().split("T")[0],
+          title:            topic || `Aula — ${startTime?.split("T")[0] ?? ""}`,
+          duration_minutes: duration > 0 ? Math.round(duration / 60) : null,
+          video_url:        shareUrl || null,
+        },
+        { onConflict: "meeting_id", ignoreDuplicates: false }
+      )
+      .select("id")
+      .maybeSingle();
+
+    if (recErr) console.error("zoom-webhook: recording upsert error", recErr.message);
+
+    const recordingId = rec?.id ?? null;
+
+    // Download transcript and generate AI summary (fire-and-forget)
+    if (recordingId && transcriptUrl && ANTHROPIC_API_KEY) {
+      generateAndSaveSummary(sb, recordingId, transcriptUrl, topic).catch((e) =>
+        console.error("zoom-webhook: AI summary error", String(e))
+      );
+    }
+
+    // Send WhatsApp notifications (fire-and-forget)
+    if (recordingId && cohortId && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      sendRecordingNotifications(recordingId, cohortId, shareUrl, topic).catch((e) =>
+        console.error("zoom-webhook: notification error", String(e))
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ ok: true, event, meeting_id: meetingId, recording_id: recordingId }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
   // All other events: acknowledge and ignore
   return new Response(JSON.stringify({ ok: true, event, ignored: true }), {
     status: 200, headers: { "Content-Type": "application/json" },
   });
 });
+
+// ─── AI Summary Generation ───────────────────────────────────────────────────
+async function generateAndSaveSummary(
+  sb: ReturnType<typeof getSupabaseClient>,
+  recordingId: string,
+  transcriptUrl: string,
+  topic: string
+): Promise<void> {
+  // Download transcript (requires Zoom OAuth token — use download_token if present)
+  let transcriptText = "";
+  try {
+    const resp = await fetch(transcriptUrl);
+    if (resp.ok) transcriptText = await resp.text();
+  } catch {
+    console.warn("zoom-webhook: transcript download failed for", recordingId);
+    return;
+  }
+
+  if (!transcriptText || transcriptText.length < 100) return;
+
+  // Strip VTT timing lines for cleaner input
+  const cleanTranscript = transcriptText
+    .split("\n")
+    .filter((l) => !l.match(/^\d{2}:\d{2}/) && l.trim() !== "" && l !== "WEBVTT")
+    .join("\n")
+    .slice(0, 8000);
+
+  // Call Anthropic API
+  const aiResp = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 600,
+      messages: [
+        {
+          role: "user",
+          content: `Você recebeu a transcrição de uma aula chamada "${topic}". Gere um resumo estruturado em português com:
+
+**Temas abordados:**
+• tema 1
+• tema 2
+• (máximo 5 bullets)
+
+**Próximos passos mencionados:**
+• (se houver, senão omitir esta seção)
+
+Transcrição:
+${cleanTranscript}`,
+        },
+      ],
+    }),
+  });
+
+  if (!aiResp.ok) {
+    console.error("zoom-webhook: Anthropic error", aiResp.status);
+    return;
+  }
+
+  const aiData = await aiResp.json() as { content: { text: string }[] };
+  const summary = aiData?.content?.[0]?.text ?? "";
+
+  if (summary) {
+    await sb.from("class_recordings").update({
+      summary,
+      transcript_text: transcriptText.slice(0, 50000),
+      transcript_vtt:  transcriptText.slice(0, 50000),
+    }).eq("id", recordingId);
+  }
+}
+
+// ─── WhatsApp Notifications ───────────────────────────────────────────────────
+async function sendRecordingNotifications(
+  recordingId: string,
+  cohortId: string,
+  videoUrl: string,
+  title: string
+): Promise<void> {
+  const resp = await fetch(`${SUPABASE_URL}/functions/v1/zoom-attendance`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+    },
+    body: JSON.stringify({
+      action: "send_recording_notification",
+      recording_id: recordingId,
+      cohort_id: cohortId,
+      video_url: videoUrl,
+      title,
+    }),
+  });
+  if (!resp.ok) console.error("zoom-webhook: notification dispatch error", resp.status);
+}

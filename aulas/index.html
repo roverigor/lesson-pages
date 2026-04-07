@@ -63,6 +63,36 @@
     .link-btn.primary { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.25); color: #a5b4fc; }
     .link-btn.green { background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.2); color: #4ade80; }
 
+    /* Materiais */
+    .materials-list { padding: 0; list-style: none; margin: 8px 0; }
+    .material-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #111; }
+    .material-item:last-child { border-bottom: none; }
+    .material-name { flex: 1; font-size: 13px; color: #ccc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .material-type { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: #1a1a1a; color: #666; flex-shrink: 0; }
+    .material-btn { padding: 5px 10px; border-radius: 6px; border: 1px solid #222; background: transparent; color: #666; font-size: 11px; cursor: pointer; font-family: inherit; white-space: nowrap; }
+    .material-btn:hover { color: #ccc; background: #1a1a1a; }
+    .material-btn.danger:hover { color: #f87171; border-color: rgba(239,68,68,0.3); }
+    .upload-area { border: 1px dashed #2a2a2a; border-radius: 8px; padding: 12px; margin-top: 10px; text-align: center; }
+    .upload-input { display: none; }
+    .upload-label { font-size: 12px; color: #555; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .upload-label:hover { color: #a5b4fc; }
+
+    /* Completude Admin */
+    .completeness-card { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 12px; margin-bottom: 12px; }
+    .comp-row { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid #111; }
+    .comp-row:last-child { border-bottom: none; }
+    .comp-date { font-size: 12px; color: #555; font-weight: 600; flex-shrink: 0; min-width: 80px; }
+    .comp-title { flex: 1; font-size: 13px; color: #aaa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .comp-badges { display: flex; gap: 6px; flex-shrink: 0; }
+    .comp-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
+    .comp-badge.ok { background: rgba(34,197,94,0.1); color: #4ade80; }
+    .comp-badge.missing { background: rgba(239,68,68,0.08); color: #555; }
+
+    .toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 2000; transition: all 0.3s; transform: translateY(80px); opacity: 0; font-family: var(--font-sans); }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #052e16; border: 1px solid #166534; color: #4ade80; }
+    .toast.error { background: #2d0a0a; border: 1px solid #7f1d1d; color: #f87171; }
+
     /* Sections */
     .card-sections { padding: 0 24px 24px; }
     .section { margin-top: 20px; }
@@ -130,9 +160,29 @@
 </header>
 
 <div class="layout" id="app-main" style="display:none">
-  <div class="cohort-tabs" id="cohort-tabs"></div>
-  <div id="recordings-list"></div>
+  <!-- View tabs -->
+  <div style="display:flex;gap:6px;margin-bottom:24px;flex-wrap:wrap">
+    <button id="tab-aulas" class="cohort-tab active" onclick="setMainTab('aulas')">🎬 Aulas e Gravações</button>
+    <button id="tab-completeness" class="cohort-tab" onclick="setMainTab('completeness')">📊 Completude (Admin)</button>
+  </div>
+
+  <!-- Aulas view -->
+  <div id="aulas-view">
+    <div class="cohort-tabs" id="cohort-tabs"></div>
+    <div id="recordings-list"></div>
+  </div>
+
+  <!-- Completeness dashboard view (Story 10.5) -->
+  <div id="completeness-view" style="display:none">
+    <div style="margin-bottom:20px">
+      <div class="cohort-tabs" id="comp-cohort-tabs"></div>
+    </div>
+    <div id="completeness-stats" style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap"></div>
+    <div id="completeness-list"></div>
+  </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script src="/js/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
@@ -144,7 +194,10 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let recordings = [];
 let cohorts = [];
+let materials = {}; // { recording_id: [material...] }
 let currentCohort = 'all';
+let currentCompCohort = 'all';
+let currentMainTab = 'aulas';
 
 async function handleLogin(e) {
   e.preventDefault();
@@ -171,14 +224,31 @@ async function showApp() {
 }
 
 async function loadData() {
-  const [r, c] = await Promise.all([
+  const [r, c, m] = await Promise.all([
     sb.from('class_recordings').select('*, cohorts(name, tally_url, zoom_link, time_start, time_end, schedule_days)').order('recording_date', { ascending: false }),
     sb.from('cohorts').select('*').order('name'),
+    sb.from('class_materials').select('*').order('uploaded_at', { ascending: true }),
   ]);
   recordings = r.data || [];
   cohorts = c.data || [];
+  // Index materials by recording_id
+  materials = {};
+  for (const mat of (m.data || [])) {
+    if (!materials[mat.recording_id]) materials[mat.recording_id] = [];
+    materials[mat.recording_id].push(mat);
+  }
   renderCohortTabs();
   renderRecordings();
+  renderCompCohortTabs();
+}
+
+function setMainTab(tab) {
+  currentMainTab = tab;
+  document.getElementById('aulas-view').style.display = tab === 'aulas' ? '' : 'none';
+  document.getElementById('completeness-view').style.display = tab === 'completeness' ? '' : 'none';
+  document.getElementById('tab-aulas').classList.toggle('active', tab === 'aulas');
+  document.getElementById('tab-completeness').classList.toggle('active', tab === 'completeness');
+  if (tab === 'completeness') renderCompleteness();
 }
 
 function renderCohortTabs() {
@@ -251,10 +321,36 @@ function renderRecordings() {
       </div>
 
       <div class="card-sections">
+        <!-- Materiais (Story 10.3) -->
+        <div class="section">
+          <div class="section-header" onclick="toggleSection(this)">
+            <span class="section-title">📎 Materiais${(materials[r.id]||[]).length > 0 ? ` (${materials[r.id].length})` : ''}</span>
+            <span class="section-toggle">${(materials[r.id]||[]).length > 0 ? 'Expandir' : 'Adicionar'}</span>
+          </div>
+          <div class="section-body ${(materials[r.id]||[]).length > 0 ? 'open' : ''}">
+            <ul class="materials-list" id="mats-${r.id}">
+              ${(materials[r.id]||[]).map(mat => `
+              <li class="material-item">
+                <span class="material-type">${(mat.file_type || 'arquivo').toUpperCase()}</span>
+                <span class="material-name" title="${escapeHtml(mat.file_name)}">${escapeHtml(mat.file_name)}</span>
+                <a href="${mat.file_url}" target="_blank" class="material-btn">Abrir</a>
+                <button class="material-btn danger" onclick="removeMaterial('${mat.id}','${r.id}')">✕</button>
+              </li>`).join('')}
+            </ul>
+            <div class="upload-area">
+              <input class="upload-input" type="file" id="upload-${r.id}" accept=".pdf,.pptx,.ppt,.key,.png,.jpg,.jpeg"
+                onchange="uploadMaterial('${r.id}', this)">
+              <label class="upload-label" for="upload-${r.id}">
+                ＋ Adicionar material (PDF, PPTX, imagem — máx. 50 MB)
+              </label>
+            </div>
+          </div>
+        </div>
+
         ${hasSummary ? `
         <div class="section">
           <div class="section-header" onclick="toggleSection(this)">
-            <span class="section-title">Resumo da Aula</span>
+            <span class="section-title">📝 Resumo da Aula</span>
             <span class="section-toggle">Expandir</span>
           </div>
           <div class="section-body open">
@@ -310,6 +406,146 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+// ─── Materials (Story 10.3) ──────────────────────────────────────────────────
+async function uploadMaterial(recordingId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 50 * 1024 * 1024) { showToast('Arquivo muito grande (máx. 50 MB)', 'error'); return; }
+
+  const allowed = ['application/pdf','application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'image/png','image/jpeg','image/jpg'];
+  if (!allowed.includes(file.type) && !file.name.match(/\.(pdf|pptx?|key|png|jpe?g)$/i)) {
+    showToast('Tipo de arquivo não permitido', 'error'); return;
+  }
+
+  showToast('Enviando...', 'success');
+  const path = `${recordingId}/${Date.now()}_${file.name}`;
+  const { data: upload, error: upErr } = await sb.storage.from('class-materials').upload(path, file);
+  if (upErr) { showToast('Erro no upload: ' + upErr.message, 'error'); return; }
+
+  const { data: { publicUrl } } = sb.storage.from('class-materials').getPublicUrl(path);
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'arquivo';
+
+  const { data: mat, error: dbErr } = await sb.from('class_materials').insert({
+    recording_id: recordingId,
+    file_name: file.name,
+    file_url: publicUrl,
+    file_type: ext,
+    file_size: file.size,
+    uploaded_by: 'admin',
+  }).select().single();
+
+  if (dbErr) { showToast('Erro ao salvar material: ' + dbErr.message, 'error'); return; }
+
+  // Update local cache and re-render the list
+  if (!materials[recordingId]) materials[recordingId] = [];
+  materials[recordingId].push(mat);
+  const list = document.getElementById(`mats-${recordingId}`);
+  if (list) {
+    const li = document.createElement('li');
+    li.className = 'material-item';
+    li.innerHTML = `<span class="material-type">${ext.toUpperCase()}</span>
+      <span class="material-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
+      <a href="${publicUrl}" target="_blank" class="material-btn">Abrir</a>
+      <button class="material-btn danger" onclick="removeMaterial('${mat.id}','${recordingId}')">✕</button>`;
+    list.appendChild(li);
+  }
+  input.value = '';
+  showToast('Material adicionado!', 'success');
+}
+
+async function removeMaterial(materialId, recordingId) {
+  const { error } = await sb.from('class_materials').delete().eq('id', materialId);
+  if (error) { showToast('Erro ao remover: ' + error.message, 'error'); return; }
+  materials[recordingId] = (materials[recordingId] || []).filter(m => m.id !== materialId);
+  const item = document.querySelector(`button[onclick="removeMaterial('${materialId}','${recordingId}')"]`)?.closest('.material-item');
+  if (item) item.remove();
+  showToast('Material removido', 'success');
+}
+
+// ─── Completeness Dashboard (Story 10.5) ─────────────────────────────────────
+function renderCompCohortTabs() {
+  const el = document.getElementById('comp-cohort-tabs');
+  if (!el) return;
+  const cohortsWithData = cohorts.filter(c =>
+    recordings.some(r => r.cohort_id === c.id)
+  );
+  el.innerHTML = `<button class="cohort-tab ${currentCompCohort === 'all' ? 'active' : ''}" onclick="setCompCohort('all')">Todas</button>` +
+    cohortsWithData.map(c =>
+      `<button class="cohort-tab ${currentCompCohort === c.id ? 'active' : ''}" onclick="setCompCohort('${c.id}')">${c.name}</button>`
+    ).join('');
+}
+
+function setCompCohort(id) {
+  currentCompCohort = id;
+  renderCompCohortTabs();
+  renderCompleteness();
+}
+
+function renderCompleteness() {
+  const statEl = document.getElementById('completeness-stats');
+  const listEl = document.getElementById('completeness-list');
+  if (!statEl || !listEl) return;
+
+  let filtered = recordings;
+  if (currentCompCohort !== 'all') {
+    filtered = recordings.filter(r => r.cohort_id === currentCompCohort);
+  }
+
+  const total = filtered.length;
+  const withVideo = filtered.filter(r => r.video_url).length;
+  const withSummary = filtered.filter(r => r.summary && r.summary.length > 10).length;
+  const withMaterials = filtered.filter(r => (materials[r.id] || []).length > 0).length;
+  const pct = total > 0 ? Math.round(withVideo / total * 100) : 0;
+
+  statEl.innerHTML = `
+    <div style="background:#101010;border:1px solid #1a1a1a;border-radius:10px;padding:14px 20px;flex:1;min-width:140px">
+      <div style="font-size:24px;font-weight:800;color:#fff">${withVideo}/${total}</div>
+      <div style="font-size:11px;color:#444;margin-top:2px">Aulas com gravação — ${pct}%</div>
+    </div>
+    <div style="background:#101010;border:1px solid #1a1a1a;border-radius:10px;padding:14px 20px;flex:1;min-width:140px">
+      <div style="font-size:24px;font-weight:800;color:#a5b4fc">${withSummary}</div>
+      <div style="font-size:11px;color:#444;margin-top:2px">Aulas com resumo IA</div>
+    </div>
+    <div style="background:#101010;border:1px solid #1a1a1a;border-radius:10px;padding:14px 20px;flex:1;min-width:140px">
+      <div style="font-size:24px;font-weight:800;color:#4ade80">${withMaterials}</div>
+      <div style="font-size:11px;color:#444;margin-top:2px">Aulas com materiais</div>
+    </div>`;
+
+  if (!filtered.length) {
+    listEl.innerHTML = '<div class="empty">Nenhuma aula encontrada para esta turma</div>';
+    return;
+  }
+
+  listEl.innerHTML = `<div class="completeness-card">` +
+    filtered.map(r => {
+      const date = r.recording_date
+        ? new Date(r.recording_date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+        : '—';
+      const hasMats = (materials[r.id] || []).length > 0;
+      return `<div class="comp-row">
+        <span class="comp-date">${date}</span>
+        <span class="comp-title">${escapeHtml(r.title || '—')}</span>
+        <div class="comp-badges">
+          <span class="comp-badge ${r.video_url ? 'ok' : 'missing'}">${r.video_url ? '🎬 Sim' : '🎬 —'}</span>
+          <span class="comp-badge ${r.summary ? 'ok' : 'missing'}">${r.summary ? '📝 Sim' : '📝 —'}</span>
+          <span class="comp-badge ${hasMats ? 'ok' : 'missing'}">${hasMats ? `📎 ${materials[r.id].length}` : '📎 —'}</span>
+        </div>
+      </div>`;
+    }).join('') +
+    `</div>`;
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type}`;
+  requestAnimationFrame(() => { t.classList.add('show'); });
+  setTimeout(() => t.classList.remove('show'), 3000);
 }
 
 checkSession();

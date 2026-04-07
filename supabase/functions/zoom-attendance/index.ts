@@ -961,6 +961,84 @@ serve(async (req: Request) => {
       );
     }
 
+    // ── send_recording_notification (Story 10.4) ─────────────────────────────
+    if (action === "send_recording_notification") {
+      const sb = getSupabaseClient();
+      const EVOLUTION_URL      = Deno.env.get("EVOLUTION_API_URL") ?? "";
+      const EVOLUTION_KEY      = Deno.env.get("EVOLUTION_API_KEY") ?? "";
+      const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
+
+      const recordingId = body.recording_id as string;
+      const cohortId    = body.cohort_id as string;
+      const videoUrl    = body.video_url as string;
+      const recTitle    = body.title as string;
+
+      if (!recordingId || !cohortId) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "recording_id and cohort_id required" }),
+          { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+
+      // Get students in cohort with WhatsApp enabled
+      const { data: students } = await sb
+        .from("students")
+        .select("id, name, phone")
+        .eq("cohort_id", cohortId)
+        .eq("whatsapp_alerts_enabled", true)
+        .not("phone", "is", null);
+
+      let sent = 0, skipped = 0, failed = 0;
+
+      for (const student of (students || [])) {
+        const phone = (student.phone || "").replace(/\D/g, "");
+        if (phone.length < 10) { skipped++; continue; }
+
+        // Anti-spam: check if notification already sent for this recording
+        const { data: existing } = await sb
+          .from("class_recording_notifications")
+          .select("id")
+          .eq("recording_id", recordingId)
+          .eq("student_id", student.id)
+          .maybeSingle();
+
+        if (existing) { skipped++; continue; }
+
+        const msg = `Oi ${student.name}! 🎬 A gravação da aula "${recTitle}" já está disponível.\n\nAcesse: ${videoUrl || "o painel de aulas"}\n\nBoa revisão! 📚`;
+
+        let status = "sent";
+        let errMsg = null;
+
+        if (EVOLUTION_URL && EVOLUTION_KEY) {
+          try {
+            const evRes = await fetch(`${EVOLUTION_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "apikey": EVOLUTION_KEY },
+              body: JSON.stringify({ number: phone, text: msg }),
+            });
+            if (!evRes.ok) { status = "error"; errMsg = await evRes.text(); failed++; }
+            else sent++;
+          } catch (e) {
+            status = "error"; errMsg = String(e); failed++;
+          }
+        } else {
+          status = "skipped"; errMsg = "Evolution API not configured"; skipped++;
+        }
+
+        await sb.from("class_recording_notifications").insert({
+          recording_id: recordingId,
+          student_id:   student.id,
+          status,
+          error_msg:    errMsg,
+        }).catch(() => {});
+      }
+
+      return new Response(
+        JSON.stringify({ ok: true, sent, skipped, failed, total: (students || []).length }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     if (!meeting_id) {
       return new Response(
         JSON.stringify({ ok: false, error: "meeting_id required" }),
