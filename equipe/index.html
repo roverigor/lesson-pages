@@ -164,6 +164,26 @@
     <div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">Carregando...</div></div>
   </div>
 
+  <!-- ZOOM ALIASES -->
+  <div id="zoom-aliases-section" style="margin-top:36px;padding-top:24px;border-top:1px solid #141414">
+    <div class="section-title" style="margin-bottom:14px">🔗 Meus nomes no Zoom</div>
+    <div style="font-size:12px;color:#333;margin-bottom:16px;line-height:1.6">
+      Adicione os nomes que você usa no Zoom. O sistema usará esses nomes para reconhecê-lo automaticamente nos relatórios de participação.
+    </div>
+    <div id="zoom-aliases-tags" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;min-height:28px"></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input id="zoom-alias-input" type="text" placeholder="Ex: Rodrigo F., Rodrigo Zoom..."
+        style="flex:1;min-width:200px;padding:9px 14px;border-radius:8px;background:#0d0d0d;border:1px solid #1e1e1e;color:#ddd;font-size:13px;font-family:inherit;outline:none;transition:border-color 0.2s"
+        onkeydown="if(event.key==='Enter')addZoomAlias()"
+        onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#1e1e1e'"
+      />
+      <button onclick="addZoomAlias()"
+        style="padding:9px 18px;border-radius:8px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap"
+      >+ Adicionar</button>
+    </div>
+    <div id="zoom-alias-error" style="font-size:11px;color:#f87171;margin-top:8px;display:none"></div>
+  </div>
+
 </div>
 
 <!-- TOAST -->
@@ -272,6 +292,7 @@ async function startApp() {
   document.getElementById('user-name-display').textContent = currentMentor.name;
   document.getElementById('user-role-display').textContent = roleLabel[currentMentor.role] || currentMentor.role;
 
+  renderZoomAliases();
   await loadMyClasses();
 }
 
@@ -550,6 +571,68 @@ async function saveCheckIn() {
   showToast(_selectedStatus === 'present' ? '✓ Presença confirmada!' : '✗ Falta registrada!', 'success');
   closeCheckIn();
   renderClasses();
+}
+
+// ── ZOOM ALIASES ─────────────────────────────────────────────────────
+function renderZoomAliases() {
+  const aliases = currentMentor.aliases || [];
+  const container = document.getElementById('zoom-aliases-tags');
+  if (aliases.length === 0) {
+    container.innerHTML = '<span style="font-size:12px;color:#333;font-style:italic">(nenhum nome cadastrado)</span>';
+    return;
+  }
+  container.innerHTML = aliases.map(alias => `
+    <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:#111;border:1px solid #222;border-radius:999px;font-size:12px;color:#aaa;font-weight:500">
+      ${alias}
+      <button onclick="removeZoomAlias('${alias.replace(/'/g, "\\'")}')"
+        style="background:none;border:none;color:#444;cursor:pointer;font-size:14px;padding:0;line-height:1;display:flex;align-items:center"
+        title="Remover alias">×</button>
+    </span>
+  `).join('');
+}
+
+async function addZoomAlias() {
+  const input = document.getElementById('zoom-alias-input');
+  const errEl = document.getElementById('zoom-alias-error');
+  const alias = input.value.trim();
+
+  errEl.style.display = 'none';
+
+  if (!alias) return;
+  if (alias.length < 3) {
+    errEl.textContent = 'O nome deve ter ao menos 3 caracteres.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const current = currentMentor.aliases || [];
+  if (current.some(a => a.toLowerCase() === alias.toLowerCase())) {
+    errEl.textContent = 'Este nome já está cadastrado.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const updated = [...current, alias];
+  const { error } = await sb.from('mentors').update({ aliases: updated }).eq('id', currentMentor.id);
+  if (error) {
+    errEl.textContent = 'Erro ao salvar: ' + error.message;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  currentMentor.aliases = updated;
+  input.value = '';
+  renderZoomAliases();
+  showToast('✓ Nome adicionado!', 'success');
+}
+
+async function removeZoomAlias(alias) {
+  const current = currentMentor.aliases || [];
+  const updated = current.filter(a => a !== alias);
+  const { error } = await sb.from('mentors').update({ aliases: updated }).eq('id', currentMentor.id);
+  if (error) { showToast('Erro ao remover: ' + error.message, 'error'); return; }
+  currentMentor.aliases = updated;
+  renderZoomAliases();
+  showToast('Nome removido.', 'success');
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────
