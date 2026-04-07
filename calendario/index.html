@@ -251,6 +251,76 @@
       .weekday-label { font-size: 9px; }
       .month-tabs .month-tab { padding: 6px 10px; font-size: 11px; }
     }
+
+    /* ═══════════════════════════════════════
+       MOBILE WEEK VIEW
+    ═══════════════════════════════════════ */
+    #calendar-mobile { display: none; }
+
+    @media (max-width: 768px) {
+      /* Ocultar grade mensal e cabeçalho de dias da semana */
+      .weekday-header { display: none !important; }
+      #cal-grid { display: none !important; }
+      /* Mostrar vista semanal */
+      #calendar-mobile { display: block; }
+    }
+
+    /* Navegação de semana mobile */
+    #mobile-week-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0; margin-bottom: 12px;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .mobile-nav-btn {
+      background: #141414; border: 1px solid #222; border-radius: 8px;
+      color: #a5b4fc; cursor: pointer; padding: 8px 16px;
+      font-size: 16px; font-weight: 700; transition: all 0.15s;
+      font-family: var(--font-sans);
+    }
+    .mobile-nav-btn:hover { background: #1a1a2e; border-color: #3730a3; }
+    #mobile-week-label {
+      font-size: 13px; font-weight: 700; color: #ddd; text-align: center;
+    }
+
+    /* Cards de dia mobile */
+    .mobile-day-card {
+      background: #0d0d0d; border: 1px solid #141414; border-radius: 10px;
+      margin-bottom: 10px; overflow: hidden;
+    }
+    .mobile-day-card.has-events { border-color: #1a1a1a; background: #0f0f0f; }
+    .mobile-day-card.is-today {
+      background: #0d0d1a !important; border-color: #2e2e5e !important;
+      box-shadow: 0 0 0 1px #3730a3 inset, 0 0 20px rgba(99,102,241,0.08);
+    }
+    .mobile-day-card.is-past { opacity: 0.45; }
+    .mobile-day-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px;
+    }
+    .mobile-day-label {
+      font-size: 13px; font-weight: 700; color: #555;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .mobile-day-card.has-events .mobile-day-label { color: #ddd; }
+    .mobile-day-empty {
+      font-size: 11px; color: #2a2a2a; padding: 0 14px 10px; font-style: italic;
+    }
+    .mobile-event-list { padding: 0 10px 10px; display: flex; flex-direction: column; gap: 6px; }
+    .mobile-event {
+      border-radius: 7px; padding: 10px 12px;
+      border-left: 3px solid; background: rgba(255,255,255,0.03);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .mobile-event:hover { background: rgba(255,255,255,0.06); }
+    .mobile-event-course {
+      font-size: 12px; font-weight: 700; margin-bottom: 5px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .mobile-event-mentors { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+    .mobile-event-mentor {
+      font-size: 11px; font-weight: 600; padding: 2px 7px;
+      border-radius: 4px; white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -310,6 +380,16 @@
     <div class="weekday-label weekend">Dom</div>
   </div>
   <div class="cal-grid" id="cal-grid"></div>
+
+  <!-- MOBILE WEEK VIEW -->
+  <div id="calendar-mobile">
+    <div id="mobile-week-nav">
+      <button class="mobile-nav-btn" onclick="mobileWeekNav(-1)">&#8592;</button>
+      <span id="mobile-week-label"></span>
+      <button class="mobile-nav-btn" onclick="mobileWeekNav(1)">&#8594;</button>
+    </div>
+    <div id="mobile-week-days"></div>
+  </div>
 </div>
 
 <!-- MODAL -->
@@ -832,6 +912,117 @@ function closeModal(e) {
 document.addEventListener('keydown', e => { if (e.key==='Escape') closeModal({target:document.getElementById('modal')}); });
 
 // ═══════════════════════════════════════
+// MOBILE WEEK VIEW
+// ═══════════════════════════════════════
+let currentMobileWeek = new Date();
+
+function getMobileWeekStart(date) {
+  // Retorna segunda-feira da semana de `date` (para consistência com grid desktop Mon=0)
+  const d = new Date(date);
+  const day = d.getDay(); // 0=Dom, 1=Seg, ..., 6=Sab
+  const diffToMon = (day === 0) ? -6 : 1 - day;
+  d.setDate(d.getDate() + diffToMon);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function renderMobileWeek() {
+  const weekStart = getMobileWeekStart(currentMobileWeek);
+  const weekEnd   = new Date(weekStart);
+  weekEnd.setDate(weekEnd.getDate() + 6); // domingo
+
+  // Label: "07–13 Abr 2026"
+  const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const startDay = String(weekStart.getDate()).padStart(2,'0');
+  const endDay   = String(weekEnd.getDate()).padStart(2,'0');
+  const label = weekStart.getMonth() === weekEnd.getMonth()
+    ? `${startDay}–${endDay} ${months[weekEnd.getMonth()]} ${weekEnd.getFullYear()}`
+    : `${startDay} ${months[weekStart.getMonth()]}–${endDay} ${months[weekEnd.getMonth()]} ${weekEnd.getFullYear()}`;
+  document.getElementById('mobile-week-label').textContent = label;
+
+  const t = today();
+  const dayNames = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  let html = '';
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + i);
+    d.setHours(0, 0, 0, 0);
+
+    const dd  = String(d.getDate()).padStart(2, '0');
+    const mm  = String(d.getMonth() + 1).padStart(2, '0');
+    const key = `${dd}/${mm}`;
+    const events = EVENTS[key] ? Object.values(EVENTS[key]) : [];
+
+    const isToday = d.getTime() === t.getTime();
+    const isPast  = d < t;
+
+    let cardClass = 'mobile-day-card';
+    if (events.length)  cardClass += ' has-events';
+    if (isToday)        cardClass += ' is-today';
+    else if (isPast)    cardClass += ' is-past';
+
+    const todayBadge = isToday ? '<span class="today-badge" style="font-size:9px">Hoje</span>' : '';
+
+    let bodyHTML = '';
+    if (events.length === 0) {
+      bodyHTML = '<div class="mobile-day-empty">Sem aulas</div>';
+    } else {
+      const eventsHTML = events.map(ev => {
+        const cfg = getCfg(ev.course);
+        // Incluir substitutos (igual ao desktop)
+        const subs = [];
+        for (const ak in attendanceData) {
+          const rec = attendanceData[ak];
+          const [aDate, aCourse] = ak.split('|');
+          if (aDate === key && normalizeCourse(aCourse) === ev.course && rec.substitute_name) {
+            const already = ev.mentors.some(m => m.name === rec.substitute_name) || subs.some(s => s.name === rec.substitute_name);
+            if (!already) subs.push({ name: rec.substitute_name, role: rec.substitute_role || 'Substituto' });
+          }
+        }
+        const roleOrderPill = { 'Professor': 0, 'Mentor': 1, 'Host': 2 };
+        const allMentors = [...ev.mentors, ...subs].sort((a,b) => (roleOrderPill[a.role]??1) - (roleOrderPill[b.role]??1));
+        const mentorsHTML = allMentors.map(m => {
+          const isSub = subs.some(s => s.name === m.name);
+          return `<span class="mobile-event-mentor ${isSub ? 'sub' : (m.role==='Professor'?'prof':'host')}"
+            style="background:rgba(255,255,255,0.06);color:${mentorColor(m.name)}">${m.name.split(' ')[0]}${isSub?' ↻':''}</span>`;
+        }).join('');
+        const times = COURSE_TIMES[ev.course] || {};
+        const hourPill = fmtHourPill(times.start_time);
+        return `<div class="mobile-event"
+          style="border-left-color:${cfg.color};background:${cfg.bg}"
+          onclick="openModal('${key}')">
+          <div class="mobile-event-course" style="color:${cfg.color}">
+            <span>${cfg.short}</span>
+            ${hourPill ? `<span style="font-size:10px;opacity:0.6;font-weight:500;flex-shrink:0">${hourPill}</span>` : ''}
+          </div>
+          <div class="mobile-event-mentors">${mentorsHTML}</div>
+        </div>`;
+      }).join('');
+      bodyHTML = `<div class="mobile-event-list">${eventsHTML}</div>`;
+    }
+
+    html += `<div class="${cardClass}">
+      <div class="mobile-day-header">
+        <span class="mobile-day-label">
+          ${dayNames[i]}, ${dd}/${mm}
+          ${todayBadge}
+        </span>
+      </div>
+      ${bodyHTML}
+    </div>`;
+  }
+
+  document.getElementById('mobile-week-days').innerHTML = html;
+}
+
+function mobileWeekNav(delta) {
+  currentMobileWeek = new Date(currentMobileWeek);
+  currentMobileWeek.setDate(currentMobileWeek.getDate() + delta * 7);
+  renderMobileWeek();
+}
+
+// ═══════════════════════════════════════
 // NAVIGATION
 // ═══════════════════════════════════════
 function goToMonth(year, month1) {
@@ -852,6 +1043,9 @@ async function init() {
   const initMonth = (now.getFullYear()===2026 && now.getMonth()>=1 && now.getMonth()<=4)
     ? now.getMonth()+1 : 2;
   renderGrid(2026, initMonth);
+  // Iniciar vista semanal mobile na semana atual (ou semana de inicio se fora do range)
+  currentMobileWeek = new Date();
+  renderMobileWeek();
 }
 init();
 </script>

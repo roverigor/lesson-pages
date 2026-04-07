@@ -135,6 +135,47 @@
     @media (max-width: 768px) {
       .header { padding: 14px 16px; }
       .layout { padding: 16px 12px 80px; }
+      .header-actions { gap: 6px; }
+      .tabs { flex-wrap: wrap; }
+      .stats { gap: 8px; }
+      .stat { min-width: 120px; padding: 10px 14px; }
+
+      /* ── Tabelas → Cards em mobile ── */
+      .participants-table { border: none; }
+      .participants-table thead { display: none; }
+      .participants-table tbody tr {
+        display: block;
+        background: #0f0f0f;
+        border: 1px solid #1a1a1a;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        padding: 12px;
+      }
+      .participants-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+        font-size: 12px;
+        border: none;
+      }
+      .participants-table td::before {
+        content: attr(data-label);
+        color: #444;
+        font-weight: 600;
+        font-size: 10px;
+        text-transform: uppercase;
+        flex-shrink: 0;
+        margin-right: 8px;
+      }
+      .participants-table td .btn { width: 100%; margin-top: 4px; justify-content: center; }
+      .participants-table tr:hover td { background: transparent; }
+
+      /* Modal responsivo */
+      .modal { border-radius: 14px; }
+      .modal-overlay { padding: 8px; align-items: flex-end; }
+      .modal { max-height: min(80vh, 600px); }
+      .modal-stats-row { grid-template-columns: repeat(3, 1fr); gap: 6px; }
     }
   </style>
 </head>
@@ -199,7 +240,7 @@
   <!-- MEETINGS VIEW -->
   <div id="meetings-view">
     <div class="table-wrap">
-      <table>
+      <table class="participants-table">
         <thead><tr>
           <th>Reuniao</th>
           <th>Turma</th>
@@ -216,8 +257,11 @@
 
   <!-- STUDENTS VIEW -->
   <div id="students-view" style="display:none">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+      <button class="btn sm" onclick="exportAttendanceCSV()" id="btn-export-csv" style="border-color:rgba(34,197,94,0.3);color:#4ade80;background:rgba(34,197,94,0.06)">&#11015; Exportar CSV</button>
+    </div>
     <div class="table-wrap">
-      <table>
+      <table class="participants-table">
         <thead><tr>
           <th>Aluno</th>
           <th>Cohort</th>
@@ -234,7 +278,7 @@
   <div id="cohort-view" style="display:none">
     <div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap" id="cohort-filter-tabs"></div>
     <div class="table-wrap">
-      <table>
+      <table class="participants-table">
         <thead><tr>
           <th>Aluno</th>
           <th>Telefone</th>
@@ -443,13 +487,13 @@ function renderMeetings() {
     const hasMedia = rec && (rec.video_url || rec.audio_url);
 
     return `<tr>
-      <td style="font-weight:600;color:#ddd">${m.topic || '—'}</td>
-      <td><span class="badge badge-green" style="font-size:10px">${cohortName}</span></td>
-      <td>${date}</td>
-      <td>${total}</td>
-      <td>${matched}/${total} <span class="pct-bar"><span class="pct-fill" style="width:${pct}%;background:${pct > 70 ? '#4ade80' : pct > 40 ? '#fbbf24' : '#f87171'}"></span></span></td>
-      <td>${m.duration_minutes || '—'} min</td>
-      <td style="display:flex;gap:4px">
+      <td data-label="Reuniao" style="font-weight:600;color:#ddd">${m.topic || '—'}</td>
+      <td data-label="Turma"><span class="badge badge-green" style="font-size:10px">${cohortName}</span></td>
+      <td data-label="Data">${date}</td>
+      <td data-label="Participantes">${total}</td>
+      <td data-label="Matched">${matched}/${total} <span class="pct-bar"><span class="pct-fill" style="width:${pct}%;background:${pct > 70 ? '#4ade80' : pct > 40 ? '#fbbf24' : '#f87171'}"></span></span></td>
+      <td data-label="Duracao">${m.duration_minutes || '—'} min</td>
+      <td data-label="Acoes" style="display:flex;gap:4px">
         <button class="btn sm" onclick="showMeetingDetail('${m.id}')">Ver</button>
         ${hasMedia ? '<a href="/aulas" class="btn sm" style="color:#a5b4fc;font-size:10px">Gravacao</a>' : ''}
       </td>
@@ -635,6 +679,14 @@ async function linkFromModal(participantId) {
 
   if (error) { showToast('Erro: ' + error.message, 'error'); return; }
 
+  // Audit trail — fire-and-forget
+  sb.from('zoom_link_audit').insert({
+    participant_id: participantId,
+    student_id: studentId,
+    action: 'linked',
+    performed_by: 'admin',
+  }).then(() => {}).catch(() => {});
+
   // Remove row from modal immediately
   const row = document.getElementById(`modal-link-row-${participantId}`);
   if (row) row.remove();
@@ -707,6 +759,14 @@ async function registerAndLink(participantId, participantName, phoneInputId, row
 
   if (linkErr) { showToast('Erro ao vincular: ' + linkErr.message, 'error'); return; }
 
+  // Audit trail — fire-and-forget
+  sb.from('zoom_link_audit').insert({
+    participant_id: participantId,
+    student_id: studentId,
+    action: 'linked',
+    performed_by: 'admin',
+  }).then(() => {}).catch(() => {});
+
   showToast('Vinculado com sucesso!');
 
   // Remove row if we have a rowElId (modal) or just reload
@@ -762,11 +822,11 @@ function renderStudents() {
     const pctColor = r.pct >= 70 ? '#4ade80' : r.pct >= 40 ? '#fbbf24' : '#f87171';
 
     return `<tr>
-      <td><span class="avatar" style="background:${color}">${initials}</span>${r.displayName}</td>
-      <td><span class="badge badge-gray">${r.cohortName}</span></td>
-      <td>${r.att.count} / ${meetings.length}</td>
-      <td><span style="color:${pctColor};font-weight:700">${r.pct}%</span> <span class="pct-bar"><span class="pct-fill" style="width:${r.pct}%;background:${pctColor}"></span></span></td>
-      <td>${r.lastDate}</td>
+      <td data-label="Aluno"><span class="avatar" style="background:${color}">${initials}</span>${r.displayName}</td>
+      <td data-label="Cohort"><span class="badge badge-gray">${r.cohortName}</span></td>
+      <td data-label="Aulas">${r.att.count} / ${meetings.length}</td>
+      <td data-label="Frequencia"><span style="color:${pctColor};font-weight:700">${r.pct}%</span> <span class="pct-bar"><span class="pct-fill" style="width:${r.pct}%;background:${pctColor}"></span></span></td>
+      <td data-label="Ultima">${r.lastDate}</td>
     </tr>`;
   }).join('');
 }
@@ -958,6 +1018,15 @@ async function linkParticipant(participantId) {
     .eq('id', participantId);
 
   if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+
+  // Audit trail — fire-and-forget
+  sb.from('zoom_link_audit').insert({
+    participant_id: participantId,
+    student_id: studentId,
+    action: 'linked',
+    performed_by: 'admin',
+  }).then(() => {}).catch(() => {});
+
   showToast('Vinculado com sucesso!');
   await loadAllData();
 }
@@ -1072,11 +1141,11 @@ function renderCohortView() {
                    s.email ? '<span class="badge badge-green">CSV+WhatsApp</span>' : '<span class="badge" style="background:rgba(99,102,241,0.12);color:#a5b4fc">WhatsApp</span>';
 
     return `<tr>
-      <td><span class="avatar" style="background:${color}">${initials}</span>${displayName}</td>
-      <td style="font-size:12px;font-family:monospace;color:#666">${phone}</td>
-      <td style="font-size:12px;color:#666">${email}</td>
-      <td>${att > 0 ? `<span style="color:#4ade80;font-weight:700">${att}</span>` : '<span style="color:#333">0</span>'}</td>
-      <td>${origin}</td>
+      <td data-label="Aluno"><span class="avatar" style="background:${color}">${initials}</span>${displayName}</td>
+      <td data-label="Telefone" style="font-size:12px;font-family:monospace;color:#666">${phone}</td>
+      <td data-label="Email" style="font-size:12px;color:#666">${email}</td>
+      <td data-label="Presencas">${att > 0 ? `<span style="color:#4ade80;font-weight:700">${att}</span>` : '<span style="color:#333">0</span>'}</td>
+      <td data-label="Origem">${origin}</td>
     </tr>`;
   }).join('');
 }
@@ -1226,6 +1295,62 @@ function renderWeeklyChart(weekly) {
   labels.innerHTML = weekly.slice().reverse().map(w =>
     `<div style="flex:1;text-align:center;font-size:9px;color:#444">${w.week_label || ''}</div>`
   ).join('');
+}
+
+// ─── EXPORT CSV (Story 9.2) ───────────────────────────────────────────────
+function exportAttendanceCSV() {
+  // Build attendance per student (same logic as renderStudents)
+  const attendance = {};
+  for (const m of meetings) {
+    for (const p of (m.zoom_participants || [])) {
+      if (!p.student_id) continue;
+      if (!attendance[p.student_id]) attendance[p.student_id] = { count: 0, lastDate: null };
+      attendance[p.student_id].count++;
+      const d = m.start_time ? new Date(m.start_time) : null;
+      if (d && (!attendance[p.student_id].lastDate || d > attendance[p.student_id].lastDate)) {
+        attendance[p.student_id].lastDate = d;
+      }
+    }
+  }
+
+  const totalMeetings = meetings.length || 1;
+
+  // Apply current cohort filter if on cohort tab, otherwise export all
+  let exportStudents = students;
+  if (currentCohortFilter && currentCohortFilter !== 'all') {
+    exportStudents = students.filter(s => s.cohort_id === currentCohortFilter);
+  }
+  if (searchQuery) {
+    exportStudents = exportStudents.filter(s =>
+      `${s.name || ''} ${s.phone || ''} ${s.cohorts?.name || ''}`.toLowerCase().includes(searchQuery)
+    );
+  }
+
+  const BOM = '\uFEFF';
+  const header = 'Nome;Telefone;Cohort;Total Aulas;Presencas;Ausencias;% Presenca\n';
+  const rows = exportStudents.map(s => {
+    const att = attendance[s.id] || { count: 0 };
+    const presences = att.count;
+    const absences = totalMeetings - presences;
+    const pct = Math.round(presences / totalMeetings * 100);
+    const cohortName = s.cohorts?.name || '';
+    const phone = s.phone?.startsWith('pending_') ? '' : (s.phone || '');
+    return `"${(s.name || '').replace(/"/g, '""')}";"${phone}";"${cohortName}";"${totalMeetings}";"${presences}";"${absences}";"${pct}%"`;
+  }).join('\n');
+
+  const blob = new Blob([BOM + header + rows], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const cohortLabel = currentCohortFilter !== 'all'
+    ? (cohorts.find(c => c.id === currentCohortFilter)?.name || 'turma').replace(/\s+/g, '-')
+    : 'todos';
+  a.download = `presenca-${cohortLabel}-${Date.now()}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`CSV exportado — ${exportStudents.length} alunos`);
 }
 
 // ─── INIT ───
