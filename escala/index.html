@@ -287,6 +287,14 @@
       background: rgba(255,255,255,0.08);
       color: #bbb;
     }
+    .chip-wd {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      opacity: 0.45;
+      margin-right: 4px;
+    }
 
     /* ── LEGEND ── */
     .legend {
@@ -502,7 +510,7 @@ async function loadTeachersFromDB() {
           const mentor = mentorMap[cm.mentor_id];
           if (!mentor) continue;
           if (!teacherData[mentor.name]) teacherData[mentor.name] = { assignments: [], roles: new Set() };
-          teacherData[mentor.name].assignments.push({ course: cls.name, role: cm.role, schedule, dates });
+          teacherData[mentor.name].assignments.push({ course: cls.name, role: cm.role, schedule, dates, weekday: parseInt(wd) });
           teacherData[mentor.name].roles.add(`${cm.role} (${cls.name})`);
         }
       }
@@ -511,12 +519,12 @@ async function loadTeachersFromDB() {
       const schedule = `${WD_NAMES[cls.weekday] || '?'} | ${cls.time_start || '18:00'}-${cls.time_end || '20:00'} | ${dates.length} encontros`;
       if (cls.professor) {
         if (!teacherData[cls.professor]) teacherData[cls.professor] = { assignments: [], roles: new Set() };
-        teacherData[cls.professor].assignments.push({ course: cls.name, role: 'Professor', schedule, dates });
+        teacherData[cls.professor].assignments.push({ course: cls.name, role: 'Professor', schedule, dates, weekday: cls.weekday });
         teacherData[cls.professor].roles.add(`Professor (${cls.name})`);
       }
       if (cls.host) {
         if (!teacherData[cls.host]) teacherData[cls.host] = { assignments: [], roles: new Set() };
-        teacherData[cls.host].assignments.push({ course: cls.name, role: 'Host', schedule, dates });
+        teacherData[cls.host].assignments.push({ course: cls.name, role: 'Host', schedule, dates, weekday: cls.weekday });
         teacherData[cls.host].roles.add(`Host (${cls.name})`);
       }
     }
@@ -645,7 +653,8 @@ function renderAssignment(a) {
     let style = '';
     if (state === 'today') style = `background:${cfg.color};box-shadow:0 0 12px ${cfg.color}66;color:#fff;`;
     else if (state === 'future') style = `border-color:${cfg.color}33;`;
-    return `<span class="date-chip ${state}" style="${style}">${d}</span>`;
+    const wdLabel = WD_NAMES[a.weekday] || '';
+    return `<span class="date-chip ${state}" style="${style}"><span class="chip-wd">${wdLabel}</span>${d}</span>`;
   }).join('');
 
   return `
