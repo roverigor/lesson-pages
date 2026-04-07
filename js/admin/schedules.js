@@ -119,6 +119,14 @@ async function saveSchedule() {
       p_hours_before: hours,
     });
 
+    // Validar que next_fire_at é no futuro
+    if (nextFire && new Date(nextFire) < new Date()) {
+      showToast('⚠️ O próximo disparo calculado está no passado — verifique a turma e a antecedência', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Salvar Agendamento';
+      return;
+    }
+
     const { error } = await sb.from('notification_schedules').insert({
       class_id: classId,
       cohort_id: cohortId,

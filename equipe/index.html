@@ -191,7 +191,7 @@
   <div id="zoom-link-section" style="margin-top:28px;padding-top:24px;border-top:1px solid #141414">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px">
       <div class="section-title" style="margin-bottom:0">🔍 Nomes não reconhecidos no Zoom</div>
-      <button id="zoom-link-load-btn" onclick="toggleZoomCandidates()"
+      <button id="candidates-toggle-btn" onclick="toggleZoomCandidates()"
         style="font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid #222;background:#111;color:#555;cursor:pointer;font-family:inherit;font-weight:600">
         Ver candidatos
       </button>
@@ -305,6 +305,7 @@ async function startApp() {
   document.getElementById('user-role-display').textContent = roleLabel[currentMentor.role] || currentMentor.role;
 
   renderZoomAliases();
+  fetchCandidateCount(); // fire-and-forget — não bloqueia startup
   await loadMyClasses();
 }
 
@@ -399,6 +400,11 @@ function renderClasses() {
   container.innerHTML = Object.values(byClass).map(({ cls, dates }) => {
     const color = cls.color || '#6366f1';
     const roleLabel = cls._myRole || 'Professor';
+    const hasToday = dates.includes(today());
+    const cardBorder = hasToday ? 'border-color:rgba(99,102,241,0.35)' : '';
+    const todayBadge = hasToday
+      ? `<span style="font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.35);color:#a5b4fc;font-weight:800;margin-left:8px">Hoje</span>`
+      : '';
 
     const sessionsHtml = dates.slice(0, currentTab === 'upcoming' ? 6 : 10).map(dateStr => {
       const key = `${cls.id}_${dateStr}`;
@@ -428,11 +434,11 @@ function renderClasses() {
 
     const moreDates = dates.length > (currentTab === 'upcoming' ? 6 : 10);
 
-    return `<div class="class-card">
+    return `<div class="class-card" style="${cardBorder}">
       <div class="class-card-header">
         <div class="class-color-bar" style="background:${color}"></div>
         <div class="class-info">
-          <div class="class-name">${cls.name}</div>
+          <div class="class-name" style="display:flex;align-items:center;flex-wrap:wrap">${cls.name}${todayBadge}</div>
           <div class="class-meta">
             <span>📅 ${new Date(cls.start_date+'T00:00:00').toLocaleDateString('pt-BR')} – ${new Date(cls.end_date+'T00:00:00').toLocaleDateString('pt-BR')}</span>
             <span>🕐 ${cls.time_start || '—'}–${cls.time_end || '—'}</span>
@@ -656,7 +662,7 @@ let _ignoredCandidates = new Set();
 
 async function toggleZoomCandidates() {
   const container = document.getElementById('zoom-link-container');
-  const btn = document.getElementById('zoom-link-load-btn');
+  const btn = document.getElementById('candidates-toggle-btn');
   if (container.style.display !== 'none') {
     container.style.display = 'none';
     btn.textContent = 'Ver candidatos';
@@ -751,6 +757,24 @@ function ignoreCandidate(candidateName) {
   if (container && container.querySelectorAll('[id^="candidate-row-"]').length === 0) {
     container.innerHTML = '<div style="font-size:12px;color:#444;padding:12px 0">✅ Nenhum nome recorrente não identificado.</div>';
   }
+}
+
+// ── CANDIDATE COUNT (FIX 4) ──────────────────────────────────────────
+async function fetchCandidateCount() {
+  try {
+    const res = await fetch(ZOOM_FN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ action: 'zoom_mentor_candidates' }),
+    });
+    const { ok, candidates } = await res.json();
+    if (ok && candidates && candidates.length > 0) {
+      const btn = document.getElementById('candidates-toggle-btn');
+      if (btn) {
+        btn.innerHTML = `Ver candidatos <span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:999px;background:#6366f1;color:#fff;font-size:10px;font-weight:800;margin-left:6px">${candidates.length}</span>`;
+      }
+    }
+  } catch(e) {}
 }
 
 // ── SESSION TTL (Story 7.3) ────────────────────────────────────────────

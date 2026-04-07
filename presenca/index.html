@@ -575,8 +575,9 @@ function showMeetingDetail(meetingId) {
       <div style="display:flex;gap:6px;align-items:center">
         <span style="font-size:10px;color:#3a3a3a;flex-shrink:0">ou telefone</span>
         <input type="tel" id="modal-phone-${p.id}" autocomplete="off"
-          placeholder="5543999... (só números)"
+          placeholder="5543999... (só números)" maxlength="15"
           style="flex:1;padding:6px 10px;background:#0a0a0a;border:1px solid #1e1e1e;border-radius:6px;color:#bbb;font-size:12px;font-family:inherit;outline:none;min-width:0"
+          oninput="this.value = this.value.replace(/\D/g, '')"
           onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#1e1e1e'">
         <button class="modal-link-btn" style="border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.08);color:#4ade80"
           onclick="registerAndLink('${p.id}', '${safeName}', 'modal-phone-${p.id}', 'modal-link-row-${p.id}', ${JSON.stringify(m.cohort_id||null)})">Cadastrar e vincular</button>
@@ -907,8 +908,9 @@ function renderUnmatched() {
         <div style="display:flex;gap:6px;align-items:center">
           <span style="font-size:10px;color:#333;flex-shrink:0">ou telefone</span>
           <input type="tel" id="phone-${p.id}" autocomplete="off"
-            placeholder="5543999... (só números)"
+            placeholder="5543999... (só números)" maxlength="15"
             style="flex:1;min-width:120px;padding:5px 8px;background:#0a0a0a;border:1px solid #1e1e1e;border-radius:6px;color:#bbb;font-size:12px;font-family:inherit;outline:none"
+            oninput="this.value = this.value.replace(/\D/g, '')"
             onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#1e1e1e'">
           <button class="btn sm" style="border-color:rgba(16,185,129,0.3);color:#4ade80;background:rgba(16,185,129,0.06)"
             onclick="registerAndLink('${p.id}', '${safeName}', 'phone-${p.id}', null, ${cohortArg})">Cadastrar e vincular</button>
@@ -918,7 +920,15 @@ function renderUnmatched() {
     </tr>`;
   }).join('');
 
-  body.innerHTML = (mentorRows ? `<tr><td colspan="3" style="padding:8px 12px;font-size:11px;color:#444;background:#0a0a0a;border-bottom:1px solid #1a1a1a">⚡ ${mentorUnmatched.length} membros da equipe (não precisam de vínculo)</td></tr>${mentorRows}<tr><td colspan="3" style="padding:8px 12px;font-size:11px;color:#555;background:#0a0a0a;border-bottom:1px solid #1a1a1a">👤 ${realUnmatched.length} participantes sem vínculo</td></tr>` : '') + unmatchedRows;
+  const mentorSection = mentorRows ? `
+    <tr onclick="(function(){var b=document.getElementById('mentor-rows-body');var s=document.getElementById('mentor-toggle-hint');if(b.style.display==='none'){b.style.display='';s.textContent='clique para ocultar';}else{b.style.display='none';s.textContent='clique para ver';}})()" style="cursor:pointer">
+      <td colspan="3" style="padding:8px 12px;font-size:11px;color:#444;background:#0a0a0a;border-bottom:1px solid #1a1a1a;user-select:none">
+        ⚡ ${mentorUnmatched.length} membros da equipe · <span id="mentor-toggle-hint" style="color:#555;font-size:10px">clique para ver</span>
+      </td>
+    </tr>
+    <tbody id="mentor-rows-body" style="display:none">${mentorRows}</tbody>
+  ` : '';
+  body.innerHTML = mentorSection + (mentorRows ? `<tr><td colspan="3" style="padding:8px 12px;font-size:11px;color:#555;background:#0a0a0a;border-bottom:1px solid #1a1a1a">👤 ${realUnmatched.length} participantes sem vínculo</td></tr>` : '') + unmatchedRows;
 }
 
 // Global floating dropdown — fixed position, escapes table overflow:hidden
