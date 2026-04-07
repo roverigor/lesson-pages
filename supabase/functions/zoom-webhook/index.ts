@@ -11,7 +11,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 const SUPABASE_URL              = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const ZOOM_WEBHOOK_SECRET       = Deno.env.get("ZOOM_WEBHOOK_SECRET") ?? "";
-const ANTHROPIC_API_KEY         = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
+const OPENAI_API_KEY            = Deno.env.get("OPENAI_API_KEY") ?? "";
 
 function getSupabaseClient() {
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -224,7 +224,7 @@ serve(async (req: Request) => {
     const recordingId = rec?.id ?? null;
 
     // Download transcript and generate AI summary (fire-and-forget)
-    if (recordingId && transcriptUrl && ANTHROPIC_API_KEY) {
+    if (recordingId && transcriptUrl && OPENAI_API_KEY) {
       generateAndSaveSummary(sb, recordingId, transcriptUrl, topic).catch((e) =>
         console.error("zoom-webhook: AI summary error", String(e))
       );
@@ -275,16 +275,15 @@ async function generateAndSaveSummary(
     .join("\n")
     .slice(0, 8000);
 
-  // Call Anthropic API
-  const aiResp = await fetch("https://api.anthropic.com/v1/messages", {
+  // Call OpenAI API
+  const aiResp = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
+      "Authorization": `Bearer ${OPENAI_API_KEY}`,
     },
     body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
+      model: "gpt-4o-mini",
       max_tokens: 600,
       messages: [
         {
@@ -307,12 +306,12 @@ ${cleanTranscript}`,
   });
 
   if (!aiResp.ok) {
-    console.error("zoom-webhook: Anthropic error", aiResp.status);
+    console.error("zoom-webhook: OpenAI error", aiResp.status);
     return;
   }
 
-  const aiData = await aiResp.json() as { content: { text: string }[] };
-  const summary = aiData?.content?.[0]?.text ?? "";
+  const aiData = await aiResp.json() as { choices: { message: { content: string } }[] };
+  const summary = aiData?.choices?.[0]?.message?.content ?? "";
 
   if (summary) {
     await sb.from("class_recordings").update({
