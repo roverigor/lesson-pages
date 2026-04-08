@@ -59,6 +59,7 @@ const config = [
         showDeleteConfirm: 'readonly',// utils.js
         checkAuth: 'readonly',        // auth.js
         renderAll: 'readonly',        // attendance.js
+        saveAttendance: 'readonly',   // attendance.js
         loadClasses: 'readonly',      // classes.js
         loadStaff: 'readonly',        // staff.js
         loadAttendance: 'readonly',   // attendance.js
