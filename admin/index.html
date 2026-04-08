@@ -506,26 +506,26 @@
             <div class="dash-card-title">Turmas</div>
             <div class="dash-card-desc">Hub operacional — alunos, presença e ranking WhatsApp por turma.</div>
           </button>
-          <a class="dash-card" href="/alunos" target="_blank">
+          <button class="dash-card" onclick="switchView('alunos')">
             <div class="dash-card-icon">👥</div>
             <div class="dash-card-title">Alunos</div>
             <div class="dash-card-desc">Cadastro, busca, edição de telefone e apelidos Zoom.</div>
-          </a>
-          <a class="dash-card" href="/presenca" target="_blank">
+          </button>
+          <button class="dash-card" onclick="switchView('presenca')">
             <div class="dash-card-icon">📋</div>
             <div class="dash-card-title">Presença Zoom</div>
             <div class="dash-card-desc">Dashboard de presença de alunos via integração Zoom.</div>
-          </a>
-          <a class="dash-card" href="/aulas" target="_blank">
+          </button>
+          <button class="dash-card" onclick="switchView('aulas')">
             <div class="dash-card-icon">🎓</div>
             <div class="dash-card-title">Aulas e Gravações</div>
             <div class="dash-card-desc">Gravações, resumos IA, transcrições e materiais por turma.</div>
-          </a>
-          <a class="dash-card" href="/relatorio" target="_blank">
+          </button>
+          <button class="dash-card" onclick="switchView('relatorio')">
             <div class="dash-card-icon">📊</div>
             <div class="dash-card-title">Relatório de Presença</div>
             <div class="dash-card-desc">Relatório consolidado por professor, turma e período.</div>
-          </a>
+          </button>
           <button class="dash-card" onclick="switchView('surveys')">
             <div class="dash-card-icon">📝</div>
             <div class="dash-card-title">Avaliações NPS</div>
@@ -869,6 +869,16 @@ window.showApp = function() {
 // ─── PAINEL: override switchView ─────────────────────
 const IFRAME_ROUTES = { alunos: '/alunos/', presenca: '/presenca/', aulas: '/aulas/', relatorio: '/relatorio/' };
 
+function openInFrame(url) {
+  const viewWrap   = document.getElementById('view-wrap');
+  const embedFrame = document.getElementById('embed-frame');
+  const mobileNav  = document.getElementById('mobile-nav');
+  if (viewWrap)   viewWrap.style.display = 'none';
+  if (mobileNav)  mobileNav.style.display = 'none';
+  if (embedFrame) { embedFrame.src = url; embedFrame.style.display = ''; }
+  document.querySelectorAll('.nav-item[data-view]').forEach(b => b.classList.remove('active'));
+}
+
 window.switchView = async function(view) {
   const allViews = ['dashboard','calendar','turmas','report','staff','classes',
                     'notify','schedules','zoom','abstracts','surveys'];
@@ -952,7 +962,7 @@ async function loadTurmasView() {
   const html = cohorts.map(c => {
     const total = byC[c.id] ?? 0;
     const active = c.active !== false;
-    return `<a class="turma-card" href="/turma/detalhe.html?id=${c.id}">
+    return `<a class="turma-card" href="#" onclick="openInFrame('/turma/detalhe.html?id=${c.id}');return false;">
       <div class="turma-header">
         <div class="turma-name">${escHtml(c.name)}</div>
         <div class="turma-badge ${active ? '' : 'inactive'}">${active ? 'Ativa' : 'Encerrada'}</div>
