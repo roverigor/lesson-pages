@@ -904,8 +904,12 @@
       <span class="nav-step">10</span>
       MCP Ecosystem (opcional)
     </a>
-    <a href="#sec-first-run" class="nav-item" onclick="setActive(this)">
+    <a href="#sec-editors" class="nav-item" onclick="setActive(this)">
       <span class="nav-step">11</span>
+      Editores de Código
+    </a>
+    <a href="#sec-first-run" class="nav-item" onclick="setActive(this)">
+      <span class="nav-step">12</span>
       Primeiro Uso
     </a>
 
@@ -959,6 +963,7 @@
         <span class="pill"><span class="pill-dot" style="background:#D1FF00"></span> AIOX Core</span>
         <span class="pill"><span class="pill-dot" style="background:#f97316"></span> MCP Ecosystem</span>
         <span class="pill"><span class="pill-dot" style="background:#f59e0b"></span> Dashboard</span>
+        <span class="pill"><span class="pill-dot" style="background:#06b6d4"></span> Editores de Código</span>
       </div>
     </div>
 
@@ -1915,10 +1920,252 @@
       </div>
     </section>
 
-    <!-- SECTION 10 — FIRST RUN -->
+    <!-- SECTION 11 — EDITORES DE CÓDIGO -->
+    <section class="section" id="sec-editors">
+      <div class="section-header">
+        <div class="section-num cyan">11</div>
+        <div class="section-title-group">
+          <h2 class="section-title">Editores de Código <span class="tag tag-opt">Opcional</span></h2>
+          <p class="section-desc">Configure seu editor com IA — compatibilidade e passo a passo de instalação</p>
+        </div>
+      </div>
+
+      <div class="info-box info">
+        <i data-lucide="info" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>O AIOX roda no terminal, não no editor.</strong>
+          Editores com IA funcionam como complemento — a execução de agentes, stories e workflows acontece sempre na CLI. Use o editor para edição e a CLI para orquestração.
+        </div>
+      </div>
+
+      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 20px 0 12px;">Compatibilidade com AIOX</h3>
+      <div class="card">
+        <table>
+          <thead>
+            <tr><th>Editor</th><th>Paridade AIOX</th><th>Ativação de agente</th><th>Ideal para</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>AntiGravity</strong></td><td>🔴 Workflow-based</td><td>Workflows (sem hooks)</td><td>Times que preferem editor-first com IA</td></tr>
+            <tr><td><strong>VS Code</strong></td><td>🟡 Via extensão Claude</td><td>MCP + extensão Claude Code</td><td>Desenvolvedores que já usam VS Code</td></tr>
+            <tr><td><strong>Cursor</strong></td><td>🔴 Sem lifecycle hooks</td><td>Regras + MCP</td><td>Autocompletar com IA embutido</td></tr>
+            <tr><td><strong>Windsurf</strong></td><td>🔴 Sem lifecycle hooks</td><td>.windsurfrules + MCP</td><td>Agente "Cascade" dentro do editor</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <hr style="border:none; border-top: 1px solid var(--border); margin: 32px 0;">
+
+      <!-- ANTIGRAVITY -->
+      <h3 style="font-size:16px; font-weight:700; color:var(--text); margin: 0 0 4px; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="zap" class="lucide-md" style="color:var(--accent2)"></i> AntiGravity <span class="tag tag-new">Recomendado pelo AIOX</span>
+      </h3>
+      <p style="font-size:12px; color:var(--text3); margin-bottom:16px;">Editor de código com IA nativa — suporte a workflows, agentes e MCP</p>
+
+      <div class="info-box tip">
+        <i data-lucide="lightbulb" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>Por que AntiGravity?</strong>
+          É o editor com melhor integração de workflows de IA. Suporta MCP servers diretamente no editor e utiliza o <span class="ic">AGENTS.md</span> já gerado pelo AIOX — zero configuração duplicada.
+        </div>
+      </div>
+
+      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 20px 0 12px;">Instalação — 3 passos</h3>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Baixar o AntiGravity</div>
+            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">Acesse <a href="https://antigravity.ai" target="_blank" style="color:var(--accent3); text-decoration:underline;">antigravity.ai</a> e clique em <strong>Download</strong>. Disponível para Windows, macOS e Linux.</p>
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash — Linux/macOS (via script oficial)</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># Instalar via script oficial</span>
+<span class="c-cmd">curl</span> <span class="c-flag">-fsSL</span> https://antigravity.ai/install.sh | sh</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Configurar MCP no AntiGravity</div>
+            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">Abra as configurações do editor e aponte para os MCPs já instalados na seção anterior.</p>
+            <div class="info-box info" style="margin-top: 0;">
+              <i data-lucide="info" class="lucide-md info-icon"></i>
+              <div class="info-text">
+                <strong>Caminho:</strong> <span class="ic">Settings → AI → MCP Servers</span><br>
+                O AntiGravity lê o mesmo arquivo de configuração do Claude Code (<span class="ic">~/.claude.json</span>) — sem necessidade de re-configurar os MCPs.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Verificar o AGENTS.md no projeto</div>
+            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">O AntiGravity usa o <span class="ic">AGENTS.md</span> na raiz para contexto de agentes — o mesmo arquivo já gerado pelo AIOX.</p>
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># Confirmar que o AGENTS.md existe (gerado pelo AIOX)</span>
+<span class="c-cmd">cat</span> <span class="c-path">AGENTS.md</span></code></pre>
+            </div>
+            <div style="margin-top:8px; font-size:12px; color:var(--text3); padding: 8px 12px; background: rgba(209,255,0,0.05); border-left: 2px solid var(--accent2); border-radius: 0 6px 6px 0;">
+              Lembre: lifecycle hooks (<span class="ic">PreToolUse</span>, <span class="ic">PostToolUse</span>) não são suportados no AntiGravity. Use workflows do editor para automações equivalentes.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr style="border:none; border-top: 1px solid var(--border); margin: 32px 0;">
+
+      <!-- VS CODE -->
+      <h3 style="font-size:15px; font-weight:700; color:var(--text); margin: 0 0 4px; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="code-2" class="lucide-md" style="color:#007acc"></i> VS Code
+      </h3>
+      <p style="font-size:12px; color:var(--text3); margin-bottom:12px;">O editor mais popular — suporte ao AIOX via extensão Claude Code oficial da Anthropic</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Baixar o VS Code</div>
+            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">Acesse <a href="https://code.visualstudio.com" target="_blank" style="color:var(--accent3); text-decoration:underline;">code.visualstudio.com</a> e baixe para seu sistema operacional. Disponível para Windows, macOS e Linux (.deb, .rpm, snap).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Instalar a extensão Claude Code</div>
+            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">No VS Code, abra o painel de extensões (<span class="ic">Ctrl+Shift+X</span>) e busque por <strong>Claude Code</strong> (publicador: Anthropic).</p>
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash — instalar via linha de comando</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-cmd">code</span> <span class="c-flag">--install-extension</span> anthropic.claude-code</code></pre>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Abrir o terminal integrado e rodar o AIOX</div>
+            <div class="code-block" style="margin-top:8px;">
+              <div class="code-header">
+                <span class="code-lang">bash — Terminal integrado (Ctrl+`)</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-cmd">claude</span>  <span class="c-comment"># inicia o Claude Code com acesso ao projeto aberto</span>
+<span class="c-comment"># A extensão adiciona o painel lateral de Claude no editor</span></code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr style="border:none; border-top: 1px solid var(--border); margin: 32px 0;">
+
+      <!-- CURSOR -->
+      <h3 style="font-size:15px; font-weight:700; color:var(--text); margin: 0 0 4px; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="mouse-pointer-2" class="lucide-md" style="color:#9b72f5"></i> Cursor
+      </h3>
+      <p style="font-size:12px; color:var(--text3); margin-bottom:12px;">Fork do VS Code com IA embutida — autocompletar avançado e chat contextual com seu código</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Baixar o Cursor</div>
+            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">Acesse <a href="https://cursor.com" target="_blank" style="color:var(--accent3); text-decoration:underline;">cursor.com</a>, clique em <strong>Download</strong> e siga o instalador para seu sistema operacional.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Importar configurações do VS Code (opcional)</div>
+            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">Na primeira abertura, o Cursor oferece importar extensões e keybindings do VS Code automaticamente — aceite para manter sua configuração atual.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Adicionar regras AIOX no Cursor</div>
+            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">O Cursor usa <span class="ic">.cursor/rules/</span> em vez de <span class="ic">CLAUDE.md</span>. Copie o conteúdo para uma rule do Cursor:</p>
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-cmd">mkdir</span> <span class="c-flag">-p</span> .cursor/rules
+<span class="c-cmd">cp</span> .claude/CLAUDE.md .cursor/rules/aiox.mdc</code></pre>
+            </div>
+            <div class="info-box warn" style="margin-top:8px;">
+              <i data-lucide="alert-triangle" class="lucide-md info-icon"></i>
+              <div class="info-text">
+                <strong>Sem lifecycle hooks:</strong> automações de <span class="ic">PreToolUse</span> e <span class="ic">PostToolUse</span> do AIOX não funcionam no Cursor. Para o fluxo completo de agentes, use o Claude Code na CLI.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr style="border:none; border-top: 1px solid var(--border); margin: 32px 0;">
+
+      <!-- WINDSURF -->
+      <h3 style="font-size:15px; font-weight:700; color:var(--text); margin: 0 0 4px; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="wind" class="lucide-md" style="color:#0ea5e9"></i> Windsurf <span style="background:rgba(14,165,233,0.15); color:#0ea5e9; border:1px solid rgba(14,165,233,0.3); font-size:10px; padding:2px 7px; border-radius:20px; font-weight:600; white-space:nowrap;">by Codeium</span>
+      </h3>
+      <p style="font-size:12px; color:var(--text3); margin-bottom:12px;">Editor com agente de IA "Cascade" embutido — experiência agentic sem CLI adicional</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Baixar o Windsurf</div>
+            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">Acesse <a href="https://codeium.com/windsurf" target="_blank" style="color:var(--accent3); text-decoration:underline;">codeium.com/windsurf</a> e baixe o instalador para Windows, macOS ou Linux.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Criar conta Codeium (gratuito)</div>
+            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">O Windsurf requer uma conta Codeium gratuita. Cadastre em <a href="https://codeium.com" target="_blank" style="color:var(--accent3); text-decoration:underline;">codeium.com</a> antes de abrir o editor.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Adicionar contexto AIOX via .windsurfrules</div>
+            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">O Windsurf usa <span class="ic">.windsurfrules</span> na raiz do projeto para regras de contexto:</p>
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              </div>
+              <pre><code><span class="c-comment"># Gerar .windsurfrules com contexto AIOX</span>
+<span class="c-cmd">cp</span> .claude/CLAUDE.md .windsurfrules</code></pre>
+            </div>
+            <div class="info-box tip" style="margin-top:8px;">
+              <i data-lucide="lightbulb" class="lucide-md info-icon"></i>
+              <div class="info-text">
+                <strong>Cascade + AIOX:</strong> use o agente Cascade do Windsurf para geração de código e o Claude Code na CLI para executar o fluxo completo de agentes AIOX (stories, QA gates, releases).
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 12 — FIRST RUN -->
     <section class="section" id="sec-first-run">
       <div class="section-header">
-        <div class="section-num green">11</div>
+        <div class="section-num green">12</div>
         <div class="section-title-group">
           <h2 class="section-title">Primeiro Uso</h2>
           <p class="section-desc">Definição de first-value: ativação + greeting + comando em ≤ 10 min</p>
