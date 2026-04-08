@@ -26,6 +26,7 @@
     { "source": "/squad-creator",    "destination": "/squad-creator/index.html" },
     { "source": "/manual-aios",      "destination": "/manual-aios/index.html" },
     { "source": "/aios-install",     "destination": "/aios-install/index.html" },
+    { "source": "/aiox-install",     "destination": "/aiox-install/index.html" },
     { "source": "/alunos",           "destination": "/alunos/index.html" },
     { "source": "/api/zoom/callback","destination": "/api/zoom/callback.html" },
     { "source": "/presenca",         "destination": "/presenca/index.html" },
