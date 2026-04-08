@@ -1,8 +1,8 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "outputDirectory": ".",
-  "buildCommand": "npm run build",
+  "outputDirectory": ".vercel-out",
+  "buildCommand": "mkdir -p .vercel-out/aiox-install .vercel-out/aios-install && cp -r aiox-install/. .vercel-out/aiox-install/ && cp -r aios-install/. .vercel-out/aios-install/",
   "headers": [
     {
       "source": "/(.*)",
@@ -20,20 +20,7 @@
     }
   ],
   "rewrites": [
-    { "source": "/calendario/admin", "destination": "/calendario/admin.html" },
-    { "source": "/calendario",       "destination": "/calendario/index.html" },
-    { "source": "/escala",           "destination": "/escala/index.html" },
-    { "source": "/abstracts",        "destination": "/abstracts/index.html" },
-    { "source": "/analise-interna",  "destination": "/analise-interna/index.html" },
-    { "source": "/squad-creator",    "destination": "/squad-creator/index.html" },
-    { "source": "/manual-aios",      "destination": "/manual-aios/index.html" },
-    { "source": "/aios-install",     "destination": "/aios-install/index.html" },
-    { "source": "/aiox-install",     "destination": "/aiox-install/index.html" },
-    { "source": "/alunos",           "destination": "/alunos/index.html" },
-    { "source": "/api/zoom/callback","destination": "/api/zoom/callback.html" },
-    { "source": "/presenca",         "destination": "/presenca/index.html" },
-    { "source": "/aulas",            "destination": "/aulas/index.html" },
-    { "source": "/equipe",           "destination": "/equipe/index.html" },
-    { "source": "/relatorio",        "destination": "/relatorio/index.html" }
+    { "source": "/aios-install", "destination": "/aios-install/index.html" },
+    { "source": "/aiox-install", "destination": "/aiox-install/index.html" }
   ]
 }
