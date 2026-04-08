@@ -14,7 +14,7 @@ const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL") ?? "";
 const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY") ?? "";
 const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
 
-const BASE_URL = "https://calendario.igorrover.com.br";
+const BASE_URL = "https://painel.igorrover.com.br";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -189,8 +189,10 @@ serve(async (req: Request) => {
 
     const link = `${BASE_URL}/avaliacao/responder?token=${token}`;
     const firstName = student.name.split(" ")[0];
+    const intro = survey.intro_text?.trim();
     const message =
-      `Olá ${firstName}! 👋\n\nSua opinião é muito importante para nós.\n` +
+      `Olá *${firstName}*! 👋\n\n` +
+      (intro ? `${intro}\n\n` : `Sua opinião é muito importante para nós.\n\n`) +
       `Responda em 1 minuto: ${link}\n\n_Academia Lendária_ 🚀`;
 
     const sent = await sendWhatsApp(student.phone, message);
