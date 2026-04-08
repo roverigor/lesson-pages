@@ -2155,15 +2155,15 @@
 
       <!-- ANTIGRAVITY -->
       <h3 style="font-size:16px; font-weight:700; color:var(--text); margin: 0 0 4px; display:flex; align-items:center; gap:8px;">
-        <i data-lucide="zap" class="lucide-md" style="color:var(--accent2)"></i> AntiGravity <span class="tag tag-new">Recomendado pelo AIOX</span>
+        <i data-lucide="zap" class="lucide-md" style="color:var(--accent2)"></i> AntiGravity <span style="background:rgba(66,133,244,0.15); color:#4285f4; border:1px solid rgba(66,133,244,0.3); font-size:10px; padding:2px 7px; border-radius:20px; font-weight:600; white-space:nowrap;">by Google</span> <span class="tag tag-new">Recomendado pelo AIOX</span>
       </h3>
-      <p style="font-size:12px; color:var(--text3); margin-bottom:16px;">Editor de código com IA nativa — suporte a workflows, agentes e MCP</p>
+      <p style="font-size:12px; color:var(--text3); margin-bottom:16px;">IDE agêntica do Google — 16 agentes especializados, MCP Store integrada e suporte a múltiplos modelos (Gemini, Claude, GPT). Gratuita na preview pública.</p>
 
       <div class="info-box tip">
         <i data-lucide="lightbulb" class="lucide-md info-icon"></i>
         <div class="info-text">
           <strong>Por que AntiGravity?</strong>
-          É o editor com melhor integração de workflows de IA. Suporta MCP servers diretamente no editor e utiliza o <span class="ic">AGENTS.md</span> já gerado pelo AIOX — zero configuração duplicada.
+          É uma IDE agent-first com orquestração nativa de agentes. Suporta MCP servers via MCP Store integrada, lê o <span class="ic">AGENTS.md</span> e o <span class="ic">GEMINI.md</span> gerados pelo AIOX, e funciona com Gemini + Claude + GPT simultaneamente.
         </div>
       </div>
 
@@ -2174,7 +2174,7 @@
           <div class="step-num">1</div>
           <div class="step-content">
             <div class="step-title">Baixar e instalar o AntiGravity</div>
-            <p style="font-size:13px; color:var(--text2); margin: 6px 0 0;">Acesse <a href="https://antigravity.google/" target="_blank" style="color:var(--accent3); text-decoration:underline;">antigravity.google</a>, clique em <strong>Download</strong> e execute o instalador. Disponível para Windows, macOS e Linux.</p>
+            <p style="font-size:13px; color:var(--text2); margin: 6px 0 0;">Acesse <a href="https://antigravity.google/download" target="_blank" style="color:var(--accent3); text-decoration:underline;">antigravity.google/download</a> e execute o instalador. Disponível para Windows, macOS e Linux. Autenticação com conta Google (Gmail pessoal aceito).</p>
           </div>
         </div>
 
@@ -2182,12 +2182,19 @@
           <div class="step-num">2</div>
           <div class="step-content">
             <div class="step-title">Configurar MCP no AntiGravity</div>
-            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">Abra as configurações do editor e aponte para os MCPs já instalados na seção anterior.</p>
+            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">O AntiGravity tem sua própria configuração de MCP — separada do Claude Code.</p>
             <div class="info-box info" style="margin-top: 0;">
               <i data-lucide="info" class="lucide-md info-icon"></i>
               <div class="info-text">
-                <strong>Caminho:</strong> <span class="ic">Settings → AI → MCP Servers</span><br>
-                O AntiGravity lê o mesmo arquivo de configuração do Claude Code (<span class="ic">~/.claude.json</span>) — sem necessidade de re-configurar os MCPs.
+                <strong>Caminho na UI:</strong> <span class="ic">Agent session → menu "..." → MCP Servers → Manage MCP Servers</span><br>
+                Arquivo de config: <span class="ic">~/.gemini/antigravity/mcp_config.json</span><br>
+                Também possui uma <strong>MCP Store</strong> integrada para buscar e instalar servidores diretamente.
+              </div>
+            </div>
+            <div class="info-box warn" style="margin-top:8px;">
+              <i data-lucide="alert-triangle" class="lucide-md info-icon"></i>
+              <div class="info-text">
+                O AntiGravity <strong>não lê</strong> o <span class="ic">~/.claude.json</span>. Os MCPs precisam ser configurados separadamente no arquivo <span class="ic">~/.gemini/antigravity/mcp_config.json</span>.
               </div>
             </div>
           </div>
@@ -2197,17 +2204,9 @@
           <div class="step-num">3</div>
           <div class="step-content">
             <div class="step-title">Verificar o AGENTS.md no projeto</div>
-            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">O AntiGravity usa o <span class="ic">AGENTS.md</span> na raiz para contexto de agentes — o mesmo arquivo já gerado pelo AIOX.</p>
-            <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">bash</span>
-                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
-              </div>
-              <pre><code><span class="c-comment"># Confirmar que o AGENTS.md existe (gerado pelo AIOX)</span>
-<span class="c-cmd">cat</span> <span class="c-path">AGENTS.md</span></code></pre>
-            </div>
+            <p style="font-size:13px; color:var(--text2); margin: 6px 0 8px;">O AntiGravity lê o <span class="ic">AGENTS.md</span> e o <span class="ic">GEMINI.md</span> na raiz do projeto — ambos já gerados pelo AIOX.</p>
             <div style="margin-top:8px; font-size:12px; color:var(--text3); padding: 8px 12px; background: rgba(209,255,0,0.05); border-left: 2px solid var(--accent2); border-radius: 0 6px 6px 0;">
-              Lembre: lifecycle hooks (<span class="ic">PreToolUse</span>, <span class="ic">PostToolUse</span>) não são suportados no AntiGravity. Use workflows do editor para automações equivalentes.
+              Lifecycle hooks do Claude Code (<span class="ic">PreToolUse</span>, <span class="ic">PostToolUse</span>) não são suportados no AntiGravity. Use os workflows nativos do editor para automações equivalentes.
             </div>
           </div>
         </div>
