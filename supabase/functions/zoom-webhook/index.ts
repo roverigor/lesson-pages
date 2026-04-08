@@ -188,18 +188,17 @@ serve(async (req: Request) => {
     const transcriptFile = recordingFiles.find((f) => (f.file_type as string) === "TRANSCRIPT");
     const transcriptUrl  = transcriptFile ? String(transcriptFile.download_url ?? "") : "";
 
-    // Find cohort_id from host_email via zoom_host_sessions
+    // Find cohort_id from zoom_meetings by zoom_meeting_id
     let cohortId: string | null = null;
-    if (hostEmail) {
-      const { data: session } = await sb
-        .from("zoom_host_sessions")
+    if (meetingId) {
+      const { data: zm } = await sb
+        .from("zoom_meetings")
         .select("cohort_id")
-        .eq("host_email", hostEmail)
+        .eq("zoom_meeting_id", meetingId)
         .not("cohort_id", "is", null)
-        .order("started_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      cohortId = session?.cohort_id ?? null;
+      cohortId = zm?.cohort_id ?? null;
     }
 
     // UPSERT in class_recordings (dedup by zoom_meeting_id — TEXT column for Zoom numeric IDs)
