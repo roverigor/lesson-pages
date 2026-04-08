@@ -31,7 +31,7 @@ jobs:
       - name: Smoke Tests
         run: npm test
         env:
-          APP_URL: https://calendario.igorrover.com.br
+          APP_URL: https://painel.igorrover.com.br
 
   # ─── Job 2: Deploy (só executa se tests passaram) ─────────────────────────
   deploy:
