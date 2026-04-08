@@ -1805,108 +1805,71 @@
         </div>
       </div>
 
-      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 24px 0 12px;">Como instalar</h3>
-      <div class="code-block">
-        <div class="code-header">
-          <span class="code-lang">bash</span>
-          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
-        </div>
-        <pre><code><span class="c-comment"># Clonar o ecossistema MCP</span>
-<span class="c-cmd">git clone</span> https://github.com/SynkraAI/mcp-ecosystem.git
-<span class="c-cmd">cd</span> <span class="c-path">mcp-ecosystem</span>
+      <!-- ESCOPOS DO MCP -->
+      <h3 style="font-size:16px; font-weight:700; color:var(--text); margin: 28px 0 4px; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="folder-tree" class="lucide-md" style="color:var(--accent3)"></i> Onde o MCP é instalado — Escopos do Claude Code
+      </h3>
+      <p style="font-size:13px; color:var(--text3); margin-bottom:16px;">O Claude Code usa um sistema de escopos para saber onde salvar cada configuração de MCP. Entender isso evita confusão na hora de instalar.</p>
 
-<span class="c-comment"># Ver os presets disponíveis</span>
-<span class="c-cmd">ls</span> <span class="c-path">presets/</span></code></pre>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title" style="margin-bottom:10px;"><i data-lucide="hard-drive" class="lucide-sm" style="color:var(--accent2)"></i> Estrutura de pastas no seu ambiente</div>
+        <div class="code-block" style="margin:0;">
+          <div class="code-header">
+            <span class="code-lang">estrutura</span>
+          </div>
+          <pre><code><span class="c-path">~/meu-usuario/</span>          <span class="c-comment">← onde o Claude Code está instalado (escopo global)</span>
+└── <span class="c-path">meu-projeto/</span>        <span class="c-comment">← onde o AIOX está instalado (escopo project)</span></code></pre>
+        </div>
       </div>
 
-      <p style="font-size:13px; color:var(--text3); margin: 12px 0 8px;">Copie os blocos de <span class="ic">mcpServers</span> do preset escolhido para <span class="ic">~/.claude.json</span>.</p>
-
-      <div class="card">
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title" style="margin-bottom:10px;"><i data-lucide="layers" class="lucide-sm" style="color:var(--accent3)"></i> Os dois escopos principais</div>
         <table>
           <thead>
-            <tr><th>Preset</th><th>MCPs incluídos</th><th>Uso ideal</th></tr>
+            <tr><th>Escopo</th><th>Flag</th><th>Arquivo</th><th>Disponível em</th></tr>
           </thead>
           <tbody>
-            <tr><td><span class="ic">aios-dev.json</span></td><td>context7, desktop-commander, playwright</td><td>Implementação de stories</td></tr>
-            <tr><td><span class="ic">aios-research.json</span></td><td>context7, exa, playwright</td><td>Pesquisa, documentação</td></tr>
-            <tr><td><span class="ic">aios-full.json</span></td><td>Todos</td><td>Tarefas complexas multi-domínio</td></tr>
+            <tr><td><strong style="color:var(--accent2)">user (global)</strong></td><td><span class="ic">--scope user</span></td><td><span class="ic">~/.claude.json</span></td><td>Todos os projetos</td></tr>
+            <tr><td><strong style="color:var(--accent3)">project</strong></td><td><span class="ic">--scope project</span></td><td><span class="ic">.mcp.json</span> na raiz do projeto</td><td>Só aquele projeto</td></tr>
           </tbody>
         </table>
       </div>
 
-      <div class="info-box warn" style="margin-top: 12px;">
+      <div class="info-box info">
+        <i data-lucide="info" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>Regra de carregamento:</strong> ao iniciar o Claude Code dentro de <span class="ic">meu-projeto</span>, ele carrega primeiro o global (<span class="ic">~/.claude.json</span>) e depois o project (<span class="ic">.mcp.json</span>). Tudo que está no global fica disponível automaticamente — sem nenhuma configuração extra no projeto.
+        </div>
+      </div>
+
+      <!-- COMO INSTALAR OS MCPs -->
+      <h3 style="font-size:16px; font-weight:700; color:var(--text); margin: 32px 0 4px; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="download" class="lucide-md" style="color:var(--accent2)"></i> Como instalar os MCPs do AIOX
+      </h3>
+      <p style="font-size:13px; color:var(--text3); margin-bottom:16px;">Para cada MCP, rode o comando com <span class="ic">--scope user</span>. Isso instala globalmente — disponível em qualquer projeto, não só no AIOX:</p>
+
+      <div class="code-block" style="margin-bottom:16px;">
+        <div class="code-header">
+          <span class="code-lang">bash — instalar todos os MCPs recomendados</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <pre><code><span class="c-comment"># context7 — documentação de bibliotecas para LLMs</span>
+<span class="c-cmd">claude mcp add</span> <span class="c-flag">--scope user</span> context7 <span class="c-flag">--</span> npx <span class="c-flag">-y</span> @upstash/context7-mcp
+
+<span class="c-comment"># desktop-commander — gerenciamento de arquivos e terminal</span>
+<span class="c-cmd">claude mcp add</span> <span class="c-flag">--scope user</span> desktop-commander <span class="c-flag">--</span> npx <span class="c-flag">-y</span> @wonderwhy-er/desktop-commander
+
+<span class="c-comment"># playwright — automação de browser para testes</span>
+<span class="c-cmd">claude mcp add</span> <span class="c-flag">--scope user</span> playwright <span class="c-flag">--</span> npx <span class="c-flag">-y</span> @playwright/mcp
+
+<span class="c-comment"># exa — busca web com IA (requer chave API de exa.ai)</span>
+<span class="c-cmd">claude mcp add</span> <span class="c-flag">--scope user</span> exa <span class="c-flag">-e</span> <span class="c-string">EXA_API_KEY=sua-chave-aqui</span> <span class="c-flag">--</span> npx <span class="c-flag">-y</span> exa-mcp</code></pre>
+      </div>
+
+      <div class="info-box warn">
         <i data-lucide="alert-triangle" class="lucide-md info-icon"></i>
         <div class="info-text">
-          <strong>Não substitua o arquivo inteiro</strong> — mescle apenas os blocos <span class="ic">mcpServers</span> do preset com os que você já tem configurados em <span class="ic">~/.claude.json</span>.
-        </div>
-      </div>
-
-      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 28px 0 8px;">Instalar cada MCP individualmente</h3>
-      <p style="font-size:13px; color:var(--text3); margin-bottom:16px;">Use os comandos abaixo direto no terminal para instalar cada MCP no Claude Code — sem clonar repositório:</p>
-
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:8px;">
-          <i data-lucide="book-open" class="lucide-sm" style="color:var(--accent3)"></i> context7
-          <span class="badge badge-optional" style="margin-left:4px;">Sem chave API</span>
-        </div>
-        <div style="font-size:12px; color:var(--text3); margin-bottom:8px;">Documentação atualizada de bibliotecas para LLMs — injeta docs do npm/PyPI direto no contexto.</div>
-        <div class="code-block" style="margin:0;">
-          <div class="code-header">
-            <span class="code-lang">bash</span>
-            <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
-          </div>
-          <pre><code><span class="c-cmd">claude mcp add</span> context7 <span class="c-flag">--</span> npx <span class="c-flag">-y</span> @upstash/context7-mcp</code></pre>
-        </div>
-      </div>
-
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:8px;">
-          <i data-lucide="terminal" class="lucide-sm" style="color:var(--accent2)"></i> desktop-commander
-          <span class="badge badge-optional" style="margin-left:4px;">Sem chave API</span>
-        </div>
-        <div style="font-size:12px; color:var(--text3); margin-bottom:8px;">Gerenciamento de arquivos, terminal e processos — acesso ao sistema de arquivos do host.</div>
-        <div class="code-block" style="margin:0;">
-          <div class="code-header">
-            <span class="code-lang">bash</span>
-            <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
-          </div>
-          <pre><code><span class="c-cmd">claude mcp add</span> desktop-commander <span class="c-flag">--</span> npx <span class="c-flag">-y</span> @wonderwhy-er/desktop-commander</code></pre>
-        </div>
-      </div>
-
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:8px;">
-          <i data-lucide="globe" class="lucide-sm" style="color:#e2503a"></i> playwright
-          <span class="badge badge-optional" style="margin-left:4px;">Sem chave API</span>
-        </div>
-        <div style="font-size:12px; color:var(--text3); margin-bottom:8px;">Automação de browser — navegação, screenshots, testes e interação com páginas web.</div>
-        <div class="code-block" style="margin:0;">
-          <div class="code-header">
-            <span class="code-lang">bash</span>
-            <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
-          </div>
-          <pre><code><span class="c-cmd">claude mcp add</span> playwright <span class="c-flag">--</span> npx <span class="c-flag">-y</span> @playwright/mcp@latest</code></pre>
-        </div>
-      </div>
-
-      <div class="card" style="margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:8px;">
-          <i data-lucide="search" class="lucide-sm" style="color:var(--yellow)"></i> exa
-          <span class="badge badge-required" style="margin-left:4px;">Requer chave API</span>
-        </div>
-        <div style="font-size:12px; color:var(--text3); margin-bottom:8px;">Busca web com IA e extração de conteúdo — obtenha sua chave em <a href="https://exa.ai" target="_blank" style="color:var(--accent3); text-decoration:underline;">exa.ai</a>.</div>
-        <div class="code-block" style="margin:0;">
-          <div class="code-header">
-            <span class="code-lang">bash</span>
-            <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
-          </div>
-          <pre><code><span class="c-cmd">claude mcp add</span> exa <span class="c-flag">-e</span> <span class="c-string">EXA_API_KEY=sua-chave-aqui</span> <span class="c-flag">--</span> npx <span class="c-flag">-y</span> exa-mcp</code></pre>
-        </div>
-        <div class="info-box warn" style="margin-top:10px;">
-          <i data-lucide="alert-triangle" class="lucide-md info-icon"></i>
-          <div class="info-text">
-            Substitua <span class="ic">sua-chave-aqui</span> pela sua chave real do Exa. A chave fica salva na configuração local do Claude Code — não é commitada no repositório.
-          </div>
+          No comando do <span class="ic">exa</span>, substitua <span class="ic">sua-chave-aqui</span> pela sua chave real. Obtenha em <a href="https://exa.ai" target="_blank" style="color:inherit; text-decoration:underline;">exa.ai</a>. A chave fica salva na configuração local — não é commitada no repositório.
         </div>
       </div>
 
@@ -1923,10 +1886,40 @@
 <span class="c-cmd">claude mcp get</span> context7</code></pre>
       </div>
 
+      <!-- CONSUMO DE TOKENS -->
+      <h3 style="font-size:16px; font-weight:700; color:var(--text); margin: 32px 0 4px; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="cpu" class="lucide-md" style="color:var(--yellow)"></i> Consumo de tokens e contexto
+      </h3>
+      <p style="font-size:13px; color:var(--text2); margin-bottom:16px; line-height:1.7;">
+        Cada MCP carregado injeta as definições dos seus tools no contexto da sessão — isso <strong style="color:var(--text)">consome tokens</strong>. Quanto mais MCPs ativos, mais contexto ocupado antes mesmo de você digitar qualquer coisa.
+      </p>
+
+      <div class="card" style="border-color:rgba(16,185,129,0.2); background:linear-gradient(135deg, rgba(16,185,129,0.03) 0%, rgba(16,185,129,0.01) 100%);">
+        <div class="card-title" style="margin-bottom:10px;"><i data-lucide="search" class="lucide-sm" style="color:var(--green)"></i> Tool Search — otimização automática</div>
+        <p style="font-size:13px; color:var(--text2); line-height:1.7; margin-bottom:12px;">
+          O Claude Code tem um recurso chamado <strong style="color:var(--text)">Tool Search</strong> que resolve isso automaticamente: em vez de carregar todos os tools de todos os MCPs de uma vez, ele carrega apenas os tools relevantes para cada tarefa.
+        </p>
+        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:140px; padding:12px; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.15); border-radius:8px; text-align:center;">
+            <div style="font-size:22px; font-weight:800; color:var(--red);">~72k</div>
+            <div style="font-size:11px; color:var(--text3);">tokens sem Tool Search</div>
+          </div>
+          <div style="flex:1; min-width:140px; padding:12px; background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.15); border-radius:8px; text-align:center;">
+            <div style="font-size:22px; font-weight:800; color:var(--green);">~8.7k</div>
+            <div style="font-size:11px; color:var(--text3);">tokens com Tool Search</div>
+          </div>
+          <div style="flex:1; min-width:140px; padding:12px; background:rgba(209,255,0,0.06); border:1px solid rgba(209,255,0,0.15); border-radius:8px; text-align:center;">
+            <div style="font-size:22px; font-weight:800; color:var(--accent2);">-85%</div>
+            <div style="font-size:11px; color:var(--text3);">redução automática</div>
+          </div>
+        </div>
+        <p style="font-size:12px; color:var(--text3); margin-top:12px;">Ativa sozinho quando os tools ocupam mais de 10% do contexto.</p>
+      </div>
+
       <div class="info-box tip" style="margin-top:12px;">
         <i data-lucide="lightbulb" class="lucide-md info-icon"></i>
         <div class="info-text">
-          <strong>Escopo dos MCPs:</strong> por padrão, <span class="ic">claude mcp add</span> instala globalmente (disponível em qualquer projeto). Para instalar apenas no projeto atual, adicione a flag <span class="ic">--scope project</span>.
+          <strong>Conclusão prática:</strong> instale os MCPs que você realmente usa. O Tool Search cuida do resto.
         </div>
       </div>
 
