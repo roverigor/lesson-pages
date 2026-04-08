@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════
 // Edge Function: delivery-webhook
-// Receives Evolution API webhook on MESSAGES_UPDATE events.
-// Maps DELIVERY_ACK → 'delivered', READ/PLAYED → 'read'.
+// Handles Evolution API webhooks:
+//   messages.update → delivery status tracking
+//   messages.upsert → WhatsApp group message capture (EPIC-011)
 // ═══════════════════════════════════════
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
@@ -17,6 +18,82 @@ const STATUS_MAP: Record<string, string> = {
   READ: "read",
   PLAYED: "read",
 };
+
+// ─── WhatsApp group message handler (messages.upsert) ─────────────────────
+async function handleGroupMessage(
+  payload: Record<string, unknown>,
+  sb: ReturnType<typeof createClient>
+): Promise<Response> {
+  const data = payload.data as Record<string, unknown> | null;
+  if (!data) return new Response(JSON.stringify({ ok: true, skipped: true }), { status: 200, headers: { "Content-Type": "application/json" } });
+
+  // Only process group messages (remoteJid ends with @g.us)
+  const key = data.key as Record<string, unknown> | null;
+  const remoteJid = (key?.remoteJid as string) ?? "";
+  if (!remoteJid.endsWith("@g.us")) {
+    return new Response(JSON.stringify({ ok: true, skipped: true }), { status: 200, headers: { "Content-Type": "application/json" } });
+  }
+
+  // Ignore own messages (fromMe)
+  if (key?.fromMe === true) {
+    return new Response(JSON.stringify({ ok: true, skipped: true }), { status: 200, headers: { "Content-Type": "application/json" } });
+  }
+
+  const messageId = (key?.id as string) ?? "";
+  if (!messageId) return new Response(JSON.stringify({ ok: true, skipped: true }), { status: 200, headers: { "Content-Type": "application/json" } });
+
+  // Extract sender phone from participant JID (e.g., 5543999...@s.whatsapp.net)
+  const participantJid = (data.participant as string) ?? (data.pushName as string) ?? "";
+  const senderPhone = participantJid.replace(/@s\.whatsapp\.net$/, "").replace(/\D/g, "");
+
+  // Detect message type
+  const msgContent = data.message as Record<string, unknown> | null;
+  let messageType = "other";
+  if (msgContent) {
+    if (msgContent.conversation || msgContent.extendedTextMessage) messageType = "text";
+    else if (msgContent.imageMessage) messageType = "image";
+    else if (msgContent.audioMessage) messageType = "audio";
+    else if (msgContent.videoMessage) messageType = "video";
+  }
+
+  // Sent timestamp
+  const messageTimestamp = data.messageTimestamp as number | null;
+  const sentAt = messageTimestamp ? new Date(messageTimestamp * 1000).toISOString() : new Date().toISOString();
+
+  // Lookup student_id by phone
+  let studentId: string | null = null;
+  if (senderPhone) {
+    const { data: student } = await sb
+      .from("students")
+      .select("id")
+      .eq("phone", senderPhone)
+      .single();
+    studentId = student?.id ?? null;
+  }
+
+  // Lookup cohort_id by group JID
+  let cohortId: string | null = null;
+  const { data: cohort } = await sb
+    .from("cohorts")
+    .select("id")
+    .eq("whatsapp_group_jid", remoteJid)
+    .single();
+  cohortId = cohort?.id ?? null;
+
+  // Insert (deduplication via UNIQUE on evolution_message_id)
+  await sb.from("whatsapp_group_messages").insert({
+    group_jid: remoteJid,
+    sender_phone: senderPhone || participantJid,
+    student_id: studentId,
+    cohort_id: cohortId,
+    sent_at: sentAt,
+    message_type: messageType,
+    evolution_message_id: messageId,
+  }).onConflict("evolution_message_id").ignore();
+
+  return new Response(JSON.stringify({ ok: true, captured: true }), { status: 200, headers: { "Content-Type": "application/json" } });
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 serve(async (req: Request) => {
   // Only accept POST
@@ -38,7 +115,15 @@ serve(async (req: Request) => {
     return new Response("Bad Request", { status: 400 });
   }
 
-  // Only process messages.update events
+  const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+
+  // Route by event type
+  if (payload.event === "messages.upsert") {
+    return await handleGroupMessage(payload, sb);
+  }
+
   if (payload.event !== "messages.update") {
     return new Response(JSON.stringify({ ok: true, skipped: true }), {
       status: 200,
@@ -48,10 +133,6 @@ serve(async (req: Request) => {
 
   // data is an array of message updates
   const updates = Array.isArray(payload.data) ? payload.data : [payload.data];
-
-  const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
 
   let processed = 0;
 

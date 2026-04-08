@@ -150,9 +150,11 @@ serve(async (req: Request) => {
   }
 
   // 3. Upsert survey_links (one token per student, skip if already exists)
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
   const linkInserts = students.map((s) => ({
     survey_id: survey.id,
     student_id: s.id,
+    expires_at: expiresAt,
   }));
 
   await client

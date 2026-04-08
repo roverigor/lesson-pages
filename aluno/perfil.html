@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil 360 — Academia Lendária</title>
+  <link rel="stylesheet" href="../templates/design-tokens-dark-premium.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-sans); background: #080808; color: #888; min-height: 100vh; }
+
+    /* LOGIN */
+    .login-overlay { position: fixed; inset: 0; background: #080808; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .login-overlay.hidden { display: none; }
+    .login-box { background: #111; border: 1px solid #222; border-radius: 16px; padding: 40px; width: 90%; max-width: 380px; text-align: center; }
+    .login-icon { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; }
+    .login-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .login-field { width: 100%; padding: 12px 16px; border-radius: 8px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd; font-size: 14px; font-family: var(--font-sans); margin-bottom: 12px; outline: none; }
+    .login-field:focus { border-color: #6366f1; }
+    .login-btn { width: 100%; padding: 12px; border-radius: 8px; border: none; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font-sans); }
+    .login-error { color: #ef4444; font-size: 12px; margin-top: 10px; display: none; }
+    .login-error.show { display: block; }
+
+    /* HEADER */
+    .header { background: #101010; border-bottom: 1px solid #1a1a1a; padding: 16px 32px; position: sticky; top: 0; z-index: 200; }
+    .header-inner { max-width: 960px; margin: 0 auto; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .back-btn { color: #555; font-size: 12px; font-weight: 600; text-decoration: none; padding: 6px 12px; border-radius: 7px; border: 1px solid #1a1a1a; }
+    .back-btn:hover { color: #888; border-color: #333; }
+    .header-label { font-size: 11px; font-weight: 700; color: #444; text-transform: uppercase; letter-spacing: .06em; }
+    .header-name { font-size: 16px; font-weight: 800; color: #fff; }
+
+    /* LAYOUT */
+    .layout { max-width: 960px; margin: 0 auto; padding: 28px 32px 80px; }
+
+    /* PROFILE CARD */
+    .profile-card { background: #101010; border: 1px solid #1a1a1a; border-radius: 14px; padding: 24px; display: flex; gap: 20px; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; }
+    .profile-avatar { width: 64px; height: 64px; border-radius: 14px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .profile-info { flex: 1; }
+    .profile-name { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .profile-meta { font-size: 13px; color: #555; display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+    .profile-score { display: flex; gap: 10px; flex-wrap: wrap; }
+    .score-pill { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 8px; padding: 10px 16px; text-align: center; }
+    .score-num { font-size: 22px; font-weight: 800; color: #fff; }
+    .score-num.green { color: #4ade80; }
+    .score-num.amber { color: #f59e0b; }
+    .score-num.red { color: #f87171; }
+    .score-num.purple { color: #a5b4fc; }
+    .score-label { font-size: 10px; color: #444; margin-top: 2px; }
+
+    /* SECTIONS */
+    .section { background: #101010; border: 1px solid #1a1a1a; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
+    .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .section-icon { font-size: 16px; }
+    .section-title { font-size: 13px; font-weight: 800; color: #fff; }
+    .section-badge { padding: 2px 8px; border-radius: 5px; font-size: 10px; font-weight: 700; background: rgba(99,102,241,0.12); color: #a5b4fc; }
+    .empty-section { font-size: 13px; color: #333; padding: 12px 0; }
+
+    /* ATTENDANCE HISTORY */
+    .aula-list { display: flex; flex-direction: column; gap: 6px; }
+    .aula-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #141414; }
+    .aula-row:last-child { border-bottom: none; }
+    .aula-date { font-size: 12px; color: #666; min-width: 80px; }
+    .aula-status { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot-green { background: #4ade80; }
+    .dot-red { background: #f87171; }
+    .present { color: #4ade80; }
+    .absent { color: #f87171; }
+
+    /* NPS */
+    .nps-score { font-size: 36px; font-weight: 900; }
+    .nps-det { color: #f87171; }
+    .nps-neu { color: #f59e0b; }
+    .nps-pro { color: #4ade80; }
+
+    /* WA/ZOOM metrics */
+    .metrics { display: flex; gap: 10px; flex-wrap: wrap; }
+    .metric { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 8px; padding: 12px 16px; flex: 1; min-width: 100px; }
+    .metric-num { font-size: 20px; font-weight: 800; color: #fff; }
+    .metric-label { font-size: 10px; color: #444; margin-top: 2px; }
+
+    /* ENGAGEMENT */
+    .engagement-bar { height: 6px; background: #1a1a1a; border-radius: 3px; overflow: hidden; margin-top: 8px; }
+    .engagement-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+
+    /* SPINNER */
+    .spinner { width: 28px; height: 28px; border: 3px solid #1e1e1e; border-top-color: #6366f1; border-radius: 50%; animation: spin .7s linear infinite; margin: 60px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 600px) {
+      .layout { padding: 20px 16px 60px; }
+      .header { padding: 14px 16px; }
+      .profile-card { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-icon">👤</div>
+    <div class="login-title">Perfil 360</div>
+    <div style="font-size:13px;color:#555;margin-bottom:24px">Acesso restrito à equipe educacional</div>
+    <input class="login-field" id="login-password" type="password" placeholder="Senha" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error">Senha incorreta</div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header" id="app-header" style="display:none">
+  <div class="header-inner">
+    <a class="back-btn" id="back-link" href="../turma/">← Turmas</a>
+    <div>
+      <div class="header-label">Perfil 360 do Aluno</div>
+      <div class="header-name" id="header-name">Carregando...</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="layout" id="app-content" style="display:none">
+  <div id="profile-content"><div class="spinner"></div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
+<script>
+  const SUPABASE_URL = 'https://gpufcipkajppykmnmdeh.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU';
+  const ADMIN_PASSWORD = 'academia2024';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const studentId = new URLSearchParams(location.search).get('id');
+
+  function doLogin() {
+    if (document.getElementById('login-password').value === ADMIN_PASSWORD) {
+      localStorage.setItem('admin_auth', '1');
+      showApp();
+    } else {
+      document.getElementById('login-error').classList.add('show');
+    }
+  }
+
+  function showApp() {
+    document.getElementById('login-overlay').classList.add('hidden');
+    document.getElementById('app-header').style.display = '';
+    document.getElementById('app-content').style.display = '';
+    if (!studentId) {
+      document.getElementById('profile-content').innerHTML = '<div style="text-align:center;padding:60px;color:#333">Aluno não encontrado.</div>';
+      return;
+    }
+    loadProfile();
+  }
+
+  function checkAuth() {
+    if (localStorage.getItem('admin_auth') === '1') showApp();
+  }
+
+  async function loadProfile() {
+    // Parallel load everything
+    const [studentRes, attendanceRes, npsRes, waRes, zoomChatRes, engagementRes] = await Promise.all([
+      sb.from('students').select('id, name, phone, cohort_id, active, cohorts(id, name)').eq('id', studentId).single(),
+      sb.from('student_attendance').select('class_date, present, duration_minutes').eq('student_id', studentId).order('class_date', { ascending: false }),
+      sb.from('survey_responses').select('submitted_at, survey_links!inner(student_id, surveys(name)), survey_answers(question_id, value_number, value_text)')
+        .eq('student_id', studentId).order('submitted_at', { ascending: false }),
+      sb.from('whatsapp_group_messages').select('sent_at, message_type').eq('student_id', studentId).order('sent_at', { ascending: false }),
+      sb.from('zoom_chat_messages').select('sent_at, zoom_meeting_id').eq('student_id', studentId).order('sent_at', { ascending: false }),
+      sb.from('engagement_daily_ranking').select('ref_date, engagement_score, wa_messages, zoom_chat_messages, attendance_count').eq('student_id', studentId).order('ref_date', { ascending: false }).limit(30),
+    ]);
+
+    const student = studentRes.data;
+    if (!student) {
+      document.getElementById('profile-content').innerHTML = '<div style="text-align:center;padding:60px;color:#333">Aluno não encontrado.</div>';
+      return;
+    }
+
+    document.getElementById('header-name').textContent = student.name;
+    document.title = student.name + ' — Perfil 360';
+
+    const cohort = student.cohorts;
+    if (cohort?.id) {
+      document.getElementById('back-link').href = '../turma/detalhe.html?id=' + cohort.id;
+    }
+
+    const attendance = attendanceRes.data ?? [];
+    const totalAulas = attendance.length;
+    const totalPresente = attendance.filter(a => a.present).length;
+    const pct = totalAulas > 0 ? Math.round(totalPresente / totalAulas * 100) : 0;
+
+    const waMessages = waRes.data ?? [];
+    const waDays = new Set(waMessages.map(m => (m.sent_at ?? '').slice(0, 10)));
+    const zoomChats = zoomChatRes.data ?? [];
+    const engagement = engagementRes.data ?? [];
+    const totalEngScore = engagement.reduce((a, r) => a + (r.engagement_score ?? 0), 0);
+
+    // NPS responses
+    const npsResponses = npsRes.data ?? [];
+    let npsScore = null, npsDate = null, npsSurveyName = null;
+    for (const r of npsResponses) {
+      const npsAnswer = (r.survey_answers ?? []).find(a => a.value_number != null);
+      if (npsAnswer) {
+        npsScore = npsAnswer.value_number;
+        npsDate = r.submitted_at;
+        npsSurveyName = r.survey_links?.surveys?.name ?? null;
+        break;
+      }
+    }
+
+    // Initials
+    const initials = (student.name ?? '').split(' ').filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+
+    // Render
+    const pctCls = pct >= 80 ? 'green' : pct >= 60 ? 'amber' : 'red';
+
+    document.getElementById('profile-content').innerHTML = `
+      <!-- PROFILE CARD -->
+      <div class="profile-card">
+        <div class="profile-avatar">${escHtml(initials)}</div>
+        <div class="profile-info">
+          <div class="profile-name">${escHtml(student.name)}</div>
+          <div class="profile-meta">
+            <span>📱 ${escHtml(student.phone ?? 'Sem telefone')}</span>
+            ${cohort ? `<span>🏛️ ${escHtml(cohort.name)}</span>` : ''}
+            <span>${student.active !== false ? '✅ Ativo' : '❌ Inativo'}</span>
+          </div>
+          <div class="profile-score">
+            <div class="score-pill">
+              <div class="score-num ${pctCls}">${pct}%</div>
+              <div class="score-label">Presença</div>
+            </div>
+            <div class="score-pill">
+              <div class="score-num">${totalPresente}/${totalAulas}</div>
+              <div class="score-label">Aulas</div>
+            </div>
+            <div class="score-pill">
+              <div class="score-num purple">${totalEngScore}</div>
+              <div class="score-label">Score Total</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRESENÇA HISTÓRICO -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-icon">📋</span>
+          <span class="section-title">Histórico de Presença</span>
+          <span class="section-badge">${totalPresente} de ${totalAulas} aulas</span>
+        </div>
+        ${attendance.length === 0
+          ? '<div class="empty-section">Sem registros de presença.</div>'
+          : `<div class="aula-list">
+              ${attendance.slice(0, 20).map(a => `
+                <div class="aula-row">
+                  <div class="aula-date">${fmtDate(a.class_date)}</div>
+                  <div class="aula-status">
+                    <div class="dot ${a.present ? 'dot-green' : 'dot-red'}"></div>
+                    <span class="${a.present ? 'present' : 'absent'}">${a.present ? 'Presente' : 'Ausente'}</span>
+                    ${a.duration_minutes ? `<span style="font-size:11px;color:#444;font-weight:400">${a.duration_minutes}min</span>` : ''}
+                  </div>
+                </div>`).join('')}
+              ${attendance.length > 20 ? `<div style="font-size:12px;color:#444;text-align:center;padding:8px">+ ${attendance.length - 20} registros mais antigos</div>` : ''}
+            </div>`
+        }
+      </div>
+
+      <!-- NPS -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-icon">⭐</span>
+          <span class="section-title">NPS Respondido</span>
+          ${npsScore != null ? `<span class="section-badge">${npsResponses.length} resposta${npsResponses.length !== 1 ? 's' : ''}</span>` : ''}
+        </div>
+        ${npsScore == null
+          ? '<div class="empty-section">Nenhum NPS respondido por este aluno.</div>'
+          : `<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+              <div class="nps-score ${npsScore >= 9 ? 'nps-pro' : npsScore >= 7 ? 'nps-neu' : 'nps-det'}">${npsScore}</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#fff">${npsScore >= 9 ? 'Promotor' : npsScore >= 7 ? 'Neutro' : 'Detrator'}</div>
+                <div style="font-size:12px;color:#555">${npsSurveyName ? escHtml(npsSurveyName) + ' · ' : ''}${fmtDateTime(npsDate)}</div>
+              </div>
+            </div>`
+        }
+      </div>
+
+      <!-- WHATSAPP -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-icon">💬</span>
+          <span class="section-title">WhatsApp — Grupo da Turma</span>
+          ${waMessages.length > 0 ? `<span class="section-badge">${waMessages.length} msgs</span>` : ''}
+        </div>
+        ${waMessages.length === 0
+          ? '<div class="empty-section">Sem dados de WhatsApp. Aguardando configuração do grupo da turma.</div>'
+          : `<div class="metrics">
+              <div class="metric">
+                <div class="metric-num">${waMessages.length}</div>
+                <div class="metric-label">Total de Mensagens</div>
+              </div>
+              <div class="metric">
+                <div class="metric-num">${waDays.size}</div>
+                <div class="metric-label">Dias Ativos</div>
+              </div>
+              <div class="metric">
+                <div class="metric-num">${waMessages.filter(m => m.message_type === 'text').length}</div>
+                <div class="metric-label">Mensagens de Texto</div>
+              </div>
+            </div>
+            <div style="margin-top:10px;font-size:12px;color:#444">Última mensagem: ${fmtDateTime(waMessages[0]?.sent_at)}</div>`
+        }
+      </div>
+
+      <!-- ZOOM CHAT -->
+      <div class="section">
+        <div class="section-header">
+          <span class="section-icon">📹</span>
+          <span class="section-title">Zoom — Chat das Aulas</span>
+          ${zoomChats.length > 0 ? `<span class="section-badge">${zoomChats.length} msgs</span>` : ''}
+        </div>
+        ${zoomChats.length === 0
+          ? '<div class="empty-section">Sem dados de chat Zoom. Os dados são coletados às 02h após cada aula.</div>'
+          : `<div class="metrics">
+              <div class="metric">
+                <div class="metric-num">${zoomChats.length}</div>
+                <div class="metric-label">Mensagens no Chat</div>
+              </div>
+              <div class="metric">
+                <div class="metric-num">${new Set(zoomChats.map(c => c.zoom_meeting_id)).size}</div>
+                <div class="metric-label">Aulas com Participação</div>
+              </div>
+            </div>`
+        }
+      </div>
+
+      <!-- ENGAGEMENT SCORE -->
+      ${engagement.length > 0 ? `
+      <div class="section">
+        <div class="section-header">
+          <span class="section-icon">🔥</span>
+          <span class="section-title">Score de Engajamento</span>
+          <span class="section-badge">Últimos ${engagement.length} dias</span>
+        </div>
+        <p style="font-size:12px;color:#444;margin-bottom:14px">Fórmula: presença × 3 + msgs WA + msgs Zoom chat</p>
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-num" style="color:#a5b4fc">${totalEngScore}</div>
+            <div class="metric-label">Score Total</div>
+          </div>
+          <div class="metric">
+            <div class="metric-num">${Math.round(totalEngScore / Math.max(engagement.length, 1))}</div>
+            <div class="metric-label">Média Diária</div>
+          </div>
+        </div>
+        <div style="margin-top:12px">
+          ${engagement.slice(0, 7).map(r => `
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+              <span style="font-size:11px;color:#444;min-width:60px">${(r.ref_date ?? '').slice(5)}</span>
+              <div class="engagement-bar" style="flex:1">
+                <div class="engagement-fill" style="width:${Math.min(r.engagement_score * 5, 100)}%"></div>
+              </div>
+              <span style="font-size:11px;color:#888;min-width:24px">${r.engagement_score}</span>
+            </div>`).join('')}
+        </div>
+      </div>` : ''}
+    `;
+  }
+
+  function fmtDate(d) {
+    if (!d) return '—';
+    const [y, m, day] = d.split('-');
+    return `${day}/${m}/${y}`;
+  }
+
+  function fmtDateTime(d) {
+    if (!d) return '—';
+    const dt = new Date(d);
+    return dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function escHtml(s) {
+    return (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  checkAuth();
+</script>
+</body>
+</html>

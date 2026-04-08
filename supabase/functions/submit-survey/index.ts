@@ -70,7 +70,7 @@ serve(async (req: Request) => {
   // 1. Validate token
   const { data: link, error: linkErr } = await client
     .from("survey_links")
-    .select("id, survey_id, student_id, used_at, surveys(id, type, status)")
+    .select("id, survey_id, student_id, used_at, expires_at, surveys(id, type, status)")
     .eq("token", token)
     .single();
 
@@ -83,6 +83,13 @@ serve(async (req: Request) => {
 
   if (link.used_at) {
     return new Response(JSON.stringify({ error: "token_already_used" }), {
+      status: 400,
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    });
+  }
+
+  if (link.expires_at && new Date(link.expires_at) < new Date()) {
+    return new Response(JSON.stringify({ error: "token_expired" }), {
       status: 400,
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });

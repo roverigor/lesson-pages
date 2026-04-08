@@ -350,12 +350,15 @@
 
     const { data, error } = await sb
       .from('survey_links')
-      .select('id, token, used_at, survey_id, students(id, name), surveys(id, type, name, question, follow_up, intro_text, accent_color, status)')
+      .select('id, token, used_at, expires_at, survey_id, students(id, name), surveys(id, type, name, question, follow_up, intro_text, accent_color, status)')
       .eq('token', token)
       .single();
 
-    if (error || !data) { showError('Link inválido', 'Este link não existe ou expirou.'); return; }
-    if (data.used_at)   { showError('Já respondido', 'Você já respondeu a esta avaliação. Obrigado!'); return; }
+    if (error || !data) { showError('Link inválido', 'Este link de avaliação é inválido.'); return; }
+    if (data.used_at)   { showError('Avaliação já enviada', 'Sua resposta já foi registrada. Obrigado! 🚀'); return; }
+    if (data.expires_at && new Date(data.expires_at) < new Date()) {
+      showError('Prazo encerrado', 'O link de avaliação expirou após 7 dias. Entre em contato com o coordenador caso precise avaliar.'); return;
+    }
     if (!data.surveys || data.surveys.status === 'draft') {
       showError('Avaliação indisponível', 'Esta avaliação ainda não está disponível.'); return;
     }

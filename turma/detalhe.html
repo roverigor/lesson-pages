@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Turma — Academia Lendária</title>
+  <link rel="stylesheet" href="../templates/design-tokens-dark-premium.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-sans); background: #080808; color: #888; min-height: 100vh; }
+
+    /* LOGIN */
+    .login-overlay { position: fixed; inset: 0; background: #080808; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .login-overlay.hidden { display: none; }
+    .login-box { background: #111; border: 1px solid #222; border-radius: 16px; padding: 40px; width: 90%; max-width: 380px; text-align: center; }
+    .login-icon { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; }
+    .login-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .login-subtitle { font-size: 13px; color: #555; margin-bottom: 28px; }
+    .login-field { width: 100%; padding: 12px 16px; border-radius: 8px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd; font-size: 14px; font-family: var(--font-sans); margin-bottom: 12px; outline: none; }
+    .login-field:focus { border-color: #6366f1; }
+    .login-btn { width: 100%; padding: 12px; border-radius: 8px; border: none; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font-sans); margin-top: 8px; }
+    .login-error { color: #ef4444; font-size: 12px; margin-top: 12px; display: none; }
+    .login-error.show { display: block; }
+
+    /* HEADER */
+    .header { background: #101010; border-bottom: 1px solid #1a1a1a; padding: 16px 32px; position: sticky; top: 0; z-index: 200; }
+    .header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .back-btn { color: #555; font-size: 12px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 7px; border: 1px solid #1a1a1a; }
+    .back-btn:hover { color: #888; border-color: #333; }
+    .header-title { font-size: 16px; font-weight: 800; color: #fff; }
+    .header-sub { font-size: 11px; color: #444; }
+
+    /* LAYOUT */
+    .layout { max-width: 1200px; margin: 0 auto; padding: 28px 32px 80px; }
+
+    /* STATS ROW */
+    .stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
+    .stat-card { background: #101010; border: 1px solid #1a1a1a; border-radius: 10px; padding: 16px 20px; flex: 1; min-width: 130px; }
+    .stat-num { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
+    .stat-num.green { color: #4ade80; }
+    .stat-num.amber { color: #f59e0b; }
+    .stat-num.red { color: #f87171; }
+    .stat-label { font-size: 11px; color: #444; margin-top: 3px; }
+
+    /* TABS */
+    .tabs { display: flex; gap: 4px; background: #0d0d0d; padding: 4px; border-radius: 10px; border: 1px solid #1a1a1a; margin-bottom: 20px; width: fit-content; }
+    .tab { padding: 8px 16px; border-radius: 7px; font-size: 12px; font-weight: 600; color: #444; cursor: pointer; border: none; background: transparent; font-family: var(--font-sans); }
+    .tab.active { background: #1e1e2e; color: #a5b4fc; }
+
+    /* ALUNOS TABLE */
+    .toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .search { flex: 1; min-width: 200px; padding: 10px 14px; border-radius: 8px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd; font-size: 13px; font-family: var(--font-sans); outline: none; }
+    .search:focus { border-color: #6366f1; }
+    .search::placeholder { color: #333; }
+    .sort-btn { padding: 8px 14px; border-radius: 8px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #666; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); }
+    .sort-btn.active { color: #a5b4fc; border-color: rgba(99,102,241,0.4); }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; font-size: 11px; font-weight: 700; color: #444; text-transform: uppercase; letter-spacing: .06em; padding: 8px 12px; border-bottom: 1px solid #1a1a1a; }
+    td { padding: 12px; font-size: 13px; color: #888; border-bottom: 1px solid #111; vertical-align: middle; }
+    tr:hover td { background: #0d0d0d; }
+    .student-name { font-weight: 700; color: #fff; }
+    .pct-bar { height: 4px; background: #1a1a1a; border-radius: 2px; width: 80px; overflow: hidden; margin-top: 4px; }
+    .pct-fill { height: 100%; border-radius: 2px; }
+    .fill-green { background: #4ade80; }
+    .fill-amber { background: #f59e0b; }
+    .fill-red { background: #f87171; }
+    .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: 700; }
+    .badge-green { background: rgba(74,222,128,.12); color: #4ade80; }
+    .badge-amber { background: rgba(245,158,11,.12); color: #f59e0b; }
+    .badge-red { background: rgba(239,68,68,.12); color: #f87171; }
+    .btn-sm { padding: 5px 12px; border-radius: 6px; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25); color: #a5b4fc; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); text-decoration: none; display: inline-block; }
+    .btn-sm:hover { background: rgba(99,102,241,0.2); }
+
+    /* WA ranking section */
+    .section-title { font-size: 11px; font-weight: 700; color: #444; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; margin-top: 24px; }
+
+    /* LOADING / EMPTY */
+    .spinner { width: 28px; height: 28px; border: 3px solid #1e1e1e; border-top-color: #6366f1; border-radius: 50%; animation: spin .7s linear infinite; margin: 60px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty { text-align: center; padding: 40px; font-size: 13px; color: #333; }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .layout { padding: 20px 16px 60px; }
+      th.hide-mobile, td.hide-mobile { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-icon">🏛️</div>
+    <div class="login-title">Turmas</div>
+    <div class="login-subtitle">Acesso restrito</div>
+    <input class="login-field" id="login-password" type="password" placeholder="Senha" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error">Senha incorreta</div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header" id="app-header" style="display:none">
+  <div class="header-inner">
+    <a class="back-btn" href="index.html">← Turmas</a>
+    <div>
+      <div class="header-title" id="turma-name-header">Carregando...</div>
+      <div class="header-sub" id="turma-sub-header"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="layout" id="app-content" style="display:none">
+  <!-- Stats -->
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card"><div class="stat-num" id="st-alunos">—</div><div class="stat-label">Alunos</div></div>
+    <div class="stat-card"><div class="stat-num" id="st-pct" class="green">—</div><div class="stat-label">% Presença Média</div></div>
+    <div class="stat-card"><div class="stat-num" id="st-wa">—</div><div class="stat-label">Ativos no WA</div></div>
+    <div class="stat-card"><div class="stat-num" id="st-aulas">—</div><div class="stat-label">Aulas Registradas</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('alunos', this)">👥 Alunos</button>
+    <button class="tab" onclick="switchTab('presenca', this)">📋 Presença</button>
+    <button class="tab" onclick="switchTab('wa', this)">💬 WhatsApp</button>
+  </div>
+
+  <!-- Tab: Alunos -->
+  <div id="tab-alunos">
+    <div class="toolbar">
+      <input class="search" id="search-alunos" placeholder="Buscar aluno..." oninput="filterAlunos()">
+      <button class="sort-btn active" id="sort-pct" onclick="sortBy('pct')">↓ % Presença</button>
+      <button class="sort-btn" id="sort-name" onclick="sortBy('name')">A–Z</button>
+    </div>
+    <div id="alunos-table"><div class="spinner"></div></div>
+  </div>
+
+  <!-- Tab: Presença -->
+  <div id="tab-presenca" style="display:none">
+    <div id="presenca-content"><div class="spinner"></div></div>
+  </div>
+
+  <!-- Tab: WhatsApp -->
+  <div id="tab-wa" style="display:none">
+    <p style="font-size:13px;color:#555;margin-bottom:16px">Ranking de participação no grupo WhatsApp da turma (dados atualizados às 02h diariamente)</p>
+    <div id="wa-content"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
+<script>
+  const SUPABASE_URL = 'https://gpufcipkajppykmnmdeh.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU';
+  const ADMIN_PASSWORD = 'academia2024';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const cohortId = new URLSearchParams(location.search).get('id');
+  let allStudents = [];
+  let sortMode = 'pct';
+
+  function doLogin() {
+    if (document.getElementById('login-password').value === ADMIN_PASSWORD) {
+      localStorage.setItem('admin_auth', '1');
+      showApp();
+    } else {
+      document.getElementById('login-error').classList.add('show');
+    }
+  }
+
+  function showApp() {
+    document.getElementById('login-overlay').classList.add('hidden');
+    document.getElementById('app-header').style.display = '';
+    document.getElementById('app-content').style.display = '';
+    if (!cohortId) {
+      document.getElementById('turma-name-header').textContent = 'Turma não encontrada';
+      return;
+    }
+    loadAll();
+  }
+
+  function checkAuth() {
+    if (localStorage.getItem('admin_auth') === '1') showApp();
+  }
+
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    ['alunos','presenca','wa'].forEach(t => {
+      document.getElementById('tab-' + t).style.display = t === name ? '' : 'none';
+    });
+  }
+
+  async function loadAll() {
+    const [cohortRes, summaryRes, waRes] = await Promise.all([
+      sb.from('cohorts').select('id, name').eq('id', cohortId).single(),
+      sb.rpc('get_attendance_summary', { p_cohort_id: cohortId }),
+      sb.from('whatsapp_group_messages').select('student_id, sent_at').eq('cohort_id', cohortId),
+    ]);
+
+    const cohort = cohortRes.data;
+    document.getElementById('turma-name-header').textContent = cohort?.name ?? 'Turma';
+    document.title = (cohort?.name ?? 'Turma') + ' — Academia Lendária';
+
+    const summary = summaryRes.data ?? [];
+    allStudents = summary;
+
+    // Stats
+    const avgPct = summary.length ? Math.round(summary.reduce((a, s) => a + parseFloat(s.presence_pct ?? 0), 0) / summary.length) : 0;
+    const waMessages = waRes.data ?? [];
+    const waStudentIds = new Set(waMessages.map(m => m.student_id).filter(Boolean));
+    const totalAulas = summary[0]?.total_classes ?? 0;
+
+    document.getElementById('st-alunos').textContent = summary.length;
+    const pctEl = document.getElementById('st-pct');
+    pctEl.textContent = avgPct + '%';
+    pctEl.className = 'stat-num ' + (avgPct >= 80 ? 'green' : avgPct >= 60 ? 'amber' : 'red');
+    document.getElementById('st-wa').textContent = waStudentIds.size;
+    document.getElementById('st-aulas').textContent = totalAulas;
+    document.getElementById('turma-sub-header').textContent = summary.length + ' alunos · ' + totalAulas + ' aulas';
+
+    // WA days per student
+    const waDays = {};
+    waMessages.forEach(m => {
+      if (!m.student_id) return;
+      const day = (m.sent_at ?? '').slice(0, 10);
+      if (!waDays[m.student_id]) waDays[m.student_id] = new Set();
+      waDays[m.student_id].add(day);
+    });
+
+    renderAlunosTable(summary, waDays);
+    renderPresencaTab(summary);
+    renderWaTab(summary, waDays);
+  }
+
+  function renderAlunosTable(students, waDays) {
+    const sorted = sortStudents(students, sortMode);
+    const html = sorted.map(s => {
+      const pct = parseFloat(s.presence_pct ?? 0);
+      const cls = pct >= 80 ? 'green' : pct >= 60 ? 'amber' : 'red';
+      const waDias = waDays[s.student_id] ? waDays[s.student_id].size : 0;
+      return `<tr class="student-row" data-name="${escHtml(s.student_name)}">
+        <td><div class="student-name">${escHtml(s.student_name)}</div><div style="font-size:11px;color:#444">${escHtml(s.phone ?? '')}</div></td>
+        <td class="hide-mobile">
+          <div class="${cls}" style="font-weight:800;font-size:14px">${pct}%</div>
+          <div class="pct-bar"><div class="pct-fill fill-${cls}" style="width:${pct}%"></div></div>
+        </td>
+        <td>${s.total_present ?? 0}/${s.total_classes ?? 0}</td>
+        <td class="hide-mobile"><span class="badge badge-${waDias > 0 ? 'green' : 'amber'}">${waDias} dias</span></td>
+        <td><a class="btn-sm" href="../aluno/perfil.html?id=${s.student_id}">Ver Perfil →</a></td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('alunos-table').innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Aluno</th>
+            <th class="hide-mobile">% Presença</th>
+            <th>Aulas</th>
+            <th class="hide-mobile">WA Dias Ativos</th>
+            <th>Perfil</th>
+          </tr>
+        </thead>
+        <tbody>${html || '<tr><td colspan="5" class="empty">Nenhum aluno encontrado.</td></tr>'}</tbody>
+      </table>`;
+  }
+
+  function renderPresencaTab(summary) {
+    const html = summary.map(s => {
+      const pct = parseFloat(s.presence_pct ?? 0);
+      const cls = pct >= 80 ? 'badge-green' : pct >= 60 ? 'badge-amber' : 'badge-red';
+      const last3 = (s.last_3 ?? []).map(a =>
+        `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${a.present ? '#4ade80' : '#ef4444'};margin:1px" title="${a.date}: ${a.present ? 'Presente' : 'Ausente'}"></span>`
+      ).join('');
+      return `<tr>
+        <td><div class="student-name">${escHtml(s.student_name)}</div></td>
+        <td>${last3 || '—'}</td>
+        <td><span class="badge ${cls}">${pct}%</span></td>
+        <td>${s.consecutive_abs ?? 0} ${s.consecutive_abs >= 2 ? '⚠️' : ''}</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('presenca-content').innerHTML = `
+      <table>
+        <thead><tr><th>Aluno</th><th>Últimas 3 aulas</th><th>% Geral</th><th>Faltas seguidas</th></tr></thead>
+        <tbody>${html || '<tr><td colspan="4" class="empty">Sem dados de presença.</td></tr>'}</tbody>
+      </table>`;
+  }
+
+  function renderWaTab(summary, waDays) {
+    const ranked = summary.map(s => ({
+      ...s,
+      waDias: waDays[s.student_id] ? waDays[s.student_id].size : 0,
+    })).sort((a, b) => b.waDias - a.waDias);
+
+    if (ranked.every(s => s.waDias === 0)) {
+      document.getElementById('wa-content').innerHTML = `<div class="empty">Sem dados de WhatsApp ainda.<br>Configure o grupo da turma no Supabase (cohorts.whatsapp_group_jid) e aguarde as primeiras mensagens.</div>`;
+      return;
+    }
+
+    const html = ranked.map((s, i) => {
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
+      return `<tr>
+        <td style="width:40px;text-align:center;font-size:14px">${medal}</td>
+        <td><div class="student-name">${escHtml(s.student_name)}</div></td>
+        <td><span class="badge ${s.waDias > 0 ? 'badge-green' : 'badge-amber'}">${s.waDias} dias</span></td>
+        <td><a class="btn-sm" href="../aluno/perfil.html?id=${s.student_id}">Perfil</a></td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('wa-content').innerHTML = `
+      <table>
+        <thead><tr><th>#</th><th>Aluno</th><th>Dias Ativos</th><th>Perfil</th></tr></thead>
+        <tbody>${html}</tbody>
+      </table>`;
+  }
+
+  function sortStudents(arr, mode) {
+    if (mode === 'pct') return [...arr].sort((a, b) => parseFloat(b.presence_pct ?? 0) - parseFloat(a.presence_pct ?? 0));
+    return [...arr].sort((a, b) => (a.student_name ?? '').localeCompare(b.student_name ?? ''));
+  }
+
+  function sortBy(mode) {
+    sortMode = mode;
+    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('sort-' + mode).classList.add('active');
+    renderAlunosTable(allStudents, {});
+    loadAll(); // reload to get waDays again
+  }
+
+  function filterAlunos() {
+    const q = document.getElementById('search-alunos').value.toLowerCase();
+    document.querySelectorAll('.student-row').forEach(row => {
+      row.style.display = row.dataset.name.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+
+  function escHtml(s) {
+    return (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  checkAuth();
+</script>
+</body>
+</html>

@@ -1039,6 +1039,195 @@ serve(async (req: Request) => {
       );
     }
 
+    // ── ACTION: import_meeting_chat (Story 11.7 — EPIC-011) ─────────────────
+    // body: { action: "import_meeting_chat", zoom_meeting_id: string }
+    if (action === "import_meeting_chat") {
+      const sb = getSupabaseClient();
+      const zmId = (body as { zoom_meeting_id?: string }).zoom_meeting_id;
+      if (!zmId) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "zoom_meeting_id required" }),
+          { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+
+      // Get cohort_id for this meeting
+      const { data: meeting } = await sb
+        .from("zoom_meetings")
+        .select("cohort_id")
+        .eq("zoom_meeting_id", zmId)
+        .single();
+      const cohortId = meeting?.cohort_id ?? null;
+
+      const token = await getS2SToken();
+
+      // Fetch chat from Zoom Reports API
+      let chatMessages: Array<{ message_id: string; sender: string; date_time: string; message: string }> = [];
+      try {
+        // Need double-encode for URL path
+        const encoded = encodeURIComponent(zmId);
+        const data = await zoomGet(token, `/report/meetings/${encoded}/chat?page_size=300`);
+        chatMessages = (data?.chat_messages ?? data?.messages ?? []) as typeof chatMessages;
+      } catch (e) {
+        return new Response(
+          JSON.stringify({ ok: false, error: `Zoom chat fetch failed: ${e instanceof Error ? e.message : e}` }),
+          { status: 502, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+
+      // Load students for fuzzy name matching
+      const { data: students } = cohortId
+        ? await sb.from("students").select("id, name").eq("cohort_id", cohortId).eq("active", true)
+        : await sb.from("students").select("id, name").eq("active", true);
+
+      function matchStudentByName(senderName: string): string | null {
+        if (!students || !senderName) return null;
+        const nameLower = senderName.toLowerCase().trim();
+        // Exact match first
+        let match = students.find((s: { id: string; name: string }) =>
+          s.name.toLowerCase() === nameLower
+        );
+        if (match) return match.id;
+        // First name match
+        const firstName = nameLower.split(" ")[0];
+        match = students.find((s: { id: string; name: string }) =>
+          s.name.toLowerCase().startsWith(firstName)
+        );
+        return match?.id ?? null;
+      }
+
+      let inserted = 0, skipped = 0;
+      for (const msg of chatMessages) {
+        const msgId = msg.message_id;
+        if (!msgId) { skipped++; continue; }
+        const studentId = matchStudentByName(msg.sender);
+        const sentAt = msg.date_time ? new Date(msg.date_time).toISOString() : new Date().toISOString();
+
+        const { error } = await sb.from("zoom_chat_messages").insert({
+          zoom_meeting_id: zmId,
+          sender_name: msg.sender ?? "",
+          student_id: studentId,
+          cohort_id: cohortId,
+          sent_at: sentAt,
+          message: msg.message ?? "",
+          message_id: msgId,
+        }).onConflict("message_id").ignore();
+
+        if (!error) inserted++;
+        else skipped++;
+      }
+
+      // Mark meeting as chat_imported
+      await sb.from("zoom_meetings")
+        .update({ chat_imported: true })
+        .eq("zoom_meeting_id", zmId);
+
+      return new Response(
+        JSON.stringify({ ok: true, zoom_meeting_id: zmId, inserted, skipped, total: chatMessages.length }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
+    // ── ACTION: nightly_engagement_sync (Story 11.7 — EPIC-011) ─────────────
+    // body: { action: "nightly_engagement_sync" }
+    // Called by pg_cron at 02:00 AM — imports Zoom chat + recalculates engagement
+    if (action === "nightly_engagement_sync") {
+      const sb = getSupabaseClient();
+      const yesterday = new Date();
+      yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+      const refDate = yesterday.toISOString().slice(0, 10);
+
+      // 1. Find meetings from yesterday that haven't had chat imported
+      const { data: meetings } = await sb
+        .from("zoom_meetings")
+        .select("zoom_meeting_id, cohort_id")
+        .eq("chat_imported", false)
+        .gte("start_time", refDate + "T00:00:00Z")
+        .lt("start_time", refDate + "T23:59:59Z");
+
+      const meetingsProcessed: string[] = [];
+      const affectedCohorts = new Set<string>();
+
+      for (const m of (meetings ?? [])) {
+        try {
+          const token = await getS2SToken();
+          const encoded = encodeURIComponent(m.zoom_meeting_id);
+          const data = await zoomGet(token, `/report/meetings/${encoded}/chat?page_size=300`);
+          const chatMessages = (data?.chat_messages ?? data?.messages ?? []) as Array<{ message_id: string; sender: string; date_time: string; message: string }>;
+
+          if (m.cohort_id) affectedCohorts.add(m.cohort_id);
+
+          const { data: students } = m.cohort_id
+            ? await sb.from("students").select("id, name").eq("cohort_id", m.cohort_id).eq("active", true)
+            : await sb.from("students").select("id, name").eq("active", true);
+
+          for (const msg of chatMessages) {
+            if (!msg.message_id) continue;
+            const firstName = (msg.sender ?? "").toLowerCase().split(" ")[0];
+            const studentId = (students ?? []).find((s: { id: string; name: string }) =>
+              s.name.toLowerCase().startsWith(firstName)
+            )?.id ?? null;
+            await sb.from("zoom_chat_messages").insert({
+              zoom_meeting_id: m.zoom_meeting_id,
+              sender_name: msg.sender ?? "",
+              student_id: studentId,
+              cohort_id: m.cohort_id ?? null,
+              sent_at: msg.date_time ? new Date(msg.date_time).toISOString() : new Date().toISOString(),
+              message: msg.message ?? "",
+              message_id: msg.message_id,
+            }).onConflict("message_id").ignore();
+          }
+
+          await sb.from("zoom_meetings").update({ chat_imported: true }).eq("zoom_meeting_id", m.zoom_meeting_id);
+          meetingsProcessed.push(m.zoom_meeting_id);
+        } catch { /* skip failed meetings — non-critical */ }
+      }
+
+      // 2. Recalculate engagement_daily_ranking for affected cohorts
+      for (const cohortId of affectedCohorts) {
+        const { data: cohortStudents } = await sb
+          .from("students")
+          .select("id")
+          .eq("cohort_id", cohortId)
+          .eq("active", true);
+
+        for (const student of (cohortStudents ?? [])) {
+          const sId = student.id;
+
+          const [{ count: waCount }, { count: zcCount }, { count: attCount }] = await Promise.all([
+            sb.from("whatsapp_group_messages").select("*", { count: "exact", head: true })
+              .eq("student_id", sId).eq("cohort_id", cohortId)
+              .gte("sent_at", refDate + "T00:00:00Z").lt("sent_at", refDate + "T23:59:59Z"),
+            sb.from("zoom_chat_messages").select("*", { count: "exact", head: true })
+              .eq("student_id", sId).eq("cohort_id", cohortId)
+              .gte("sent_at", refDate + "T00:00:00Z").lt("sent_at", refDate + "T23:59:59Z"),
+            sb.from("student_attendance").select("*", { count: "exact", head: true })
+              .eq("student_id", sId).eq("class_date", refDate),
+          ]);
+
+          const wa = waCount ?? 0;
+          const zc = zcCount ?? 0;
+          const att = attCount ?? 0;
+          const score = att * 3 + wa + zc;
+
+          await sb.from("engagement_daily_ranking").upsert({
+            student_id: sId,
+            cohort_id: cohortId,
+            ref_date: refDate,
+            wa_messages: wa,
+            zoom_chat_messages: zc,
+            attendance_count: att,
+            engagement_score: score,
+          }, { onConflict: "student_id,cohort_id,ref_date" });
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ ok: true, ref_date: refDate, meetings_processed: meetingsProcessed.length, cohorts_synced: affectedCohorts.size }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     if (!meeting_id) {
       return new Response(
         JSON.stringify({ ok: false, error: "meeting_id required" }),
