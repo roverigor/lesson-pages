@@ -678,23 +678,49 @@
       <div id="notify-view" style="display:none">
         <div class="page-header">
           <div class="page-title">Avisos WhatsApp</div>
-        </div>
-        <div style="background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:24px">
-          <div style="font-size:14px;font-weight:700;color:#ddd;margin-bottom:16px">Enviar novo aviso</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Tipo *</label><select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-type" onchange="onNotifyTypeChange()"><option value="custom">Mensagem livre</option><option value="class_reminder">Lembrete de aula</option><option value="group_announcement">Aviso para grupo</option></select></div>
-            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Destino *</label><select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-target"><option value="group">Grupo apenas</option><option value="both">Grupo + Mentores</option><option value="individual">Mentores apenas</option></select></div>
-            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Cohort *</label><select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-cohort" onchange="onNotifyCohortChange()"><option value="">— Selecione —</option></select></div>
-            <div id="notify-class-wrap"><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Classe <span id="notify-class-req" style="color:#f87171">*</span></label><select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-class" onchange="onNotifyClassChange()"><option value="">— Selecione —</option></select></div>
-            <div style="grid-column:1/-1"><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Mensagem * <span style="color:#444;font-weight:400;margin-left:6px">Variáveis: {{cohort_name}} {{zoom_link}} {{mentor_name}} {{class_name}} {{class_time_start}}</span></label><textarea class="login-field" style="margin:0;min-height:110px;resize:vertical;font-size:13px;line-height:1.5" id="notify-message" oninput="updateNotifyPreview()" placeholder="Digite a mensagem..."></textarea></div>
-            <div style="grid-column:1/-1" id="notify-preview-wrap"><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Preview</label><div id="notify-preview" style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:8px;padding:12px;font-size:13px;color:#888;line-height:1.6;white-space:pre-wrap;min-height:60px"></div></div>
-            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Zoom Link (opcional)</label><div style="display:flex;gap:6px;align-items:center"><input class="login-field" style="margin:0;flex:1" type="url" id="notify-zoom" placeholder="https://zoom.us/j/..." oninput="updateNotifyPreview()"><button type="button" id="copy-zoom-btn" onclick="copyZoomLink()" title="Copiar" style="display:none;padding:10px 12px;background:#1e1e1e;border:1px solid #333;border-radius:8px;color:#aaa;cursor:pointer;font-size:12px;white-space:nowrap">📋 Copiar</button></div></div>
-            <div id="notify-test-feedback" style="display:none;padding:10px 12px;border-radius:8px;font-size:12px;margin-bottom:8px"></div>
-            <div style="display:flex;align-items:flex-end;gap:8px"><button class="btn-save" onclick="sendNotification()" id="notify-send-btn" style="flex:1">Enviar Aviso</button><button onclick="sendTestNotification()" id="notify-test-btn" style="padding:10px 16px;border-radius:8px;border:1px solid #444;background:#1e1e1e;color:#aaa;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">🧪 Testar</button><button class="att-btn delete" onclick="resetNotifyForm()" style="padding:10px 14px">Cancelar</button></div>
+          <div style="display:flex;gap:8px">
+            <button id="btn-send-escala" onclick="sendEscala()" style="padding:8px 16px;border-radius:8px;border:1px solid #22c55e;background:rgba(34,197,94,0.1);color:#4ade80;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">📋 Enviar Escala</button>
           </div>
         </div>
-        <div style="font-size:14px;font-weight:700;color:#ddd;margin-bottom:12px">Histórico de envios</div>
-        <div id="notify-history"></div>
+
+        <!-- TABS -->
+        <div style="display:flex;gap:4px;background:#0d0d0d;padding:4px;border-radius:10px;border:1px solid #1a1a1a;margin-bottom:20px">
+          <button class="notify-tab-btn active" data-tab="planning" onclick="switchNotifyTab('planning')" style="flex:1;padding:8px 14px;border-radius:7px;font-size:13px;font-weight:600;border:none;background:transparent;color:#444;cursor:pointer;font-family:inherit;transition:all .15s">📅 Planejamento</button>
+          <button class="notify-tab-btn" data-tab="compose"  onclick="switchNotifyTab('compose')"  style="flex:1;padding:8px 14px;border-radius:7px;font-size:13px;font-weight:600;border:none;background:transparent;color:#444;cursor:pointer;font-family:inherit;transition:all .15s">✉️ Novo Aviso</button>
+          <button class="notify-tab-btn" data-tab="history"  onclick="switchNotifyTab('history')"  style="flex:1;padding:8px 14px;border-radius:7px;font-size:13px;font-weight:600;border:none;background:transparent;color:#444;cursor:pointer;font-family:inherit;transition:all .15s">📋 Histórico</button>
+        </div>
+        <style>
+          .notify-tab-btn.active { background:#1e1e2e !important; color:#a5b4fc !important; border:1px solid #2e2e4e !important; }
+        </style>
+
+        <!-- TAB: PLANEJAMENTO -->
+        <div id="notify-tab-planning">
+          <div style="font-size:12px;color:#444;margin-bottom:16px">Avisos automáticos enviados às 8h para mentor, host e professor de cada aula — próximos 14 dias</div>
+          <div id="notify-planning"><div style="color:#444;font-size:13px;padding:20px 0">Carregando...</div></div>
+        </div>
+
+        <!-- TAB: COMPOSE -->
+        <div id="notify-tab-compose" style="display:none">
+          <div style="background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:24px">
+            <div style="font-size:14px;font-weight:700;color:#ddd;margin-bottom:16px">Enviar novo aviso</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Tipo *</label><select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-type" onchange="onNotifyTypeChange()"><option value="custom">Mensagem livre</option><option value="class_reminder">Lembrete de aula</option><option value="group_announcement">Aviso para grupo</option></select></div>
+              <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Destino *</label><select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-target"><option value="group">Grupo apenas</option><option value="both">Grupo + Mentores</option><option value="individual">Mentores apenas</option></select></div>
+              <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Cohort *</label><select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-cohort" onchange="onNotifyCohortChange()"><option value="">— Selecione —</option></select></div>
+              <div id="notify-class-wrap"><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Classe <span id="notify-class-req" style="color:#f87171">*</span></label><select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-class" onchange="onNotifyClassChange()"><option value="">— Selecione —</option></select></div>
+              <div style="grid-column:1/-1"><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Mensagem * <span style="color:#444;font-weight:400;margin-left:6px">Variáveis: {{cohort_name}} {{zoom_link}} {{mentor_name}} {{class_name}} {{class_time_start}}</span></label><textarea class="login-field" style="margin:0;min-height:110px;resize:vertical;font-size:13px;line-height:1.5" id="notify-message" oninput="updateNotifyPreview()" placeholder="Digite a mensagem..."></textarea></div>
+              <div style="grid-column:1/-1" id="notify-preview-wrap"><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Preview</label><div id="notify-preview" style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:8px;padding:12px;font-size:13px;color:#888;line-height:1.6;white-space:pre-wrap;min-height:60px"></div></div>
+              <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Zoom Link (opcional)</label><div style="display:flex;gap:6px;align-items:center"><input class="login-field" style="margin:0;flex:1" type="url" id="notify-zoom" placeholder="https://zoom.us/j/..." oninput="updateNotifyPreview()"><button type="button" id="copy-zoom-btn" onclick="copyZoomLink()" title="Copiar" style="display:none;padding:10px 12px;background:#1e1e1e;border:1px solid #333;border-radius:8px;color:#aaa;cursor:pointer;font-size:12px;white-space:nowrap">📋 Copiar</button></div></div>
+              <div id="notify-test-feedback" style="display:none;padding:10px 12px;border-radius:8px;font-size:12px;margin-bottom:8px"></div>
+              <div style="display:flex;align-items:flex-end;gap:8px"><button class="btn-save" onclick="sendNotification()" id="notify-send-btn" style="flex:1">Enviar Aviso</button><button onclick="sendTestNotification()" id="notify-test-btn" style="padding:10px 16px;border-radius:8px;border:1px solid #444;background:#1e1e1e;color:#aaa;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">🧪 Testar</button><button class="att-btn delete" onclick="resetNotifyForm()" style="padding:10px 14px">Cancelar</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: HISTÓRICO -->
+        <div id="notify-tab-history" style="display:none">
+          <div id="notify-history"></div>
+        </div>
       </div>
 
       <!-- ═══ SCHEDULES VIEW ═══ -->

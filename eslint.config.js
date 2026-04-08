@@ -68,6 +68,10 @@ const config = [
         loadSchedulesView: 'readonly',// schedules.js
         loadZoomMeetings: 'readonly', // zoom.js
         autoMatchParticipants: 'readonly', // zoom.js
+        escHtml: 'readonly',          // utils.js
+        switchNotifyTab: 'readonly',  // notifications.js
+        loadPlanningView: 'readonly', // notifications.js
+        sendEscala: 'readonly',       // notifications.js
         loadAbstractsView: 'readonly',// abstracts.js
         loadSurveysView: 'readonly',  // surveys.js
         prvNext: 'readonly',          // surveys.js preview

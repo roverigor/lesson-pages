@@ -1,6 +1,18 @@
 // ═══════════════════════════════════════
 // NOTIFICATIONS / AVISOS
 // ═══════════════════════════════════════
+
+// ─── TAB SWITCHER ─────────────────────
+function switchNotifyTab(tab) {
+  document.getElementById('notify-tab-compose').style.display  = tab === 'compose'  ? '' : 'none';
+  document.getElementById('notify-tab-planning').style.display = tab === 'planning' ? '' : 'none';
+  document.getElementById('notify-tab-history').style.display  = tab === 'history'  ? '' : 'none';
+  document.querySelectorAll('.notify-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.notify-tab-btn[data-tab="${tab}"]`)?.classList.add('active');
+  if (tab === 'planning') loadPlanningView();
+  if (tab === 'history')  loadNotifyHistory();
+}
+
 async function loadNotifyView() {
   const [{ data: cohorts }, { data: classes }] = await Promise.all([
     sb.from('cohorts').select('id, name, whatsapp_group_jid, zoom_link').eq('active', true).order('name'),
@@ -19,6 +31,7 @@ async function loadNotifyView() {
 
   onNotifyTypeChange();
   await loadNotifyHistory();
+  switchNotifyTab('planning');
 }
 
 function onNotifyTypeChange() {
@@ -263,6 +276,144 @@ async function sendTestNotification() {
   } finally {
     btn.disabled = false;
     btn.textContent = '🧪 Testar';
+  }
+}
+
+// ─── PLANEJAMENTO VIEW ────────────────────────────────
+async function loadPlanningView() {
+  const container = document.getElementById('notify-planning');
+  if (!container) return;
+  container.innerHTML = '<div style="color:#444;font-size:13px;padding:20px 0">Carregando...</div>';
+
+  // Next 14 days from EVENTS
+  const today = new Date();
+  const rows = [];
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const key = `${dd}/${mm}`;
+    const dayData = EVENTS[key];
+    if (!dayData) continue;
+
+    const weekday = d.toLocaleDateString('pt-BR', { weekday: 'long' });
+    const dateLabel = `${weekday}, ${dd}/${mm}`;
+
+    for (const [course, info] of Object.entries(dayData)) {
+      const classInfo = classesList.find(c => c.name === course);
+      const time = classInfo?.time_start ? classInfo.time_start.slice(0, 5) : '?';
+      const zoom = classInfo?.zoom_link || '';
+      const scheduledAt = new Date(d);
+      scheduledAt.setHours(8, 0, 0, 0); // 8am BRT
+
+      for (const mentor of info.mentors) {
+        rows.push({ date: key, dateLabel, course, time, zoom, mentor: mentor.name, role: mentor.role, scheduledAt });
+      }
+    }
+  }
+
+  // Check which ones already have a notification record (sent or scheduled)
+  const { data: existing } = await sb.from('notifications')
+    .select('metadata, status, sent_at, scheduled_at')
+    .in('status', ['scheduled', 'sent', 'partial', 'failed'])
+    .gte('created_at', new Date(today.getTime() - 86400000).toISOString());
+
+  const sentSet = new Set((existing || []).map(n => {
+    const m = n.metadata || {};
+    return `${m.date_key}|${m.course}|${m.mentor_name}`;
+  }));
+
+  if (!rows.length) {
+    container.innerHTML = '<div style="color:#333;text-align:center;padding:40px;font-size:13px">Nenhuma aula nos próximos 14 dias encontrada em EVENTS</div>';
+    return;
+  }
+
+  // Group by date
+  const byDate = {};
+  for (const r of rows) {
+    if (!byDate[r.date]) byDate[r.date] = { label: r.dateLabel, items: [] };
+    byDate[r.date].items.push(r);
+  }
+
+  let html = '';
+  for (const [date, group] of Object.entries(byDate)) {
+    html += `<div style="margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">
+        📅 ${group.label} — aviso às 8h00
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">`;
+
+    for (const r of group.items) {
+      const sentKey = `${r.date}|${r.course}|${r.mentor}`;
+      const isSent = sentSet.has(sentKey);
+      const statusBadge = isSent
+        ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:rgba(34,197,94,0.1);border:1px solid #166534;color:#4ade80">✓ Enviado</span>'
+        : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:rgba(245,158,11,0.1);border:1px solid #92400e;color:#fbbf24">⏳ Agendado</span>';
+
+      html += `<div style="background:#111;border:1px solid #1a1a1a;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:700;color:#ddd">${escHtml(r.mentor)}</div>
+          <div style="font-size:11px;color:#555;margin-top:2px">${escHtml(r.course)} · ${r.role} · ⏰ ${r.time}</div>
+        </div>
+        ${statusBadge}
+      </div>`;
+    }
+
+    html += `</div></div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+// ─── ENVIAR ESCALA ────────────────────────────────────
+async function sendEscala() {
+  const btn = document.getElementById('btn-send-escala');
+  btn.disabled = true;
+  btn.textContent = 'Gerando...';
+
+  try {
+    // Build schedule for next 7 days
+    const today = new Date();
+    const lines = ['📅 *Escala da Semana — Academia Lendária*\n'];
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const key = `${dd}/${mm}`;
+      const dayData = EVENTS[key];
+      if (!dayData) continue;
+
+      const weekday = d.toLocaleDateString('pt-BR', { weekday: 'long' });
+      lines.push(`\n*${weekday.charAt(0).toUpperCase() + weekday.slice(1)}, ${dd}/${mm}*`);
+
+      for (const [course, info] of Object.entries(dayData)) {
+        const classInfo = classesList.find(c => c.name === course);
+        const time = classInfo?.time_start ? classInfo.time_start.slice(0, 5) : '';
+        lines.push(`  📚 ${course}${time ? ' · ' + time : ''}`);
+        for (const m of info.mentors) {
+          lines.push(`    • ${m.name} (${m.role})`);
+        }
+      }
+    }
+
+    const message = lines.join('\n');
+
+    // Open compose tab with this message pre-filled
+    document.getElementById('notify-message').value = message;
+    document.getElementById('notify-type').value = 'custom';
+    document.getElementById('notify-target').value = 'group';
+    onNotifyTypeChange();
+    updateNotifyPreview();
+    switchNotifyTab('compose');
+    showToast('Escala gerada! Selecione o cohort e envie.', 'success');
+  } catch (err) {
+    showToast('Erro ao gerar escala: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📋 Enviar Escala';
   }
 }
 
