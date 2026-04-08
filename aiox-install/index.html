@@ -320,24 +320,20 @@
 
   /* PROGRESS */
   .progress-track {
-    display: flex;
-    align-items: center;
-    gap: 0;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
     margin-bottom: 48px;
     background: var(--bg2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: hidden;
   }
 
   .progress-step {
-    flex: 1 0 0;
-    min-width: 90px;
-    padding: 12px 10px;
+    padding: 10px 8px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     border-right: 1px solid var(--border);
     position: relative;
   }
@@ -364,11 +360,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     background: rgba(255,255,255,0.06);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--text3);
     flex-shrink: 0;
@@ -384,11 +380,11 @@
     color: white;
   }
 
-  .ps-info { min-width: 0; overflow: hidden; flex: 1; }
-  .ps-label { font-size: 10px; font-weight: 600; color: var(--text3); }
+  .ps-info { min-width: 0; flex: 1; }
+  .ps-label { font-size: 9px; font-weight: 600; color: var(--text3); line-height: 1.2; }
   .progress-step.active .ps-label { color: var(--accent2); }
   .progress-step.done .ps-label { color: var(--green); }
-  .ps-name { font-size: 12px; font-weight: 600; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ps-name { font-size: 11px; font-weight: 600; color: var(--text2); line-height: 1.3; }
   .progress-step.active .ps-name { color: var(--text); }
 
   /* SECTION */
@@ -996,21 +992,21 @@
         <div class="ps-num">4</div>
         <div class="ps-info">
           <div class="ps-label">FASE 4</div>
-          <div class="ps-name">Extras</div>
+          <div class="ps-name">MCP Ecosystem</div>
         </div>
       </div>
       <div class="progress-step" data-step="5" title="Clique para marcar como concluída">
         <div class="ps-num">5</div>
         <div class="ps-info">
           <div class="ps-label">FASE 5</div>
-          <div class="ps-name">MCP Ecosystem</div>
+          <div class="ps-name">IDE Editores</div>
         </div>
       </div>
       <div class="progress-step" data-step="6" title="Clique para marcar como concluída">
         <div class="ps-num">6</div>
         <div class="ps-info">
           <div class="ps-label">FASE 6</div>
-          <div class="ps-name">IDE Editores</div>
+          <div class="ps-name">Dashboard</div>
         </div>
       </div>
       <div class="progress-step" data-step="7" title="Clique para marcar como concluída">
