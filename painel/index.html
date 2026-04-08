@@ -420,18 +420,18 @@
       <button class="nav-item" data-view="turmas" onclick="switchView('turmas')">
         <i data-lucide="users-round" class="nav-item-icon"></i> Turmas
       </button>
-      <a class="nav-item external" href="/alunos" target="_blank">
-        <i data-lucide="user" class="nav-item-icon"></i> Alunos ↗
-      </a>
-      <a class="nav-item external" href="/presenca" target="_blank">
-        <i data-lucide="scan-face" class="nav-item-icon"></i> Presença Zoom ↗
-      </a>
-      <a class="nav-item external" href="/aulas" target="_blank">
-        <i data-lucide="video" class="nav-item-icon"></i> Aulas ↗
-      </a>
-      <a class="nav-item external" href="/relatorio" target="_blank">
-        <i data-lucide="bar-chart-3" class="nav-item-icon"></i> Relatório ↗
-      </a>
+      <button class="nav-item" data-view="alunos" onclick="switchView('alunos')">
+        <i data-lucide="user" class="nav-item-icon"></i> Alunos
+      </button>
+      <button class="nav-item" data-view="presenca" onclick="switchView('presenca')">
+        <i data-lucide="scan-face" class="nav-item-icon"></i> Presença Zoom
+      </button>
+      <button class="nav-item" data-view="aulas" onclick="switchView('aulas')">
+        <i data-lucide="video" class="nav-item-icon"></i> Aulas
+      </button>
+      <button class="nav-item" data-view="relatorio" onclick="switchView('relatorio')">
+        <i data-lucide="bar-chart-3" class="nav-item-icon"></i> Relatório
+      </button>
 
       <div class="nav-section-label">Comunicação</div>
       <button class="nav-item" data-view="surveys" onclick="switchView('surveys')">
@@ -483,7 +483,7 @@
       <button class="mobile-nav-btn" data-view="zoom" onclick="switchView('zoom')">Zoom</button>
     </div>
 
-    <div class="view-wrap">
+    <div class="view-wrap" id="view-wrap">
 
       <!-- ═══ DASHBOARD VIEW ═══ -->
       <div id="dashboard-view">
@@ -795,6 +795,7 @@
       </div>
 
     </div><!-- /view-wrap -->
+    <iframe id="embed-frame" src="" style="display:none;width:100%;height:100vh;border:none"></iframe>
   </main>
 </div><!-- /app-shell -->
 
@@ -840,13 +841,14 @@ window.showApp = function() {
 };
 
 // ─── PAINEL: override switchView ─────────────────────
+const IFRAME_ROUTES = { alunos: '/alunos/', presenca: '/presenca/', aulas: '/aulas/', relatorio: '/relatorio/' };
+
 window.switchView = async function(view) {
   const allViews = ['dashboard','calendar','turmas','report','staff','classes',
                     'notify','schedules','zoom','abstracts','surveys'];
-  allViews.forEach(v => {
-    const el = document.getElementById(v + '-view');
-    if (el) el.style.display = v === view ? '' : 'none';
-  });
+  const viewWrap   = document.getElementById('view-wrap') || document.querySelector('.view-wrap');
+  const embedFrame = document.getElementById('embed-frame');
+  const mobileNav  = document.getElementById('mobile-nav');
 
   // Sidebar active
   document.querySelectorAll('.nav-item[data-view]').forEach(b => b.classList.remove('active'));
@@ -858,7 +860,25 @@ window.switchView = async function(view) {
   const activeMobile = document.querySelector(`.mobile-nav-btn[data-view="${view}"]`);
   if (activeMobile) activeMobile.classList.add('active');
 
-  // Existing load hooks
+  // Iframe views (alunos, presenca, aulas, relatorio)
+  if (IFRAME_ROUTES[view]) {
+    if (viewWrap)   viewWrap.style.display = 'none';
+    if (mobileNav)  mobileNav.style.display = 'none';
+    if (embedFrame) { embedFrame.src = IFRAME_ROUTES[view]; embedFrame.style.display = ''; }
+    return;
+  }
+
+  // Normal views
+  if (viewWrap)   viewWrap.style.display = '';
+  if (mobileNav)  mobileNav.style.display = '';
+  if (embedFrame) { embedFrame.style.display = 'none'; embedFrame.src = ''; }
+
+  allViews.forEach(v => {
+    const el = document.getElementById(v + '-view');
+    if (el) el.style.display = v === view ? '' : 'none';
+  });
+
+  // Load hooks
   if (view === 'report')    renderReport();
   if (view === 'staff')     loadStaff();
   if (view === 'classes')   loadClasses();
