@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Admin — Academia Lendária</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>">
+  <link rel="stylesheet" href="/templates/design-tokens-dark-premium.css">
+  <link rel="stylesheet" href="/templates/admin-shared.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-sans, 'Inter', sans-serif); background: #080808; color: #888; min-height: 100vh; }
+
+    /* ─── LOGIN ─────────────────────────────────── */
+    .login-overlay {
+      position: fixed; inset: 0; background: #080808;
+      display: flex; align-items: center; justify-content: center; z-index: 9999;
+    }
+    .login-overlay.hidden { display: none; }
+    .login-box {
+      background: #111; border: 1px solid #1e1e1e; border-radius: 20px;
+      padding: 48px 40px; width: 90%; max-width: 400px; text-align: center;
+    }
+    .login-icon {
+      width: 64px; height: 64px; border-radius: 16px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 28px; margin-bottom: 20px;
+    }
+    .login-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+    .login-subtitle { font-size: 13px; color: #444; margin-bottom: 32px; }
+    .login-field {
+      width: 100%; padding: 12px 16px; border-radius: 10px;
+      background: #0d0d0d; border: 1px solid #1e1e1e;
+      color: #ddd; font-size: 14px; font-family: inherit;
+      margin-bottom: 10px; outline: none; transition: border-color 0.15s;
+    }
+    .login-field:focus { border-color: #6366f1; }
+    .login-field::placeholder { color: #2e2e2e; }
+    .login-btn {
+      width: 100%; padding: 13px; border-radius: 10px; border: none;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
+      font-family: inherit; margin-top: 6px; transition: opacity 0.15s;
+    }
+    .login-btn:hover { opacity: 0.9; }
+    .login-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .login-error { color: #ef4444; font-size: 12px; margin-top: 12px; min-height: 16px; }
+
+    /* ─── APP SHELL ──────────────────────────────── */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+    }
+    .app-shell.hidden { display: none; }
+
+    /* ─── SIDEBAR ────────────────────────────────── */
+    .sidebar {
+      background: #0a0a0a; border-right: 1px solid #141414;
+      display: flex; flex-direction: column;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+      z-index: 100;
+    }
+    .sidebar-logo {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid #141414;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .sidebar-logo-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .sidebar-logo-text { font-size: 14px; font-weight: 800; color: #fff; line-height: 1.2; }
+    .sidebar-logo-sub { font-size: 10px; color: #333; }
+
+    .sidebar-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+
+    .nav-section-label {
+      font-size: 9px; font-weight: 700; color: #2a2a2a; text-transform: uppercase;
+      letter-spacing: 0.1em; padding: 12px 10px 4px;
+    }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 8px;
+      font-size: 13px; font-weight: 500; color: #555;
+      cursor: pointer; text-decoration: none; border: none; background: transparent;
+      font-family: inherit; width: 100%; text-align: left;
+      transition: all 0.12s;
+    }
+    .nav-item:hover { background: #111; color: #999; }
+    .nav-item.active { background: #1e1e2e; color: #a5b4fc; font-weight: 600; }
+    .nav-item.external { color: #3a3a3a; }
+    .nav-item.external:hover { color: #666; }
+    .nav-item-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
+    .nav-item.active .nav-item-icon { opacity: 1; }
+
+    .sidebar-footer {
+      padding: 12px 10px 20px;
+      border-top: 1px solid #141414;
+    }
+    .nav-logout {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 8px;
+      font-size: 13px; font-weight: 500; color: #3a3a3a;
+      cursor: pointer; border: none; background: transparent;
+      font-family: inherit; width: 100%; text-align: left;
+      transition: all 0.12s;
+    }
+    .nav-logout:hover { background: rgba(239,68,68,0.08); color: #f87171; }
+
+    /* ─── MAIN CONTENT ───────────────────────────── */
+    .main-content {
+      overflow-y: auto; min-height: 100vh;
+      background: #080808;
+    }
+    .view-wrap {
+      max-width: 1360px; margin: 0 auto;
+      padding: 32px 36px 120px;
+    }
+
+    /* ─── PAGE HEADER ────────────────────────────── */
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+    }
+    .page-title { font-size: 22px; font-weight: 900; color: #fff; }
+    .page-sub { font-size: 13px; color: #3a3a3a; margin-top: 3px; }
+
+    /* ─── STATS ROW ──────────────────────────────── */
+    .stats-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .stat-card {
+      background: #101010; border: 1px solid #1a1a1a; border-radius: 10px;
+      padding: 14px 18px; display: flex; align-items: center; gap: 10px;
+    }
+    .stat-num { font-size: 22px; font-weight: 800; color: #fff; line-height: 1; }
+    .stat-label { font-size: 11px; color: #444; margin-top: 2px; }
+
+    /* ─── DASHBOARD ──────────────────────────────── */
+    #dashboard-view {}
+    .dash-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px; margin-bottom: 32px;
+    }
+    .dash-card {
+      background: #101010; border: 1px solid #1a1a1a; border-radius: 14px;
+      padding: 20px 22px; text-decoration: none; color: inherit;
+      display: block; transition: border-color 0.15s, background 0.15s; cursor: pointer;
+    }
+    .dash-card:hover { border-color: #6366f1; background: #111; }
+    .dash-card-icon { font-size: 24px; margin-bottom: 12px; }
+    .dash-card-title { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .dash-card-desc { font-size: 12px; color: #444; line-height: 1.5; }
+    .dash-stat-big { font-size: 32px; font-weight: 900; color: #fff; line-height: 1; margin: 10px 0 4px; }
+    .dash-section-title { font-size: 11px; font-weight: 700; color: #333; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+
+    /* ─── MONTH TABS (calendar) ──────────────────── */
+    .month-tabs { display: flex; gap: 4px; background: #0d0d0d; padding: 4px; border-radius: 10px; border: 1px solid #1a1a1a; }
+    .month-tab {
+      padding: 7px 16px; border-radius: 7px; font-size: 12px; font-weight: 600;
+      color: #444; cursor: pointer; transition: all 0.15s; border: none; background: transparent;
+      font-family: inherit;
+    }
+    .month-tab:hover { color: #888; background: #151515; }
+    .month-tab.active { background: #1e1e2e; color: #a5b4fc; border: 1px solid #2e2e4e; }
+
+    /* ─── CALENDAR ───────────────────────────────── */
+    .month-header { display: flex; align-items: baseline; gap: 12px; margin: 20px 0 16px; }
+    .month-name { font-size: 26px; font-weight: 900; color: #fff; }
+    .month-year { font-size: 16px; font-weight: 400; color: #333; }
+
+    .weekday-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 5px; }
+    .weekday-label {
+      text-align: center; font-size: 10px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; color: #2a2a2a; padding: 8px 0;
+    }
+    .weekday-label.weekend { color: #222; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+    .cal-cell {
+      min-height: 110px; border-radius: 8px;
+      background: #0d0d0d; border: 1px solid #141414;
+      padding: 10px 8px; position: relative; cursor: pointer; transition: all 0.2s;
+    }
+    .cal-cell.empty { background: transparent; border-color: transparent; cursor: default; }
+    .cal-cell.has-events { background: #0f0f0f; border-color: #1a1a1a; }
+    .cal-cell.has-events:hover { background: #121218; border-color: #2e2e4e; }
+    .cal-cell.is-today { background: #0d0d1a !important; border-color: #2e2e5e !important; }
+    .cal-cell.is-past { opacity: 0.6; }
+    .cal-cell.is-holiday { border-color: #854d0e40; background: #1a0f00; }
+    .cal-cell.is-holiday .day-num { color: #f59e0b; }
+    .holiday-tag { font-size: 9px; font-weight: 700; color: #f59e0b; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); border-radius: 3px; padding: 1px 5px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .day-num { font-size: 13px; font-weight: 700; color: #2e2e2e; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+    .day-num.has-events { color: #555; }
+    .today-badge { font-size: 9px; font-weight: 800; background: #6366f1; color: #fff; padding: 2px 6px; border-radius: 4px; }
+    .day-event { font-size: 10px; padding: 3px 6px; border-radius: 4px; margin-bottom: 3px; border-left: 2px solid; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .att-indicator { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 4px; vertical-align: middle; }
+    .att-complete { background: #22c55e; }
+    .att-partial  { background: #f59e0b; }
+    .att-none     { background: #333; }
+
+    /* ─── MODAL ──────────────────────────────────── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75); z-index: 1000;
+      align-items: center; justify-content: center; backdrop-filter: blur(4px);
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: #111; border: 1px solid #222; border-radius: 16px;
+      padding: 28px; max-width: 560px; width: 95%; max-height: 85vh;
+      overflow-y: auto; position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      background: #1a1a1a; border: 1px solid #222; border-radius: 6px;
+      color: #666; cursor: pointer; padding: 4px 10px; font-size: 12px; font-family: inherit;
+    }
+    .modal-date { font-size: 13px; color: #555; margin-bottom: 4px; }
+    .modal-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 20px; }
+    .att-session { background: #161616; border: 1px solid #1e1e1e; border-radius: 10px; padding: 16px; margin-bottom: 12px; border-left: 3px solid; }
+    .att-session-course { font-size: 14px; font-weight: 700; color: #ddd; margin-bottom: 12px; }
+    .att-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #1a1a1a; }
+    .att-row:last-child { border-bottom: none; }
+    .att-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .att-info { flex: 1; }
+    .att-name { font-size: 13px; color: #ccc; font-weight: 600; }
+    .att-role { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 0.05em; }
+    .att-actions { display: flex; gap: 6px; }
+    .att-btn {
+      padding: 6px 12px; border-radius: 6px; border: 1px solid #222;
+      font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s;
+      font-family: inherit; background: #1a1a1a; color: #555;
+    }
+    .att-btn:hover { background: #222; color: #888; }
+    .att-btn.present { border-color: #1e1e1e; color: #333; background: #111; }
+    .att-btn.present.active { background: rgba(34,197,94,0.2); border-color: #22c55e; color: #22c55e; }
+    .att-btn.absent { border-color: #1e1e1e; color: #333; background: #111; }
+    .att-btn.absent.active { background: rgba(239,68,68,0.2); border-color: #ef4444; color: #ef4444; }
+    .att-btn.present.dimmed, .att-btn.absent.dimmed { border-color: #1a1a1a; color: #222; background: #0d0d0d; }
+    .att-btn.delete { border-color: #44403c; color: #a8a29e; background: rgba(168,162,158,0.08); font-size: 13px; padding: 6px 8px; }
+    .att-btn.delete:hover { background: rgba(239,68,68,0.15); border-color: #7f1d1d; color: #f87171; }
+    .substitute-row { display: none; padding: 8px 0 8px 38px; }
+    .substitute-row.show { display: flex; align-items: center; gap: 8px; }
+    .substitute-label { font-size: 11px; color: #666; white-space: nowrap; }
+    .substitute-select { flex: 1; padding: 6px 10px; border-radius: 6px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #ccc; font-size: 12px; font-family: inherit; outline: none; }
+    .substitute-select:focus { border-color: #6366f1; }
+    .att-save-bar { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid #1e1e1e; }
+    .btn-save {
+      padding: 10px 24px; border-radius: 8px; border: none;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: opacity 0.15s;
+    }
+    .btn-save:hover { opacity: 0.9; }
+    .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+    .saved-badge { font-size: 10px; font-weight: 700; color: #22c55e; padding: 4px 8px; background: rgba(34,197,94,0.1); border-radius: 4px; display: none; }
+    .saved-badge.show { display: inline-block; }
+
+    /* ─── TOAST ──────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 20px;
+      border-radius: 10px; font-size: 13px; font-weight: 600;
+      z-index: 2000; transition: all 0.3s; transform: translateY(80px); opacity: 0;
+      font-family: inherit;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #052e16; border: 1px solid #166534; color: #4ade80; }
+    .toast.error   { background: #2d0a0a; border: 1px solid #7f1d1d; color: #f87171; }
+
+    /* ─── REPORT / BADGES ────────────────────────── */
+    .report-card { background: #111; border: 1px solid #1e1e1e; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .report-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #1a1a1a; }
+    .report-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0; }
+    .report-name { font-size: 16px; font-weight: 800; color: #fff; }
+    .report-summary { font-size: 12px; color: #555; margin-top: 2px; }
+    .report-stats-row { display: flex; gap: 12px; margin-left: auto; flex-wrap: wrap; }
+    .report-stat { text-align: center; }
+    .report-stat-num { font-size: 18px; font-weight: 800; line-height: 1; }
+    .report-stat-label { font-size: 9px; color: #444; text-transform: uppercase; letter-spacing: 0.05em; }
+    .report-course-section { margin-bottom: 10px; }
+    .report-course-title { font-size: 12px; font-weight: 700; color: #888; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+    .report-dates { display: flex; flex-wrap: wrap; gap: 4px; }
+    .report-date { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px; border: 1px solid #1e1e1e; background: #0d0d0d; color: #555; }
+    .report-date.present { border-color: #166534; color: #4ade80; background: rgba(34,197,94,0.08); }
+    .report-date.absent { border-color: #7f1d1d; color: #f87171; background: rgba(239,68,68,0.08); }
+    .report-date.substitute { border-color: #854d0e; color: #facc15; background: rgba(250,204,21,0.08); }
+    .report-date .sub-name { font-size: 9px; color: #facc15; display: block; }
+    .badge-present    { color: #4ade80; background: rgba(34,197,94,0.1); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+    .badge-absent     { color: #f87171; background: rgba(239,68,68,0.1); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+    .badge-substitute { color: #facc15; background: rgba(250,204,21,0.1); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+    .badge-pending    { color: #555; background: rgba(85,85,85,0.1); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+    .badge-role-prof  { color: #a5b4fc; background: rgba(99,102,241,0.12); padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+    .badge-role-host  { color: #555; background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+
+    /* ─── FORMS ──────────────────────────────────── */
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 11px; color: #555; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .form-input { width: 100%; background: #0a0a0a; border: 1px solid #1e1e1e; border-radius: 8px; padding: 9px 12px; color: #ddd; font-size: 13px; font-family: inherit; resize: vertical; transition: border-color .15s; }
+    .form-input:focus { outline: none; border-color: #6366f1; }
+
+    /* ─── SURVEYS ────────────────────────────────── */
+    .survey-card { background:#111; border:1px solid #1e1e1e; border-radius:14px; padding:18px 20px; margin-bottom:10px; transition:border-color .2s; }
+    .survey-card:hover { border-color:#2a2a2a; }
+    .survey-card-header { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+    .btn-xs { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:5px 11px; border-radius:6px; border:1px solid transparent; cursor:pointer; font-family:inherit; white-space:nowrap; line-height:1.4; transition:all .15s; }
+    .btn-xs.btn-primary { background:#6366f1; color:#fff; border-color:#6366f1; }
+    .btn-xs.btn-primary:hover { background:#4f52d4; border-color:#4f52d4; }
+    .btn-xs.btn-ghost { background:transparent; color:#666; border-color:#252525; }
+    .btn-xs.btn-ghost:hover { color:#aaa; border-color:#333; background:#1a1a1a; }
+    .btn-xs.btn-danger { background:transparent; color:#f87171; border-color:#3f1212; }
+    .btn-xs.btn-danger:hover { background:#3f1212; }
+    .modal-box { background:#111; border:1px solid #222; border-radius:16px; width:min(480px,95vw); max-height:85vh; overflow-y:auto; }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid #1a1a1a; font-size:15px; font-weight:700; color:#fff; }
+    .modal-close-x { background:none; border:none; color:#555; font-size:22px; cursor:pointer; line-height:1; }
+    .modal-close-x:hover { color:#fff; }
+    .modal-body { padding:20px 24px; }
+    .modal-footer { padding:16px 24px; border-top:1px solid #1a1a1a; display:flex; justify-content:flex-end; gap:8px; }
+    .btn-primary { background:#6366f1; color:#fff; border:none; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; transition:background .15s; }
+    .btn-primary:hover { background:#4f52d4; }
+    .btn-secondary { background:transparent; color:#666; border:1px solid #252525; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; }
+    .btn-secondary:hover { color:#999; border-color:#333; }
+    .q-required-label { display:inline-flex; align-items:center; gap:6px; font-size:11px; color:#555; cursor:pointer; user-select:none; }
+    .q-required-label input[type=checkbox] { appearance:none; -webkit-appearance:none; width:14px; height:14px; border:1.5px solid #333; border-radius:3px; background:#0a0a0a; cursor:pointer; transition:all .15s; flex-shrink:0; }
+    .q-required-label input[type=checkbox]:checked { background:#6366f1; border-color:#6366f1; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='8' viewBox='0 0 10 8'%3E%3Cpath stroke='%23fff' stroke-width='1.5' fill='none' d='M1 4l3 3 5-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:center; }
+    .q-card { background:#0d0d0d; border:1px solid #1e1e1e; border-radius:12px; padding:16px; margin-bottom:8px; transition:border-color .15s; }
+    .q-card:hover { border-color:#2a2a2a; }
+    .q-type-badge { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; padding:3px 9px; border-radius:999px; letter-spacing:.02em; }
+    .q-reorder-btn { display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:6px; border:1px solid #222; background:transparent; color:#444; cursor:pointer; font-size:12px; transition:all .15s; line-height:1; }
+    .q-reorder-btn:hover:not(:disabled) { border-color:#444; color:#888; }
+    .q-reorder-btn:disabled { opacity:.3; cursor:not-allowed; }
+    .q-delete-btn { display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:6px; border:1px solid #3f1212; background:transparent; color:#f87171; cursor:pointer; font-size:12px; transition:all .15s; line-height:1; }
+    .q-delete-btn:hover { background:#3f1212; }
+
+    /* ─── TURMAS VIEW ────────────────────────────── */
+    .turma-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+    .turma-card { background: #101010; border: 1px solid #1a1a1a; border-radius: 14px; padding: 22px; cursor: pointer; text-decoration: none; color: inherit; display: block; transition: border-color .15s, background .15s; }
+    .turma-card:hover { border-color: #6366f1; background: #111; }
+    .turma-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; gap: 10px; }
+    .turma-name { font-size: 15px; font-weight: 800; color: #fff; line-height: 1.3; }
+    .turma-badge { padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); white-space: nowrap; flex-shrink: 0; }
+    .turma-badge.inactive { background: rgba(100,100,100,0.1); color: #444; border-color: #1e1e1e; }
+    .turma-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+    .turma-stat { flex: 1; min-width: 70px; background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 8px; padding: 10px 12px; }
+    .turma-stat-num { font-size: 20px; font-weight: 800; color: #fff; line-height: 1; }
+    .turma-stat-label { font-size: 10px; color: #444; margin-top: 2px; }
+    .turma-footer { margin-top: 12px; font-size: 11px; color: #333; display: flex; align-items: center; gap: 6px; }
+    .turma-footer span { color: #6366f1; font-weight: 600; }
+    .spinner { width: 24px; height: 24px; border: 2px solid #1e1e1e; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.7s linear infinite; margin: 40px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── MOBILE ─────────────────────────────────── */
+    @media (max-width: 900px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar { display: none !important; }
+      .mobile-nav {
+        display: flex; background: #0a0a0a; border-bottom: 1px solid #141414;
+        overflow-x: auto; padding: 8px 12px; gap: 4px; position: sticky; top: 0; z-index: 100;
+      }
+      .mobile-nav-btn {
+        flex-shrink: 0; padding: 7px 12px; border-radius: 8px; border: none;
+        background: transparent; color: #555; font-size: 12px; font-weight: 600;
+        cursor: pointer; font-family: inherit; white-space: nowrap;
+      }
+      .mobile-nav-btn.active { background: #1e1e2e; color: #a5b4fc; }
+      .view-wrap { padding: 16px 14px 80px; }
+      .cal-cell { min-height: 70px; }
+      .day-event { display: none; }
+    }
+    @media (min-width: 901px) {
+      .mobile-nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-icon">🏛️</div>
+    <div class="login-title">Painel Admin</div>
+    <div class="login-subtitle">Academia Lendária · Acesso restrito</div>
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <input class="login-field" type="email" id="login-email" placeholder="Email" required autocomplete="email">
+      <input class="login-field" type="password" id="login-password" placeholder="Senha" required autocomplete="current-password">
+      <button class="login-btn" type="submit" id="login-btn">Entrar</button>
+      <div class="login-error" id="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══ APP SHELL ═══ -->
+<div class="app-shell hidden" id="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div>
+        <div class="sidebar-logo-text">Admin Painel</div>
+        <div class="sidebar-logo-sub">Academia Lendária</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Visão Geral</div>
+      <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+        <i data-lucide="layout-dashboard" class="nav-item-icon"></i> Dashboard
+      </button>
+
+      <div class="nav-section-label">Operações</div>
+      <button class="nav-item" data-view="calendar" onclick="switchView('calendar')">
+        <i data-lucide="calendar" class="nav-item-icon"></i> Calendário
+      </button>
+      <button class="nav-item" data-view="turmas" onclick="switchView('turmas')">
+        <i data-lucide="users-round" class="nav-item-icon"></i> Turmas
+      </button>
+      <a class="nav-item external" href="/alunos" target="_blank">
+        <i data-lucide="user" class="nav-item-icon"></i> Alunos ↗
+      </a>
+      <a class="nav-item external" href="/presenca" target="_blank">
+        <i data-lucide="scan-face" class="nav-item-icon"></i> Presença Zoom ↗
+      </a>
+      <a class="nav-item external" href="/aulas" target="_blank">
+        <i data-lucide="video" class="nav-item-icon"></i> Aulas ↗
+      </a>
+      <a class="nav-item external" href="/relatorio" target="_blank">
+        <i data-lucide="bar-chart-3" class="nav-item-icon"></i> Relatório ↗
+      </a>
+
+      <div class="nav-section-label">Comunicação</div>
+      <button class="nav-item" data-view="surveys" onclick="switchView('surveys')">
+        <i data-lucide="clipboard-list" class="nav-item-icon"></i> Avaliações
+      </button>
+      <button class="nav-item" data-view="notify" onclick="switchView('notify')">
+        <i data-lucide="bell" class="nav-item-icon"></i> Avisos WhatsApp
+      </button>
+      <button class="nav-item" data-view="schedules" onclick="switchView('schedules')">
+        <i data-lucide="clock" class="nav-item-icon"></i> Agendamentos
+      </button>
+
+      <div class="nav-section-label">Configurações</div>
+      <button class="nav-item" data-view="staff" onclick="switchView('staff')">
+        <i data-lucide="shield-check" class="nav-item-icon"></i> Equipe
+      </button>
+      <button class="nav-item" data-view="classes" onclick="switchView('classes')">
+        <i data-lucide="settings" class="nav-item-icon"></i> Config. Turmas
+      </button>
+      <button class="nav-item" data-view="zoom" onclick="switchView('zoom')">
+        <i data-lucide="video-icon" class="nav-item-icon"></i> Zoom
+      </button>
+      <button class="nav-item" data-view="abstracts" onclick="switchView('abstracts')">
+        <i data-lucide="file-text" class="nav-item-icon"></i> Resumos de Aulas
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a class="nav-item external" href="/calendario" target="_blank">
+        <i data-lucide="external-link" class="nav-item-icon"></i> Calendário Público ↗
+      </a>
+      <button class="nav-logout" onclick="handleLogout()">
+        <i data-lucide="log-out" style="width:16px;height:16px;flex-shrink:0"></i> Sair
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content" id="app-content">
+
+    <!-- MOBILE NAV -->
+    <div class="mobile-nav" id="mobile-nav">
+      <button class="mobile-nav-btn active" data-view="dashboard" onclick="switchView('dashboard')">Dashboard</button>
+      <button class="mobile-nav-btn" data-view="calendar" onclick="switchView('calendar')">Calendário</button>
+      <button class="mobile-nav-btn" data-view="turmas" onclick="switchView('turmas')">Turmas</button>
+      <button class="mobile-nav-btn" data-view="surveys" onclick="switchView('surveys')">Avaliações</button>
+      <button class="mobile-nav-btn" data-view="notify" onclick="switchView('notify')">Avisos</button>
+      <button class="mobile-nav-btn" data-view="staff" onclick="switchView('staff')">Equipe</button>
+      <button class="mobile-nav-btn" data-view="zoom" onclick="switchView('zoom')">Zoom</button>
+    </div>
+
+    <div class="view-wrap">
+
+      <!-- ═══ DASHBOARD VIEW ═══ -->
+      <div id="dashboard-view">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Dashboard</div>
+            <div class="page-sub">Visão geral da Academia Lendária</div>
+          </div>
+        </div>
+        <div class="stats-bar" id="dash-stats"></div>
+        <div class="dash-section-title">Acesso Rápido</div>
+        <div class="dash-grid">
+          <button class="dash-card" onclick="switchView('calendar')">
+            <div class="dash-card-icon">📅</div>
+            <div class="dash-card-title">Calendário</div>
+            <div class="dash-card-desc">Visualize e registre presença dos professores por dia.</div>
+          </button>
+          <button class="dash-card" onclick="switchView('turmas')">
+            <div class="dash-card-icon">🏛️</div>
+            <div class="dash-card-title">Turmas</div>
+            <div class="dash-card-desc">Hub operacional — alunos, presença e ranking WhatsApp por turma.</div>
+          </button>
+          <a class="dash-card" href="/alunos" target="_blank">
+            <div class="dash-card-icon">👥</div>
+            <div class="dash-card-title">Alunos</div>
+            <div class="dash-card-desc">Cadastro, busca, edição de telefone e apelidos Zoom.</div>
+          </a>
+          <a class="dash-card" href="/presenca" target="_blank">
+            <div class="dash-card-icon">📋</div>
+            <div class="dash-card-title">Presença Zoom</div>
+            <div class="dash-card-desc">Dashboard de presença de alunos via integração Zoom.</div>
+          </a>
+          <a class="dash-card" href="/aulas" target="_blank">
+            <div class="dash-card-icon">🎓</div>
+            <div class="dash-card-title">Aulas e Gravações</div>
+            <div class="dash-card-desc">Gravações, resumos IA, transcrições e materiais por turma.</div>
+          </a>
+          <a class="dash-card" href="/relatorio" target="_blank">
+            <div class="dash-card-icon">📊</div>
+            <div class="dash-card-title">Relatório de Presença</div>
+            <div class="dash-card-desc">Relatório consolidado por professor, turma e período.</div>
+          </a>
+          <button class="dash-card" onclick="switchView('surveys')">
+            <div class="dash-card-icon">📝</div>
+            <div class="dash-card-title">Avaliações NPS</div>
+            <div class="dash-card-desc">Crie formulários, dispare e analise respostas NPS/CSAT.</div>
+          </button>
+          <button class="dash-card" onclick="switchView('notify')">
+            <div class="dash-card-icon">💬</div>
+            <div class="dash-card-title">Avisos WhatsApp</div>
+            <div class="dash-card-desc">Envie avisos manuais ou automáticos para grupos e mentores.</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══ CALENDAR VIEW ═══ -->
+      <div id="calendar-view" style="display:none">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Calendário</div>
+            <div class="page-sub">Registro de presença dos professores</div>
+          </div>
+          <div class="month-tabs" id="month-tabs">
+            <button class="month-tab active" onclick="goToMonth(2026,2)">Fev</button>
+            <button class="month-tab" onclick="goToMonth(2026,3)">Mar</button>
+            <button class="month-tab" onclick="goToMonth(2026,4)">Abr</button>
+            <button class="month-tab" onclick="goToMonth(2026,5)">Mai</button>
+          </div>
+        </div>
+        <div class="stats-bar" id="stats-bar"></div>
+        <div class="month-header">
+          <span class="month-name" id="month-name-label"></span>
+          <span class="month-year">2026</span>
+        </div>
+        <div class="weekday-header">
+          <div class="weekday-label">Seg</div>
+          <div class="weekday-label">Ter</div>
+          <div class="weekday-label">Qua</div>
+          <div class="weekday-label">Qui</div>
+          <div class="weekday-label">Sex</div>
+          <div class="weekday-label weekend">Sáb</div>
+          <div class="weekday-label weekend">Dom</div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+
+      <!-- ═══ TURMAS VIEW ═══ -->
+      <div id="turmas-view" style="display:none">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Turmas</div>
+            <div class="page-sub">Clique em uma turma para ver alunos, presença e rankings</div>
+          </div>
+        </div>
+        <div id="turmas-list"><div class="spinner"></div></div>
+      </div>
+
+      <!-- ═══ REPORT VIEW ═══ -->
+      <div id="report-view" style="display:none">
+        <div class="page-header">
+          <div class="page-title">Relatório de Presença</div>
+        </div>
+        <div id="report-content"></div>
+      </div>
+
+      <!-- ═══ STAFF VIEW ═══ -->
+      <div id="staff-view" style="display:none">
+        <div class="page-header">
+          <div class="page-title">Equipe</div>
+          <button class="btn-save" onclick="openStaffForm()">+ Novo Cadastro</button>
+        </div>
+        <div id="staff-form-container" style="display:none;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:16px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+            <div style="flex:1;min-width:180px">
+              <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Nome *</label>
+              <input class="login-field" style="margin:0" type="text" id="staff-name" placeholder="Nome completo" required>
+            </div>
+            <div style="flex:1;min-width:180px">
+              <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Email</label>
+              <input class="login-field" style="margin:0" type="email" id="staff-email" placeholder="email@exemplo.com">
+            </div>
+            <div style="flex:1;min-width:140px">
+              <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Telefone</label>
+              <input class="login-field" style="margin:0" type="tel" id="staff-phone" placeholder="(11) 99999-9999">
+            </div>
+            <div style="min-width:130px">
+              <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Categoria *</label>
+              <select class="substitute-select" style="width:100%;padding:12px 10px" id="staff-category">
+                <option value="Professor">Professor</option>
+                <option value="Mentor">Mentor</option>
+                <option value="Host">Host</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="btn-save" onclick="saveStaff()">Salvar</button>
+              <button class="att-btn delete" onclick="closeStaffForm()" style="padding:10px 14px">Cancelar</button>
+            </div>
+          </div>
+          <input type="hidden" id="staff-edit-id" value="">
+        </div>
+        <div id="staff-list"></div>
+      </div>
+
+      <!-- ═══ CLASSES VIEW ═══ -->
+      <div id="classes-view" style="display:none">
+        <div class="page-header">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="page-title">Config. Turmas</div>
+            <div style="display:flex;gap:4px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;padding:3px">
+              <button id="filter-active-btn" class="att-btn" onclick="setClassFilter('active')" style="padding:4px 12px;font-size:11px;background:rgba(34,197,94,0.15);color:#4ade80;border-color:#22c55e40">Ativas</button>
+              <button id="filter-inactive-btn" class="att-btn" onclick="setClassFilter('inactive')" style="padding:4px 12px;font-size:11px;background:transparent;color:#555;border-color:transparent">Inativas</button>
+            </div>
+          </div>
+          <button class="btn-save" onclick="openClassForm()">+ Nova Turma</button>
+        </div>
+        <div id="class-form-container" style="display:none;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:16px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Nome da Turma *</label><input class="login-field" style="margin:0" type="text" id="class-name" placeholder="Ex: PS Advanced T1"></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Tipo *</label><select class="substitute-select" style="width:100%;padding:12px 10px" id="class-type"><option value="PS">PS</option><option value="Aula">Aula</option><option value="Imersão">Imersão</option><option value="Workshop">Workshop</option></select></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Data Início *</label><input class="login-field" style="margin:0" type="date" id="class-start"></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Data Fim *</label><input class="login-field" style="margin:0" type="date" id="class-end"></div>
+            <div style="display:flex;gap:10px">
+              <div style="flex:1"><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Início *</label><input class="login-field" style="margin:0" type="time" id="class-time-start" value="18:00"></div>
+              <div style="flex:1"><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Fim *</label><input class="login-field" style="margin:0" type="time" id="class-time-end" value="20:00"></div>
+            </div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Cor</label><input class="login-field" style="margin:0;padding:4px;height:44px" type="color" id="class-color" value="#6366f1"></div>
+          </div>
+          <div style="margin-top:16px;border-top:1px solid #1e1e1e;padding-top:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <label style="font-size:13px;font-weight:700;color:#ddd">Dias da Semana e Equipe</label>
+              <button class="att-btn present" onclick="addScheduleDay()" style="padding:6px 12px;font-size:11px;background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.25);color:#4ade80">+ Dia</button>
+            </div>
+            <div id="schedule-days-container"></div>
+          </div>
+          <div style="margin-top:16px;border-top:1px solid #1e1e1e;padding-top:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <label style="font-size:13px;font-weight:700;color:#ddd">Turmas Vinculadas</label>
+              <button class="att-btn present" onclick="addLinkedCohort()" style="padding:6px 12px;font-size:11px;background:rgba(6,182,212,0.12);border-color:rgba(6,182,212,0.25);color:#22d3ee">+ Turma</button>
+            </div>
+            <div id="linked-cohorts-container"></div>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:16px;justify-content:flex-end">
+            <button class="btn-save" id="save-class-btn" onclick="saveClassV2()">Salvar Turma</button>
+            <button class="att-btn delete" onclick="closeClassForm()" style="padding:10px 14px">Cancelar</button>
+          </div>
+          <input type="hidden" id="class-edit-id" value="">
+        </div>
+        <div id="classes-list"></div>
+      </div>
+
+      <!-- ═══ NOTIFY VIEW ═══ -->
+      <div id="notify-view" style="display:none">
+        <div class="page-header">
+          <div class="page-title">Avisos WhatsApp</div>
+        </div>
+        <div style="background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:24px">
+          <div style="font-size:14px;font-weight:700;color:#ddd;margin-bottom:16px">Enviar novo aviso</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Tipo *</label><select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-type" onchange="onNotifyTypeChange()"><option value="custom">Mensagem livre</option><option value="class_reminder">Lembrete de aula</option><option value="group_announcement">Aviso para grupo</option></select></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Destino *</label><select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-target"><option value="group">Grupo apenas</option><option value="both">Grupo + Mentores</option><option value="individual">Mentores apenas</option></select></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Cohort *</label><select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-cohort" onchange="onNotifyCohortChange()"><option value="">— Selecione —</option></select></div>
+            <div id="notify-class-wrap"><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Classe <span id="notify-class-req" style="color:#f87171">*</span></label><select class="substitute-select" style="width:100%;padding:12px 10px" id="notify-class" onchange="onNotifyClassChange()"><option value="">— Selecione —</option></select></div>
+            <div style="grid-column:1/-1"><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Mensagem * <span style="color:#444;font-weight:400;margin-left:6px">Variáveis: {{cohort_name}} {{zoom_link}} {{mentor_name}} {{class_name}} {{class_time_start}}</span></label><textarea class="login-field" style="margin:0;min-height:110px;resize:vertical;font-size:13px;line-height:1.5" id="notify-message" oninput="updateNotifyPreview()" placeholder="Digite a mensagem..."></textarea></div>
+            <div style="grid-column:1/-1" id="notify-preview-wrap"><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Preview</label><div id="notify-preview" style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:8px;padding:12px;font-size:13px;color:#888;line-height:1.6;white-space:pre-wrap;min-height:60px"></div></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Zoom Link (opcional)</label><div style="display:flex;gap:6px;align-items:center"><input class="login-field" style="margin:0;flex:1" type="url" id="notify-zoom" placeholder="https://zoom.us/j/..." oninput="updateNotifyPreview()"><button type="button" id="copy-zoom-btn" onclick="copyZoomLink()" title="Copiar" style="display:none;padding:10px 12px;background:#1e1e1e;border:1px solid #333;border-radius:8px;color:#aaa;cursor:pointer;font-size:12px;white-space:nowrap">📋 Copiar</button></div></div>
+            <div id="notify-test-feedback" style="display:none;padding:10px 12px;border-radius:8px;font-size:12px;margin-bottom:8px"></div>
+            <div style="display:flex;align-items:flex-end;gap:8px"><button class="btn-save" onclick="sendNotification()" id="notify-send-btn" style="flex:1">Enviar Aviso</button><button onclick="sendTestNotification()" id="notify-test-btn" style="padding:10px 16px;border-radius:8px;border:1px solid #444;background:#1e1e1e;color:#aaa;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">🧪 Testar</button><button class="att-btn delete" onclick="resetNotifyForm()" style="padding:10px 14px">Cancelar</button></div>
+          </div>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:#ddd;margin-bottom:12px">Histórico de envios</div>
+        <div id="notify-history"></div>
+      </div>
+
+      <!-- ═══ SCHEDULES VIEW ═══ -->
+      <div id="schedules-view" style="display:none">
+        <div class="page-header">
+          <div class="page-title">Agendamentos</div>
+          <button class="btn-save" onclick="openScheduleForm()">+ Novo Agendamento</button>
+        </div>
+        <div id="schedule-form-container" style="display:none;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:20px">
+          <div style="font-size:14px;font-weight:700;color:#ddd;margin-bottom:16px">Configurar agendamento recorrente</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Classe *</label><select class="substitute-select" style="width:100%;padding:12px 10px" id="sched-class" onchange="onSchedClassChange()"><option value="">— Selecione —</option></select></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Cohort *</label><select class="substitute-select" style="width:100%;padding:12px 10px" id="sched-cohort"><option value="">— Selecione —</option></select></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Tipo *</label><select class="substitute-select" style="width:100%;padding:12px 10px" id="sched-type" onchange="onSchedTypeChange()"><option value="class_reminder">Lembrete de aula</option><option value="group_announcement">Aviso para grupo</option><option value="custom">Mensagem livre</option></select></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Destino *</label><select class="substitute-select" style="width:100%;padding:12px 10px" id="sched-target"><option value="both">Grupo + Mentores</option><option value="group">Grupo apenas</option><option value="individual">Mentores apenas</option></select></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Horas antes *</label><input class="login-field" style="margin:0" type="number" id="sched-hours" value="2" min="1" max="48"></div>
+            <div></div>
+            <div style="grid-column:1/-1"><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Template *</label><textarea class="login-field" style="margin:0;min-height:100px;resize:vertical;font-size:13px;line-height:1.5" id="sched-template" placeholder="Variáveis: {{class_name}} {{cohort_name}} {{zoom_link}} {{class_time_start}} {{mentor_name}}"></textarea></div>
+            <div style="display:flex;gap:8px;align-items:center"><button class="btn-save" onclick="saveSchedule()" id="sched-save-btn">Salvar</button><button class="att-btn delete" onclick="closeScheduleForm()" style="padding:10px 14px">Cancelar</button></div>
+          </div>
+          <input type="hidden" id="sched-edit-id" value="">
+        </div>
+        <div id="schedules-list"></div>
+      </div>
+
+      <!-- ═══ ZOOM VIEW ═══ -->
+      <div id="zoom-view" style="display:none">
+        <div class="page-header">
+          <div class="page-title">Zoom</div>
+          <div style="display:flex;gap:8px">
+            <button onclick="zoomDiscoverMeetings()" style="background:#1a1a2e;border:1px solid #3b3bff;color:#7c7cff;font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer">🔍 Descobrir Reuniões</button>
+            <button onclick="zoomShowHostPool()" style="background:#1a1a2e;border:1px solid #333;color:#aaa;font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer">👥 Pool de Hosts</button>
+          </div>
+        </div>
+        <div id="zoom-host-pool" style="display:none;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><span style="font-size:13px;font-weight:700;color:#fff">Pool de Hosts — Sessões Ativas</span><button onclick="loadHostPool()" style="background:none;border:none;color:#555;cursor:pointer;font-size:12px">↺ Atualizar</button></div>
+          <div id="zoom-host-pool-list"><span style="color:#555;font-size:13px">Carregando...</span></div>
+        </div>
+        <div id="zoom-discover-panel" style="display:none;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:20px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+            <span style="font-size:13px;font-weight:700;color:#fff">Descobrir via Zoom API</span>
+            <input type="date" id="zoom-discover-from" style="background:#0a0a0a;border:1px solid #333;color:#ccc;padding:6px 10px;border-radius:6px;font-size:12px" />
+            <input type="date" id="zoom-discover-to" style="background:#0a0a0a;border:1px solid #333;color:#ccc;padding:6px 10px;border-radius:6px;font-size:12px" />
+            <button onclick="runZoomDiscover()" style="background:#3b3bff;border:none;color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:6px;cursor:pointer">Buscar</button>
+          </div>
+          <div id="zoom-discover-results"></div>
+        </div>
+        <div style="background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:20px">
+          <label style="font-size:11px;color:#555;display:block;margin-bottom:6px">Reunião importada</label>
+          <select id="zoom-meeting-select" class="substitute-select" style="width:100%;padding:12px 10px" onchange="loadZoomParticipants()"><option value="">— Selecione —</option></select>
+        </div>
+        <div id="zoom-stats" style="display:none;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;gap:24px;flex-wrap:wrap"></div>
+        <div id="zoom-search-wrap" style="display:none;margin-bottom:16px;gap:8px;align-items:center;flex-wrap:wrap">
+          <input id="zoom-student-search" type="text" class="login-field" style="margin:0;width:100%;max-width:320px" placeholder="Filtrar participantes..." oninput="filterZoomRows()" />
+          <button onclick="autoMatchParticipants()" style="padding:8px 16px;border-radius:8px;border:1px solid #6366f1;background:rgba(99,102,241,.1);color:#a5b4fc;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">✨ Auto-vincular (Fuzzy)</button>
+        </div>
+        <div id="zoom-participants-list"></div>
+      </div>
+
+      <!-- ═══ ABSTRACTS VIEW ═══ -->
+      <div id="abstracts-view" style="display:none">
+        <div class="page-header">
+          <div class="page-title">Resumos de Aulas</div>
+          <button onclick="openAbstractForm()" style="padding:8px 18px;border-radius:8px;border:none;background:#6366f1;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">+ Novo Resumo</button>
+        </div>
+        <div id="abstract-form-container" style="display:none;background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:20px">
+          <div style="font-size:14px;font-weight:700;color:#ddd;margin-bottom:16px">Novo / Editar Resumo</div>
+          <input type="hidden" id="abstract-edit-id">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Slug</label><input class="login-field" style="margin:0" id="abstract-slug" placeholder="aula-01, ps-17-02-2026..."></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Tipo</label><select class="login-field" style="margin:0" id="abstract-section-type"><option value="lesson">Aula</option><option value="kb">Base de Conhecimento</option></select></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Título</label><input class="login-field" style="margin:0" id="abstract-title" placeholder="Título da aula"></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Data</label><input class="login-field" style="margin:0" type="date" id="abstract-date"></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Cor Badge</label><select class="login-field" style="margin:0" id="abstract-badge-class"><option value="green">Verde</option><option value="purple">Roxo</option><option value="gray">Cinza</option></select></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Label Badge</label><input class="login-field" style="margin:0" id="abstract-badge-label" placeholder="Aula 01..."></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Ordem</label><input class="login-field" style="margin:0" type="number" id="abstract-sort" min="0"></div>
+            <div><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Cohort Tag</label><input class="login-field" style="margin:0" id="abstract-cohort" placeholder="Advanced-t1"></div>
+          </div>
+          <div style="margin-bottom:12px"><label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Conteúdo HTML</label><textarea class="login-field" id="abstract-body" style="margin:0;min-height:200px;resize:vertical;font-size:12px;font-family:monospace;line-height:1.5" placeholder="Cole o HTML aqui..."></textarea></div>
+          <div style="display:flex;gap:8px">
+            <button id="abstract-save-btn" onclick="saveAbstract()" style="padding:8px 20px;border-radius:8px;border:none;background:#6366f1;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Salvar</button>
+            <button onclick="closeAbstractForm()" style="padding:8px 16px;border-radius:8px;border:1px solid #222;background:transparent;color:#888;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+          </div>
+        </div>
+        <div id="abstracts-list"></div>
+      </div>
+
+      <!-- ═══ SURVEYS VIEW ═══ -->
+      <div id="surveys-view" style="display:none">
+        <div class="page-header">
+          <div class="page-title">Avaliações</div>
+          <button class="btn-primary" onclick="openBuilder()">+ Novo Formulário</button>
+        </div>
+        <div style="max-width:800px">
+          <div id="surveys-list"></div>
+        </div>
+      </div>
+
+    </div><!-- /view-wrap -->
+  </main>
+</div><!-- /app-shell -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal" id="modal-body">
+    <button class="modal-close" onclick="closeModal()">✕ fechar</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="/js/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
+<script src="/js/admin/supabase-client.js"></script>
+<script src="/js/admin/config.js"></script>
+<script src="/js/admin/state.js"></script>
+<script src="/js/admin/utils.js"></script>
+<script src="/js/admin/events.js"></script>
+<script src="/js/admin/auth.js"></script>
+<script src="/js/admin/attendance.js"></script>
+<script src="/js/admin/staff.js"></script>
+<script src="/js/admin/classes.js"></script>
+<script src="/js/admin/notifications.js"></script>
+<script src="/js/admin/schedules.js"></script>
+<script src="/js/admin/zoom.js"></script>
+<script src="/js/admin/abstracts.js"></script>
+<script src="/js/admin/surveys.js"></script>
+<script src="/js/admin/views.js"></script>
+<script src="/js/admin/init.js"></script>
+<script src="https://unpkg.com/lucide@0.469.0"></script>
+<script>
+// ─── PAINEL: override showApp ─────────────────────────
+// auth.js references app-header; painel uses app-shell
+const _origShowApp = window.showApp;
+window.showApp = function() {
+  document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('app-shell').classList.remove('hidden');
+  document.getElementById('app-content').style.display = '';
+};
+
+// ─── PAINEL: override switchView ─────────────────────
+window.switchView = async function(view) {
+  const allViews = ['dashboard','calendar','turmas','report','staff','classes',
+                    'notify','schedules','zoom','abstracts','surveys'];
+  allViews.forEach(v => {
+    const el = document.getElementById(v + '-view');
+    if (el) el.style.display = v === view ? '' : 'none';
+  });
+
+  // Sidebar active
+  document.querySelectorAll('.nav-item[data-view]').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.querySelector(`.nav-item[data-view="${view}"]`);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  // Mobile nav active
+  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+  const activeMobile = document.querySelector(`.mobile-nav-btn[data-view="${view}"]`);
+  if (activeMobile) activeMobile.classList.add('active');
+
+  // Existing load hooks
+  if (view === 'report')    renderReport();
+  if (view === 'staff')     loadStaff();
+  if (view === 'classes')   loadClasses();
+  if (view === 'notify')    loadNotifyView();
+  if (view === 'schedules') loadSchedulesView();
+  if (view === 'zoom')      loadZoomMeetings();
+  if (view === 'abstracts') loadAbstractsView();
+  if (view === 'surveys')   loadSurveysView();
+  if (view === 'calendar') {
+    await loadClasses();
+    await loadOverrides();
+    await loadAttendance();
+    renderAll();
+  }
+  if (view === 'dashboard') loadDashboard();
+  if (view === 'turmas')    loadTurmasView();
+};
+
+// ─── DASHBOARD ────────────────────────────────────────
+async function loadDashboard() {
+  const { data: students } = await sb.from('students').select('id', { count: 'exact', head: true }).eq('active', true).eq('is_mentor', false);
+  const { count: studentCount } = await sb.from('students').select('*', { count: 'exact', head: true }).eq('active', true).eq('is_mentor', false);
+  const { count: cohortCount }  = await sb.from('cohorts').select('*', { count: 'exact', head: true }).eq('active', true);
+  const { count: meetingCount } = await sb.from('zoom_meetings').select('*', { count: 'exact', head: true });
+
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-card"><div><div class="stat-num">${studentCount ?? '—'}</div><div class="stat-label">Alunos Ativos</div></div></div>
+    <div class="stat-card"><div><div class="stat-num">${cohortCount ?? '—'}</div><div class="stat-label">Turmas Ativas</div></div></div>
+    <div class="stat-card"><div><div class="stat-num">${meetingCount ?? '—'}</div><div class="stat-label">Reuniões Zoom</div></div></div>
+  `;
+}
+
+// ─── TURMAS VIEW ──────────────────────────────────────
+async function loadTurmasView() {
+  const container = document.getElementById('turmas-list');
+  container.innerHTML = '<div class="spinner"></div>';
+
+  const { data: cohorts, error } = await sb.from('cohorts').select('id, name, active').order('name');
+  if (error || !cohorts) { container.innerHTML = '<div style="color:#444;text-align:center;padding:40px">Erro ao carregar turmas.</div>'; return; }
+
+  const { data: studentsData } = await sb.from('students').select('id, cohort_id').eq('active', true).eq('is_mentor', false);
+  const byC = {};
+  (studentsData ?? []).forEach(s => { byC[s.cohort_id] = (byC[s.cohort_id] || 0) + 1; });
+
+  const html = cohorts.map(c => {
+    const total = byC[c.id] ?? 0;
+    const active = c.active !== false;
+    return `<a class="turma-card" href="/turma/detalhe.html?id=${c.id}">
+      <div class="turma-header">
+        <div class="turma-name">${escHtml(c.name)}</div>
+        <div class="turma-badge ${active ? '' : 'inactive'}">${active ? 'Ativa' : 'Encerrada'}</div>
+      </div>
+      <div class="turma-stats">
+        <div class="turma-stat"><div class="turma-stat-num">${total}</div><div class="turma-stat-label">Alunos</div></div>
+        <div class="turma-stat"><div class="turma-stat-num" style="color:#6366f1">→</div><div class="turma-stat-label">Ver hub</div></div>
+      </div>
+      <div class="turma-footer">Clique para ver alunos, presença e rankings <span>→</span></div>
+    </a>`;
+  }).join('');
+  container.innerHTML = `<div class="turma-grid">${html}</div>`;
+}
+
+function escHtml(s) { return (s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Start on dashboard view after login
+const _origAuth = window.checkAuth;
+window.checkAuth = async function() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    showApp();
+    switchView('dashboard');
+    await loadClasses(); await loadOverrides(); await loadAttendance();
+  }
+};
+
+lucide.createIcons();
+</script>
+</body>
+</html>
