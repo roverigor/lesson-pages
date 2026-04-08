@@ -77,9 +77,12 @@
     <div class="login-icon">🏛️</div>
     <div class="login-title">Turmas</div>
     <div class="login-subtitle">Acesso restrito à equipe educacional</div>
-    <input class="login-field" id="login-password" type="password" placeholder="Senha de acesso" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="login-btn" onclick="doLogin()">Entrar</button>
-    <div class="login-error" id="login-error">Senha incorreta</div>
+    <form onsubmit="handleLogin(event)">
+      <input class="login-field" type="email" id="login-email" placeholder="Email" required>
+      <input class="login-field" type="password" id="login-password" placeholder="Senha" required>
+      <button class="login-btn" type="submit" id="login-btn">Entrar</button>
+    </form>
+    <div class="login-error" id="login-error"></div>
   </div>
 </div>
 
@@ -110,18 +113,25 @@
 <script>
   const SUPABASE_URL = 'https://gpufcipkajppykmnmdeh.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU';
-  const ADMIN_PASSWORD = 'academia2024';
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  function doLogin() {
-    const pwd = document.getElementById('login-password').value;
-    if (pwd === ADMIN_PASSWORD) {
-      localStorage.setItem('admin_auth', '1');
-      showApp();
-    } else {
-      document.getElementById('login-error').classList.add('show');
+  async function handleLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('login-btn');
+    const errEl = document.getElementById('login-error');
+    btn.disabled = true;
+    errEl.textContent = '';
+    const { error } = await sb.auth.signInWithPassword({
+      email: document.getElementById('login-email').value.trim(),
+      password: document.getElementById('login-password').value,
+    });
+    if (error) {
+      errEl.textContent = 'Email ou senha incorretos';
+      btn.disabled = false;
+      return;
     }
+    showApp();
   }
 
   function showApp() {
@@ -131,8 +141,9 @@
     loadTurmas();
   }
 
-  function checkAuth() {
-    if (localStorage.getItem('admin_auth') === '1') showApp();
+  async function checkAuth() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) showApp();
   }
 
   async function loadTurmas() {
