@@ -184,6 +184,7 @@ serve(async (req: Request) => {
   if (event === "recording.completed") {
     const duration     = Number(object.duration ?? 0); // seconds
     const shareUrl     = String(object.share_url ?? "");
+    const downloadToken = String((eventPayload.download_token as string) ?? ""); // short-lived Zoom JWT
     const recordingFiles = (object.recording_files as Record<string, unknown>[] | undefined) ?? [];
     const transcriptFile = recordingFiles.find((f) => (f.file_type as string) === "TRANSCRIPT");
     const transcriptUrl  = transcriptFile ? String(transcriptFile.download_url ?? "") : "";
@@ -224,7 +225,7 @@ serve(async (req: Request) => {
 
     // Download transcript and generate AI summary (fire-and-forget)
     if (recordingId && transcriptUrl && OPENAI_API_KEY) {
-      generateAndSaveSummary(sb, recordingId, transcriptUrl, topic).catch((e) =>
+      generateAndSaveSummary(sb, recordingId, transcriptUrl, downloadToken, topic).catch((e) =>
         console.error("zoom-webhook: AI summary error", String(e))
       );
     }
@@ -253,13 +254,17 @@ async function generateAndSaveSummary(
   sb: ReturnType<typeof getSupabaseClient>,
   recordingId: string,
   transcriptUrl: string,
+  downloadToken: string,
   topic: string
 ): Promise<void> {
-  // Download transcript (requires Zoom OAuth token — use download_token if present)
+  // Download transcript — Zoom requires the short-lived download_token as Bearer auth
   let transcriptText = "";
   try {
-    const resp = await fetch(transcriptUrl);
+    const headers: Record<string, string> = {};
+    if (downloadToken) headers["Authorization"] = `Bearer ${downloadToken}`;
+    const resp = await fetch(transcriptUrl, { headers });
     if (resp.ok) transcriptText = await resp.text();
+    else console.warn("zoom-webhook: transcript download status", resp.status, "for", recordingId);
   } catch {
     console.warn("zoom-webhook: transcript download failed for", recordingId);
     return;
