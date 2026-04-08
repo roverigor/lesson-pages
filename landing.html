@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academia Lendária</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #080808;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+    .logo { font-size: 48px; margin-bottom: 16px; }
+    h1 { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 6px; }
+    p  { font-size: 14px; color: #444; margin-bottom: 48px; }
+    .btns { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .btn {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 28px 40px; border-radius: 16px; text-decoration: none;
+      font-family: inherit; cursor: pointer; border: 1px solid;
+      transition: all 0.15s; min-width: 180px;
+    }
+    .btn-icon { font-size: 32px; }
+    .btn-label { font-size: 15px; font-weight: 800; }
+    .btn-sub { font-size: 11px; font-weight: 500; }
+    .btn-cal {
+      background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.25);
+      color: #a5b4fc;
+    }
+    .btn-cal:hover { background: rgba(99,102,241,0.16); border-color: rgba(99,102,241,0.5); }
+    .btn-adm {
+      background: rgba(30,30,30,0.6); border-color: #222;
+      color: #888;
+    }
+    .btn-adm:hover { background: rgba(40,40,40,0.8); border-color: #333; color: #aaa; }
+  </style>
+</head>
+<body>
+  <div class="logo">🏛️</div>
+  <h1>Academia Lendária</h1>
+  <p>AIOS Avançado · Cohort 2026</p>
+  <div class="btns">
+    <a href="/calendario" class="btn btn-cal">
+      <span class="btn-icon">📅</span>
+      <span class="btn-label">Calendário</span>
+      <span class="btn-sub">Encontros e mentores</span>
+    </a>
+    <a href="/admin" class="btn btn-adm">
+      <span class="btn-icon">🔐</span>
+      <span class="btn-label">Admin</span>
+      <span class="btn-sub">Login administrador</span>
+    </a>
+  </div>
+</body>
+</html>
