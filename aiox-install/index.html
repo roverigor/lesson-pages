@@ -906,7 +906,7 @@
     </a>
     <a href="#sec-editors" class="nav-item" onclick="setActive(this)">
       <span class="nav-step">11</span>
-      Editores de Código
+      IDE Editores de Código
     </a>
     <a href="#sec-first-run" class="nav-item" onclick="setActive(this)">
       <span class="nav-step">12</span>
@@ -2067,8 +2067,66 @@
       <div class="section-header">
         <div class="section-num cyan">11</div>
         <div class="section-title-group">
-          <h2 class="section-title">Editores de Código <span class="tag tag-opt">Opcional</span></h2>
+          <h2 class="section-title">IDE Editores de Código <span class="tag tag-opt">Opcional</span></h2>
           <p class="section-desc">Configure seu editor com IA — compatibilidade e passo a passo de instalação</p>
+        </div>
+      </div>
+
+      <!-- IDE EXPLAINER CARD -->
+      <div class="card" style="border-color:rgba(209,255,0,0.2); background: linear-gradient(135deg, rgba(209,255,0,0.03) 0%, rgba(209,255,0,0.01) 100%); margin-bottom: 16px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+          <div style="width:32px; height:32px; border-radius:8px; background:rgba(209,255,0,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <i data-lucide="layout-dashboard" class="lucide-md" style="color:var(--accent2)"></i>
+          </div>
+          <div>
+            <div style="font-size:13px; font-weight:700; color:var(--text);">O que é uma IDE?</div>
+            <div style="font-size:11px; color:var(--text3);">Integrated Development Environment — Ambiente de Desenvolvimento Integrado</div>
+          </div>
+        </div>
+
+        <p style="font-size:13px; color:var(--text2); margin-bottom:16px; line-height:1.7;">
+          É um programa que reúne <strong style="color:var(--text)">tudo que um desenvolvedor precisa em um só lugar</strong>: editor de texto, terminal, debug, controle de versão (Git) e — nos IDEs modernos — IA integrada.
+        </p>
+
+        <table style="margin-bottom:16px;">
+          <thead>
+            <tr>
+              <th style="width:30%"></th>
+              <th style="color:#94a3b8;">Editor de texto simples</th>
+              <th style="color:var(--accent2);">IDE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color:var(--text3); font-size:12px;">O que faz</td>
+              <td>Edita arquivos de texto</td>
+              <td>Edita, roda, debuga e versiona</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3); font-size:12px;">Terminal integrado</td>
+              <td>Não tem</td>
+              <td>Sim — dentro do editor</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3); font-size:12px;">IA embutida</td>
+              <td>Não tem</td>
+              <td>Sim (Cursor, Windsurf, AntiGravity)</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3); font-size:12px;">Exemplos</td>
+              <td>Notepad, Sublime Text</td>
+              <td>VS Code, Cursor, Windsurf, AntiGravity</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="display:flex; gap:10px; align-items:flex-start; padding:12px 14px; background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px;">
+          <i data-lucide="lightbulb" class="lucide-sm" style="color:var(--yellow); margin-top:2px; flex-shrink:0;"></i>
+          <div style="font-size:12px; color:var(--text2); line-height:1.7;">
+            <strong style="color:var(--text);">Como IDE e CLI se complementam no AIOX:</strong><br>
+            Você usa a <span style="color:var(--accent3);">IDE</span> para <em>visualizar e editar</em> o código — e o <span style="color:var(--accent2);">Claude Code na CLI</span> (terminal integrado da própria IDE) para <em>orquestrar agentes, rodar stories e fazer deploys</em>.<br>
+            <span style="color:var(--text3);">O fluxo é: IDE aberta → terminal integrado → <span class="ic">claude</span> → agentes AIOX em ação.</span>
+          </div>
         </div>
       </div>
 
