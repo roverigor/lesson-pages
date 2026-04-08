@@ -56,6 +56,7 @@ const config = [
         // ── Admin module globals (defined across script files, loaded in order) ──
         sb: 'readonly',               // supabase-client.js
         showToast: 'readonly',        // utils.js
+        showDeleteConfirm: 'readonly',// utils.js
         checkAuth: 'readonly',        // auth.js
         renderAll: 'readonly',        // attendance.js
         loadClasses: 'readonly',      // classes.js
