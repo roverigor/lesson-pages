@@ -202,19 +202,19 @@ serve(async (req: Request) => {
       cohortId = session?.cohort_id ?? null;
     }
 
-    // UPSERT in class_recordings (dedup by meeting_id)
+    // UPSERT in class_recordings (dedup by zoom_meeting_id — TEXT column for Zoom numeric IDs)
     const { data: rec, error: recErr } = await sb
       .from("class_recordings")
       .upsert(
         {
-          meeting_id:       meetingId,
+          zoom_meeting_id:  meetingId,
           cohort_id:        cohortId,
           recording_date:   startTime ? startTime.split("T")[0] : new Date().toISOString().split("T")[0],
           title:            topic || `Aula — ${startTime?.split("T")[0] ?? ""}`,
           duration_minutes: duration > 0 ? Math.round(duration / 60) : null,
           video_url:        shareUrl || null,
         },
-        { onConflict: "meeting_id", ignoreDuplicates: false }
+        { onConflict: "zoom_meeting_id", ignoreDuplicates: false }
       )
       .select("id")
       .maybeSingle();
