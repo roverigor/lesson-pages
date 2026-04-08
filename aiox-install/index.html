@@ -1841,6 +1841,95 @@
         </div>
       </div>
 
+      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 28px 0 8px;">Instalar cada MCP individualmente</h3>
+      <p style="font-size:13px; color:var(--text3); margin-bottom:16px;">Use os comandos abaixo direto no terminal para instalar cada MCP no Claude Code — sem clonar repositório:</p>
+
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title" style="margin-bottom:8px;">
+          <i data-lucide="book-open" class="lucide-sm" style="color:var(--accent3)"></i> context7
+          <span class="badge badge-optional" style="margin-left:4px;">Sem chave API</span>
+        </div>
+        <div style="font-size:12px; color:var(--text3); margin-bottom:8px;">Documentação atualizada de bibliotecas para LLMs — injeta docs do npm/PyPI direto no contexto.</div>
+        <div class="code-block" style="margin:0;">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          </div>
+          <pre><code><span class="c-cmd">claude mcp add</span> context7 <span class="c-flag">--</span> npx <span class="c-flag">-y</span> @upstash/context7-mcp</code></pre>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title" style="margin-bottom:8px;">
+          <i data-lucide="terminal" class="lucide-sm" style="color:var(--accent2)"></i> desktop-commander
+          <span class="badge badge-optional" style="margin-left:4px;">Sem chave API</span>
+        </div>
+        <div style="font-size:12px; color:var(--text3); margin-bottom:8px;">Gerenciamento de arquivos, terminal e processos — acesso ao sistema de arquivos do host.</div>
+        <div class="code-block" style="margin:0;">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          </div>
+          <pre><code><span class="c-cmd">claude mcp add</span> desktop-commander <span class="c-flag">--</span> npx <span class="c-flag">-y</span> @wonderwhy-er/desktop-commander</code></pre>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title" style="margin-bottom:8px;">
+          <i data-lucide="globe" class="lucide-sm" style="color:#e2503a"></i> playwright
+          <span class="badge badge-optional" style="margin-left:4px;">Sem chave API</span>
+        </div>
+        <div style="font-size:12px; color:var(--text3); margin-bottom:8px;">Automação de browser — navegação, screenshots, testes e interação com páginas web.</div>
+        <div class="code-block" style="margin:0;">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          </div>
+          <pre><code><span class="c-cmd">claude mcp add</span> playwright <span class="c-flag">--</span> npx <span class="c-flag">-y</span> @playwright/mcp@latest</code></pre>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title" style="margin-bottom:8px;">
+          <i data-lucide="search" class="lucide-sm" style="color:var(--yellow)"></i> exa
+          <span class="badge badge-required" style="margin-left:4px;">Requer chave API</span>
+        </div>
+        <div style="font-size:12px; color:var(--text3); margin-bottom:8px;">Busca web com IA e extração de conteúdo — obtenha sua chave em <a href="https://exa.ai" target="_blank" style="color:var(--accent3); text-decoration:underline;">exa.ai</a>.</div>
+        <div class="code-block" style="margin:0;">
+          <div class="code-header">
+            <span class="code-lang">bash</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          </div>
+          <pre><code><span class="c-cmd">claude mcp add</span> exa <span class="c-flag">-e</span> <span class="c-string">EXA_API_KEY=sua-chave-aqui</span> <span class="c-flag">--</span> npx <span class="c-flag">-y</span> exa-mcp</code></pre>
+        </div>
+        <div class="info-box warn" style="margin-top:10px;">
+          <i data-lucide="alert-triangle" class="lucide-md info-icon"></i>
+          <div class="info-text">
+            Substitua <span class="ic">sua-chave-aqui</span> pela sua chave real do Exa. A chave fica salva na configuração local do Claude Code — não é commitada no repositório.
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-size:14px; font-weight:600; color:var(--text); margin: 20px 0 12px;">Verificar MCPs instalados</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        </div>
+        <pre><code><span class="c-comment"># Listar todos os MCPs configurados</span>
+<span class="c-cmd">claude mcp list</span>
+
+<span class="c-comment"># Ver detalhes de um MCP específico</span>
+<span class="c-cmd">claude mcp get</span> context7</code></pre>
+      </div>
+
+      <div class="info-box tip" style="margin-top:12px;">
+        <i data-lucide="lightbulb" class="lucide-md info-icon"></i>
+        <div class="info-text">
+          <strong>Escopo dos MCPs:</strong> por padrão, <span class="ic">claude mcp add</span> instala globalmente (disponível em qualquer projeto). Para instalar apenas no projeto atual, adicione a flag <span class="ic">--scope project</span>.
+        </div>
+      </div>
+
       <hr style="border:none; border-top: 1px solid var(--border); margin: 32px 0;">
 
       <h3 style="font-size:16px; font-weight:700; color:var(--text); margin: 0 0 4px; display:flex; align-items:center; gap:8px;"><i data-lucide="git-pull-request" class="lucide-md" style="color:var(--accent2)"></i> CodeRabbit — Code Review com IA <span class="tag tag-new">Destaque</span></h3>
