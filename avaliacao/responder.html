@@ -532,7 +532,8 @@
   function renderChoice(container, q, idx) {
     const list = document.createElement('div');
     list.className = 'options-list';
-    (q.options || []).forEach(opt => {
+    const opts = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []);
+    opts.forEach(opt => {
       const item = document.createElement('div');
       item.className = 'option-item';
       item.innerHTML = `<div class="option-dot"></div><span>${escHtml(opt)}</span>`;
@@ -552,7 +553,8 @@
     const selected = new Set();
     const list = document.createElement('div');
     list.className = 'options-list';
-    (q.options || []).forEach(opt => {
+    const opts = typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || []);
+    opts.forEach(opt => {
       const item = document.createElement('div');
       item.className = 'option-item';
       item.innerHTML = `<div class="option-sq"></div><span>${escHtml(opt)}</span>`;
