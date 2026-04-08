@@ -327,15 +327,17 @@
     background: var(--bg2);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   .progress-step {
-    flex: 1;
-    padding: 14px 16px;
+    flex: 1 0 0;
+    min-width: 90px;
+    padding: 12px 10px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     border-right: 1px solid var(--border);
     position: relative;
   }
@@ -362,11 +364,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     background: rgba(255,255,255,0.06);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--text3);
     flex-shrink: 0;
@@ -383,10 +385,10 @@
   }
 
   .ps-info { min-width: 0; overflow: hidden; flex: 1; }
-  .ps-label { font-size: 11px; font-weight: 600; color: var(--text3); }
+  .ps-label { font-size: 10px; font-weight: 600; color: var(--text3); }
   .progress-step.active .ps-label { color: var(--accent2); }
   .progress-step.done .ps-label { color: var(--green); }
-  .ps-name { font-size: 13px; font-weight: 600; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ps-name { font-size: 12px; font-weight: 600; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .progress-step.active .ps-name { color: var(--text); }
 
   /* SECTION */
