@@ -493,3 +493,165 @@ async function zoomReleaseHost(sessionId) {
   showToast('Host liberado manualmente', 'success');
   await loadHostPool();
 }
+
+// ═══════════════════════════════════════
+// APLICAR PRESENÇAS DA EQUIPE VIA ZOOM
+// ═══════════════════════════════════════
+async function applyStaffAttendanceFromZoom() {
+  const meetingId = document.getElementById('zoom-meeting-select').value;
+  if (!meetingId) { showToast('Selecione uma reunião primeiro', 'error'); return; }
+
+  const { data: meeting } = await sb
+    .from('zoom_meetings')
+    .select('id, start_time, topic, cohort_id')
+    .eq('id', meetingId)
+    .single();
+
+  if (!meeting) { showToast('Reunião não encontrada', 'error'); return; }
+
+  // Converte start_time para dd/mm no fuso de Brasília (UTC-3)
+  const utc = new Date(meeting.start_time);
+  const brt = new Date(utc.getTime() - 3 * 60 * 60 * 1000);
+  const dd  = String(brt.getUTCDate()).padStart(2, '0');
+  const mm  = String(brt.getUTCMonth() + 1).padStart(2, '0');
+  const dateKey = `${dd}/${mm}`;
+
+  const dayEvents = EVENTS[dateKey];
+  if (!dayEvents) {
+    showToast(`Nenhuma aula configurada para ${dateKey} no calendário`, 'error');
+    return;
+  }
+
+  const { data: participants } = await sb
+    .from('zoom_participants')
+    .select('participant_name, duration_minutes')
+    .eq('meeting_id', meetingId);
+
+  if (!participants?.length) {
+    showToast('Nenhum participante importado para esta reunião', 'error');
+    return;
+  }
+
+  // Coleta toda a equipe escalada neste dia
+  const scheduled = [];
+  for (const course in dayEvents) {
+    for (const m of dayEvents[course].mentors) {
+      if (!scheduled.find(s => s.name === m.name && s.course === course)) {
+        scheduled.push({ name: m.name, role: m.role, course, dateKey });
+      }
+    }
+  }
+
+  // Fuzzy match equipe × participantes Zoom
+  const matches = scheduled.map(staff => {
+    let bestPart = null, bestScore = 0;
+    for (const p of participants) {
+      const score = fuzzyScore(p.participant_name, staff.name);
+      if (score > bestScore) { bestScore = score; bestPart = p; }
+    }
+    const found = bestScore >= 0.72;
+    return {
+      staff,
+      zoomName:  found ? bestPart.participant_name : null,
+      duration:  found ? bestPart.duration_minutes : null,
+      score:     bestScore,
+      found,
+      auto:      bestScore >= 0.88,
+      existing:  attendanceCache[`${dateKey}|${staff.course}|${staff.name}`] || null,
+    };
+  });
+
+  renderStaffAttModal(matches, meeting.topic, dateKey);
+}
+
+function renderStaffAttModal(matches, topic, dateKey) {
+  const found    = matches.filter(m => m.found);
+  const notFound = matches.filter(m => !m.found);
+
+  const rowHTML = m => {
+    const pct   = Math.round(m.score * 100);
+    const color = m.auto ? '#4ade80' : '#f59e0b';
+    if (m.existing) {
+      const label = m.existing.status === 'present' ? '✅ já presente' : '❌ já ausente';
+      const c     = m.existing.status === 'present' ? '#4ade80' : '#f87171';
+      return `<tr class="staff-att-row" data-date="${m.staff.dateKey}" data-course="${m.staff.course}" data-teacher="${m.staff.name}" data-role="${m.staff.role}">
+        <td style="padding:8px 6px;font-size:12px;color:#ccc">${m.staff.name}</td>
+        <td style="padding:8px 6px;font-size:11px;color:#666">${m.staff.course.replace('Aulas ','')}</td>
+        <td style="padding:8px 6px;font-size:11px;color:#555">${m.staff.role}</td>
+        <td style="padding:8px 6px;font-size:12px;color:#aaa">${m.zoomName || '—'}${m.duration ? ` <span style="color:#555">(${m.duration}min)</span>` : ''}</td>
+        <td style="padding:8px 6px;text-align:center">${m.found ? `<span style="font-size:11px;font-weight:700;color:${color};background:${color}22;padding:2px 8px;border-radius:999px">${pct}%</span>` : '<span style="color:#333;font-size:11px">—</span>'}</td>
+        <td style="padding:8px 6px;text-align:center"><span style="font-size:11px;color:${c}">${label}</span></td>
+      </tr>`;
+    }
+    return `<tr class="staff-att-row" data-date="${m.staff.dateKey}" data-course="${m.staff.course}" data-teacher="${m.staff.name}" data-role="${m.staff.role}">
+      <td style="padding:8px 6px;font-size:12px;color:#ccc">${m.staff.name}</td>
+      <td style="padding:8px 6px;font-size:11px;color:#666">${m.staff.course.replace('Aulas ','')}</td>
+      <td style="padding:8px 6px;font-size:11px;color:#555">${m.staff.role}</td>
+      <td style="padding:8px 6px;font-size:12px;color:#aaa">${m.zoomName || '—'}${m.duration ? ` <span style="color:#555">(${m.duration}min)</span>` : ''}</td>
+      <td style="padding:8px 6px;text-align:center">${m.found ? `<span style="font-size:11px;font-weight:700;color:${color};background:${color}22;padding:2px 8px;border-radius:999px">${pct}%</span>` : '<span style="color:#555;font-size:11px">não encontrado</span>'}</td>
+      <td style="padding:8px 6px;text-align:center"><input type="checkbox" class="staff-att-check" ${m.found ? 'checked' : ''} style="width:16px;height:16px;cursor:pointer"></td>
+    </tr>`;
+  };
+
+  document.body.insertAdjacentHTML('beforeend', `
+  <div id="staff-att-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)closeStaffAttModal()">
+    <div style="background:#0f0f0f;border:1px solid #222;border-radius:16px;width:100%;max-width:820px;max-height:88vh;display:flex;flex-direction:column">
+      <div style="padding:20px 24px;border-bottom:1px solid #1a1a1a">
+        <div style="font-size:15px;font-weight:700;color:#fff">Aplicar Presenças da Equipe</div>
+        <div style="font-size:12px;color:#555;margin-top:4px">${topic} · ${dateKey} · ${found.length}/${matches.length} encontrados no Zoom</div>
+      </div>
+      <div style="overflow-y:auto;flex:1;padding:16px 24px">
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <button onclick="selectAllStaffAtt(true)"  style="font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;border:1px solid #333;background:transparent;color:#aaa;cursor:pointer">Marcar tudo</button>
+          <button onclick="selectAllStaffAtt(false)" style="font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;border:1px solid #333;background:transparent;color:#aaa;cursor:pointer">Desmarcar tudo</button>
+        </div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="color:#444;font-size:10px;text-transform:uppercase;letter-spacing:.05em">
+            <th style="padding:6px;text-align:left">Equipe</th>
+            <th style="padding:6px;text-align:left">Aula</th>
+            <th style="padding:6px;text-align:left">Função</th>
+            <th style="padding:6px;text-align:left">Nome no Zoom</th>
+            <th style="padding:6px;text-align:center">Confiança</th>
+            <th style="padding:6px;text-align:center">Marcar Presente</th>
+          </tr></thead>
+          <tbody>${matches.map(rowHTML).join('')}</tbody>
+        </table>
+        ${notFound.length ? `<div style="margin-top:14px;font-size:12px;color:#555;padding:10px;background:#111;border-radius:8px;border:1px solid #1a1a1a">⚠️ ${notFound.length} membro(s) não encontrados no relatório Zoom — verifique o nome no Zoom ou marque manualmente no calendário.</div>` : ''}
+      </div>
+      <div style="padding:16px 24px;border-top:1px solid #1a1a1a;display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="closeStaffAttModal()" style="padding:9px 18px;border-radius:8px;border:1px solid #222;background:transparent;color:#666;font-size:13px;font-weight:600;cursor:pointer">Cancelar</button>
+        <button onclick="applyStaffAttendance()" style="padding:9px 18px;border-radius:8px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:13px;font-weight:700;cursor:pointer">✅ Aplicar Presenças</button>
+      </div>
+    </div>
+  </div>`);
+}
+
+function closeStaffAttModal() { document.getElementById('staff-att-modal')?.remove(); }
+
+function selectAllStaffAtt(checked) {
+  document.querySelectorAll('.staff-att-check').forEach(cb => { cb.checked = checked; });
+}
+
+async function applyStaffAttendance() {
+  const rows   = document.querySelectorAll('.staff-att-row');
+  const toSave = [];
+  rows.forEach(row => {
+    const cb = row.querySelector('.staff-att-check');
+    if (cb?.checked) {
+      toSave.push({
+        lesson_date:  row.dataset.date,
+        course:       row.dataset.course,
+        teacher_name: row.dataset.teacher,
+        role:         row.dataset.role,
+        status:       'present',
+      });
+    }
+  });
+  if (!toSave.length) { closeStaffAttModal(); return; }
+  const ok = await saveAttendance(toSave);
+  closeStaffAttModal();
+  if (ok) {
+    showToast(`✅ ${toSave.length} presenças aplicadas`, 'success');
+    renderAll();
+  }
+}
