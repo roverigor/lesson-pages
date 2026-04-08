@@ -26,9 +26,10 @@ dependency: EPIC-006 (Done), EPIC-007 (Done)
 | Prioridade | Ambos (perfil + NPS tokenizado) são P1 simultâneos |
 | WhatsApp group monitoring | ✅ Incluído — capturar mensagens de grupo via Evolution API `messages.upsert` |
 | Zoom chat monitoring | ⚠️ Pendente — requer scope `chat_message:read` no S2S app Zoom (a confirmar) |
-| Granularidade ranking WA | ❓ Pendente decisão: mensagens brutas vs dias ativos |
-| Período do ranking | ❓ Pendente decisão: por ciclo/mês vs acumulado total da turma |
-| Visibilidade do ranking | ❓ Pendente decisão: apenas coordenador/mentor vs também para alunos |
+| Granularidade ranking WA | Mensagens brutas por dia (contagem diária) |
+| Período do ranking | Diário — ranking atualizado uma vez por dia pelo cron noturno |
+| Cron de atualização | pg_cron roda entre 02h–04h AM: coleta Zoom chat do dia anterior + agrega WA |
+| Visibilidade do ranking | Apenas coordenador e mentor — alunos não acessam o dashboard |
 
 ---
 
@@ -173,14 +174,73 @@ GROUP BY s.id ORDER BY dias_ativos DESC, mensagens DESC;
 ## Fluxo WhatsApp Group Monitoring (Story 10.6)
 
 ```
+CAPTURA (tempo real via webhook):
 1. Aluno envia mensagem no grupo WhatsApp da turma
 2. Evolution API dispara webhook messages.upsert → delivery-webhook (já existe)
-3. Handler novo: se event = 'messages.upsert' E remoteJid termina em @g.us (grupo):
-   a. Extrair sender phone do JID (ex: 5543999...@s.whatsapp.net → 5543999...)
-   b. Normalizar phone → buscar student_id em students
-   c. Buscar cohort_id pelo group_jid em cohorts.whatsapp_group_jid
-   d. INSERT em whatsapp_group_messages (deduplicado por evolution_message_id)
-4. Ranking calculado on-demand via SQL na página da turma
+3. Handler novo no delivery-webhook: se event = 'messages.upsert' E
+   remoteJid termina em @g.us (grupo):
+   a. Ignorar mensagens próprias (fromMe = true) e bots
+   b. Extrair sender phone do JID (ex: 5543999...@s.whatsapp.net → 5543999...)
+   c. Normalizar phone → buscar student_id em students
+   d. Buscar cohort_id pelo group_jid em cohorts.whatsapp_group_jid
+   e. INSERT em whatsapp_group_messages (deduplicado por evolution_message_id)
+
+AGGREGAÇÃO (cron 02h–04h AM, junto com Zoom chat):
+4. Cron calcula contagem do dia para cada student/cohort
+5. Upsert em engagement_daily_ranking
+```
+
+## Arquitetura do Cron Noturno (pg_cron — 02h AM)
+
+```sql
+-- Job: engagement-nightly-sync
+-- Schedule: '0 2 * * *'  (02:00 AM todos os dias)
+
+-- Passo 1: Buscar chat Zoom de reuniões de ontem
+SELECT zoom_meeting_id FROM zoom_meetings
+WHERE start_time::date = CURRENT_DATE - 1
+  AND chat_imported = false;
+-- Para cada: chamar zoom-attendance?action=import_meeting_chat via pg_net
+
+-- Passo 2: Recalcular ranking diário
+INSERT INTO engagement_daily_ranking
+  (student_id, cohort_id, ref_date, wa_messages, zoom_chat_messages,
+   attendance_count, engagement_score)
+SELECT
+  s.id,
+  ...,
+  CURRENT_DATE - 1 AS ref_date,
+  COUNT(wm.*) AS wa_messages,
+  COUNT(zc.*) AS zoom_chat_messages,
+  COUNT(sa.*) FILTER (WHERE sa.present) AS attendance_count,
+  -- score composto: presença (peso 3) + wa (peso 1) + zoom chat (peso 1)
+  (COUNT(sa.*) FILTER (WHERE sa.present) * 3
+   + COUNT(wm.*) + COUNT(zc.*)) AS engagement_score
+FROM students s
+LEFT JOIN whatsapp_group_messages wm ON wm.student_id = s.id AND wm.sent_at::date = CURRENT_DATE - 1
+LEFT JOIN zoom_chat_messages zc ON zc.student_id = s.id AND zc.sent_at::date = CURRENT_DATE - 1
+LEFT JOIN student_attendance sa ON sa.student_id = s.id AND sa.class_date = CURRENT_DATE - 1
+GROUP BY s.id, cohort_id
+ON CONFLICT (student_id, cohort_id, ref_date) DO UPDATE SET ...;
+```
+
+## Tabela engagement_daily_ranking (nova — Story 10.6)
+
+```sql
+CREATE TABLE engagement_daily_ranking (
+  id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id           UUID REFERENCES students(id),
+  cohort_id            UUID REFERENCES cohorts(id),
+  ref_date             DATE NOT NULL,
+  wa_messages          INT DEFAULT 0,
+  zoom_chat_messages   INT DEFAULT 0,
+  attendance_count     INT DEFAULT 0,
+  engagement_score     INT DEFAULT 0,  -- composto: presença×3 + wa + zoom_chat
+  UNIQUE (student_id, cohort_id, ref_date)
+);
+
+CREATE INDEX ON engagement_daily_ranking (cohort_id, ref_date DESC);
+CREATE INDEX ON engagement_daily_ranking (student_id, ref_date DESC);
 ```
 
 ## Fluxo Zoom Chat Monitoring (Story 10.7)
@@ -189,13 +249,14 @@ GROUP BY s.id ORDER BY dias_ativos DESC, mensagens DESC;
 Endpoint: GET /report/meetings/{meetingId}/chat
 Scope: report:read:admin (já ativo)
 
-1. Ao importar participantes de uma reunião (zoom-attendance, já implementado):
-   - Chamar também /report/meetings/{meetingId}/chat
-   - Para cada mensagem: extrair sender_name, sent_time, message (só contagem)
-   - Fuzzy match sender_name → student_id (mesmo algoritmo de matching de participantes)
-   - INSERT em zoom_chat_messages (deduplicado por message_id)
-2. No perfil do aluno: exibir "X mensagens no chat" por reunião
-3. Contribui para score de engajamento no ranking da turma
+Cron noturno (02h–04h AM):
+1. Buscar zoom_meetings com start_time no dia anterior (já na tabela)
+2. Para cada reunião: GET /report/meetings/{meetingId}/chat
+3. Para cada mensagem do chat:
+   - Extrair sender_name, time, message_id
+   - Fuzzy match sender_name → student_id (mesmo algoritmo de participantes)
+   - INSERT em zoom_chat_messages (deduplicado por message_id UNIQUE)
+4. Após inserção, recalcular engagement_ranking para cohorts afetados
 ```
 
 ## Fluxo NPS Tokenizado
