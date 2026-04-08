@@ -532,14 +532,34 @@ async function applyStaffAttendanceFromZoom() {
     return;
   }
 
-  // Coleta toda a equipe escalada neste dia
+  // Filtra cursos do dia pelo cohort vinculado à reunião
+  let filteredCourses = Object.keys(dayEvents);
+  if (meeting.cohort_id) {
+    const cohort = (cohortsList || []).find(c => c.id === meeting.cohort_id);
+    if (cohort) {
+      const cn = cohort.name.toLowerCase();
+      const filtered = filteredCourses.filter(ck =>
+        ck.toLowerCase() === cn ||
+        ck.toLowerCase().includes(cn) ||
+        cn.includes(ck.toLowerCase())
+      );
+      if (filtered.length) filteredCourses = filtered;
+    }
+  }
+
+  // Coleta equipe escalada apenas nos cursos filtrados
   const scheduled = [];
-  for (const course in dayEvents) {
+  for (const course of filteredCourses) {
     for (const m of dayEvents[course].mentors) {
       if (!scheduled.find(s => s.name === m.name && s.course === course)) {
         scheduled.push({ name: m.name, role: m.role, course, dateKey });
       }
     }
+  }
+
+  if (!scheduled.length) {
+    showToast(`Nenhuma equipe escalada para ${filteredCourses.join(', ')} em ${dateKey}`, 'error');
+    return;
   }
 
   // Fuzzy match equipe × participantes Zoom
@@ -550,14 +570,16 @@ async function applyStaffAttendanceFromZoom() {
       if (score > bestScore) { bestScore = score; bestPart = p; }
     }
     const found = bestScore >= 0.72;
+    const existing = attendanceCache[`${dateKey}|${staff.course}|${staff.name}`] || null;
     return {
       staff,
-      zoomName:  found ? bestPart.participant_name : null,
-      duration:  found ? bestPart.duration_minutes : null,
-      score:     bestScore,
+      zoomName:   found ? bestPart.participant_name : null,
+      duration:   found ? bestPart.duration_minutes : null,
+      score:      bestScore,
       found,
-      auto:      bestScore >= 0.88,
-      existing:  attendanceCache[`${dateKey}|${staff.course}|${staff.name}`] || null,
+      auto:       bestScore >= 0.88,
+      existing,
+      existingId: existing ? existing.id : null,
     };
   });
 
@@ -572,15 +594,18 @@ function renderStaffAttModal(matches, topic, dateKey) {
     const pct   = Math.round(m.score * 100);
     const color = m.auto ? '#4ade80' : '#f59e0b';
     if (m.existing) {
-      const label = m.existing.status === 'present' ? '✅ já presente' : '❌ já ausente';
+      const label = m.existing.status === 'present' ? '✅ presente' : '❌ ausente';
       const c     = m.existing.status === 'present' ? '#4ade80' : '#f87171';
-      return `<tr class="staff-att-row" data-date="${m.staff.dateKey}" data-course="${m.staff.course}" data-teacher="${m.staff.name}" data-role="${m.staff.role}">
+      return `<tr class="staff-att-row" data-date="${m.staff.dateKey}" data-course="${m.staff.course}" data-teacher="${m.staff.name}" data-role="${m.staff.role}" data-existing-id="${m.existingId || ''}">
         <td style="padding:8px 6px;font-size:12px;color:#ccc">${m.staff.name}</td>
         <td style="padding:8px 6px;font-size:11px;color:#666">${m.staff.course.replace('Aulas ','')}</td>
         <td style="padding:8px 6px;font-size:11px;color:#555">${m.staff.role}</td>
         <td style="padding:8px 6px;font-size:12px;color:#aaa">${m.zoomName || '—'}${m.duration ? ` <span style="color:#555">(${m.duration}min)</span>` : ''}</td>
         <td style="padding:8px 6px;text-align:center">${m.found ? `<span style="font-size:11px;font-weight:700;color:${color};background:${color}22;padding:2px 8px;border-radius:999px">${pct}%</span>` : '<span style="color:#333;font-size:11px">—</span>'}</td>
-        <td style="padding:8px 6px;text-align:center"><span style="font-size:11px;color:${c}">${label}</span></td>
+        <td style="padding:8px 6px;text-align:center;white-space:nowrap">
+          <span style="font-size:11px;color:${c};margin-right:6px">${label}</span>
+          <button onclick="removeStaffAttRow(this)" style="font-size:10px;padding:2px 8px;border-radius:5px;border:1px solid #f87171;background:transparent;color:#f87171;cursor:pointer" title="Remover registro">🗑</button>
+        </td>
       </tr>`;
     }
     return `<tr class="staff-att-row" data-date="${m.staff.dateKey}" data-course="${m.staff.course}" data-teacher="${m.staff.name}" data-role="${m.staff.role}">
@@ -627,6 +652,25 @@ function renderStaffAttModal(matches, topic, dateKey) {
 }
 
 function closeStaffAttModal() { document.getElementById('staff-att-modal')?.remove(); }
+
+async function removeStaffAttRow(btn) {
+  const row        = btn.closest('tr');
+  const dateKey    = row.dataset.date;
+  const course     = row.dataset.course;
+  const teacher    = row.dataset.teacher;
+  const existingId = row.dataset.existingId;
+
+  if (!existingId) { showToast('ID do registro não encontrado', 'error'); return; }
+
+  const { error } = await sb.from('attendance').delete().eq('id', existingId);
+  if (error) { showToast('Erro ao remover: ' + error.message, 'error'); return; }
+
+  delete attendanceCache[`${dateKey}|${course}|${teacher}`];
+  row.removeAttribute('data-existing-id');
+  // Converte a célula de status em checkbox marcado para re-aplicação
+  row.cells[5].innerHTML = '<input type="checkbox" class="staff-att-check" checked style="width:16px;height:16px;cursor:pointer">';
+  showToast(`Registro de ${teacher} removido`, 'success');
+}
 
 function selectAllStaffAtt(checked) {
   document.querySelectorAll('.staff-att-check').forEach(cb => { cb.checked = checked; });
