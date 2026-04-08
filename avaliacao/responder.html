@@ -646,7 +646,7 @@
 
     const res = await fetch(`${FUNCTIONS_URL}/submit-survey`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
       body: JSON.stringify({ token, answers: answersPayload }),
     });
 
