@@ -184,6 +184,49 @@
     .edit-hint { font-size: 10px; color: #444; margin-top: 3px; }
 
     .actions-cell { display: flex; gap: 4px; flex-wrap: nowrap; }
+    .action-btn.merge { border-color: #9333ea; color: #c084fc; background: rgba(147,51,234,0.08); }
+    .action-btn.merge:hover { background: rgba(147,51,234,0.15); }
+
+    /* MERGE MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 5000; display: flex; align-items: center; justify-content: center; }
+    .modal-overlay.hidden { display: none; }
+    .modal-box {
+      background: #111; border: 1px solid #222; border-radius: 16px;
+      padding: 28px; width: 95%; max-width: 640px; max-height: 80vh; overflow-y: auto;
+    }
+    .modal-title { font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .modal-sub { font-size: 12px; color: #555; margin-bottom: 20px; }
+    .merge-candidate {
+      background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 10px;
+      padding: 14px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px;
+      cursor: pointer; transition: border-color 0.15s;
+    }
+    .merge-candidate:hover { border-color: #333; }
+    .merge-candidate.selected { border-color: #9333ea; background: rgba(147,51,234,0.06); }
+    .merge-candidate .mc-radio { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #333; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .merge-candidate.selected .mc-radio { border-color: #9333ea; }
+    .merge-candidate.selected .mc-radio::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #c084fc; }
+    .merge-candidate .mc-info { flex: 1; }
+    .merge-candidate .mc-name { font-size: 14px; font-weight: 600; color: #ddd; }
+    .merge-candidate .mc-meta { font-size: 11px; color: #555; margin-top: 2px; }
+    .merge-candidate .mc-cohort { font-size: 10px; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+    .modal-btn {
+      padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: var(--font-sans); border: 1px solid #333;
+      background: #1a1a1a; color: #aaa; transition: all 0.15s;
+    }
+    .modal-btn:hover { background: #222; }
+    .modal-btn.primary { background: linear-gradient(135deg, #7c3aed, #9333ea); border-color: #7c3aed; color: #fff; }
+    .modal-btn.primary:hover { opacity: 0.9; }
+    .modal-btn.primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .merge-result { background: #052e16; border: 1px solid #166534; border-radius: 8px; padding: 12px; margin-top: 12px; font-size: 12px; color: #4ade80; }
+    .merge-bulk-btn {
+      padding: 8px 14px; border-radius: 8px; border: 1px solid #7c3aed;
+      background: rgba(147,51,234,0.08); color: #c084fc; font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: var(--font-sans); transition: all 0.15s; white-space: nowrap;
+    }
+    .merge-bulk-btn:hover { background: rgba(147,51,234,0.15); }
 
     /* PAGINATION */
     .pagination {
@@ -285,6 +328,7 @@
       <button class="type-btn" id="filter-students" onclick="setTypeFilter('students')">Alunos</button>
       <button class="type-btn" id="filter-staff" onclick="setTypeFilter('staff')">Equipe</button>
     </div>
+    <button class="merge-bulk-btn" onclick="showBulkMerge()">Mesclar Duplicados</button>
     <div id="cohort-tabs"></div>
   </div>
 
@@ -307,6 +351,20 @@
     <div class="pagination" id="pagination"></div>
   </div>
 
+</div>
+
+<!-- MERGE MODAL -->
+<div class="modal-overlay hidden" id="merge-modal" onclick="if(event.target===this)closeMergeModal()">
+  <div class="modal-box">
+    <div class="modal-title" id="merge-title">Mesclar Alunos</div>
+    <div class="modal-sub" id="merge-sub">Selecione o registro principal (os outros serão mesclados nele)</div>
+    <div id="merge-candidates"></div>
+    <div id="merge-result-box"></div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeMergeModal()">Cancelar</button>
+      <button class="modal-btn primary" id="merge-confirm-btn" onclick="executeMerge()" disabled>Mesclar</button>
+    </div>
+  </div>
 </div>
 
 <!-- TOAST -->
@@ -546,6 +604,11 @@ function renderTable() {
       </tr>`;
     }
 
+    // Check if this student has duplicates (same phone)
+    const hasDupes = phone && !phone.startsWith('pending_') && !phone.startsWith('merged_') &&
+      allStudents.filter(x => x.phone === phone && x.id !== s.id).length > 0;
+    const mergeBtn = hasDupes ? `<button class="action-btn merge" onclick="showMergeForPhone('${phone}')">Mesclar</button>` : '';
+
     return `<tr>
       <td><div class="student-name"><div class="avatar" style="background:${color}">${initials}</div>${displayName}${staffBadge}</div></td>
       <td><span class="student-phone">${formatPhone(phone)}</span></td>
@@ -556,6 +619,7 @@ function renderTable() {
       <td><div class="actions-cell">
         <a href="/perfil/?id=${s.id}&tipo=student" class="action-btn" style="text-decoration:none" title="Ver histórico de presença">📊</a>
         <button class="action-btn edit" onclick="startEdit('${s.id}')">Editar</button>
+        ${mergeBtn}
         <button class="action-btn delete" data-id="${s.id}" data-name="${(s.name || s.phone).replace(/"/g, '&quot;')}" onclick="deleteStudent(this.dataset.id, this.dataset.name)">X</button>
       </div></td>
     </tr>`;
@@ -692,6 +756,113 @@ function showToast(msg, type = 'success') {
   t.textContent = msg;
   t.className = `toast ${type} show`;
   setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── MERGE ──
+let mergeSelectedPrimary = null;
+let mergeCandidates = [];
+
+function showMergeForPhone(phone) {
+  mergeCandidates = allStudents.filter(s => s.phone === phone);
+  if (mergeCandidates.length < 2) { showToast('Nenhum duplicado encontrado', 'error'); return; }
+  mergeSelectedPrimary = null;
+  renderMergeModal();
+  document.getElementById('merge-modal').classList.remove('hidden');
+}
+
+async function showBulkMerge() {
+  // Load duplicate groups from RPC
+  const { data, error } = await sb.rpc('find_duplicate_students');
+  if (error) { showToast('Erro ao buscar duplicados: ' + error.message, 'error'); return; }
+  if (!data || data.length === 0) { showToast('Nenhum duplicado encontrado!'); return; }
+
+  // Show first group for merge
+  const group = data[0];
+  mergeCandidates = allStudents.filter(s => group.student_ids.includes(s.id));
+  if (mergeCandidates.length < 2) {
+    // Students might have been merged already, reload
+    await loadData();
+    showToast('Dados recarregados, tente novamente');
+    return;
+  }
+  mergeSelectedPrimary = null;
+  document.getElementById('merge-title').textContent = `Mesclar Duplicados (${data.length} grupos)`;
+  document.getElementById('merge-sub').textContent = `Grupo 1/${data.length} — Telefone: ${formatPhone(group.phone)}. Selecione o registro principal.`;
+  renderMergeModal();
+  document.getElementById('merge-modal').classList.remove('hidden');
+}
+
+function renderMergeModal() {
+  const box = document.getElementById('merge-candidates');
+  document.getElementById('merge-result-box').innerHTML = '';
+  box.innerHTML = mergeCandidates.map(s => {
+    const sel = mergeSelectedPrimary === s.id ? 'selected' : '';
+    const cohortNames = (s._cohortNames || []).join(', ') || s.cohorts?.name || '—';
+    const hasPhone = s.phone && !s.phone.startsWith('pending_') && !s.phone.startsWith('merged_');
+    const hasEmail = !!s.email;
+    const meta = [
+      hasPhone ? formatPhone(s.phone) : 'Sem telefone',
+      hasEmail ? s.email : null,
+      s.aliases?.length ? `Aliases: ${s.aliases.join(', ')}` : null
+    ].filter(Boolean).join(' · ');
+    return `<div class="merge-candidate ${sel}" onclick="selectMergePrimary('${s.id}')">
+      <div class="mc-radio"></div>
+      <div class="mc-info">
+        <div class="mc-name">${s.name || '<i>Sem nome</i>'}</div>
+        <div class="mc-meta">${meta}</div>
+        <div class="mc-cohort">${cohortNames}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('merge-confirm-btn').disabled = !mergeSelectedPrimary;
+}
+
+function selectMergePrimary(id) {
+  mergeSelectedPrimary = id;
+  renderMergeModal();
+}
+
+function closeMergeModal() {
+  document.getElementById('merge-modal').classList.add('hidden');
+  mergeCandidates = [];
+  mergeSelectedPrimary = null;
+}
+
+async function executeMerge() {
+  if (!mergeSelectedPrimary || mergeCandidates.length < 2) return;
+  const btn = document.getElementById('merge-confirm-btn');
+  btn.disabled = true;
+  btn.textContent = 'Mesclando...';
+
+  const secondaryIds = mergeCandidates.filter(s => s.id !== mergeSelectedPrimary).map(s => s.id);
+  const primary = mergeCandidates.find(s => s.id === mergeSelectedPrimary);
+
+  const { data, error } = await sb.rpc('merge_students', {
+    p_primary_id: mergeSelectedPrimary,
+    p_secondary_ids: secondaryIds,
+  });
+
+  if (error || !data?.ok) {
+    showToast('Erro ao mesclar: ' + (error?.message || data?.error || 'Desconhecido'), 'error');
+    btn.disabled = false;
+    btn.textContent = 'Mesclar';
+    return;
+  }
+
+  document.getElementById('merge-result-box').innerHTML = `
+    <div class="merge-result">
+      Mesclado com sucesso! ${data.merged_count} registro(s) consolidado(s) em "${primary?.name || 'Aluno'}".
+      Cohorts: ${(data.cohorts || []).length} · Aliases: ${(data.aliases || []).length}
+    </div>`;
+
+  btn.textContent = 'Concluído';
+  showToast(`${data.merged_count} registro(s) mesclado(s)`);
+
+  // Reload data after a brief pause
+  setTimeout(async () => {
+    closeMergeModal();
+    await loadData();
+  }, 1500);
 }
 
 // INIT
