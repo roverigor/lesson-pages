@@ -618,8 +618,18 @@ async function openDispatchModal(surveyId) {
         <div style="font-size:11px;color:#444;margin-top:6px">
           Variáveis: <code style="color:#a5b4fc">{nome}</code> = primeiro nome do aluno · <code style="color:#a5b4fc">{link}</code> = link individual da pesquisa
         </div>
+        <div id="dispatch-progress" style="display:none;margin-top:16px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span id="dispatch-progress-label" style="font-size:12px;color:#888">Preparando...</span>
+            <span id="dispatch-progress-pct" style="font-size:12px;font-weight:700;color:#a5b4fc">0%</span>
+          </div>
+          <div style="height:6px;background:#1a1a1a;border-radius:3px;overflow:hidden">
+            <div id="dispatch-progress-bar" style="height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:3px;transition:width .3s ease;width:0%"></div>
+          </div>
+          <div id="dispatch-progress-detail" style="font-size:11px;color:#444;margin-top:6px"></div>
+        </div>
       </div>
-      <div class="modal-footer">
+      <div class="modal-footer" id="dispatch-footer">
         <button class="btn-secondary" onclick="closeDispatchModal()">Cancelar</button>
         <button class="btn-primary" onclick="confirmDispatch('${surveyId}')" id="dispatch-confirm-btn">📤 Enviar via WhatsApp</button>
       </div>
@@ -631,21 +641,96 @@ async function openDispatchModal(surveyId) {
 
 function closeDispatchModal() { document.getElementById('survey-dispatch-modal')?.remove(); }
 
+const CHUNK_SIZE = 10;        // students per edge function call
+const CHUNK_PAUSE_MS = 5000;  // 5s pause between chunks (frontend-side)
+
 async function confirmDispatch(surveyId) {
   const btn = document.getElementById('dispatch-confirm-btn');
+  const progressEl = document.getElementById('dispatch-progress');
+  const progressLabel = document.getElementById('dispatch-progress-label');
+  const progressPct = document.getElementById('dispatch-progress-pct');
+  const progressBar = document.getElementById('dispatch-progress-bar');
+  const progressDetail = document.getElementById('dispatch-progress-detail');
+  const textarea = document.getElementById('dispatch-message');
+  const footer = document.getElementById('dispatch-footer');
+
   if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
-  const customMessage = document.getElementById('dispatch-message')?.value || '';
+  if (textarea) textarea.disabled = true;
+  progressEl.style.display = 'block';
+
+  const customMessage = textarea?.value || '';
   const { data: { session } } = await sb.auth.getSession();
-  const res = await fetch(`${FUNCTIONS_URL}/dispatch-survey`, {
+  const authHeader = `Bearer ${session?.access_token}`;
+
+  // Step 1: Prepare (create links, get total)
+  progressLabel.textContent = 'Criando links individuais...';
+  const prepRes = await fetch(`${FUNCTIONS_URL}/dispatch-survey`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
-    body: JSON.stringify({ survey_id: surveyId, custom_message: customMessage }),
+    headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+    body: JSON.stringify({ survey_id: surveyId, custom_message: customMessage, prepare_only: true }),
   });
-  const result = await res.json();
-  closeDispatchModal();
-  showToast(result.success
-    ? `✅ Enviado para ${result.dispatched} aluno(s).${result.skipped>0?` ${result.skipped} sem telefone.`:''}`
-    : `❌ ${result.error || 'Erro no disparo'}`, result.success ? 'success' : 'error');
+  const prepResult = await prepRes.json();
+
+  if (!prepResult.success) {
+    closeDispatchModal();
+    showToast(`❌ ${prepResult.error || 'Erro ao preparar'}`, 'error');
+    return;
+  }
+
+  const total = prepResult.total;
+  let totalDispatched = 0;
+  let totalSkipped = 0;
+  let offset = 0;
+
+  // Hide confirm button, show only cancel
+  if (btn) btn.style.display = 'none';
+
+  // Step 2: Send in chunks
+  while (offset < total) {
+    const pct = Math.round((offset / total) * 100);
+    progressLabel.textContent = `Enviando ${offset + 1}–${Math.min(offset + CHUNK_SIZE, total)} de ${total}...`;
+    progressPct.textContent = `${pct}%`;
+    progressBar.style.width = `${pct}%`;
+    progressDetail.textContent = `${totalDispatched} enviados · ${totalSkipped} pulados`;
+
+    const chunkRes = await fetch(`${FUNCTIONS_URL}/dispatch-survey`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+      body: JSON.stringify({ survey_id: surveyId, custom_message: customMessage, offset, limit: CHUNK_SIZE }),
+    });
+    const chunkResult = await chunkRes.json();
+
+    if (!chunkResult.success) {
+      progressLabel.textContent = `Erro no chunk ${offset}`;
+      progressLabel.style.color = '#f87171';
+      showToast(`❌ Erro no envio (offset ${offset}): ${chunkResult.error || 'desconhecido'}`, 'error');
+      break;
+    }
+
+    totalDispatched += chunkResult.dispatched;
+    totalSkipped += chunkResult.skipped;
+    offset = chunkResult.next_offset ?? total;
+
+    // Wait between chunks
+    if (chunkResult.has_more) {
+      progressDetail.textContent = `${totalDispatched} enviados · ${totalSkipped} pulados · aguardando...`;
+      await new Promise(r => setTimeout(r, CHUNK_PAUSE_MS));
+    }
+  }
+
+  // Done
+  progressLabel.textContent = 'Concluído!';
+  progressLabel.style.color = '#4ade80';
+  progressPct.textContent = '100%';
+  progressBar.style.width = '100%';
+  progressDetail.textContent = `${totalDispatched} enviados · ${totalSkipped} pulados · ${total} total`;
+
+  footer.innerHTML = `<button class="btn-primary" onclick="closeDispatchModal()">Fechar</button>`;
+
+  showToast(
+    `✅ Enviado para ${totalDispatched} aluno(s).${totalSkipped > 0 ? ` ${totalSkipped} sem telefone.` : ''}`,
+    'success'
+  );
   await loadSurveysView();
 }
 

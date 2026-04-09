@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════
 // Edge Function: dispatch-survey
-// Admin-only — generates tokens + sends WhatsApp to all students in cohort
+// Admin-only — generates tokens + sends WhatsApp in chunks
+// Frontend calls multiple times with offset/limit for safe cadence
 // ═══════════════════════════════════════
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
@@ -16,15 +17,8 @@ const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
 
 const BASE_URL = "https://painel.igorrover.com.br";
 
-// ── Throttle config (anti-ban WhatsApp) ──
-const BATCH_SIZE = 50;                     // messages per batch
-const BATCH_PAUSE_MS = 3 * 60 * 1000;     // 3 min pause between batches
-const MIN_DELAY_MS = 8_000;               // min delay between messages
-const MAX_DELAY_MS = 15_000;              // max delay between messages
-
-function randomDelay(): number {
-  return MIN_DELAY_MS + Math.floor(Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS));
-}
+// ── Throttle config (within each chunk) ──
+const DELAY_MS = 1500; // 1.5s between messages within a chunk (safe for small batches)
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -78,7 +72,6 @@ serve(async (req: Request) => {
     });
   }
 
-  // Auth check
   const isAdmin = await verifyAdmin(req.headers.get("Authorization"));
   if (!isAdmin) {
     return new Response(JSON.stringify({ error: "unauthorized" }), {
@@ -87,7 +80,14 @@ serve(async (req: Request) => {
     });
   }
 
-  let body: { survey_id?: string; custom_message?: string };
+  let body: {
+    survey_id?: string;
+    custom_message?: string;
+    // Chunk mode: prepare_only creates links, offset+limit sends a slice
+    prepare_only?: boolean;
+    offset?: number;
+    limit?: number;
+  };
   try {
     body = await req.json();
   } catch {
@@ -136,10 +136,10 @@ serve(async (req: Request) => {
       .select("id, name, phone")
       .eq("cohort_id", survey.cohort_id)
       .eq("active", true)
-      .eq("is_mentor", false);
+      .eq("is_mentor", false)
+      .order("name");
     students = data ?? [];
   } else if (survey.class_id) {
-    // Get cohorts linked to this class, then students in those cohorts
     const { data: bridges } = await client
       .from("class_cohorts")
       .select("cohort_id")
@@ -151,7 +151,8 @@ serve(async (req: Request) => {
         .select("id, name, phone")
         .in("cohort_id", cohortIds)
         .eq("active", true)
-        .eq("is_mentor", false);
+        .eq("is_mentor", false)
+        .order("name");
       students = data ?? [];
     }
   }
@@ -163,7 +164,7 @@ serve(async (req: Request) => {
     });
   }
 
-  // 3. Upsert survey_links (one token per student, skip if already exists)
+  // 3. Upsert survey_links (always — idempotent)
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
   const linkInserts = students.map((s) => ({
     survey_id: survey.id,
@@ -175,23 +176,42 @@ serve(async (req: Request) => {
     .from("survey_links")
     .upsert(linkInserts, { onConflict: "survey_id,student_id", ignoreDuplicates: true });
 
-  // 4. Fetch all tokens (including previously generated)
+  // ── PREPARE_ONLY mode: just create links, return student count ──
+  if (body.prepare_only) {
+    // Mark survey as active
+    await client
+      .from("surveys")
+      .update({ status: "active", dispatched_at: new Date().toISOString() })
+      .eq("id", body.survey_id);
+
+    return new Response(
+      JSON.stringify({ success: true, total: students.length, prepared: true }),
+      { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+    );
+  }
+
+  // ── CHUNK mode: send messages for a slice of students ──
+  const offset = body.offset ?? 0;
+  const limit = body.limit ?? 10;
+  const chunk = students.slice(offset, offset + limit);
+
+  // Fetch tokens
+  const chunkStudentIds = chunk.map((s) => s.id);
   const { data: links } = await client
     .from("survey_links")
     .select("student_id, token")
-    .eq("survey_id", survey.id);
+    .eq("survey_id", survey.id)
+    .in("student_id", chunkStudentIds);
 
   const tokenMap = new Map<string, string>(
     (links ?? []).map((l: { student_id: string; token: string }) => [l.student_id, l.token])
   );
 
-  // 5. Send WhatsApp messages with throttling (anti-ban cadence)
   let dispatched = 0;
   let skipped = 0;
-  let batchCount = 0;
 
-  for (let i = 0; i < students.length; i++) {
-    const student = students[i];
+  for (let i = 0; i < chunk.length; i++) {
+    const student = chunk[i];
 
     if (!student.phone) {
       skipped++;
@@ -223,30 +243,29 @@ serve(async (req: Request) => {
     const sent = await sendWhatsApp(student.phone, message);
     if (sent) {
       dispatched++;
-      batchCount++;
     } else {
       skipped++;
     }
 
-    // Batch pause: every BATCH_SIZE successful sends, pause longer
-    if (batchCount >= BATCH_SIZE && i < students.length - 1) {
-      console.log(`[dispatch-survey] Batch of ${BATCH_SIZE} sent. Pausing ${BATCH_PAUSE_MS / 1000}s...`);
-      await sleep(BATCH_PAUSE_MS);
-      batchCount = 0;
-    } else if (i < students.length - 1) {
-      // Random delay between messages (8-15s)
-      await sleep(randomDelay());
+    // Small delay between messages within chunk
+    if (i < chunk.length - 1) {
+      await sleep(DELAY_MS);
     }
   }
 
-  // 6. Mark survey as active + set dispatched_at
-  await client
-    .from("surveys")
-    .update({ status: "active", dispatched_at: new Date().toISOString() })
-    .eq("id", survey.id);
+  const hasMore = offset + limit < students.length;
 
   return new Response(
-    JSON.stringify({ success: true, dispatched, skipped, total: students.length }),
+    JSON.stringify({
+      success: true,
+      dispatched,
+      skipped,
+      chunk_total: chunk.length,
+      total: students.length,
+      offset,
+      next_offset: hasMore ? offset + limit : null,
+      has_more: hasMore,
+    }),
     { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
   );
 });
