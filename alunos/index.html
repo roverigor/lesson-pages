@@ -365,7 +365,7 @@ let studentCohorts = []; // N:N mapping
 async function loadData() {
   const [{ data: c }, { data: s }, { data: sc }] = await Promise.all([
     sb.from('cohorts').select('*').order('name'),
-    sb.from('students').select('*, cohorts(name, whatsapp_group_jid), aliases').order('name'),
+    sb.from('students').select('*, cohorts(name, whatsapp_group_jid), aliases').eq('active', true).order('name'),
     sb.from('student_cohorts').select('student_id, cohort_id, cohorts(name)'),
   ]);
   cohorts = c || [];
@@ -627,11 +627,33 @@ function getInitials(name) {
 }
 
 function formatPhone(phone) {
+  if (!phone || phone.startsWith('merged_')) return phone || '—';
+  // Brazil: +55 (DD) XXXXX-XXXX
   if (phone.startsWith('55') && phone.length >= 12) {
     const ddd = phone.slice(2, 4);
     const num = phone.slice(4);
     if (num.length === 9) return `+55 (${ddd}) ${num.slice(0,5)}-${num.slice(5)}`;
     if (num.length === 8) return `+55 (${ddd}) ${num.slice(0,4)}-${num.slice(4)}`;
+  }
+  // Portugal: +351 XXX XXX XXX
+  if (phone.startsWith('351') && phone.length >= 12) {
+    const num = phone.slice(3);
+    return `+351 ${num.slice(0,3)} ${num.slice(3,6)} ${num.slice(6)}`;
+  }
+  // Known country codes (2-3 digits) — generic international format
+  const intlCodes = [
+    { code: '244', name: 'AO' }, { code: '971', name: 'AE' },
+    { code: '353', name: 'IE' }, { code: '49', name: 'DE' },
+    { code: '43', name: 'AT' }, { code: '41', name: 'CH' },
+    { code: '34', name: 'ES' }, { code: '1', name: 'US' },
+  ];
+  for (const { code } of intlCodes) {
+    if (phone.startsWith(code) && phone.length >= code.length + 6) {
+      const num = phone.slice(code.length);
+      // Group in chunks of 3
+      const parts = num.match(/.{1,3}/g) || [num];
+      return `+${code} ${parts.join(' ')}`;
+    }
   }
   return '+' + phone;
 }
