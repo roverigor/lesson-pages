@@ -371,15 +371,19 @@
 
     presencaCurrentStudents = present ?? [];
     const count = presencaCurrentStudents.length;
+    const withPhone = presencaCurrentStudents.filter(s => s.phone);
+    const withoutPhone = count - withPhone.length;
     document.getElementById('presenca-count').textContent = `${count} aluno${count !== 1 ? 's' : ''} presente${count !== 1 ? 's' : ''}`;
 
     // Render present students table
     const presHtml = presencaCurrentStudents.map((s, i) => {
       const dur = s.duration_minutes;
       const durStr = dur ? (dur >= 60 ? `${Math.floor(dur/60)}h${String(dur%60).padStart(2,'0')}` : `${dur}min`) : '—';
-      const phone = s.phone || '—';
-      const maskedPhone = phone.length > 6 ? phone.slice(0, -4).replace(/\d/g, '•') + phone.slice(-4) : phone;
-      return `<tr>
+      const hasPhone = !!s.phone;
+      const maskedPhone = hasPhone
+        ? (s.phone.length > 6 ? s.phone.slice(0, -4).replace(/\d/g, '•') + s.phone.slice(-4) : s.phone)
+        : '<span style="color:#f87171;font-size:11px">Sem telefone</span>';
+      return `<tr${!hasPhone ? ' style="opacity:0.6"' : ''}>
         <td style="width:32px;text-align:center;color:#444">${i+1}</td>
         <td><div class="student-name">${escHtml(s.student_name)}</div></td>
         <td style="font-size:12px;color:#666">${maskedPhone}</td>
@@ -398,11 +402,11 @@
     loadUnmatchedForDate(classDate);
 
     // Show dispatch preview button
-    if (count > 0) {
+    if (withPhone.length > 0) {
       document.getElementById('presenca-dispatch').innerHTML = `
         <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:20px">
           <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:8px">Disparo para Presentes</div>
-          <div style="font-size:12px;color:#555;margin-bottom:16px">${count} alunos presentes com telefone válido. O disparo NÃO será enviado automaticamente.</div>
+          <div style="font-size:12px;color:#555;margin-bottom:16px">${withPhone.length} alunos com telefone válido para disparo${withoutPhone > 0 ? ` · <span style="color:#f87171">${withoutPhone} sem telefone</span>` : ''}. O disparo NÃO será enviado automaticamente.</div>
           <button onclick="previewDispatch()" style="padding:10px 20px;border-radius:8px;border:1px solid #6366f1;background:transparent;color:#a5b4fc;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans)">
             Preparar lista de disparo
           </button>
