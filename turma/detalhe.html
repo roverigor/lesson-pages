@@ -44,7 +44,7 @@
     .stat-label { font-size: 11px; color: #444; margin-top: 3px; }
 
     /* TABS */
-    .tabs { display: flex; gap: 4px; background: #0d0d0d; padding: 4px; border-radius: 10px; border: 1px solid #1a1a1a; margin-bottom: 20px; width: fit-content; }
+    .tabs { display: flex; gap: 4px; background: #0d0d0d; padding: 4px; border-radius: 10px; border: 1px solid #1a1a1a; margin-bottom: 20px; flex-wrap: wrap; }
     .tab { padding: 8px 16px; border-radius: 7px; font-size: 12px; font-weight: 600; color: #444; cursor: pointer; border: none; background: transparent; font-family: var(--font-sans); }
     .tab.active { background: #1e1e2e; color: #a5b4fc; }
 
@@ -131,6 +131,11 @@
     <button class="tab active" onclick="switchTab('alunos', this)">👥 Alunos</button>
     <button class="tab" onclick="switchTab('presenca', this)">📋 Presença</button>
     <button class="tab" onclick="switchTab('wa', this)">💬 WhatsApp</button>
+    <button class="tab" onclick="switchTab('equipe', this)">🎓 Equipe</button>
+    <button class="tab" onclick="switchTab('zoom', this)">🎥 Zoom</button>
+    <button class="tab" onclick="switchTab('resumos', this)">📝 Resumos</button>
+    <button class="tab" onclick="switchTab('avisos', this)">📱 Avisos</button>
+    <button class="tab" onclick="switchTab('avaliacoes', this)">⭐ Avaliações</button>
   </div>
 
   <!-- Tab: Alunos -->
@@ -152,6 +157,36 @@
   <div id="tab-wa" style="display:none">
     <p style="font-size:13px;color:#555;margin-bottom:16px">Ranking de participação no grupo WhatsApp da turma (dados atualizados às 02h diariamente)</p>
     <div id="wa-content"><div class="spinner"></div></div>
+  </div>
+
+  <!-- Tab: Equipe -->
+  <div id="tab-equipe" style="display:none">
+    <div class="section-title">Equipe designada para as aulas desta turma</div>
+    <div id="equipe-content"><div class="spinner"></div></div>
+  </div>
+
+  <!-- Tab: Zoom -->
+  <div id="tab-zoom" style="display:none">
+    <div class="section-title">Reuniões Zoom vinculadas a esta turma</div>
+    <div id="zoom-content"><div class="spinner"></div></div>
+  </div>
+
+  <!-- Tab: Resumos -->
+  <div id="tab-resumos" style="display:none">
+    <div class="section-title">Resumos e notas das aulas</div>
+    <div id="resumos-content"><div class="spinner"></div></div>
+  </div>
+
+  <!-- Tab: Avisos WA -->
+  <div id="tab-avisos" style="display:none">
+    <div class="section-title">Notificações WhatsApp enviadas para esta turma</div>
+    <div id="avisos-content"><div class="spinner"></div></div>
+  </div>
+
+  <!-- Tab: Avaliações -->
+  <div id="tab-avaliacoes" style="display:none">
+    <div class="section-title">Pesquisas NPS / CSAT desta turma</div>
+    <div id="avaliacoes-content"><div class="spinner"></div></div>
   </div>
 </div>
 
@@ -199,12 +234,24 @@
     if (session) showApp();
   }
 
+  const ALL_TABS = ['alunos','presenca','wa','equipe','zoom','resumos','avisos','avaliacoes'];
+  const tabLoaded = {};
+
   function switchTab(name, btn) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
-    ['alunos','presenca','wa'].forEach(t => {
+    ALL_TABS.forEach(t => {
       document.getElementById('tab-' + t).style.display = t === name ? '' : 'none';
     });
+    // Lazy load new tabs on first click
+    if (!tabLoaded[name] && ['equipe','zoom','resumos','avisos','avaliacoes'].includes(name)) {
+      tabLoaded[name] = true;
+      if (name === 'equipe') loadEquipeTab();
+      if (name === 'zoom') loadZoomTab();
+      if (name === 'resumos') loadResumosTab();
+      if (name === 'avisos') loadAvisosTab();
+      if (name === 'avaliacoes') loadAvaliacoesTab();
+    }
   }
 
   async function loadAll() {
@@ -354,6 +401,237 @@
 
   function escHtml(s) {
     return (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // ─── Helper: get linked class IDs for this cohort ───
+  let _linkedClassIds = null;
+  async function getLinkedClassIds() {
+    if (_linkedClassIds) return _linkedClassIds;
+    const [r1, r2] = await Promise.all([
+      sb.from('class_cohort_access').select('class_id').eq('cohort_id', cohortId),
+      sb.from('class_cohorts').select('class_id').eq('cohort_id', cohortId),
+    ]);
+    const ids = new Set();
+    (r1.data || []).forEach(r => ids.add(r.class_id));
+    (r2.data || []).forEach(r => ids.add(r.class_id));
+    _linkedClassIds = [...ids];
+    return _linkedClassIds;
+  }
+
+  const WEEKDAY_FULL = {0:'Domingo',1:'Segunda',2:'Terça',3:'Quarta',4:'Quinta',5:'Sexta',6:'Sábado'};
+
+  // ─── TAB: Equipe ──────────────────────────────────
+  async function loadEquipeTab() {
+    const el = document.getElementById('equipe-content');
+    try {
+      const classIds = await getLinkedClassIds();
+      if (!classIds.length) { el.innerHTML = '<div class="empty">Nenhuma aula vinculada a esta turma.</div>'; return; }
+
+      const [classesRes, mentorsRes, cmRes] = await Promise.all([
+        sb.from('classes').select('id, name, color, time_start, time_end, weekday').in('id', classIds),
+        sb.from('mentors').select('id, name').eq('active', true),
+        sb.from('class_mentors').select('class_id, mentor_id, role, weekday').in('class_id', classIds).is('valid_until', null),
+      ]);
+
+      const classes = classesRes.data || [];
+      const mentors = mentorsRes.data || [];
+      const cms = cmRes.data || [];
+      const mentorMap = {};
+      mentors.forEach(m => { mentorMap[m.id] = m.name; });
+
+      const html = classes.map(c => {
+        const byDay = {};
+        cms.filter(cm => cm.class_id === c.id).forEach(cm => {
+          const wd = cm.weekday ?? c.weekday ?? 0;
+          if (!byDay[wd]) byDay[wd] = [];
+          byDay[wd].push({ name: mentorMap[cm.mentor_id] || '?', role: cm.role });
+        });
+
+        const daysHtml = Object.entries(byDay).sort((a,b) => a[0]-b[0]).map(([wd, members]) => {
+          const people = members.map(m => {
+            const clr = m.role === 'Professor' ? '#a5b4fc' : m.role === 'Host' ? '#888' : '#facc15';
+            return '<span style="font-size:12px;padding:3px 8px;border-radius:5px;background:' + clr + '15;border:1px solid ' + clr + '30;color:' + clr + '">' + escHtml(m.name) + ' <span style="font-size:10px;opacity:.7">(' + m.role + ')</span></span>';
+          }).join(' ');
+          return '<div style="margin-bottom:4px"><span style="font-size:11px;color:#555;font-weight:600;margin-right:6px">' + (WEEKDAY_FULL[wd] || 'Dia ' + wd) + ':</span>' + people + '</div>';
+        }).join('');
+
+        return '<div style="background:#101010;border:1px solid #1a1a1a;border-radius:10px;padding:16px;margin-bottom:10px">' +
+          '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
+            '<div style="width:4px;height:24px;border-radius:2px;background:' + (c.color || '#6366f1') + '"></div>' +
+            '<div style="font-size:14px;font-weight:700;color:#fff">' + escHtml(c.name) + '</div>' +
+            '<span style="font-size:11px;color:#555">' + (c.time_start || '') + '–' + (c.time_end || '') + '</span>' +
+          '</div>' + (daysHtml || '<div style="font-size:12px;color:#333">Sem equipe configurada</div>') +
+        '</div>';
+      }).join('');
+
+      el.innerHTML = html || '<div class="empty">Nenhuma equipe encontrada.</div>';
+    } catch (err) { el.innerHTML = '<div class="empty">Erro ao carregar equipe.</div>'; }
+  }
+
+  // ─── TAB: Zoom ────────────────────────────────────
+  async function loadZoomTab() {
+    const el = document.getElementById('zoom-content');
+    try {
+      const classIds = await getLinkedClassIds();
+      if (!classIds.length) { el.innerHTML = '<div class="empty">Nenhuma aula vinculada.</div>'; return; }
+
+      const { data: meetings } = await sb
+        .from('zoom_meetings')
+        .select('id, topic, start_time, duration_minutes, participants_count')
+        .in('class_id', classIds)
+        .order('start_time', { ascending: false })
+        .limit(20);
+
+      if (!meetings || !meetings.length) { el.innerHTML = '<div class="empty">Nenhuma reunião Zoom registrada.</div>'; return; }
+
+      const rows = meetings.map(m => {
+        const d = m.start_time ? new Date(m.start_time) : null;
+        const date = d ? d.toLocaleDateString('pt-BR') : '?';
+        const time = d ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+        return '<tr>' +
+          '<td>' + date + '</td>' +
+          '<td>' + time + '</td>' +
+          '<td style="color:#a5b4fc;font-weight:700">' + (m.participants_count || 0) + '</td>' +
+          '<td>' + (m.duration_minutes || 0) + 'min</td>' +
+          '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(m.topic || '') + '</td>' +
+        '</tr>';
+      }).join('');
+
+      el.innerHTML = '<table><thead><tr><th>Data</th><th>Hora</th><th>Participantes</th><th>Duração</th><th>Tópico</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    } catch (err) { el.innerHTML = '<div class="empty">Erro ao carregar reuniões.</div>'; }
+  }
+
+  // ─── TAB: Resumos ─────────────────────────────────
+  async function loadResumosTab() {
+    const el = document.getElementById('resumos-content');
+    try {
+      const classIds = await getLinkedClassIds();
+      if (!classIds.length) { el.innerHTML = '<div class="empty">Nenhuma aula vinculada.</div>'; return; }
+
+      // Get class names to match abstracts
+      const { data: classes } = await sb.from('classes').select('name').in('id', classIds);
+      const classNames = (classes || []).map(c => c.name.toLowerCase());
+
+      const { data: abstracts } = await sb
+        .from('lesson_abstracts')
+        .select('id, title, lesson_date, badge_label, badge_class')
+        .eq('published', true)
+        .order('lesson_date', { ascending: false })
+        .limit(100);
+
+      const matched = (abstracts || []).filter(a =>
+        classNames.some(n => (a.title || '').toLowerCase().includes(n))
+      ).slice(0, 20);
+
+      if (!matched.length) { el.innerHTML = '<div class="empty">Nenhum resumo encontrado para esta turma.</div>'; return; }
+
+      const rows = matched.map(a => {
+        const date = a.lesson_date ? new Date(a.lesson_date + 'T00:00:00').toLocaleDateString('pt-BR') : '?';
+        const badgeCls = a.badge_class === 'red' ? 'badge-red' : a.badge_class === 'amber' ? 'badge-amber' : 'badge-green';
+        return '<tr>' +
+          '<td><span class="badge ' + badgeCls + '">' + escHtml(a.badge_label || 'Aula') + '</span></td>' +
+          '<td style="color:#ddd;font-weight:600">' + escHtml(a.title) + '</td>' +
+          '<td>' + date + '</td>' +
+        '</tr>';
+      }).join('');
+
+      el.innerHTML = '<table><thead><tr><th>Tipo</th><th>Título</th><th>Data</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    } catch (err) { el.innerHTML = '<div class="empty">Erro ao carregar resumos.</div>'; }
+  }
+
+  // ─── TAB: Avisos WA ──────────────────────────────
+  async function loadAvisosTab() {
+    const el = document.getElementById('avisos-content');
+    try {
+      const { data: notifs } = await sb
+        .from('notifications')
+        .select('id, message, status, sent_at, total_recipients')
+        .eq('cohort_id', cohortId)
+        .order('sent_at', { ascending: false })
+        .limit(15);
+
+      if (!notifs || !notifs.length) { el.innerHTML = '<div class="empty">Nenhuma notificação enviada para esta turma.</div>'; return; }
+
+      const rows = notifs.map(n => {
+        const d = n.sent_at ? new Date(n.sent_at) : null;
+        const date = d ? d.toLocaleDateString('pt-BR') : '?';
+        const time = d ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+        const preview = (n.message || '').substring(0, 80).replace(/\n/g, ' ');
+        const statusBadge = n.status === 'sent'
+          ? '<span class="badge badge-green">Enviado</span>'
+          : '<span class="badge badge-amber">' + escHtml(n.status || '?') + '</span>';
+        return '<tr>' +
+          '<td style="white-space:nowrap">' + date + ' ' + time + '</td>' +
+          '<td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#ddd">' + escHtml(preview) + '</td>' +
+          '<td style="text-align:center;color:#a5b4fc;font-weight:700">' + (n.total_recipients || '?') + '</td>' +
+          '<td>' + statusBadge + '</td>' +
+        '</tr>';
+      }).join('');
+
+      el.innerHTML = '<table><thead><tr><th>Data</th><th>Mensagem</th><th>Dest.</th><th>Status</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    } catch (err) { el.innerHTML = '<div class="empty">Erro ao carregar avisos.</div>'; }
+  }
+
+  // ─── TAB: Avaliações ──────────────────────────────
+  async function loadAvaliacoesTab() {
+    const el = document.getElementById('avaliacoes-content');
+    try {
+      const classIds = await getLinkedClassIds();
+
+      // Surveys by cohort OR class
+      const queries = [
+        sb.from('surveys').select('id, name, type, status, dispatched_at').eq('cohort_id', cohortId).order('created_at', { ascending: false }).limit(20),
+      ];
+      if (classIds.length) {
+        queries.push(
+          sb.from('surveys').select('id, name, type, status, dispatched_at').in('class_id', classIds).order('created_at', { ascending: false }).limit(20)
+        );
+      }
+
+      const results = await Promise.all(queries);
+      const seen = new Set();
+      const surveys = [];
+      for (const r of results) {
+        for (const s of (r.data || [])) {
+          if (!seen.has(s.id)) { seen.add(s.id); surveys.push(s); }
+        }
+      }
+
+      if (!surveys.length) { el.innerHTML = '<div class="empty">Nenhuma avaliação encontrada.</div>'; return; }
+
+      const surveyIds = surveys.map(s => s.id);
+      const { data: responses } = await sb
+        .from('survey_responses')
+        .select('survey_id, score')
+        .in('survey_id', surveyIds);
+
+      const byS = {};
+      (responses || []).forEach(r => {
+        if (!byS[r.survey_id]) byS[r.survey_id] = { count: 0, total: 0 };
+        byS[r.survey_id].count++;
+        if (r.score !== null && r.score !== undefined) byS[r.survey_id].total += r.score;
+      });
+
+      const rows = surveys.map(s => {
+        const stats = byS[s.id] || { count: 0, total: 0 };
+        const avg = stats.count > 0 ? (stats.total / stats.count).toFixed(1) : '—';
+        const date = s.dispatched_at ? new Date(s.dispatched_at).toLocaleDateString('pt-BR') : '—';
+        const typeBadge = s.type === 'nps'
+          ? '<span class="badge" style="background:rgba(99,102,241,0.12);color:#a5b4fc">NPS</span>'
+          : '<span class="badge badge-amber">CSAT</span>';
+        const statusClr = s.status === 'active' ? 'color:#4ade80' : s.status === 'closed' ? 'color:#f87171' : 'color:#555';
+        return '<tr>' +
+          '<td style="color:#ddd;font-weight:600">' + escHtml(s.name) + '</td>' +
+          '<td>' + typeBadge + '</td>' +
+          '<td style="' + statusClr + '">' + escHtml(s.status) + '</td>' +
+          '<td style="text-align:center;color:#a5b4fc;font-weight:700">' + stats.count + '</td>' +
+          '<td style="text-align:center;color:#facc15;font-weight:700">' + avg + '</td>' +
+          '<td>' + date + '</td>' +
+        '</tr>';
+      }).join('');
+
+      el.innerHTML = '<table><thead><tr><th>Nome</th><th>Tipo</th><th>Status</th><th style="text-align:center">Respostas</th><th style="text-align:center">Score</th><th>Enviado</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    } catch (err) { el.innerHTML = '<div class="empty">Erro ao carregar avaliações.</div>'; }
   }
 
   checkAuth();
