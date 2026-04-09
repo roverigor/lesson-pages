@@ -98,6 +98,27 @@
     .nav-item.active { background: #1e1e2e; color: #a5b4fc; font-weight: 600; }
     .nav-item.external { color: #3a3a3a; }
     .nav-item.external:hover { color: #666; }
+
+    /* ─── CLASS HUB ──────────────────────────────── */
+    .hub-section {
+      background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 12px; padding: 16px;
+    }
+    .hub-section-title {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 700; color: #666;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #141414;
+    }
+    .hub-badge {
+      font-size: 10px; padding: 2px 8px; border-radius: 999px; font-weight: 700;
+    }
+    .hub-badge.type { background: rgba(99,102,241,0.12); color: #a5b4fc; }
+    .hub-badge.active { background: rgba(34,197,94,0.12); color: #4ade80; }
+    .hub-badge.inactive { background: rgba(239,68,68,0.12); color: #f87171; }
+
+    @media (max-width: 768px) {
+      #class-hub-view > div:nth-child(2) { grid-template-columns: 1fr !important; }
+    }
     .nav-item-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
     .nav-item.active .nav-item-icon { opacity: 1; }
 
@@ -674,6 +695,55 @@
         <div id="classes-list"></div>
       </div>
 
+      <!-- ═══ CLASS HUB VIEW ═══ -->
+      <div id="class-hub-view" style="display:none">
+        <div id="hub-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <!-- Team -->
+          <div class="hub-section">
+            <div class="hub-section-title"><i data-lucide="users" style="width:14px;height:14px"></i> Equipe Atual</div>
+            <div id="hub-team"></div>
+          </div>
+
+          <!-- Students -->
+          <div class="hub-section">
+            <div class="hub-section-title"><i data-lucide="graduation-cap" style="width:14px;height:14px"></i> Alunos</div>
+            <div id="hub-students"></div>
+          </div>
+
+          <!-- Attendance -->
+          <div class="hub-section">
+            <div class="hub-section-title"><i data-lucide="calendar-check" style="width:14px;height:14px"></i> Presença (Equipe)</div>
+            <div id="hub-attendance"></div>
+          </div>
+
+          <!-- Zoom -->
+          <div class="hub-section">
+            <div class="hub-section-title"><i data-lucide="video" style="width:14px;height:14px"></i> Reuniões Zoom</div>
+            <div id="hub-zoom"></div>
+          </div>
+
+          <!-- Abstracts -->
+          <div class="hub-section">
+            <div class="hub-section-title"><i data-lucide="file-text" style="width:14px;height:14px"></i> Resumos de Aula</div>
+            <div id="hub-abstracts"></div>
+          </div>
+
+          <!-- WhatsApp -->
+          <div class="hub-section">
+            <div class="hub-section-title"><i data-lucide="message-circle" style="width:14px;height:14px"></i> Notificações WhatsApp</div>
+            <div id="hub-whatsapp"></div>
+          </div>
+
+          <!-- Surveys -->
+          <div class="hub-section" style="grid-column:1/-1">
+            <div class="hub-section-title"><i data-lucide="clipboard-list" style="width:14px;height:14px"></i> Avaliações / NPS</div>
+            <div id="hub-surveys"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- ═══ NOTIFY VIEW ═══ -->
       <div id="notify-view" style="display:none">
         <div class="page-header">
@@ -848,6 +918,7 @@
 <script src="/js/admin/attendance.js"></script>
 <script src="/js/admin/staff.js"></script>
 <script src="/js/admin/classes.js"></script>
+<script src="/js/admin/class-hub.js"></script>
 <script src="/js/admin/notifications.js"></script>
 <script src="/js/admin/schedules.js"></script>
 <script src="/js/admin/zoom.js"></script>
@@ -905,7 +976,7 @@ function openInFrame(url) {
 
 window.switchView = async function(view) {
   const allViews = ['dashboard','calendar','turmas','report','staff','classes',
-                    'notify','schedules','zoom','abstracts','surveys'];
+                    'notify','schedules','zoom','abstracts','surveys','class-hub'];
   const viewWrap   = document.getElementById('view-wrap') || document.querySelector('.view-wrap');
   const embedFrame = document.getElementById('embed-frame');
   const mobileNav  = document.getElementById('mobile-nav');

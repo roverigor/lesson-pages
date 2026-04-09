@@ -127,6 +127,7 @@ function renderClassesList() {
           ${typeBadge}
         </div>
         <div style="display:flex;gap:6px">
+          <button class="att-btn" style="padding:6px 10px;font-size:11px;background:rgba(99,102,241,0.15);color:#a5b4fc;border-color:#6366f140" onclick="event.stopPropagation();openClassHub('${c.id}')">Ver Hub</button>
           <button class="att-btn" style="padding:6px 10px;font-size:11px" onclick="event.stopPropagation();editClass('${c.id}')">Editar</button>
           <button class="att-btn" style="padding:6px 10px;font-size:11px;background:rgba(34,197,94,0.12);color:#4ade80;border-color:#22c55e30" onclick="event.stopPropagation();openNewCycle('${c.id}','${c.name}')">+ Novo Ciclo</button>
           <button class="att-btn" style="padding:6px 10px;font-size:11px;background:rgba(239,68,68,0.1);color:#f87171;border-color:#ef444430" onclick="event.stopPropagation();finalizeClass('${c.id}','${c.name}')">Encerrar Turma</button>
