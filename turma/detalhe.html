@@ -150,7 +150,14 @@
 
   <!-- Tab: Presença -->
   <div id="tab-presenca" style="display:none">
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+      <label style="font-size:12px;color:#555;font-weight:600">Aula:</label>
+      <select id="presenca-date-select" onchange="loadPresencaForDate(this.value)" style="background:#111;border:1px solid #222;color:#ddd;padding:8px 12px;border-radius:8px;font-size:13px;font-family:var(--font-sans);min-width:260px"></select>
+      <span id="presenca-count" style="font-size:12px;color:#666"></span>
+    </div>
     <div id="presenca-content"><div class="spinner"></div></div>
+    <div id="presenca-unmatched" style="margin-top:24px"></div>
+    <div id="presenca-dispatch" style="margin-top:24px"></div>
   </div>
 
   <!-- Tab: WhatsApp -->
@@ -292,7 +299,7 @@
     });
 
     renderAlunosTable(summary, waDays);
-    renderPresencaTab(summary);
+    renderPresencaTab();
     renderWaTab(summary, waDays);
   }
 
@@ -329,26 +336,180 @@
       </table>`;
   }
 
-  function renderPresencaTab(summary) {
-    const html = summary.map(s => {
-      const pct = parseFloat(s.presence_pct ?? 0);
-      const cls = pct >= 80 ? 'badge-green' : pct >= 60 ? 'badge-amber' : 'badge-red';
-      const last3 = (s.last_3 ?? []).map(a =>
-        `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${a.present ? '#4ade80' : '#ef4444'};margin:1px" title="${a.date}: ${a.present ? 'Presente' : 'Ausente'}"></span>`
-      ).join('');
+  let presencaCurrentStudents = [];
+
+  async function renderPresencaTab() {
+    // Load available dates for this cohort
+    const { data: dates } = await sb.rpc('get_class_dates', { p_cohort_id: cohortId });
+    const sel = document.getElementById('presenca-date-select');
+    if (!dates || dates.length === 0) {
+      sel.innerHTML = '<option value="">Sem aulas registradas</option>';
+      document.getElementById('presenca-content').innerHTML = '<div class="empty">Nenhuma presença registrada ainda para esta turma.</div>';
+      return;
+    }
+    sel.innerHTML = dates.map(d => {
+      const dt = new Date(d.class_date + 'T12:00:00');
+      const label = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+      const topic = d.zoom_topic ? ` — ${d.zoom_topic}` : '';
+      return `<option value="${d.class_date}">${label}${topic} (${d.present_count} presentes)</option>`;
+    }).join('');
+    // Load the most recent date
+    loadPresencaForDate(dates[0].class_date);
+  }
+
+  async function loadPresencaForDate(classDate) {
+    if (!classDate) return;
+    document.getElementById('presenca-content').innerHTML = '<div class="spinner"></div>';
+    document.getElementById('presenca-unmatched').innerHTML = '';
+    document.getElementById('presenca-dispatch').innerHTML = '';
+
+    // Load present students (deduplicated by phone)
+    const { data: present } = await sb.rpc('get_present_students', {
+      p_class_date: classDate,
+      p_cohort_id: cohortId,
+    });
+
+    presencaCurrentStudents = present ?? [];
+    const count = presencaCurrentStudents.length;
+    document.getElementById('presenca-count').textContent = `${count} aluno${count !== 1 ? 's' : ''} presente${count !== 1 ? 's' : ''}`;
+
+    // Render present students table
+    const presHtml = presencaCurrentStudents.map((s, i) => {
+      const dur = s.duration_minutes;
+      const durStr = dur ? (dur >= 60 ? `${Math.floor(dur/60)}h${String(dur%60).padStart(2,'0')}` : `${dur}min`) : '—';
+      const phone = s.phone || '—';
+      const maskedPhone = phone.length > 6 ? phone.slice(0, -4).replace(/\d/g, '•') + phone.slice(-4) : phone;
       return `<tr>
+        <td style="width:32px;text-align:center;color:#444">${i+1}</td>
         <td><div class="student-name">${escHtml(s.student_name)}</div></td>
-        <td>${last3 || '—'}</td>
-        <td><span class="badge ${cls}">${pct}%</span></td>
-        <td>${s.consecutive_abs ?? 0} ${s.consecutive_abs >= 2 ? '⚠️' : ''}</td>
+        <td style="font-size:12px;color:#666">${maskedPhone}</td>
+        <td style="font-size:12px">${durStr}</td>
+        <td><a class="btn-sm" href="../perfil/?tipo=student&id=${s.student_id}" target="_blank">Perfil</a></td>
       </tr>`;
     }).join('');
 
-    document.getElementById('presenca-content').innerHTML = `
+    document.getElementById('presenca-content').innerHTML = count > 0 ? `
       <table>
-        <thead><tr><th>Aluno</th><th>Últimas 3 aulas</th><th>% Geral</th><th>Faltas seguidas</th></tr></thead>
-        <tbody>${html || '<tr><td colspan="4" class="empty">Sem dados de presença.</td></tr>'}</tbody>
-      </table>`;
+        <thead><tr><th>#</th><th>Aluno</th><th>Telefone</th><th>Duração</th><th>Perfil</th></tr></thead>
+        <tbody>${presHtml}</tbody>
+      </table>` : '<div class="empty">Nenhum aluno matcheado para esta data.</div>';
+
+    // Load unmatched participants for the same date
+    loadUnmatchedForDate(classDate);
+
+    // Show dispatch preview button
+    if (count > 0) {
+      document.getElementById('presenca-dispatch').innerHTML = `
+        <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:20px">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:8px">Disparo para Presentes</div>
+          <div style="font-size:12px;color:#555;margin-bottom:16px">${count} alunos presentes com telefone válido. O disparo NÃO será enviado automaticamente.</div>
+          <button onclick="previewDispatch()" style="padding:10px 20px;border-radius:8px;border:1px solid #6366f1;background:transparent;color:#a5b4fc;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans)">
+            Preparar lista de disparo
+          </button>
+          <div id="dispatch-preview" style="margin-top:16px"></div>
+        </div>`;
+    }
+  }
+
+  async function loadUnmatchedForDate(classDate) {
+    // Find zoom_meetings for this date that belong to this cohort
+    const { data: meetings } = await sb.from('zoom_meetings')
+      .select('id, topic, participants_count')
+      .eq('cohort_id', cohortId)
+      .gte('start_time', classDate + 'T00:00:00')
+      .lte('start_time', classDate + 'T23:59:59');
+
+    if (!meetings || meetings.length === 0) {
+      document.getElementById('presenca-unmatched').innerHTML = '';
+      return;
+    }
+
+    const meetingIds = meetings.map(m => m.id);
+    const { data: unmatched } = await sb.from('zoom_participants')
+      .select('participant_name, duration_minutes')
+      .in('meeting_id', meetingIds)
+      .eq('matched', false)
+      .order('duration_minutes', { ascending: false });
+
+    if (!unmatched || unmatched.length === 0) {
+      document.getElementById('presenca-unmatched').innerHTML = '';
+      return;
+    }
+
+    // Dedup by name, sum durations
+    const byName = {};
+    unmatched.forEach(p => {
+      const name = (p.participant_name || '?').trim();
+      byName[name] = (byName[name] || 0) + (p.duration_minutes || 0);
+    });
+    const sorted = Object.entries(byName).sort((a, b) => b[1] - a[1]);
+    const realAttendees = sorted.filter(([, dur]) => dur >= 15);
+
+    if (realAttendees.length === 0) {
+      document.getElementById('presenca-unmatched').innerHTML = '';
+      return;
+    }
+
+    const unmHtml = realAttendees.map(([name, dur], i) => {
+      const durStr = dur >= 60 ? `${Math.floor(dur/60)}h${String(dur%60).padStart(2,'0')}` : `${dur}min`;
+      const cls = dur >= 60 ? 'badge-green' : 'badge-amber';
+      return `<tr>
+        <td style="width:32px;text-align:center;color:#444">${i+1}</td>
+        <td><div class="student-name">${escHtml(name)}</div></td>
+        <td><span class="badge ${cls}">${durStr}</span></td>
+        <td style="font-size:11px;color:#555">Buscar em /alunos/ e adicionar alias</td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('presenca-unmatched').innerHTML = `
+      <div style="background:#1a1010;border:1px solid #331a1a;border-radius:10px;padding:20px">
+        <div style="font-size:14px;font-weight:700;color:#f59e0b;margin-bottom:4px">
+          Participantes não vinculados (${realAttendees.length})
+        </div>
+        <div style="font-size:12px;color:#555;margin-bottom:12px">
+          Estavam na aula mas não foram matcheados com nenhum aluno. Adicione o alias Zoom no perfil do aluno em <a href="../alunos/" target="_blank" style="color:#a5b4fc">/alunos/</a>.
+        </div>
+        <table>
+          <thead><tr><th>#</th><th>Nome no Zoom</th><th>Duração</th><th>Ação</th></tr></thead>
+          <tbody>${unmHtml}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function previewDispatch() {
+    const students = presencaCurrentStudents.filter(s => s.phone && !s.phone.startsWith('pending_'));
+    if (students.length === 0) {
+      document.getElementById('dispatch-preview').innerHTML = '<div style="color:#ef4444;font-size:13px">Nenhum aluno com telefone válido.</div>';
+      return;
+    }
+    const list = students.map((s, i) =>
+      `<tr><td style="width:28px;color:#444">${i+1}</td><td>${escHtml(s.student_name)}</td><td style="color:#666">${s.phone}</td></tr>`
+    ).join('');
+    document.getElementById('dispatch-preview').innerHTML = `
+      <div style="font-size:12px;color:#f59e0b;margin-bottom:8px;font-weight:600">
+        Lista pronta: ${students.length} telefones
+      </div>
+      <div style="font-size:11px;color:#555;margin-bottom:12px">
+        O disparo NÃO será enviado daqui. Copie a lista ou solicite o envio ao administrador.
+      </div>
+      <table style="font-size:12px">
+        <thead><tr><th>#</th><th>Aluno</th><th>Telefone</th></tr></thead>
+        <tbody>${list}</tbody>
+      </table>
+      <button onclick="copyDispatchList()" style="margin-top:12px;padding:8px 16px;border-radius:6px;border:1px solid #333;background:#1a1a1a;color:#ddd;font-size:12px;cursor:pointer;font-family:var(--font-sans)">
+        Copiar lista
+      </button>
+      <span id="copy-confirm" style="font-size:11px;color:#4ade80;margin-left:8px;display:none">Copiado!</span>`;
+  }
+
+  function copyDispatchList() {
+    const students = presencaCurrentStudents.filter(s => s.phone && !s.phone.startsWith('pending_'));
+    const text = students.map(s => `${s.student_name}\t${s.phone}`).join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      const el = document.getElementById('copy-confirm');
+      el.style.display = 'inline';
+      setTimeout(() => el.style.display = 'none', 2000);
+    });
   }
 
   function renderWaTab(summary, waDays) {
