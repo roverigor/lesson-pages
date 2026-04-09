@@ -1238,6 +1238,46 @@ serve(async (req: Request) => {
     const sb = getSupabaseClient();
     const token = await getS2SToken();
 
+    // ── Auto-resolve cohort_id when not provided ──
+    // 1. Check existing zoom_meetings entries (pre-registered templates)
+    // 2. Fallback: match meeting topic against cohort names
+    let resolvedCohortId = cohort_id || null;
+    if (!resolvedCohortId) {
+      // Try pre-registered zoom_meetings with this meeting_id
+      const { data: existingMeeting } = await sb
+        .from("zoom_meetings")
+        .select("cohort_id")
+        .eq("zoom_meeting_id", meeting_id)
+        .not("cohort_id", "is", null)
+        .limit(1)
+        .maybeSingle();
+
+      if (existingMeeting?.cohort_id) {
+        resolvedCohortId = existingMeeting.cohort_id;
+      } else {
+        // Fetch topic from Zoom API for topic-based matching
+        const instData = await zoomGet(token, `/past_meetings/${meeting_id}/instances`).catch(() => null);
+        let meetingTopic = "";
+        if (instData?.meetings?.length) {
+          const latestUuid = instData.meetings[instData.meetings.length - 1].uuid;
+          const details = await getPastMeetingDetails(token, latestUuid).catch(() => null);
+          meetingTopic = details?.topic || "";
+        }
+        if (meetingTopic) {
+          const normalizedTopic = meetingTopic.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+          const { data: cohorts } = await sb.from("cohorts").select("id, name");
+          for (const c of (cohorts || [])) {
+            const normalizedCohortName = c.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+            // Match if topic contains cohort name or vice versa
+            if (normalizedTopic.includes(normalizedCohortName) || normalizedCohortName.includes(normalizedTopic)) {
+              resolvedCohortId = c.id;
+              break;
+            }
+          }
+        }
+      }
+    }
+
     // Get past instances of this meeting
     // Uses Zoom Reports API first (goes back 6 months), falls back to past_meetings API (≈30 days)
     let instances: Array<{ uuid: string; start_time?: string }> = [];
@@ -1278,9 +1318,9 @@ serve(async (req: Request) => {
     instances = instances.slice(offset, offset + batch_size);
 
     // Load students for matching (include email and is_mentor for guardrails)
-    const { data: students } = await (cohort_id
-      ? sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true).eq("cohort_id", cohort_id)
-      : sb.from("students").select("id, name, phone, email, is_mentor").eq("active", true));
+    const { data: students } = await (resolvedCohortId
+      ? sb.from("students").select("id, name, phone, email, is_mentor, aliases").eq("active", true).eq("cohort_id", resolvedCohortId)
+      : sb.from("students").select("id, name, phone, email, is_mentor, aliases").eq("active", true));
 
     // Process instances in parallel with concurrency limit of 2 (reduced to avoid WORKER_LIMIT)
     async function processInstance(instance: { uuid: string; start_time?: string }) {
@@ -1311,7 +1351,7 @@ serve(async (req: Request) => {
         duration_minutes: details?.duration || null,
         participants_count: realParticipants.length,
         class_id: class_id || null,
-        cohort_id: cohort_id || null,
+        cohort_id: resolvedCohortId || null,
       }).select().single();
 
       if (meetingError) return { uuid, status: "error", error: meetingError.message };
@@ -1341,6 +1381,56 @@ serve(async (req: Request) => {
         await sb.from("zoom_participants").insert(participantRows);
       }
 
+      // ── Auto-transfer matched participants to student_attendance ──
+      let attendanceInserted = 0;
+      const classDate = (details?.start_time || instance.start_time || "").slice(0, 10);
+      if (classDate) {
+        const attendanceRows = participantRows
+          .filter(p => p.student_id)
+          .map(p => ({
+            student_id: p.student_id!,
+            class_date: classDate,
+            cohort_id: resolvedCohortId || null,
+            zoom_meeting_id: meeting.id,
+            source: "zoom" as const,
+            duration_minutes: p.duration_minutes,
+          }));
+
+        // Need participant IDs — fetch them after insert
+        if (attendanceRows.length > 0) {
+          const { data: insertedParticipants } = await sb
+            .from("zoom_participants")
+            .select("id, student_id")
+            .eq("meeting_id", meeting.id)
+            .eq("matched", true);
+
+          const participantIdMap: Record<string, string> = {};
+          for (const ip of (insertedParticipants || [])) {
+            if (ip.student_id) participantIdMap[ip.student_id] = ip.id;
+          }
+
+          const finalRows = attendanceRows.map(r => ({
+            student_id: r.student_id,
+            class_date: r.class_date,
+            cohort_id: r.cohort_id,
+            zoom_meeting_id: r.zoom_meeting_id,
+            zoom_participant_id: participantIdMap[r.student_id!] || null,
+            source: r.source,
+            duration_minutes: r.duration_minutes,
+          }));
+
+          const batchSize = 100;
+          for (let i = 0; i < finalRows.length; i += batchSize) {
+            const batch = finalRows.slice(i, i + batchSize);
+            const { data: inserted } = await sb
+              .from("student_attendance")
+              .upsert(batch, { onConflict: "student_id,class_date,zoom_meeting_id", ignoreDuplicates: true })
+              .select("id");
+            attendanceInserted += inserted?.length || 0;
+          }
+        }
+      }
+
       await sb.from("zoom_meetings").update({ processed: true }).eq("id", meeting.id);
 
       const matched = participantRows.filter(r => r.matched).length;
@@ -1353,6 +1443,7 @@ serve(async (req: Request) => {
         matched,
         unmatched: participantRows.length - matched,
         near_matches: Object.keys(nearMatches).length,
+        attendance_inserted: attendanceInserted,
       };
     }
 
