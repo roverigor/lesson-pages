@@ -681,8 +681,27 @@ async function confirmDispatch(surveyId) {
   progressEl.style.display = 'block';
 
   const customMessage = textarea?.value || '';
-  const { data: { session } } = await sb.auth.getSession();
-  const authHeader = `Bearer ${session?.access_token}`;
+
+  // Helper: get fresh auth token (auto-refresh if expired)
+  async function getAuthHeader() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      // Try to refresh
+      const { data: { session: refreshed } } = await sb.auth.refreshSession();
+      if (!refreshed) throw new Error('session_expired');
+      return `Bearer ${refreshed.access_token}`;
+    }
+    return `Bearer ${session.access_token}`;
+  }
+
+  let authHeader;
+  try {
+    authHeader = await getAuthHeader();
+  } catch {
+    closeDispatchModal();
+    showToast('❌ Sessão expirada. Faça login novamente.', 'error');
+    return;
+  }
 
   // Step 1: Prepare (create links, get counts)
   progressLabel.textContent = 'Criando links individuais...';
@@ -717,6 +736,18 @@ async function confirmDispatch(surveyId) {
     progressPct.textContent = `${pct}%`;
     progressBar.style.width = `${pct}%`;
     progressDetail.textContent = `${totalDispatched} enviados · ${totalSkipped} pulados · ${total} total`;
+
+    // Refresh token before each chunk
+    try {
+      authHeader = await getAuthHeader();
+    } catch {
+      progressLabel.textContent = 'Sessão expirada';
+      progressLabel.style.color = '#f87171';
+      progressDetail.textContent = `${totalDispatched} enviados até aqui. Faça login e retome.`;
+      footer.innerHTML = `<button class="btn-primary" onclick="closeDispatchModal()">Fechar</button>`;
+      showToast('❌ Sessão expirada. Progresso salvo — faça login e retome.', 'error');
+      return;
+    }
 
     const chunkRes = await fetch(`${FUNCTIONS_URL}/dispatch-survey`, {
       method: 'POST',
