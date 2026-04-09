@@ -595,20 +595,38 @@ async function openDispatchModal(surveyId) {
   if (!survey) return;
 
   let studentCount = 0;
+  let alreadySent = 0;
+  let pending = 0;
+
   if (survey.cohort_id) {
     const { count } = await sb.from('students').select('id', { count: 'exact', head: true })
       .eq('cohort_id', survey.cohort_id).eq('active', true).eq('is_mentor', false);
     studentCount = count ?? 0;
   }
 
+  // Check if there are already sent links (resume scenario)
+  const { count: sentCount } = await sb.from('survey_links').select('id', { count: 'exact', head: true })
+    .eq('survey_id', surveyId).eq('send_status', 'sent');
+  const { count: pendingCount } = await sb.from('survey_links').select('id', { count: 'exact', head: true })
+    .eq('survey_id', surveyId).eq('send_status', 'pending');
+  alreadySent = sentCount ?? 0;
+  pending = pendingCount ?? 0;
+
   const introText = survey.intro_text?.trim() || 'Sua opinião é muito importante para nós.';
   const defaultMsg = `Olá *{nome}*! 👋\n\n${introText}\n\nResponda em 1 minuto: {link}\n\n_Academia Lendária_ 🚀`;
+
+  const resumeInfo = alreadySent > 0
+    ? `<div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);border-radius:8px;padding:12px;font-size:12px;color:#4ade80;margin-bottom:16px">
+        <strong>${alreadySent}</strong> já enviados · <strong>${pending}</strong> pendentes — o disparo continuará de onde parou.
+      </div>`
+    : '';
 
   const html = `<div id="survey-dispatch-modal" class="modal-overlay" onclick="if(event.target===this)closeDispatchModal()">
     <div class="modal-box" style="max-width:520px">
       <div class="modal-header"><span>Disparar Formulário</span><button class="modal-close" onclick="closeDispatchModal()">×</button></div>
       <div class="modal-body">
         <p style="color:#ccc;margin-bottom:12px">Enviará um link individual via WhatsApp para <strong style="color:#fff">${studentCount} aluno(s)</strong> da turma.</p>
+        ${resumeInfo}
         <div style="background:#111;border:1px solid #1e1e1e;border-radius:8px;padding:12px;font-size:12px;color:#666;margin-bottom:16px">
           <strong style="color:#888">Formulário:</strong> ${escHtml(survey.name)}<br>
           <strong style="color:#888">Turma:</strong> ${escHtml(survey.cohorts?.name || '—')}
@@ -631,7 +649,7 @@ async function openDispatchModal(surveyId) {
       </div>
       <div class="modal-footer" id="dispatch-footer">
         <button class="btn-secondary" onclick="closeDispatchModal()">Cancelar</button>
-        <button class="btn-primary" onclick="confirmDispatch('${surveyId}')" id="dispatch-confirm-btn">📤 Enviar via WhatsApp</button>
+        <button class="btn-primary" onclick="confirmDispatch('${surveyId}')" id="dispatch-confirm-btn">${alreadySent > 0 ? '▶ Continuar envio' : '📤 Enviar via WhatsApp'}</button>
       </div>
     </div>
   </div>`;
@@ -641,8 +659,12 @@ async function openDispatchModal(surveyId) {
 
 function closeDispatchModal() { document.getElementById('survey-dispatch-modal')?.remove(); }
 
-const CHUNK_SIZE = 10;        // students per edge function call
-const CHUNK_PAUSE_MS = 5000;  // 5s pause between chunks (frontend-side)
+// ── SAFE CADENCE ──
+// 3 students per chunk × 10s between messages = ~30s per chunk
+// 30s pause between chunks (frontend)
+// Total for 135 students: 45 chunks × ~60s = ~45 min
+const CHUNK_SIZE = 3;
+const CHUNK_PAUSE_MS = 30_000;  // 30s pause between chunks
 
 async function confirmDispatch(surveyId) {
   const btn = document.getElementById('dispatch-confirm-btn');
@@ -662,7 +684,7 @@ async function confirmDispatch(surveyId) {
   const { data: { session } } = await sb.auth.getSession();
   const authHeader = `Bearer ${session?.access_token}`;
 
-  // Step 1: Prepare (create links, get total)
+  // Step 1: Prepare (create links, get counts)
   progressLabel.textContent = 'Criando links individuais...';
   const prepRes = await fetch(`${FUNCTIONS_URL}/dispatch-survey`, {
     method: 'POST',
@@ -678,42 +700,49 @@ async function confirmDispatch(surveyId) {
   }
 
   const total = prepResult.total;
-  let totalDispatched = 0;
+  const alreadySent = prepResult.already_sent || 0;
+  let totalDispatched = alreadySent;
   let totalSkipped = 0;
-  let offset = 0;
 
-  // Hide confirm button, show only cancel
   if (btn) btn.style.display = 'none';
 
-  // Step 2: Send in chunks
-  while (offset < total) {
-    const pct = Math.round((offset / total) * 100);
-    progressLabel.textContent = `Enviando ${offset + 1}–${Math.min(offset + CHUNK_SIZE, total)} de ${total}...`;
+  // Step 2: Send in chunks (only pending ones)
+  let hasMore = prepResult.pending > 0;
+  let chunkNum = 0;
+
+  while (hasMore) {
+    chunkNum++;
+    const pct = Math.round((totalDispatched / total) * 100);
+    progressLabel.textContent = `Enviando lote ${chunkNum} (${CHUNK_SIZE} alunos)...`;
     progressPct.textContent = `${pct}%`;
     progressBar.style.width = `${pct}%`;
-    progressDetail.textContent = `${totalDispatched} enviados · ${totalSkipped} pulados`;
+    progressDetail.textContent = `${totalDispatched} enviados · ${totalSkipped} pulados · ${total} total`;
 
     const chunkRes = await fetch(`${FUNCTIONS_URL}/dispatch-survey`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
-      body: JSON.stringify({ survey_id: surveyId, custom_message: customMessage, offset, limit: CHUNK_SIZE }),
+      body: JSON.stringify({ survey_id: surveyId, custom_message: customMessage, limit: CHUNK_SIZE }),
     });
     const chunkResult = await chunkRes.json();
 
     if (!chunkResult.success) {
-      progressLabel.textContent = `Erro no chunk ${offset}`;
+      progressLabel.textContent = `Erro no lote ${chunkNum}`;
       progressLabel.style.color = '#f87171';
-      showToast(`❌ Erro no envio (offset ${offset}): ${chunkResult.error || 'desconhecido'}`, 'error');
-      break;
+      progressDetail.textContent = `${totalDispatched} enviados até aqui. Pode retomar depois.`;
+      footer.innerHTML = `<button class="btn-primary" onclick="closeDispatchModal()">Fechar</button>`;
+      showToast(`❌ Erro: ${chunkResult.error || 'desconhecido'}. Progresso salvo — pode retomar.`, 'error');
+      return;
     }
 
     totalDispatched += chunkResult.dispatched;
     totalSkipped += chunkResult.skipped;
-    offset = chunkResult.next_offset ?? total;
+    hasMore = chunkResult.has_more;
 
-    // Wait between chunks
-    if (chunkResult.has_more) {
-      progressDetail.textContent = `${totalDispatched} enviados · ${totalSkipped} pulados · aguardando...`;
+    // Safe pause between chunks
+    if (hasMore) {
+      const remaining = chunkResult.pending;
+      const eta = Math.ceil((remaining / CHUNK_SIZE) * (CHUNK_PAUSE_MS / 1000 + CHUNK_SIZE * 10) / 60);
+      progressDetail.textContent = `${totalDispatched} enviados · ${totalSkipped} pulados · ${remaining} restantes · ~${eta}min`;
       await new Promise(r => setTimeout(r, CHUNK_PAUSE_MS));
     }
   }

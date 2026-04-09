@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════
 // Edge Function: dispatch-survey
-// Admin-only — generates tokens + sends WhatsApp in chunks
-// Frontend calls multiple times with offset/limit for safe cadence
+// Admin-only — generates tokens + sends WhatsApp in safe chunks
+// Tracks sent status per student to allow resume after interruption
 // ═══════════════════════════════════════
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
@@ -17,8 +17,8 @@ const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
 
 const BASE_URL = "https://painel.igorrover.com.br";
 
-// ── Throttle config (within each chunk) ──
-const DELAY_MS = 1500; // 1.5s between messages within a chunk (safe for small batches)
+// ── SAFE throttle: 10s between messages ──
+const DELAY_MS = 10_000;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -83,9 +83,7 @@ serve(async (req: Request) => {
   let body: {
     survey_id?: string;
     custom_message?: string;
-    // Chunk mode: prepare_only creates links, offset+limit sends a slice
     prepare_only?: boolean;
-    offset?: number;
     limit?: number;
   };
   try {
@@ -127,7 +125,7 @@ serve(async (req: Request) => {
     });
   }
 
-  // 2. Fetch students in cohort (or class via class_cohorts)
+  // 2. Fetch students
   let students: { id: string; name: string; phone: string }[] = [];
 
   if (survey.cohort_id) {
@@ -164,7 +162,7 @@ serve(async (req: Request) => {
     });
   }
 
-  // 3. Upsert survey_links (always — idempotent)
+  // 3. Upsert survey_links (idempotent)
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
   const linkInserts = students.map((s) => ({
     survey_id: survey.id,
@@ -176,56 +174,90 @@ serve(async (req: Request) => {
     .from("survey_links")
     .upsert(linkInserts, { onConflict: "survey_id,student_id", ignoreDuplicates: true });
 
-  // ── PREPARE_ONLY mode: just create links, return student count ──
+  // Count already sent and pending
+  const { count: totalSent } = await client
+    .from("survey_links")
+    .select("id", { count: "exact", head: true })
+    .eq("survey_id", survey.id)
+    .eq("send_status", "sent");
+
+  const { count: totalPending } = await client
+    .from("survey_links")
+    .select("id", { count: "exact", head: true })
+    .eq("survey_id", survey.id)
+    .eq("send_status", "pending");
+
+  // ── PREPARE_ONLY: create links, return counts ──
   if (body.prepare_only) {
-    // Mark survey as active
     await client
       .from("surveys")
       .update({ status: "active", dispatched_at: new Date().toISOString() })
       .eq("id", body.survey_id);
 
     return new Response(
-      JSON.stringify({ success: true, total: students.length, prepared: true }),
+      JSON.stringify({
+        success: true,
+        total: students.length,
+        already_sent: totalSent ?? 0,
+        pending: totalPending ?? 0,
+        prepared: true,
+      }),
       { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
   }
 
-  // ── CHUNK mode: send messages for a slice of students ──
-  const offset = body.offset ?? 0;
-  const limit = body.limit ?? 10;
-  const chunk = students.slice(offset, offset + limit);
+  // ── CHUNK MODE: send only pending links ──
+  const limit = body.limit ?? 3;
 
-  // Fetch tokens
-  const chunkStudentIds = chunk.map((s) => s.id);
-  const { data: links } = await client
+  // Fetch next batch of PENDING links with student data
+  const { data: pendingLinks } = await client
     .from("survey_links")
-    .select("student_id, token")
+    .select("id, student_id, token")
     .eq("survey_id", survey.id)
-    .in("student_id", chunkStudentIds);
+    .eq("send_status", "pending")
+    .order("created_at")
+    .limit(limit);
 
-  const tokenMap = new Map<string, string>(
-    (links ?? []).map((l: { student_id: string; token: string }) => [l.student_id, l.token])
-  );
+  if (!pendingLinks || pendingLinks.length === 0) {
+    return new Response(
+      JSON.stringify({
+        success: true,
+        dispatched: 0,
+        skipped: 0,
+        chunk_total: 0,
+        total: students.length,
+        already_sent: totalSent ?? 0,
+        pending: 0,
+        has_more: false,
+      }),
+      { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+    );
+  }
+
+  // Build student lookup
+  const studentMap = new Map<string, { name: string; phone: string }>();
+  students.forEach((s) => studentMap.set(s.id, { name: s.name, phone: s.phone }));
 
   let dispatched = 0;
   let skipped = 0;
 
-  for (let i = 0; i < chunk.length; i++) {
-    const student = chunk[i];
+  for (let i = 0; i < pendingLinks.length; i++) {
+    const pl = pendingLinks[i];
+    const student = studentMap.get(pl.student_id);
 
-    if (!student.phone) {
+    if (!student?.phone) {
+      // Mark as skipped (no phone)
+      await client
+        .from("survey_links")
+        .update({ send_status: "skipped", sent_at: new Date().toISOString() })
+        .eq("id", pl.id);
       skipped++;
       continue;
     }
 
-    const token = tokenMap.get(student.id);
-    if (!token) {
-      skipped++;
-      continue;
-    }
-
-    const link = `${BASE_URL}/avaliacao/responder?token=${token}`;
-    const firstName = student.name.split(" ")[0];
+    const link = `${BASE_URL}/avaliacao/responder?token=${pl.token}`;
+    const rawName = (student.name || "").trim();
+    const firstName = (!rawName || /^\d+$/.test(rawName)) ? "aluno" : rawName.split(" ")[0];
 
     let message: string;
     if (body.custom_message?.trim()) {
@@ -241,29 +273,45 @@ serve(async (req: Request) => {
     }
 
     const sent = await sendWhatsApp(student.phone, message);
+
     if (sent) {
+      await client
+        .from("survey_links")
+        .update({ send_status: "sent", sent_at: new Date().toISOString() })
+        .eq("id", pl.id);
       dispatched++;
     } else {
+      await client
+        .from("survey_links")
+        .update({ send_status: "failed", sent_at: new Date().toISOString() })
+        .eq("id", pl.id);
       skipped++;
     }
 
-    // Small delay between messages within chunk
-    if (i < chunk.length - 1) {
+    // Safe delay between messages
+    if (i < pendingLinks.length - 1) {
       await sleep(DELAY_MS);
     }
   }
 
-  const hasMore = offset + limit < students.length;
+  // Recount pending
+  const { count: remainingPending } = await client
+    .from("survey_links")
+    .select("id", { count: "exact", head: true })
+    .eq("survey_id", survey.id)
+    .eq("send_status", "pending");
+
+  const hasMore = (remainingPending ?? 0) > 0;
 
   return new Response(
     JSON.stringify({
       success: true,
       dispatched,
       skipped,
-      chunk_total: chunk.length,
+      chunk_total: pendingLinks.length,
       total: students.length,
-      offset,
-      next_offset: hasMore ? offset + limit : null,
+      already_sent: (totalSent ?? 0) + dispatched,
+      pending: remainingPending ?? 0,
       has_more: hasMore,
     }),
     { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
