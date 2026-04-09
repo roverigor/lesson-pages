@@ -87,7 +87,7 @@ serve(async (req: Request) => {
     });
   }
 
-  let body: { survey_id?: string };
+  let body: { survey_id?: string; custom_message?: string };
   try {
     body = await req.json();
   } catch {
@@ -206,11 +206,19 @@ serve(async (req: Request) => {
 
     const link = `${BASE_URL}/avaliacao/responder?token=${token}`;
     const firstName = student.name.split(" ")[0];
-    const intro = survey.intro_text?.trim();
-    const message =
-      `Olá *${firstName}*! 👋\n\n` +
-      (intro ? `${intro}\n\n` : `Sua opinião é muito importante para nós.\n\n`) +
-      `Responda em 1 minuto: ${link}\n\n_Academia Lendária_ 🚀`;
+
+    let message: string;
+    if (body.custom_message?.trim()) {
+      message = body.custom_message
+        .replace(/\{nome\}/g, firstName)
+        .replace(/\{link\}/g, link);
+    } else {
+      const intro = survey.intro_text?.trim();
+      message =
+        `Olá *${firstName}*! 👋\n\n` +
+        (intro ? `${intro}\n\n` : `Sua opinião é muito importante para nós.\n\n`) +
+        `Responda em 1 minuto: ${link}\n\n_Academia Lendária_ 🚀`;
+    }
 
     const sent = await sendWhatsApp(student.phone, message);
     if (sent) {

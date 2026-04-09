@@ -601,14 +601,22 @@ async function openDispatchModal(surveyId) {
     studentCount = count ?? 0;
   }
 
+  const introText = survey.intro_text?.trim() || 'Sua opinião é muito importante para nós.';
+  const defaultMsg = `Olá *{nome}*! 👋\n\n${introText}\n\nResponda em 1 minuto: {link}\n\n_Academia Lendária_ 🚀`;
+
   const html = `<div id="survey-dispatch-modal" class="modal-overlay" onclick="if(event.target===this)closeDispatchModal()">
-    <div class="modal-box" style="max-width:440px">
+    <div class="modal-box" style="max-width:520px">
       <div class="modal-header"><span>Disparar Formulário</span><button class="modal-close" onclick="closeDispatchModal()">×</button></div>
       <div class="modal-body">
         <p style="color:#ccc;margin-bottom:12px">Enviará um link individual via WhatsApp para <strong style="color:#fff">${studentCount} aluno(s)</strong> da turma.</p>
-        <div style="background:#111;border:1px solid #1e1e1e;border-radius:8px;padding:12px;font-size:12px;color:#666">
+        <div style="background:#111;border:1px solid #1e1e1e;border-radius:8px;padding:12px;font-size:12px;color:#666;margin-bottom:16px">
           <strong style="color:#888">Formulário:</strong> ${escHtml(survey.name)}<br>
           <strong style="color:#888">Turma:</strong> ${escHtml(survey.cohorts?.name || '—')}
+        </div>
+        <label style="font-size:12px;font-weight:700;color:#888;display:block;margin-bottom:6px">Mensagem WhatsApp:</label>
+        <textarea id="dispatch-message" rows="8" style="width:100%;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;color:#ddd;font-size:13px;font-family:var(--font-sans);padding:12px;resize:vertical;line-height:1.5">${escHtml(defaultMsg)}</textarea>
+        <div style="font-size:11px;color:#444;margin-top:6px">
+          Variáveis: <code style="color:#a5b4fc">{nome}</code> = primeiro nome do aluno · <code style="color:#a5b4fc">{link}</code> = link individual da pesquisa
         </div>
       </div>
       <div class="modal-footer">
@@ -626,11 +634,12 @@ function closeDispatchModal() { document.getElementById('survey-dispatch-modal')
 async function confirmDispatch(surveyId) {
   const btn = document.getElementById('dispatch-confirm-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+  const customMessage = document.getElementById('dispatch-message')?.value || '';
   const { data: { session } } = await sb.auth.getSession();
   const res = await fetch(`${FUNCTIONS_URL}/dispatch-survey`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
-    body: JSON.stringify({ survey_id: surveyId }),
+    body: JSON.stringify({ survey_id: surveyId, custom_message: customMessage }),
   });
   const result = await res.json();
   closeDispatchModal();
