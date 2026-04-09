@@ -16,6 +16,20 @@ const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
 
 const BASE_URL = "https://painel.igorrover.com.br";
 
+// ── Throttle config (anti-ban WhatsApp) ──
+const BATCH_SIZE = 50;                     // messages per batch
+const BATCH_PAUSE_MS = 3 * 60 * 1000;     // 3 min pause between batches
+const MIN_DELAY_MS = 8_000;               // min delay between messages
+const MAX_DELAY_MS = 15_000;              // max delay between messages
+
+function randomDelay(): number {
+  return MIN_DELAY_MS + Math.floor(Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS));
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -171,11 +185,14 @@ serve(async (req: Request) => {
     (links ?? []).map((l: { student_id: string; token: string }) => [l.student_id, l.token])
   );
 
-  // 5. Send WhatsApp messages
+  // 5. Send WhatsApp messages with throttling (anti-ban cadence)
   let dispatched = 0;
   let skipped = 0;
+  let batchCount = 0;
 
-  for (const student of students) {
+  for (let i = 0; i < students.length; i++) {
+    const student = students[i];
+
     if (!student.phone) {
       skipped++;
       continue;
@@ -198,8 +215,19 @@ serve(async (req: Request) => {
     const sent = await sendWhatsApp(student.phone, message);
     if (sent) {
       dispatched++;
+      batchCount++;
     } else {
       skipped++;
+    }
+
+    // Batch pause: every BATCH_SIZE successful sends, pause longer
+    if (batchCount >= BATCH_SIZE && i < students.length - 1) {
+      console.log(`[dispatch-survey] Batch of ${BATCH_SIZE} sent. Pausing ${BATCH_PAUSE_MS / 1000}s...`);
+      await sleep(BATCH_PAUSE_MS);
+      batchCount = 0;
+    } else if (i < students.length - 1) {
+      // Random delay between messages (8-15s)
+      await sleep(randomDelay());
     }
   }
 
