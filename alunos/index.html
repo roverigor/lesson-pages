@@ -139,6 +139,8 @@
     }
     .cohort-fund { background: rgba(6,182,212,0.12); color: #22d3ee; }
     .cohort-adv { background: rgba(99,102,241,0.12); color: #a5b4fc; }
+    .cohort-imersao { background: rgba(251,191,36,0.12); color: #fbbf24; }
+    .cohort-origin { background: rgba(255,255,255,0.05); color: #666; border: 1px dashed #333; font-style: italic; }
 
     .action-btn {
       padding: 5px 10px; border-radius: 6px; border: 1px solid #222;
@@ -385,6 +387,26 @@ async function loadData() {
     }
   }
 
+  // Cross-cohort lookup: find other cohorts where the same phone exists
+  // This shows e.g. "Fundamental T1" badge on Advanced T2 students
+  const phoneMap = {};
+  for (const s of allStudents) {
+    if (!s.phone) continue;
+    if (!phoneMap[s.phone]) phoneMap[s.phone] = [];
+    phoneMap[s.phone].push(s);
+  }
+  for (const s of allStudents) {
+    if (!s.phone) continue;
+    const siblings = phoneMap[s.phone] || [];
+    for (const sib of siblings) {
+      if (sib.id === s.id) continue;
+      const sibCohort = sib.cohorts?.name;
+      if (sibCohort && !s._cohortNames.includes(sibCohort)) {
+        s._cohortNames.push(sibCohort);
+      }
+    }
+  }
+
   renderStats();
   renderCohortTabs();
   renderTable();
@@ -481,9 +503,16 @@ function renderTable() {
 
   body.innerHTML = page.map(s => {
     const cohortNames = (s._cohortNames || []).length > 0 ? s._cohortNames : [s.cohorts?.name || '—'];
+    const primaryCohort = s.cohorts?.name || '';
     const cohortBadges = cohortNames.map(cn => {
-      const cls = cn.includes('Advanced') ? 'cohort-adv' : 'cohort-fund';
-      return `<span class="cohort-badge ${cls}" style="margin-right:2px">${cn}</span>`;
+      const isPrimary = cn === primaryCohort;
+      let cls;
+      if (cn.includes('Imersão')) cls = 'cohort-imersao';
+      else if (!isPrimary) cls = 'cohort-origin';
+      else if (cn.includes('Advanced')) cls = 'cohort-adv';
+      else cls = 'cohort-fund';
+      const label = isPrimary ? cn : `← ${cn}`;
+      return `<span class="cohort-badge ${cls}" style="margin-right:2px" title="${isPrimary ? 'Turma atual' : 'Veio de'}">${label}</span>`;
     }).join('');
     const color = getColor(s.name || s.phone);
     const initials = getInitials(s.name || s.phone);
