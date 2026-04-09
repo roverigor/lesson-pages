@@ -136,6 +136,7 @@
     <button class="tab" onclick="switchTab('resumos', this)">📝 Resumos</button>
     <button class="tab" onclick="switchTab('avisos', this)">📱 Avisos</button>
     <button class="tab" onclick="switchTab('avaliacoes', this)">⭐ Avaliações</button>
+    <button class="tab" onclick="switchTab('fontes', this)">📊 Fontes</button>
   </div>
 
   <!-- Tab: Alunos -->
@@ -195,6 +196,28 @@
     <div class="section-title">Pesquisas NPS / CSAT desta turma</div>
     <div id="avaliacoes-content"><div class="spinner"></div></div>
   </div>
+
+  <!-- Tab: Fontes -->
+  <div id="tab-fontes" style="display:none">
+    <div class="section-title">Cruzamento de fontes de dados da turma</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+      <label class="btn-sm" style="cursor:pointer;padding:8px 16px;font-size:12px;position:relative">
+        📤 Upload CSV
+        <input type="file" accept=".csv" id="csv-upload" onchange="handleCsvUpload(event)" style="position:absolute;inset:0;opacity:0;cursor:pointer">
+      </label>
+      <button class="btn-sm" style="padding:8px 16px;font-size:12px" onclick="syncWhatsApp()">📱 Sync WhatsApp</button>
+      <button class="btn-sm" style="padding:8px 16px;font-size:12px" onclick="loadFontesTab()">🔄 Atualizar</button>
+      <select id="fontes-filter" onchange="filterFontes()" style="background:#111;border:1px solid #222;color:#ddd;padding:8px 12px;border-radius:8px;font-size:12px;font-family:var(--font-sans)">
+        <option value="all">Todos</option>
+        <option value="gaps">Apenas com lacunas</option>
+        <option value="csv-only">Só no CSV</option>
+        <option value="wa-only">Só no WhatsApp</option>
+        <option value="zoom-only">Só no Zoom</option>
+      </select>
+    </div>
+    <div id="fontes-summary" style="margin-bottom:16px"></div>
+    <div id="fontes-content"><div class="spinner"></div></div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
@@ -241,7 +264,7 @@
     if (session) showApp();
   }
 
-  const ALL_TABS = ['alunos','presenca','wa','equipe','zoom','resumos','avisos','avaliacoes'];
+  const ALL_TABS = ['alunos','presenca','wa','equipe','zoom','resumos','avisos','avaliacoes','fontes'];
   const tabLoaded = {};
 
   function switchTab(name, btn) {
@@ -251,13 +274,14 @@
       document.getElementById('tab-' + t).style.display = t === name ? '' : 'none';
     });
     // Lazy load new tabs on first click
-    if (!tabLoaded[name] && ['equipe','zoom','resumos','avisos','avaliacoes'].includes(name)) {
+    if (!tabLoaded[name] && ['equipe','zoom','resumos','avisos','avaliacoes','fontes'].includes(name)) {
       tabLoaded[name] = true;
       if (name === 'equipe') loadEquipeTab();
       if (name === 'zoom') loadZoomTab();
       if (name === 'resumos') loadResumosTab();
       if (name === 'avisos') loadAvisosTab();
       if (name === 'avaliacoes') loadAvaliacoesTab();
+      if (name === 'fontes') loadFontesTab();
     }
   }
 
@@ -797,6 +821,563 @@
 
       el.innerHTML = '<table><thead><tr><th>Nome</th><th>Tipo</th><th>Status</th><th style="text-align:center">Respostas</th><th style="text-align:center">Score</th><th>Enviado</th></tr></thead><tbody>' + rows + '</tbody></table>';
     } catch (err) { el.innerHTML = '<div class="empty">Erro ao carregar avaliações.</div>'; }
+  }
+
+  // ─── TAB: Fontes (Cross-reference) ─────────────
+  let fontesData = { csv: [], wa: [], zoom: [], students: [] };
+
+  async function loadFontesTab() {
+    const el = document.getElementById('fontes-content');
+    const sumEl = document.getElementById('fontes-summary');
+    el.innerHTML = '<div class="spinner"></div>';
+    sumEl.innerHTML = '';
+
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const token = session?.access_token;
+
+      // Parallel queries
+      const [csvRes, studentsRes, zoomRes] = await Promise.all([
+        sb.from('student_imports').select('*').eq('cohort_id', cohortId).order('name'),
+        sb.from('students').select('id, name, phone, email').eq('cohort_id', cohortId).eq('active', true),
+        sb.from('zoom_participants')
+          .select('participant_name, participant_email, duration_minutes, student_id, meeting_id, zoom_meetings!inner(cohort_id)')
+          .eq('zoom_meetings.cohort_id', cohortId),
+      ]);
+
+      fontesData.csv = csvRes.data || [];
+      fontesData.students = studentsRes.data || [];
+
+      // Aggregate zoom participants by email/name (dedup)
+      const zoomMap = new Map();
+      (zoomRes.data || []).forEach(p => {
+        const key = (p.participant_email || p.participant_name || '').toLowerCase().trim();
+        if (!key) return;
+        const existing = zoomMap.get(key);
+        if (existing) {
+          existing.duration_minutes += (p.duration_minutes || 0);
+          existing.sessions++;
+          if (p.student_id) existing.student_id = p.student_id;
+        } else {
+          zoomMap.set(key, {
+            name: p.participant_name || '',
+            email: p.participant_email || '',
+            duration_minutes: p.duration_minutes || 0,
+            student_id: p.student_id || null,
+            sessions: 1,
+          });
+        }
+      });
+      fontesData.zoom = [...zoomMap.values()];
+
+      renderFontes();
+    } catch (err) {
+      el.innerHTML = '<div class="empty">Erro ao carregar fontes: ' + escHtml(String(err)) + '</div>';
+    }
+  }
+
+  function normalizePhone(ph) {
+    return (ph || '').replace(/\D/g, '');
+  }
+
+  function renderFontes() {
+    const { csv, students, zoom } = fontesData;
+    const el = document.getElementById('fontes-content');
+    const sumEl = document.getElementById('fontes-summary');
+    const filter = document.getElementById('fontes-filter').value;
+
+    // Build unified map by normalized phone / email
+    const unified = new Map();
+
+    function getOrCreate(key, name) {
+      if (!key) return null;
+      if (!unified.has(key)) {
+        unified.set(key, { key, name: name || '', phone: '', email: '', csv: false, wa: false, zoom: false, student: false, student_id: null });
+      }
+      return unified.get(key);
+    }
+
+    // Students (registered)
+    students.forEach(s => {
+      const phoneKey = normalizePhone(s.phone);
+      const entry = getOrCreate(phoneKey || s.email || s.id, s.name);
+      if (!entry) return;
+      entry.student = true;
+      entry.student_id = s.id;
+      entry.name = s.name;
+      if (s.phone) entry.phone = s.phone;
+      if (s.email) entry.email = s.email;
+    });
+
+    // CSV imports
+    csv.forEach(c => {
+      const phoneKey = normalizePhone(c.phone);
+      const key = phoneKey || c.email || c.name;
+      const entry = getOrCreate(key, c.name);
+      if (!entry) return;
+      entry.csv = true;
+      if (!entry.name) entry.name = c.name;
+      if (c.phone && !entry.phone) entry.phone = c.phone;
+      if (c.email && !entry.email) entry.email = c.email;
+    });
+
+    // Zoom participants
+    zoom.forEach(z => {
+      const emailKey = (z.email || '').toLowerCase().trim();
+      // Try to match by email first
+      let matched = false;
+      if (emailKey) {
+        for (const [, entry] of unified) {
+          if (entry.email && entry.email.toLowerCase().trim() === emailKey) {
+            entry.zoom = true;
+            matched = true;
+            break;
+          }
+        }
+      }
+      // Try student_id match
+      if (!matched && z.student_id) {
+        for (const [, entry] of unified) {
+          if (entry.student_id === z.student_id) {
+            entry.zoom = true;
+            if (z.email && !entry.email) entry.email = z.email;
+            matched = true;
+            break;
+          }
+        }
+      }
+      if (!matched) {
+        const entry = getOrCreate(emailKey || z.name, z.name);
+        if (entry) {
+          entry.zoom = true;
+          if (z.email && !entry.email) entry.email = z.email;
+        }
+      }
+    });
+
+    let rows = [...unified.values()];
+
+    // Counts
+    const totalCSV = rows.filter(r => r.csv).length;
+    const totalWA = rows.filter(r => r.wa).length;
+    const totalZoom = rows.filter(r => r.zoom).length;
+    const totalStudents = rows.filter(r => r.student).length;
+    const totalAll3 = rows.filter(r => r.csv && r.student && r.zoom).length;
+    const gaps = rows.filter(r => !(r.csv && r.student && r.zoom));
+
+    sumEl.innerHTML = `
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:#a5b4fc">${totalCSV}</div>
+          <div style="font-size:10px;color:#555">CSV</div>
+        </div>
+        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:#4ade80">${totalStudents}</div>
+          <div style="font-size:10px;color:#555">Cadastrados</div>
+        </div>
+        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:#facc15">${totalZoom}</div>
+          <div style="font-size:10px;color:#555">Zoom</div>
+        </div>
+        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:${totalAll3 === totalStudents ? '#4ade80' : '#f59e0b'}">${totalAll3}</div>
+          <div style="font-size:10px;color:#555">Match completo</div>
+        </div>
+        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:${gaps.length ? '#f87171' : '#4ade80'}">${gaps.length}</div>
+          <div style="font-size:10px;color:#555">Com lacunas</div>
+        </div>
+      </div>`;
+
+    // Filter
+    if (filter === 'gaps') rows = rows.filter(r => !(r.csv && r.student && r.zoom));
+    else if (filter === 'csv-only') rows = rows.filter(r => r.csv && !r.student);
+    else if (filter === 'wa-only') rows = rows.filter(r => r.wa && !r.student);
+    else if (filter === 'zoom-only') rows = rows.filter(r => r.zoom && !r.student);
+
+    rows.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+    const dot = (ok) => ok
+      ? '<span style="color:#4ade80;font-size:14px" title="Presente">●</span>'
+      : '<span style="color:#333;font-size:14px" title="Ausente">○</span>';
+
+    const tableRows = rows.map(r => {
+      const maskedPhone = r.phone
+        ? (r.phone.length > 6 ? r.phone.slice(0, -4).replace(/\d/g, '•') + r.phone.slice(-4) : r.phone)
+        : '<span style="color:#555">—</span>';
+      return `<tr class="fontes-row" data-csv="${r.csv}" data-wa="${r.wa}" data-zoom="${r.zoom}" data-student="${r.student}">
+        <td><div class="student-name">${escHtml(r.name || '?')}</div></td>
+        <td style="font-size:12px;color:#666">${maskedPhone}</td>
+        <td style="font-size:12px;color:#666">${escHtml(r.email || '—')}</td>
+        <td style="text-align:center">${dot(r.csv)}</td>
+        <td style="text-align:center">${dot(r.student)}</td>
+        <td style="text-align:center">${dot(r.zoom)}</td>
+        <td>${r.student_id ? '<a class="btn-sm" href="../aluno/perfil.html?id=' + r.student_id + '">Perfil</a>' : ''}</td>
+      </tr>`;
+    }).join('');
+
+    el.innerHTML = rows.length > 0
+      ? `<table>
+          <thead><tr>
+            <th>Nome</th>
+            <th>Telefone</th>
+            <th>Email</th>
+            <th style="text-align:center">CSV</th>
+            <th style="text-align:center">Cadastro</th>
+            <th style="text-align:center">Zoom</th>
+            <th>Ação</th>
+          </tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>`
+      : '<div class="empty">Nenhum registro encontrado com esse filtro.</div>';
+  }
+
+  function filterFontes() {
+    renderFontes();
+  }
+
+  // ─── CSV Upload ───────────────────────────────────
+  async function handleCsvUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) { alert('CSV vazio ou sem dados.'); return; }
+
+    // Parse header
+    const sep = lines[0].includes(';') ? ';' : ',';
+    const headers = lines[0].split(sep).map(h => h.trim().toLowerCase().replace(/"/g, ''));
+
+    // Map columns (flexible)
+    const colMap = {};
+    headers.forEach((h, i) => {
+      if (/nome|name|aluno/.test(h)) colMap.name = i;
+      if (/email|e-mail/.test(h)) colMap.email = i;
+      if (/telefone|phone|celular|whatsapp/.test(h)) colMap.phone = i;
+      if (/produto|product|curso/.test(h)) colMap.product = i;
+      if (/data.*compra|purchase.*date|created/.test(h)) colMap.purchase_date = i;
+    });
+
+    if (colMap.name === undefined) {
+      alert('Coluna "nome" não encontrada. Verifique o cabeçalho do CSV.');
+      return;
+    }
+
+    const records = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(sep).map(c => c.trim().replace(/^"|"$/g, ''));
+      const name = cols[colMap.name] || '';
+      if (!name) continue;
+      records.push({
+        cohort_id: cohortId,
+        name,
+        email: colMap.email !== undefined ? cols[colMap.email] || null : null,
+        phone: colMap.phone !== undefined ? cols[colMap.phone] || null : null,
+        product: colMap.product !== undefined ? cols[colMap.product] || null : null,
+        purchase_date: colMap.purchase_date !== undefined ? parseDate(cols[colMap.purchase_date]) : null,
+        source: 'csv',
+      });
+    }
+
+    if (!records.length) { alert('Nenhum registro válido no CSV.'); return; }
+
+    // Clear previous imports for this cohort and insert new
+    const { error: delErr } = await sb.from('student_imports').delete().eq('cohort_id', cohortId);
+    if (delErr) { alert('Erro ao limpar imports anteriores: ' + delErr.message); return; }
+
+    // Batch insert (max 500 per batch)
+    for (let i = 0; i < records.length; i += 500) {
+      const batch = records.slice(i, i + 500);
+      const { error } = await sb.from('student_imports').insert(batch);
+      if (error) { alert('Erro ao importar: ' + error.message); return; }
+    }
+
+    alert(`${records.length} registros importados do CSV.`);
+    e.target.value = '';
+    tabLoaded['fontes'] = false;
+    loadFontesTab();
+  }
+
+  function parseDate(str) {
+    if (!str) return null;
+    // Try DD/MM/YYYY
+    const m = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+    // Try YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}/.test(str)) return str.slice(0, 10);
+    return null;
+  }
+
+  // ─── WhatsApp Sync ────────────────────────────────
+  async function syncWhatsApp() {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = '⏳ Sincronizando...';
+
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { alert('Sessão expirada. Faça login novamente.'); return; }
+
+      const res = await fetch(SUPABASE_URL + '/functions/v1/sync-wa-group', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + session.access_token,
+        },
+        body: JSON.stringify({ cohort_id: cohortId }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.error === 'no_whatsapp_group') {
+          alert('Esta turma não tem whatsapp_group_jid configurado no Supabase.');
+        } else {
+          alert('Erro: ' + (data.error || res.status));
+        }
+        return;
+      }
+
+      // Update fontes data with WA members
+      fontesData.wa = data.members || [];
+
+      // Merge WA data into unified view
+      const waMembers = data.members || [];
+      waMembers.forEach(m => {
+        const phoneKey = normalizePhone(m.phone);
+        // Find existing entry by phone
+        let found = false;
+        // We'll re-render with WA data
+      });
+
+      alert(`WhatsApp: ${data.total_members} membros · ${data.matched} matcheados · ${data.unmatched} não vinculados · ${data.not_in_group} alunos fora do grupo`);
+      tabLoaded['fontes'] = false;
+      loadFontesTabWithWA(data);
+    } catch (err) {
+      alert('Erro ao sincronizar WhatsApp: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '📱 Sync WhatsApp';
+    }
+  }
+
+  async function loadFontesTabWithWA(waData) {
+    // Reload base data then merge WA
+    const el = document.getElementById('fontes-content');
+    el.innerHTML = '<div class="spinner"></div>';
+
+    const [csvRes, studentsRes, zoomRes] = await Promise.all([
+      sb.from('student_imports').select('*').eq('cohort_id', cohortId).order('name'),
+      sb.from('students').select('id, name, phone, email').eq('cohort_id', cohortId).eq('active', true),
+      sb.from('zoom_participants')
+        .select('participant_name, participant_email, duration_minutes, student_id, meeting_id, zoom_meetings!inner(cohort_id)')
+        .eq('zoom_meetings.cohort_id', cohortId),
+    ]);
+
+    fontesData.csv = csvRes.data || [];
+    fontesData.students = studentsRes.data || [];
+
+    // Aggregate zoom
+    const zoomMap = new Map();
+    (zoomRes.data || []).forEach(p => {
+      const key = (p.participant_email || p.participant_name || '').toLowerCase().trim();
+      if (!key) return;
+      const existing = zoomMap.get(key);
+      if (existing) {
+        existing.duration_minutes += (p.duration_minutes || 0);
+        existing.sessions++;
+        if (p.student_id) existing.student_id = p.student_id;
+      } else {
+        zoomMap.set(key, { name: p.participant_name || '', email: p.participant_email || '', duration_minutes: p.duration_minutes || 0, student_id: p.student_id || null, sessions: 1 });
+      }
+    });
+    fontesData.zoom = [...zoomMap.values()];
+
+    // Store WA data from sync result
+    fontesData.waSync = waData;
+
+    renderFontesWithWA();
+  }
+
+  function renderFontesWithWA() {
+    const { csv, students, zoom, waSync } = fontesData;
+    const el = document.getElementById('fontes-content');
+    const sumEl = document.getElementById('fontes-summary');
+    const filter = document.getElementById('fontes-filter').value;
+
+    const unified = new Map();
+
+    function getOrCreate(key, name) {
+      if (!key) return null;
+      if (!unified.has(key)) {
+        unified.set(key, { key, name: name || '', phone: '', email: '', csv: false, wa: false, zoom: false, student: false, student_id: null });
+      }
+      return unified.get(key);
+    }
+
+    // Students
+    students.forEach(s => {
+      const phoneKey = normalizePhone(s.phone);
+      const entry = getOrCreate(phoneKey || s.email || s.id, s.name);
+      if (!entry) return;
+      entry.student = true;
+      entry.student_id = s.id;
+      entry.name = s.name;
+      if (s.phone) entry.phone = s.phone;
+      if (s.email) entry.email = s.email;
+    });
+
+    // CSV
+    csv.forEach(c => {
+      const phoneKey = normalizePhone(c.phone);
+      const key = phoneKey || c.email || c.name;
+      const entry = getOrCreate(key, c.name);
+      if (!entry) return;
+      entry.csv = true;
+      if (!entry.name) entry.name = c.name;
+      if (c.phone && !entry.phone) entry.phone = c.phone;
+      if (c.email && !entry.email) entry.email = c.email;
+    });
+
+    // WhatsApp (from sync)
+    if (waSync && waSync.members) {
+      waSync.members.forEach(m => {
+        const phoneKey = normalizePhone(m.phone);
+        let matched = false;
+        for (const [, entry] of unified) {
+          if (normalizePhone(entry.phone) === phoneKey && phoneKey) {
+            entry.wa = true;
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) {
+          const entry = getOrCreate(phoneKey || m.wa_name, m.wa_name || '');
+          if (entry) {
+            entry.wa = true;
+            if (m.phone && !entry.phone) entry.phone = m.phone;
+            if (!entry.name && m.wa_name) entry.name = m.wa_name;
+          }
+        }
+      });
+    }
+
+    // Zoom
+    zoom.forEach(z => {
+      const emailKey = (z.email || '').toLowerCase().trim();
+      let matched = false;
+      if (emailKey) {
+        for (const [, entry] of unified) {
+          if (entry.email && entry.email.toLowerCase().trim() === emailKey) {
+            entry.zoom = true;
+            matched = true;
+            break;
+          }
+        }
+      }
+      if (!matched && z.student_id) {
+        for (const [, entry] of unified) {
+          if (entry.student_id === z.student_id) {
+            entry.zoom = true;
+            if (z.email && !entry.email) entry.email = z.email;
+            matched = true;
+            break;
+          }
+        }
+      }
+      if (!matched) {
+        const entry = getOrCreate(emailKey || z.name, z.name);
+        if (entry) {
+          entry.zoom = true;
+          if (z.email && !entry.email) entry.email = z.email;
+        }
+      }
+    });
+
+    let rows = [...unified.values()];
+
+    const totalCSV = rows.filter(r => r.csv).length;
+    const totalWA = rows.filter(r => r.wa).length;
+    const totalZoom = rows.filter(r => r.zoom).length;
+    const totalStudents = rows.filter(r => r.student).length;
+    const sources = waSync ? 3 : 2;
+    const totalComplete = rows.filter(r => r.csv && r.student && r.zoom && (waSync ? r.wa : true)).length;
+    const gaps = rows.filter(r => !(r.csv && r.student && r.zoom && (waSync ? r.wa : true)));
+
+    sumEl.innerHTML = `
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:#a5b4fc">${totalCSV}</div>
+          <div style="font-size:10px;color:#555">CSV</div>
+        </div>
+        ${waSync ? `<div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:#22c55e">${totalWA}</div>
+          <div style="font-size:10px;color:#555">WhatsApp</div>
+        </div>` : ''}
+        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:#4ade80">${totalStudents}</div>
+          <div style="font-size:10px;color:#555">Cadastrados</div>
+        </div>
+        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:#facc15">${totalZoom}</div>
+          <div style="font-size:10px;color:#555">Zoom</div>
+        </div>
+        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:${totalComplete === totalStudents ? '#4ade80' : '#f59e0b'}">${totalComplete}</div>
+          <div style="font-size:10px;color:#555">Match completo</div>
+        </div>
+        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:${gaps.length ? '#f87171' : '#4ade80'}">${gaps.length}</div>
+          <div style="font-size:10px;color:#555">Com lacunas</div>
+        </div>
+      </div>`;
+
+    // Filter
+    if (filter === 'gaps') rows = rows.filter(r => !(r.csv && r.student && r.zoom && (waSync ? r.wa : true)));
+    else if (filter === 'csv-only') rows = rows.filter(r => r.csv && !r.student);
+    else if (filter === 'wa-only') rows = rows.filter(r => r.wa && !r.student);
+    else if (filter === 'zoom-only') rows = rows.filter(r => r.zoom && !r.student);
+
+    rows.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+    const dot = (ok) => ok
+      ? '<span style="color:#4ade80;font-size:14px" title="Presente">●</span>'
+      : '<span style="color:#333;font-size:14px" title="Ausente">○</span>';
+
+    const waHeader = waSync ? '<th style="text-align:center">WA</th>' : '';
+
+    const tableRows = rows.map(r => {
+      const maskedPhone = r.phone
+        ? (r.phone.length > 6 ? r.phone.slice(0, -4).replace(/\d/g, '•') + r.phone.slice(-4) : r.phone)
+        : '<span style="color:#555">—</span>';
+      const waCol = waSync ? `<td style="text-align:center">${dot(r.wa)}</td>` : '';
+      return `<tr>
+        <td><div class="student-name">${escHtml(r.name || '?')}</div></td>
+        <td style="font-size:12px;color:#666">${maskedPhone}</td>
+        <td style="font-size:12px;color:#666">${escHtml(r.email || '—')}</td>
+        <td style="text-align:center">${dot(r.csv)}</td>
+        ${waCol}
+        <td style="text-align:center">${dot(r.student)}</td>
+        <td style="text-align:center">${dot(r.zoom)}</td>
+        <td>${r.student_id ? '<a class="btn-sm" href="../aluno/perfil.html?id=' + r.student_id + '">Perfil</a>' : ''}</td>
+      </tr>`;
+    }).join('');
+
+    el.innerHTML = rows.length > 0
+      ? `<table>
+          <thead><tr>
+            <th>Nome</th>
+            <th>Telefone</th>
+            <th>Email</th>
+            <th style="text-align:center">CSV</th>
+            ${waHeader}
+            <th style="text-align:center">Cadastro</th>
+            <th style="text-align:center">Zoom</th>
+            <th>Ação</th>
+          </tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>`
+      : '<div class="empty">Nenhum registro encontrado com esse filtro.</div>';
   }
 
   checkAuth();
