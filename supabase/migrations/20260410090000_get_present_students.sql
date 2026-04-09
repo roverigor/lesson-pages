@@ -68,7 +68,6 @@ AS $$
   FROM student_attendance sa
   LEFT JOIN zoom_meetings zm ON zm.id = sa.zoom_meeting_id
   WHERE sa.cohort_id = p_cohort_id
-     OR sa.student_id IN (SELECT id FROM students WHERE cohort_id = p_cohort_id AND active = true)
   GROUP BY sa.class_date
   ORDER BY sa.class_date DESC
 $$;
