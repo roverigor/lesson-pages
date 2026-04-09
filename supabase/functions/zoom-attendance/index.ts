@@ -37,6 +37,12 @@ function getSupabaseClient() {
   });
 }
 
+// ─── Anti-ban cadence for WhatsApp ───
+const WA_SAFE_DELAY_MS = 10_000; // 10s between messages
+function waSleep(): Promise<void> {
+  return new Promise((r) => setTimeout(r, WA_SAFE_DELAY_MS));
+}
+
 // ─── Zoom S2S Auth ───
 
 async function getS2SToken(): Promise<string> {
@@ -957,6 +963,8 @@ serve(async (req: Request) => {
           });
           failed++;
         }
+        // Safe cadence between messages
+        await waSleep();
       }
 
       return new Response(
@@ -1035,6 +1043,9 @@ serve(async (req: Request) => {
           status,
           error_msg:    errMsg,
         }).catch(() => {});
+
+        // Safe cadence between messages
+        if (status === "sent") await waSleep();
       }
 
       return new Response(

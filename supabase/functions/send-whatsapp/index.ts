@@ -74,12 +74,25 @@ function getSupabaseClient() {
   });
 }
 
+// ─── Anti-ban cadence ───
+const WA_DELAY_MS = 10_000; // 10s between messages (safe for WhatsApp)
+let lastSendTime = 0;
+
+async function waitForCadence(): Promise<void> {
+  const elapsed = Date.now() - lastSendTime;
+  if (lastSendTime > 0 && elapsed < WA_DELAY_MS) {
+    await new Promise((r) => setTimeout(r, WA_DELAY_MS - elapsed));
+  }
+  lastSendTime = Date.now();
+}
+
 // ─── Evolution API Helpers ───
 
 async function sendTextMessage(
   remoteJid: string,
   text: string
 ): Promise<{ success: boolean; response?: EvolutionResponse; error?: string }> {
+  await waitForCadence();
   const url = `${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`;
 
   try {
