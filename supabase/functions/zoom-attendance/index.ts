@@ -18,6 +18,7 @@ const ZOOM_S2S_CLIENT_SECRET = Deno.env.get("ZOOM_S2S_CLIENT_SECRET") ?? "";
 const ALLOWED_ORIGINS = [
   "https://lesson-pages.vercel.app",
   "https://calendario.igorrover.com.br",
+  "https://painel.igorrover.com.br",
 ];
 
 function getCorsHeaders(req: Request): Record<string, string> {
