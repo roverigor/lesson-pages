@@ -81,6 +81,29 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .empty { text-align: center; padding: 40px; font-size: 13px; color: #333; }
 
+    /* LINK MODAL */
+    .link-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 5000; display: flex; align-items: center; justify-content: center; }
+    .link-overlay.hidden { display: none; }
+    .link-box { background: #111; border: 1px solid #222; border-radius: 16px; padding: 24px; width: 95%; max-width: 520px; max-height: 80vh; overflow-y: auto; }
+    .link-title { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .link-sub { font-size: 12px; color: #555; margin-bottom: 16px; }
+    .link-search { width: 100%; padding: 10px 14px; border-radius: 8px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd; font-size: 13px; font-family: var(--font-sans); outline: none; margin-bottom: 12px; }
+    .link-search:focus { border-color: #6366f1; }
+    .link-result { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 8px; padding: 10px 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: border-color 0.15s; }
+    .link-result:hover { border-color: #333; }
+    .link-result .lr-name { font-size: 13px; font-weight: 600; color: #ddd; }
+    .link-result .lr-meta { font-size: 11px; color: #555; }
+    .link-result .lr-cohort { font-size: 10px; color: #666; }
+    .link-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .link-btn { padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); border: 1px solid #333; background: #1a1a1a; color: #aaa; }
+    .link-btn:hover { background: #222; }
+    .link-btn.primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); border-color: #6366f1; color: #fff; }
+    .link-btn.primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .link-btn.new-student { border-color: #059669; color: #34d399; background: rgba(5,150,105,0.08); }
+    .link-success { background: #052e16; border: 1px solid #166534; border-radius: 8px; padding: 10px; font-size: 12px; color: #4ade80; margin-top: 10px; }
+    .btn-link { padding: 4px 10px; border-radius: 6px; border: 1px solid #6366f1; background: rgba(99,102,241,0.08); color: #a5b4fc; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); }
+    .btn-link:hover { background: rgba(99,102,241,0.15); }
+
     /* Mobile */
     @media (max-width: 768px) {
       .layout { padding: 20px 16px 60px; }
@@ -481,11 +504,12 @@
     const unmHtml = realAttendees.map(([name, dur], i) => {
       const durStr = dur >= 60 ? `${Math.floor(dur/60)}h${String(dur%60).padStart(2,'0')}` : `${dur}min`;
       const cls = dur >= 60 ? 'badge-green' : 'badge-amber';
+      const safeName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
       return `<tr>
         <td style="width:32px;text-align:center;color:#444">${i+1}</td>
         <td><div class="student-name">${escHtml(name)}</div></td>
         <td><span class="badge ${cls}">${durStr}</span></td>
-        <td style="font-size:11px;color:#555">Buscar em /alunos/ e adicionar alias</td>
+        <td><button class="btn-link" onclick="openLinkModal('${safeName}')">Vincular</button></td>
       </tr>`;
     }).join('');
 
@@ -1381,6 +1405,185 @@
   }
 
   checkAuth();
+</script>
+
+<!-- LINK MODAL -->
+<div class="link-overlay hidden" id="link-modal" onclick="if(event.target===this)closeLinkModal()">
+  <div class="link-box">
+    <div class="link-title" id="link-title">Vincular Participante</div>
+    <div class="link-sub" id="link-sub">Busque o aluno correspondente</div>
+    <input class="link-search" id="link-search" placeholder="Buscar por nome, telefone ou email..." oninput="searchStudentsForLink()">
+    <div id="link-results"></div>
+    <div id="link-feedback"></div>
+    <div class="link-actions">
+      <button class="link-btn" onclick="closeLinkModal()">Cancelar</button>
+      <button class="link-btn new-student" onclick="createAndLink()">Criar novo aluno</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── LINK UNMATCHED PARTICIPANT TO STUDENT ──
+let linkZoomName = '';
+let linkMeetingIds = [];
+let linkClassDate = '';
+let linkSearchCache = [];
+
+function openLinkModal(zoomName) {
+  linkZoomName = zoomName;
+  linkClassDate = document.getElementById('presenca-date-select').value;
+  // Get meeting IDs for this date
+  linkMeetingIds = [];
+  document.getElementById('link-title').textContent = `Vincular: "${zoomName}"`;
+  document.getElementById('link-sub').textContent = `Busque o aluno que usou "${zoomName}" no Zoom`;
+  document.getElementById('link-search').value = '';
+  document.getElementById('link-results').innerHTML = '';
+  document.getElementById('link-feedback').innerHTML = '';
+  document.getElementById('link-modal').classList.remove('hidden');
+  document.getElementById('link-search').focus();
+  // Pre-search with the zoom name
+  document.getElementById('link-search').value = zoomName.split(' ')[0];
+  searchStudentsForLink();
+}
+
+function closeLinkModal() {
+  document.getElementById('link-modal').classList.add('hidden');
+  linkZoomName = '';
+}
+
+async function searchStudentsForLink() {
+  const q = document.getElementById('link-search').value.toLowerCase().trim();
+  if (q.length < 2) {
+    document.getElementById('link-results').innerHTML = '<div style="font-size:12px;color:#333;padding:8px">Digite ao menos 2 caracteres...</div>';
+    return;
+  }
+
+  // Search students
+  const { data: students } = await sb.from('students')
+    .select('id, name, phone, email, cohort_id, cohorts(name), aliases')
+    .eq('active', true)
+    .or(`name.ilike.%${q}%,phone.ilike.%${q}%,email.ilike.%${q}%`)
+    .order('name')
+    .limit(15);
+
+  linkSearchCache = students || [];
+
+  if (!linkSearchCache.length) {
+    document.getElementById('link-results').innerHTML = '<div style="font-size:12px;color:#555;padding:8px">Nenhum aluno encontrado. Use "Criar novo aluno" abaixo.</div>';
+    return;
+  }
+
+  document.getElementById('link-results').innerHTML = linkSearchCache.map(s => {
+    const phone = s.phone && !s.phone.startsWith('pending_') ? s.phone : '';
+    const cohort = s.cohorts?.name || '—';
+    const aliases = (s.aliases || []).length ? ` · Aliases: ${s.aliases.join(', ')}` : '';
+    return `<div class="link-result" onclick="executeLink('${s.id}', '${escHtml(s.name || '')}')">
+      <div style="flex:1">
+        <div class="lr-name">${escHtml(s.name || 'Sem nome')}</div>
+        <div class="lr-meta">${phone ? formatPhoneShort(phone) : 'Sem telefone'}${aliases}</div>
+        <div class="lr-cohort">${cohort}</div>
+      </div>
+      <div style="font-size:11px;color:#6366f1;font-weight:600">Vincular</div>
+    </div>`;
+  }).join('');
+}
+
+function formatPhoneShort(phone) {
+  if (!phone) return '';
+  if (phone.startsWith('55') && phone.length >= 12) {
+    return `+55 (${phone.slice(2,4)}) •••••${phone.slice(-4)}`;
+  }
+  return `+${phone.slice(0, -4)}•••${phone.slice(-4)}`;
+}
+
+async function executeLink(studentId, studentName) {
+  document.getElementById('link-feedback').innerHTML = '<div style="font-size:12px;color:#a5b4fc;padding:8px">Vinculando...</div>';
+
+  // 1. Add zoom name as alias to the student
+  const { data: student } = await sb.from('students').select('aliases').eq('id', studentId).single();
+  const currentAliases = student?.aliases || [];
+  if (!currentAliases.includes(linkZoomName)) {
+    const newAliases = [...currentAliases, linkZoomName];
+    const { error: aliasErr } = await sb.from('students').update({ aliases: newAliases }).eq('id', studentId);
+    if (aliasErr) {
+      document.getElementById('link-feedback').innerHTML = `<div style="color:#f87171;font-size:12px;padding:8px">Erro ao adicionar alias: ${aliasErr.message}</div>`;
+      return;
+    }
+  }
+
+  // 2. Update zoom_participants: set matched=true, student_id for this name in this meeting
+  const { data: meetings } = await sb.from('zoom_meetings')
+    .select('id')
+    .eq('cohort_id', cohortId)
+    .gte('start_time', linkClassDate + 'T00:00:00')
+    .lte('start_time', linkClassDate + 'T23:59:59');
+
+  if (meetings && meetings.length > 0) {
+    const mids = meetings.map(m => m.id);
+    const { error: zpErr } = await sb.from('zoom_participants')
+      .update({ matched: true, student_id: studentId })
+      .in('meeting_id', mids)
+      .eq('participant_name', linkZoomName)
+      .eq('matched', false);
+    if (zpErr) {
+      document.getElementById('link-feedback').innerHTML = `<div style="color:#f87171;font-size:12px;padding:8px">Erro ao vincular participante: ${zpErr.message}</div>`;
+      return;
+    }
+
+    // 3. Add to student_attendance
+    const meetingId = meetings[0].id;
+    // Get max duration for this participant
+    const { data: zpData } = await sb.from('zoom_participants')
+      .select('duration_minutes')
+      .in('meeting_id', mids)
+      .eq('student_id', studentId)
+      .order('duration_minutes', { ascending: false })
+      .limit(1);
+
+    const duration = zpData?.[0]?.duration_minutes || null;
+    await sb.from('student_attendance').upsert({
+      student_id: studentId,
+      class_date: linkClassDate,
+      cohort_id: cohortId,
+      zoom_meeting_id: meetingId,
+      source: 'zoom',
+      duration_minutes: duration,
+    }, { onConflict: 'student_id,class_date,zoom_meeting_id' });
+  }
+
+  document.getElementById('link-feedback').innerHTML = `<div class="link-success">Vinculado! "${linkZoomName}" agora é alias de "${studentName}". Presença registrada.</div>`;
+
+  // Refresh after a pause
+  setTimeout(async () => {
+    closeLinkModal();
+    await loadPresencaForDate(linkClassDate);
+  }, 1500);
+}
+
+async function createAndLink() {
+  if (!linkZoomName) return;
+  document.getElementById('link-feedback').innerHTML = '<div style="font-size:12px;color:#a5b4fc;padding:8px">Criando aluno...</div>';
+
+  // Create a new student with zoom name, in this cohort, no phone (pending)
+  const pendingPhone = 'pending_' + Math.random().toString(36).slice(2, 10);
+  const { data: newStudent, error } = await sb.from('students').insert({
+    name: linkZoomName,
+    phone: pendingPhone,
+    cohort_id: cohortId,
+    aliases: [linkZoomName],
+  }).select('id, name').single();
+
+  if (error || !newStudent) {
+    document.getElementById('link-feedback').innerHTML = `<div style="color:#f87171;font-size:12px;padding:8px">Erro ao criar: ${error?.message || 'Desconhecido'}</div>`;
+    return;
+  }
+
+  // Also insert into student_cohorts
+  await sb.from('student_cohorts').insert({ student_id: newStudent.id, cohort_id: cohortId }).select();
+
+  // Now link the zoom participant
+  await executeLink(newStudent.id, newStudent.name);
+}
 </script>
 </body>
 </html>

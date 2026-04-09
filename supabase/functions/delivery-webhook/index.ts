@@ -60,15 +60,48 @@ async function handleGroupMessage(
   const messageTimestamp = data.messageTimestamp as number | null;
   const sentAt = messageTimestamp ? new Date(messageTimestamp * 1000).toISOString() : new Date().toISOString();
 
-  // Lookup student_id by phone
+  // Lookup student_id by phone (try exact, then normalized variants)
   let studentId: string | null = null;
   if (senderPhone) {
+    // Try exact match first
     const { data: student } = await sb
       .from("students")
       .select("id")
       .eq("phone", senderPhone)
-      .single();
+      .eq("active", true)
+      .limit(1)
+      .maybeSingle();
     studentId = student?.id ?? null;
+
+    // If not found, try common normalizations
+    if (!studentId && senderPhone.length >= 10) {
+      const variants: string[] = [];
+      // Brazilian: add/remove 55 prefix, add/remove 9th digit
+      if (senderPhone.startsWith("55")) {
+        variants.push(senderPhone.slice(2)); // without country code
+        // Toggle 9th digit (55+DD+9XXXX vs 55+DD+XXXX)
+        const ddd = senderPhone.slice(2, 4);
+        const num = senderPhone.slice(4);
+        if (num.length === 9 && num.startsWith("9")) {
+          variants.push("55" + ddd + num.slice(1)); // remove 9th digit
+        } else if (num.length === 8) {
+          variants.push("55" + ddd + "9" + num); // add 9th digit
+        }
+      } else if (senderPhone.length >= 10 && senderPhone.length <= 11) {
+        variants.push("55" + senderPhone); // add country code
+      }
+
+      for (const v of variants) {
+        const { data: vs } = await sb
+          .from("students")
+          .select("id")
+          .eq("phone", v)
+          .eq("active", true)
+          .limit(1)
+          .maybeSingle();
+        if (vs?.id) { studentId = vs.id; break; }
+      }
+    }
   }
 
   // Lookup cohort_id by group JID
