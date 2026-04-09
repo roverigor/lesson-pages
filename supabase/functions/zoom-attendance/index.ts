@@ -639,44 +639,47 @@ serve(async (req: Request) => {
       let inserted = 0;
       let skipped = 0;
 
-      // Build rows for student_attendance
-      const rows = (participants || [])
-        .filter(p => {
-          const meeting = p.zoom_meetings as { id: string; start_time: string; cohort_id: string | null } | null;
-          return meeting?.start_time;
-        })
-        .map(p => {
-          const meeting = p.zoom_meetings as { id: string; start_time: string; cohort_id: string | null };
-          const classDate = meeting.start_time.slice(0, 10); // YYYY-MM-DD
-          return {
+      // Build rows for student_attendance — aggregate SUM of duration per student per meeting
+      type MeetingRef = { id: string; start_time: string; cohort_id: string | null };
+      const aggMap = new Map<string, { student_id: string; class_date: string; cohort_id: string | null; zoom_meeting_id: string; zoom_participant_id: string; duration_minutes: number }>();
+      for (const p of (participants || [])) {
+        const meeting = p.zoom_meetings as MeetingRef | null;
+        if (!meeting?.start_time) continue;
+        const classDate = meeting.start_time.slice(0, 10);
+        const key = `${p.student_id}|${classDate}|${meeting.id}`;
+        const existing = aggMap.get(key);
+        if (existing) {
+          existing.duration_minutes += (p.duration_minutes || 0);
+        } else {
+          aggMap.set(key, {
             student_id: p.student_id,
             class_date: classDate,
             cohort_id: meeting.cohort_id || cohort_id || null,
             zoom_meeting_id: meeting.id,
             zoom_participant_id: p.id,
-            source: "zoom",
-            duration_minutes: p.duration_minutes || null,
-          };
-        });
+            duration_minutes: p.duration_minutes || 0,
+          });
+        }
+      }
+      const rows = [...aggMap.values()].map(r => ({ ...r, source: "zoom" as const }));
 
       // Apply optional cohort filter
       const filteredRows = cohort_id
         ? rows.filter(r => r.cohort_id === cohort_id)
         : rows;
 
-      // Insert in batches of 100 using upsert (ignore conflicts)
+      // Upsert in batches of 100 (updates duration on conflict)
       const batchSize = 100;
       for (let i = 0; i < filteredRows.length; i += batchSize) {
         const batch = filteredRows.slice(i, i + batchSize);
         const { data: insertedData, error: insertErr } = await sb
           .from("student_attendance")
-          .upsert(batch, { onConflict: "student_id,class_date,zoom_meeting_id", ignoreDuplicates: true })
+          .upsert(batch, { onConflict: "student_id,class_date,zoom_meeting_id" })
           .select("id");
 
         if (insertErr) {
           skipped += batch.length;
         } else {
-          // ignoreDuplicates: true — only actually inserted rows are returned
           inserted += insertedData?.length || 0;
           skipped += batch.length - (insertedData?.length || 0);
         }
@@ -1383,18 +1386,22 @@ serve(async (req: Request) => {
       }
 
       // ── Auto-transfer matched participants to student_attendance ──
+      // Aggregate: SUM duration_minutes per student (they may join/leave multiple times)
       let attendanceInserted = 0;
       const classDate = (details?.start_time || instance.start_time || "").slice(0, 10);
       if (classDate) {
-        const attendanceRows = participantRows
-          .filter(p => p.student_id)
-          .map(p => ({
-            student_id: p.student_id!,
+        const durationMap = new Map<string, number>();
+        for (const p of participantRows) {
+          if (!p.student_id) continue;
+          durationMap.set(p.student_id, (durationMap.get(p.student_id) || 0) + (p.duration_minutes || 0));
+        }
+        const attendanceRows = [...durationMap.entries()].map(([sid, totalMin]) => ({
+            student_id: sid,
             class_date: classDate,
             cohort_id: resolvedCohortId || null,
             zoom_meeting_id: meeting.id,
             source: "zoom" as const,
-            duration_minutes: p.duration_minutes,
+            duration_minutes: totalMin,
           }));
 
         // Need participant IDs — fetch them after insert
@@ -1425,7 +1432,7 @@ serve(async (req: Request) => {
             const batch = finalRows.slice(i, i + batchSize);
             const { data: inserted } = await sb
               .from("student_attendance")
-              .upsert(batch, { onConflict: "student_id,class_date,zoom_meeting_id", ignoreDuplicates: true })
+              .upsert(batch, { onConflict: "student_id,class_date,zoom_meeting_id" })
               .select("id");
             attendanceInserted += inserted?.length || 0;
           }
