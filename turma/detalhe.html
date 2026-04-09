@@ -180,6 +180,7 @@
       <span id="presenca-count" style="font-size:12px;color:#666"></span>
     </div>
     <div id="presenca-content"><div class="spinner"></div></div>
+    <div id="presenca-match-rate" style="margin-top:16px"></div>
     <div id="presenca-unmatched" style="margin-top:24px"></div>
     <div id="presenca-dispatch" style="margin-top:24px"></div>
   </div>
@@ -463,6 +464,8 @@
   }
 
   async function loadUnmatchedForDate(classDate) {
+    document.getElementById('presenca-match-rate').innerHTML = '';
+
     // Find zoom_meetings for this date that belong to this cohort
     const { data: meetings } = await sb.from('zoom_meetings')
       .select('id, topic, participants_count')
@@ -476,18 +479,49 @@
     }
 
     const meetingIds = meetings.map(m => m.id);
-    const { data: unmatched } = await sb.from('zoom_participants')
-      .select('participant_name, duration_minutes')
-      .in('meeting_id', meetingIds)
-      .eq('matched', false)
-      .order('duration_minutes', { ascending: false });
+
+    // Fetch ALL participants (matched + unmatched) to calculate rate
+    const { data: allParticipants } = await sb.from('zoom_participants')
+      .select('participant_name, duration_minutes, matched')
+      .in('meeting_id', meetingIds);
+
+    // Dedup all participants by name, sum durations
+    const allByName = {};
+    (allParticipants || []).forEach(p => {
+      const name = (p.participant_name || '?').trim();
+      if (!allByName[name]) allByName[name] = { dur: 0, matched: p.matched };
+      allByName[name].dur += (p.duration_minutes || 0);
+      if (p.matched) allByName[name].matched = true;
+    });
+    const allReal = Object.entries(allByName).filter(([, v]) => v.dur >= 15);
+    const totalReal = allReal.length;
+    const matchedReal = allReal.filter(([, v]) => v.matched).length;
+    const unmatchedReal = totalReal - matchedReal;
+    const rate = totalReal > 0 ? Math.round((matchedReal / totalReal) * 100) : 0;
+
+    // Show matching rate bar
+    const barColor = rate >= 90 ? '#22c55e' : rate >= 70 ? '#f59e0b' : '#ef4444';
+    document.getElementById('presenca-match-rate').innerHTML = `
+      <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:600;color:#ccc">Taxa de Matching</span>
+          <span style="font-size:20px;font-weight:800;color:${barColor}">${rate}%</span>
+          <span style="font-size:12px;color:#555">${matchedReal} de ${totalReal} participantes vinculados</span>
+        </div>
+        <div style="background:#222;border-radius:6px;height:8px;overflow:hidden">
+          <div style="background:${barColor};height:100%;width:${rate}%;border-radius:6px;transition:width 0.4s ease"></div>
+        </div>
+      </div>`;
+
+    // Filter unmatched only
+    const unmatched = (allParticipants || []).filter(p => !p.matched);
 
     if (!unmatched || unmatched.length === 0) {
       document.getElementById('presenca-unmatched').innerHTML = '';
       return;
     }
 
-    // Dedup by name, sum durations
+    // Dedup unmatched by name, sum durations
     const byName = {};
     unmatched.forEach(p => {
       const name = (p.participant_name || '?').trim();
