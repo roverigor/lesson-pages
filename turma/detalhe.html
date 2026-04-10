@@ -220,6 +220,11 @@
   <!-- Tab: Avaliações -->
   <div id="tab-avaliacoes" style="display:none">
     <div class="section-title">Pesquisas NPS / CSAT desta turma</div>
+    <!-- Survey selector -->
+    <div style="margin-bottom:16px">
+      <select id="survey-selector" onchange="loadSurveyDashboard(this.value)" style="padding:8px 12px;border-radius:8px;border:1px solid #333;background:#1a1a2e;color:#ddd;font-size:14px;min-width:280px"></select>
+    </div>
+    <!-- Dashboard area -->
     <div id="avaliacoes-content"><div class="spinner"></div></div>
   </div>
 
@@ -831,12 +836,13 @@
   }
 
   // ─── TAB: Avaliações ──────────────────────────────
+  let _allSurveys = [];
+
   async function loadAvaliacoesTab() {
     const el = document.getElementById('avaliacoes-content');
+    const sel = document.getElementById('survey-selector');
     try {
       const classIds = await getLinkedClassIds();
-
-      // Surveys by cohort OR class
       const queries = [
         sb.from('surveys').select('id, name, type, status, dispatched_at').eq('cohort_id', cohortId).order('created_at', { ascending: false }).limit(20),
       ];
@@ -845,51 +851,163 @@
           sb.from('surveys').select('id, name, type, status, dispatched_at').in('class_id', classIds).order('created_at', { ascending: false }).limit(20)
         );
       }
-
       const results = await Promise.all(queries);
       const seen = new Set();
-      const surveys = [];
+      _allSurveys = [];
       for (const r of results) {
         for (const s of (r.data || [])) {
-          if (!seen.has(s.id)) { seen.add(s.id); surveys.push(s); }
+          if (!seen.has(s.id)) { seen.add(s.id); _allSurveys.push(s); }
+        }
+      }
+      if (!_allSurveys.length) { sel.style.display = 'none'; el.innerHTML = '<div class="empty">Nenhuma avaliação encontrada.</div>'; return; }
+
+      sel.innerHTML = _allSurveys.map(s => '<option value="' + s.id + '">' + escHtml(s.name) + '</option>').join('');
+      loadSurveyDashboard(_allSurveys[0].id);
+    } catch (err) { el.innerHTML = '<div class="empty">Erro ao carregar avaliações.</div>'; }
+  }
+
+  async function loadSurveyDashboard(surveyId) {
+    const el = document.getElementById('avaliacoes-content');
+    el.innerHTML = '<div class="spinner"></div>';
+    const survey = _allSurveys.find(s => s.id === surveyId);
+    if (!survey) { el.innerHTML = '<div class="empty">Pesquisa não encontrada.</div>'; return; }
+
+    try {
+      const [qRes, rRes, lRes] = await Promise.all([
+        sb.from('survey_questions').select('id, position, type, label, scale_max, options').eq('survey_id', surveyId).order('position'),
+        sb.from('survey_responses').select('id, student_id, submitted_at').eq('survey_id', surveyId),
+        sb.from('survey_links').select('id').eq('survey_id', surveyId),
+      ]);
+      const questions = qRes.data || [];
+      const responses = rRes.data || [];
+      const totalLinks = (lRes.data || []).length;
+      const responseIds = responses.map(r => r.id);
+
+      let answers = [];
+      if (responseIds.length) {
+        // Fetch in batches of 50
+        for (let i = 0; i < responseIds.length; i += 50) {
+          const batch = responseIds.slice(i, i + 50);
+          const { data } = await sb.from('survey_answers').select('response_id, question_id, value_text, value_number, value_options').in('response_id', batch);
+          if (data) answers = answers.concat(data);
         }
       }
 
-      if (!surveys.length) { el.innerHTML = '<div class="empty">Nenhuma avaliação encontrada.</div>'; return; }
-
-      const surveyIds = surveys.map(s => s.id);
-      const { data: responses } = await sb
-        .from('survey_responses')
-        .select('survey_id, score')
-        .in('survey_id', surveyIds);
-
-      const byS = {};
-      (responses || []).forEach(r => {
-        if (!byS[r.survey_id]) byS[r.survey_id] = { count: 0, total: 0 };
-        byS[r.survey_id].count++;
-        if (r.score !== null && r.score !== undefined) byS[r.survey_id].total += r.score;
+      // Group answers by question
+      const byQ = {};
+      answers.forEach(a => {
+        if (!byQ[a.question_id]) byQ[a.question_id] = [];
+        byQ[a.question_id].push(a);
       });
 
-      const rows = surveys.map(s => {
-        const stats = byS[s.id] || { count: 0, total: 0 };
-        const avg = stats.count > 0 ? (stats.total / stats.count).toFixed(1) : '—';
-        const date = s.dispatched_at ? new Date(s.dispatched_at).toLocaleDateString('pt-BR') : '—';
-        const typeBadge = s.type === 'nps'
-          ? '<span class="badge" style="background:rgba(99,102,241,0.12);color:#a5b4fc">NPS</span>'
-          : '<span class="badge badge-amber">CSAT</span>';
-        const statusClr = s.status === 'active' ? 'color:#4ade80' : s.status === 'closed' ? 'color:#f87171' : 'color:#555';
-        return '<tr>' +
-          '<td style="color:#ddd;font-weight:600">' + escHtml(s.name) + '</td>' +
-          '<td>' + typeBadge + '</td>' +
-          '<td style="' + statusClr + '">' + escHtml(s.status) + '</td>' +
-          '<td style="text-align:center;color:#a5b4fc;font-weight:700">' + stats.count + '</td>' +
-          '<td style="text-align:center;color:#facc15;font-weight:700">' + avg + '</td>' +
-          '<td>' + date + '</td>' +
-        '</tr>';
-      }).join('');
+      // --- Build dashboard ---
+      let html = '';
 
-      el.innerHTML = '<table><thead><tr><th>Nome</th><th>Tipo</th><th>Status</th><th style="text-align:center">Respostas</th><th style="text-align:center">Score</th><th>Enviado</th></tr></thead><tbody>' + rows + '</tbody></table>';
-    } catch (err) { el.innerHTML = '<div class="empty">Erro ao carregar avaliações.</div>'; }
+      // Summary cards
+      const responseRate = totalLinks > 0 ? Math.round(responses.length / totalLinks * 100) : 0;
+      const npsQ = questions.find(q => q.type === 'nps');
+      const csatQ = questions.find(q => q.type === 'csat');
+
+      let npsScore = null, csatAvg = null;
+      if (npsQ && byQ[npsQ.id]) {
+        const vals = byQ[npsQ.id].map(a => a.value_number).filter(v => v !== null);
+        if (vals.length) {
+          const promoters = vals.filter(v => v >= 9).length;
+          const detractors = vals.filter(v => v <= 6).length;
+          npsScore = Math.round((promoters - detractors) / vals.length * 100);
+        }
+      }
+      if (csatQ && byQ[csatQ.id]) {
+        const vals = byQ[csatQ.id].map(a => a.value_number).filter(v => v !== null);
+        if (vals.length) csatAvg = (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1);
+      }
+
+      const npsClr = npsScore === null ? '#555' : npsScore >= 50 ? '#4ade80' : npsScore >= 0 ? '#facc15' : '#f87171';
+      const csatClr = csatAvg === null ? '#555' : parseFloat(csatAvg) >= 4 ? '#4ade80' : parseFloat(csatAvg) >= 3 ? '#facc15' : '#f87171';
+
+      html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px">';
+      html += '<div class="stat-card"><div class="stat-num" style="color:#a5b4fc">' + responses.length + '/' + totalLinks + '</div><div class="stat-label">Respostas (' + responseRate + '%)</div></div>';
+      if (csatAvg !== null) html += '<div class="stat-card"><div class="stat-num" style="color:' + csatClr + '">' + csatAvg + '/5</div><div class="stat-label">CSAT Médio</div></div>';
+      if (npsScore !== null) html += '<div class="stat-card"><div class="stat-num" style="color:' + npsClr + '">' + npsScore + '</div><div class="stat-label">NPS Score</div></div>';
+      html += '</div>';
+
+      // Per-question breakdown
+      questions.forEach(q => {
+        const qAnswers = byQ[q.id] || [];
+        html += '<div style="background:#12122b;border:1px solid #222;border-radius:12px;padding:20px;margin-bottom:16px">';
+        html += '<div style="font-weight:700;color:#ddd;margin-bottom:12px;font-size:14px">' + escHtml(q.label) + '</div>';
+
+        if (q.type === 'nps') {
+          // NPS distribution bar
+          const vals = qAnswers.map(a => a.value_number).filter(v => v !== null);
+          const promoters = vals.filter(v => v >= 9).length;
+          const passives = vals.filter(v => v >= 7 && v <= 8).length;
+          const detractors = vals.filter(v => v <= 6).length;
+          const total = vals.length || 1;
+
+          html += '<div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">';
+          html += '<span style="color:#4ade80;font-weight:700">Promotores (9-10): ' + promoters + ' (' + Math.round(promoters/total*100) + '%)</span>';
+          html += '<span style="color:#facc15;font-weight:700">Neutros (7-8): ' + passives + ' (' + Math.round(passives/total*100) + '%)</span>';
+          html += '<span style="color:#f87171;font-weight:700">Detratores (0-6): ' + detractors + ' (' + Math.round(detractors/total*100) + '%)</span>';
+          html += '</div>';
+
+          // Horizontal stacked bar
+          html += '<div style="display:flex;height:28px;border-radius:8px;overflow:hidden;background:#1a1a2e">';
+          if (promoters) html += '<div style="width:' + (promoters/total*100) + '%;background:#4ade80;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000">' + promoters + '</div>';
+          if (passives) html += '<div style="width:' + (passives/total*100) + '%;background:#facc15;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000">' + passives + '</div>';
+          if (detractors) html += '<div style="width:' + (detractors/total*100) + '%;background:#f87171;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#000">' + detractors + '</div>';
+          html += '</div>';
+
+          // Score distribution 0-10
+          html += '<div style="display:flex;gap:4px;margin-top:12px;align-items:flex-end;height:60px">';
+          for (let i = 0; i <= 10; i++) {
+            const cnt = vals.filter(v => v === i).length;
+            const h = cnt > 0 ? Math.max(20, cnt / Math.max(...Array.from({length:11}, (_,j) => vals.filter(v=>v===j).length).filter(x=>x>0)) * 60) : 4;
+            const clr = i >= 9 ? '#4ade80' : i >= 7 ? '#facc15' : '#f87171';
+            html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">';
+            html += '<div style="font-size:10px;color:#888;font-weight:700">' + (cnt || '') + '</div>';
+            html += '<div style="width:100%;height:' + h + 'px;background:' + clr + ';border-radius:4px;opacity:' + (cnt > 0 ? 1 : 0.15) + '"></div>';
+            html += '<div style="font-size:10px;color:#666">' + i + '</div>';
+            html += '</div>';
+          }
+          html += '</div>';
+
+        } else if (q.type === 'csat') {
+          // CSAT star distribution
+          const vals = qAnswers.map(a => a.value_number).filter(v => v !== null);
+          const avg = vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1) : '—';
+          html += '<div style="font-size:24px;font-weight:800;color:' + csatClr + ';margin-bottom:8px">' + avg + ' / 5 <span style="font-size:13px;color:#888">(' + vals.length + ' respostas)</span></div>';
+
+          html += '<div style="display:flex;flex-direction:column;gap:6px">';
+          for (let star = 5; star >= 1; star--) {
+            const cnt = vals.filter(v => v === star).length;
+            const pct = vals.length ? cnt / vals.length * 100 : 0;
+            html += '<div style="display:flex;align-items:center;gap:8px">';
+            html += '<span style="width:20px;text-align:right;font-size:13px;color:#facc15;font-weight:700">' + star + '★</span>';
+            html += '<div style="flex:1;height:16px;background:#1a1a2e;border-radius:6px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#facc15,#f59e0b);border-radius:6px;transition:width .3s"></div></div>';
+            html += '<span style="width:50px;font-size:12px;color:#888">' + cnt + ' (' + Math.round(pct) + '%)</span>';
+            html += '</div>';
+          }
+          html += '</div>';
+
+        } else if (q.type === 'text') {
+          // Text feedback cards
+          const texts = qAnswers.map(a => a.value_text).filter(Boolean);
+          if (!texts.length) { html += '<div style="color:#666;font-size:13px">Nenhuma resposta de texto.</div>'; }
+          else {
+            html += '<div style="display:flex;flex-direction:column;gap:8px">';
+            texts.forEach(t => {
+              html += '<div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:8px;padding:12px;color:#ccc;font-size:13px;line-height:1.5">"' + escHtml(t) + '"</div>';
+            });
+            html += '</div>';
+          }
+        }
+
+        html += '</div>'; // close question card
+      });
+
+      el.innerHTML = html;
+    } catch (err) { el.innerHTML = '<div class="empty">Erro ao carregar dashboard: ' + escHtml(err.message) + '</div>'; }
   }
 
   // ─── TAB: Fontes (Cross-reference) ─────────────
