@@ -143,7 +143,9 @@
 <div class="layout" id="app-content" style="display:none">
   <!-- Stats -->
   <div class="stats-row" id="stats-row">
-    <div class="stat-card"><div class="stat-num" id="st-alunos">—</div><div class="stat-label">Alunos</div></div>
+    <div class="stat-card"><div class="stat-num" id="st-total">—</div><div class="stat-label">Alunos Totais</div></div>
+    <div class="stat-card"><div class="stat-num green" id="st-ativos">—</div><div class="stat-label">Alunos Ativos</div></div>
+    <div class="stat-card"><div class="stat-num red" id="st-inativos">—</div><div class="stat-label">Inativos</div></div>
     <div class="stat-card"><div class="stat-num" id="st-pct" class="green">—</div><div class="stat-label">% Presença Média</div></div>
     <div class="stat-card"><div class="stat-num" id="st-wa">—</div><div class="stat-label">Ativos no WA</div></div>
     <div class="stat-card"><div class="stat-num" id="st-aulas">—</div><div class="stat-label">Aulas Registradas</div></div>
@@ -310,10 +312,11 @@
   }
 
   async function loadAll() {
-    const [cohortRes, summaryRes, waRes] = await Promise.all([
+    const [cohortRes, summaryRes, waRes, allStudentsRes] = await Promise.all([
       sb.from('cohorts').select('id, name').eq('id', cohortId).single(),
       sb.rpc('get_attendance_summary', { p_cohort_id: cohortId }),
       sb.from('whatsapp_group_messages').select('student_id, sent_at').eq('cohort_id', cohortId),
+      sb.from('students').select('id, active').eq('cohort_id', cohortId),
     ]);
 
     const cohort = cohortRes.data;
@@ -323,19 +326,27 @@
     const summary = summaryRes.data ?? [];
     allStudents = summary;
 
+    // Student counts (total, active, inactive)
+    const allStds = allStudentsRes.data ?? [];
+    const totalStudents = allStds.length;
+    const activeStudents = allStds.filter(s => s.active === null || s.active === true).length;
+    const inactiveStudents = totalStudents - activeStudents;
+
     // Stats
     const avgPct = summary.length ? Math.round(summary.reduce((a, s) => a + parseFloat(s.presence_pct ?? 0), 0) / summary.length) : 0;
     const waMessages = waRes.data ?? [];
     const waStudentIds = new Set(waMessages.map(m => m.student_id).filter(Boolean));
     const totalAulas = summary[0]?.total_classes ?? 0;
 
-    document.getElementById('st-alunos').textContent = summary.length;
+    document.getElementById('st-total').textContent = totalStudents;
+    document.getElementById('st-ativos').textContent = activeStudents;
+    document.getElementById('st-inativos').textContent = inactiveStudents;
     const pctEl = document.getElementById('st-pct');
     pctEl.textContent = avgPct + '%';
     pctEl.className = 'stat-num ' + (avgPct >= 80 ? 'green' : avgPct >= 60 ? 'amber' : 'red');
     document.getElementById('st-wa').textContent = waStudentIds.size;
     document.getElementById('st-aulas').textContent = totalAulas;
-    document.getElementById('turma-sub-header').textContent = summary.length + ' alunos · ' + totalAulas + ' aulas';
+    document.getElementById('turma-sub-header').textContent = totalStudents + ' alunos (' + activeStudents + ' ativos) · ' + totalAulas + ' aulas';
 
     // WA days per student
     const waDays = {};
