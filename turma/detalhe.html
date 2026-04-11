@@ -143,9 +143,8 @@
 <div class="layout" id="app-content" style="display:none">
   <!-- Stats -->
   <div class="stats-row" id="stats-row">
-    <div class="stat-card"><div class="stat-num" id="st-total">—</div><div class="stat-label">Compradores (CSV)</div></div>
-    <div class="stat-card"><div class="stat-num green" id="st-ativos">—</div><div class="stat-label">Cadastrados</div></div>
-    <div class="stat-card"><div class="stat-num" id="st-upgrades" style="display:none">—</div><div class="stat-label">Upgrades</div></div>
+    <div class="stat-card"><div class="stat-num" id="st-total">—</div><div class="stat-label">Alunos (CSV)</div></div>
+    <div class="stat-card" id="st-upgrades-card" style="display:none"><div class="stat-num" id="st-upgrades">—</div><div class="stat-label">Upgrades</div></div>
     <div class="stat-card"><div class="stat-num" id="st-pct" class="green">—</div><div class="stat-label">% Presença Média</div></div>
     <div class="stat-card"><div class="stat-num" id="st-wa">—</div><div class="stat-label">Ativos no WA</div></div>
     <div class="stat-card"><div class="stat-num" id="st-aulas">—</div><div class="stat-label">Aulas Registradas</div></div>
@@ -340,7 +339,6 @@
     const allStds = allStudentsRes.data ?? [];
     const csvImports = csvStatsRes.data ?? [];
     const totalCSV = csvImports.length;
-    const totalCadastrados = allStds.filter(s => s.active === null || s.active === true).length;
     const totalUpgrades = csvImports.filter(c => c.upgrade).length;
 
     // Stats
@@ -349,20 +347,18 @@
     const waStudentIds = new Set(waMessages.map(m => m.student_id).filter(Boolean));
     const totalAulas = summary[0]?.total_classes ?? 0;
 
-    document.getElementById('st-total').textContent = totalCSV || allStds.length;
-    document.getElementById('st-ativos').textContent = totalCadastrados;
+    const totalAlunos = totalCSV || allStds.length;
+    document.getElementById('st-total').textContent = totalAlunos;
     if (totalUpgrades) {
-      const upEl = document.getElementById('st-upgrades');
-      upEl.textContent = totalUpgrades;
-      upEl.style.display = '';
-      upEl.parentElement.style.display = '';
+      document.getElementById('st-upgrades').textContent = totalUpgrades;
+      document.getElementById('st-upgrades-card').style.display = '';
     }
     const pctEl = document.getElementById('st-pct');
     pctEl.textContent = avgPct + '%';
     pctEl.className = 'stat-num ' + (avgPct >= 80 ? 'green' : avgPct >= 60 ? 'amber' : 'red');
     document.getElementById('st-wa').textContent = waStudentIds.size;
     document.getElementById('st-aulas').textContent = totalAulas;
-    document.getElementById('turma-sub-header').textContent = (totalCSV || allStds.length) + ' compradores · ' + totalCadastrados + ' cadastrados · ' + totalAulas + ' aulas';
+    document.getElementById('turma-sub-header').textContent = totalAlunos + ' alunos · ' + totalAulas + ' aulas';
 
     // WA days per student
     const waDays = {};
