@@ -240,14 +240,14 @@
       <button class="btn-sm" style="padding:8px 16px;font-size:12px" onclick="loadFontesTab()">🔄 Atualizar</button>
       <select id="fontes-filter" onchange="filterFontes()" style="background:#111;border:1px solid #222;color:#ddd;padding:8px 12px;border-radius:8px;font-size:12px;font-family:var(--font-sans)">
         <option value="all">Todos</option>
-        <option value="alunos">Apenas alunos</option>
-        <option value="gaps">Alunos com lacunas</option>
+        <option value="alunos">Alunos (CSV)</option>
+        <option value="gaps">Com lacunas</option>
         <option value="equipe">Equipe</option>
         <option value="desconhecidos">Desconhecidos</option>
-        <option value="csv-only">Só no CSV</option>
-        <option value="wa-only">Só no WhatsApp</option>
-        <option value="zoom-only">Só no Zoom</option>
-        <option value="upgrades">Com upgrade</option>
+        <option value="csv-only">Só no CSV (sem WA/Zoom)</option>
+        <option value="wa-only">No WhatsApp</option>
+        <option value="zoom-only">No Zoom</option>
+        <option value="upgrades">Upgrades</option>
       </select>
     </div>
     <div id="fontes-summary" style="margin-bottom:16px"></div>
@@ -1228,40 +1228,28 @@
     const totalEquipe = rows.filter(r => r.tipo === 'equipe').length;
     const totalDesconhecidos = rows.filter(r => r.tipo === 'desconhecido').length;
 
+    const cardStyle = 'background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center;cursor:pointer;transition:border-color .2s';
+    const activeFilter = filter;
+    function card(value, count, label, color, borderColor) {
+      const isActive = activeFilter === value;
+      const border = isActive ? 'border-color:' + color : (borderColor ? 'border-color:' + borderColor : '');
+      const opacity = isActive ? 'opacity:1' : '';
+      return `<div style="${cardStyle};${border};${opacity}" onclick="document.getElementById('fontes-filter').value='${value}';filterFontes()" title="Filtrar: ${label}">
+        <div style="font-size:20px;font-weight:800;color:${color}">${count}</div>
+        <div style="font-size:10px;color:${isActive ? '#aaa' : '#555'}">${label}</div>
+      </div>`;
+    }
+
     sumEl.innerHTML = `
       <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:#a5b4fc">${totalCSV}</div>
-          <div style="font-size:10px;color:#555">Alunos (CSV)</div>
-        </div>
-        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:#22c55e">${hasWA ? totalWA : '—'}</div>
-          <div style="font-size:10px;color:#555">WhatsApp</div>
-        </div>
-        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:#facc15">${totalZoom}</div>
-          <div style="font-size:10px;color:#555">Zoom</div>
-        </div>
-        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:${totalComplete === totalCSV ? '#4ade80' : '#f59e0b'}">${totalComplete}</div>
-          <div style="font-size:10px;color:#555">Match completo</div>
-        </div>
-        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:${gapsList.length ? '#f87171' : '#4ade80'}">${gapsList.length}</div>
-          <div style="font-size:10px;color:#555">Com lacunas</div>
-        </div>
-        ${totalEquipe ? `<div style="background:#101010;border:1px solid #38bdf830;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:#38bdf8">${totalEquipe}</div>
-          <div style="font-size:10px;color:#555">Equipe</div>
-        </div>` : ''}
-        ${totalDesconhecidos ? `<div style="background:#101010;border:1px solid #ef444430;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:#f87171">${totalDesconhecidos}</div>
-          <div style="font-size:10px;color:#555">Desconhecidos</div>
-        </div>` : ''}
-        ${totalUpgradesSum ? `<div style="background:#101010;border:1px solid #8b5cf630;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:#a78bfa">${totalUpgradesSum}</div>
-          <div style="font-size:10px;color:#555">Upgrades</div>
-        </div>` : ''}
+        ${card('alunos', totalCSV, 'Alunos (CSV)', '#a5b4fc')}
+        ${card('wa-only', hasWA ? totalWA : '—', 'WhatsApp', '#22c55e')}
+        ${card('zoom-only', totalZoom, 'Zoom', '#facc15')}
+        ${card('all', totalComplete, 'Match completo', totalComplete === totalCSV ? '#4ade80' : '#f59e0b')}
+        ${card('gaps', gapsList.length, 'Com lacunas', gapsList.length ? '#f87171' : '#4ade80')}
+        ${totalEquipe ? card('equipe', totalEquipe, 'Equipe', '#38bdf8', '#38bdf830') : ''}
+        ${totalDesconhecidos ? card('desconhecidos', totalDesconhecidos, 'Desconhecidos', '#f87171', '#ef444430') : ''}
+        ${totalUpgradesSum ? card('upgrades', totalUpgradesSum, 'Upgrades', '#a78bfa', '#8b5cf630') : ''}
       </div>`;
 
     // Filter
@@ -1270,8 +1258,8 @@
     else if (filter === 'equipe') rows = rows.filter(r => r.tipo === 'equipe');
     else if (filter === 'desconhecidos') rows = rows.filter(r => r.tipo === 'desconhecido');
     else if (filter === 'csv-only') rows = rows.filter(r => r.csv && !r.wa && !r.zoom);
-    else if (filter === 'wa-only') rows = rows.filter(r => r.wa && !r.csv);
-    else if (filter === 'zoom-only') rows = rows.filter(r => r.zoom && !r.csv);
+    else if (filter === 'wa-only') rows = rows.filter(r => r.wa);
+    else if (filter === 'zoom-only') rows = rows.filter(r => r.zoom);
     else if (filter === 'upgrades') rows = rows.filter(r => r.upgrade);
 
     rows.sort((a, b) => {
