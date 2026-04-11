@@ -1072,12 +1072,12 @@
       });
       fontesData.zoom = [...zoomMap.values()];
 
-      // Extract unique mentor names (lowercase for matching)
+      // Extract unique mentor names for team matching
       const mentorSet = new Set();
       const mentorRaw = classIds.length && results[3] ? (results[3].data || []) : [];
       mentorRaw.forEach(cm => {
         const name = cm.mentors?.name;
-        if (name) mentorSet.add(name.toLowerCase().trim());
+        if (name) mentorSet.add(name.trim());
       });
       fontesData.mentorNames = [...mentorSet];
 
@@ -1089,6 +1089,31 @@
 
   function normalizePhone(ph) {
     return (ph || '').replace(/\D/g, '');
+  }
+
+  function normalizeName(name) {
+    return (name || '').toLowerCase().trim()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove accents
+      .replace(/[★☆●◆■□▲△▼▽♦♣♠♥❤✦✧✩✪✫✬✭✮✯✰⭐️]/g, '') // remove decorative chars
+      .replace(/\s+/g, ' ').trim();
+  }
+
+  function nameTokens(name) {
+    return normalizeName(name).split(' ').filter(t => t.length > 1);
+  }
+
+  function nameMatch(a, b) {
+    const tokA = nameTokens(a);
+    const tokB = nameTokens(b);
+    if (!tokA.length || !tokB.length) return false;
+    // First token (first name) must match
+    if (tokA[0] !== tokB[0]) return false;
+    // If both have last name, it must match too
+    if (tokA.length > 1 && tokB.length > 1) {
+      return tokA[tokA.length - 1] === tokB[tokB.length - 1];
+    }
+    // Single name matched first token — accept
+    return true;
   }
 
   function renderFontes() {
@@ -1145,10 +1170,11 @@
       }
     });
 
-    // 3. Zoom participants
+    // 3. Zoom participants (match by email, then by normalized name)
     zoom.forEach(z => {
       const emailKey = (z.email || '').toLowerCase().trim();
       let matched = false;
+      // Try email match first
       if (emailKey) {
         for (const [, entry] of unified) {
           if (entry.email && entry.email.toLowerCase().trim() === emailKey) {
@@ -1158,10 +1184,10 @@
           }
         }
       }
+      // Try name match (first+last name, accent-insensitive)
       if (!matched && z.name) {
-        const zName = z.name.toLowerCase().trim();
         for (const [, entry] of unified) {
-          if (entry.name && entry.name.toLowerCase().trim().includes(zName)) {
+          if (entry.name && nameMatch(z.name, entry.name)) {
             entry.zoom = true;
             if (z.email && !entry.email) entry.email = z.email;
             matched = true;
@@ -1183,8 +1209,7 @@
       if (r.csv) {
         r.tipo = 'aluno';
       } else {
-        const nameLower = (r.name || '').toLowerCase().trim();
-        const isTeam = mentorNames.some(mn => nameLower.includes(mn) || mn.includes(nameLower));
+        const isTeam = mentorNames.some(mn => nameMatch(r.name, mn));
         r.tipo = isTeam ? 'equipe' : 'desconhecido';
       }
     }
