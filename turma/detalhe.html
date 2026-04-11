@@ -244,6 +244,7 @@
         <option value="csv-only">Só no CSV</option>
         <option value="wa-only">Só no WhatsApp</option>
         <option value="zoom-only">Só no Zoom</option>
+        <option value="upgrades">Com upgrade</option>
       </select>
     </div>
     <div id="fontes-summary" style="margin-bottom:16px"></div>
@@ -1079,7 +1080,7 @@
     function getOrCreate(key, name) {
       if (!key) return null;
       if (!unified.has(key)) {
-        unified.set(key, { key, name: name || '', phone: '', email: '', csv: false, wa: false, zoom: false, student: false, student_id: null });
+        unified.set(key, { key, name: name || '', phone: '', email: '', csv: false, wa: false, zoom: false, student: false, student_id: null, upgrade: null });
       }
       return unified.get(key);
     }
@@ -1106,6 +1107,7 @@
       if (!entry.name) entry.name = c.name;
       if (c.phone && !entry.phone) entry.phone = c.phone;
       if (c.email && !entry.email) entry.email = c.email;
+      if (c.upgrade) entry.upgrade = c.upgrade;
     });
 
     // Zoom participants
@@ -1151,6 +1153,7 @@
     const totalStudents = rows.filter(r => r.student).length;
     const totalAll3 = rows.filter(r => r.csv && r.student && r.zoom).length;
     const gaps = rows.filter(r => !(r.csv && r.student && r.zoom));
+    const totalUpgradesSum = rows.filter(r => r.upgrade).length;
 
     sumEl.innerHTML = `
       <div style="display:flex;gap:12px;flex-wrap:wrap">
@@ -1174,6 +1177,10 @@
           <div style="font-size:20px;font-weight:800;color:${gaps.length ? '#f87171' : '#4ade80'}">${gaps.length}</div>
           <div style="font-size:10px;color:#555">Com lacunas</div>
         </div>
+        ${totalUpgradesSum ? `<div style="background:#101010;border:1px solid #8b5cf630;border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:#a78bfa">${totalUpgradesSum}</div>
+          <div style="font-size:10px;color:#555">Upgrades</div>
+        </div>` : ''}
       </div>`;
 
     // Filter
@@ -1181,6 +1188,7 @@
     else if (filter === 'csv-only') rows = rows.filter(r => r.csv && !r.student);
     else if (filter === 'wa-only') rows = rows.filter(r => r.wa && !r.student);
     else if (filter === 'zoom-only') rows = rows.filter(r => r.zoom && !r.student);
+    else if (filter === 'upgrades') rows = rows.filter(r => r.upgrade);
 
     rows.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
@@ -1192,8 +1200,11 @@
       const maskedPhone = r.phone
         ? (r.phone.length > 6 ? r.phone.slice(0, -4).replace(/\d/g, '•') + r.phone.slice(-4) : r.phone)
         : '<span style="color:#555">—</span>';
+      const upgradeBadge = r.upgrade
+        ? '<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#8b5cf615;border:1px solid #8b5cf630;color:#a78bfa;white-space:nowrap">' + escHtml(r.upgrade) + '</span>'
+        : '';
       return `<tr class="fontes-row" data-csv="${r.csv}" data-wa="${r.wa}" data-zoom="${r.zoom}" data-student="${r.student}">
-        <td><div class="student-name">${escHtml(r.name || '?')}</div></td>
+        <td><div class="student-name" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${escHtml(r.name || '?')} ${upgradeBadge}</div></td>
         <td style="font-size:12px;color:#666">${maskedPhone}</td>
         <td style="font-size:12px;color:#666">${escHtml(r.email || '—')}</td>
         <td style="text-align:center">${dot(r.csv)}</td>
@@ -1202,6 +1213,8 @@
         <td>${r.student_id ? '<a class="btn-sm" href="../aluno/perfil.html?id=' + r.student_id + '">Perfil</a>' : ''}</td>
       </tr>`;
     }).join('');
+
+    const totalUpgrades = rows.filter(r => r.upgrade).length;
 
     el.innerHTML = rows.length > 0
       ? `<table>
@@ -1215,7 +1228,7 @@
             <th>Ação</th>
           </tr></thead>
           <tbody>${tableRows}</tbody>
-        </table>`
+        </table>` + (totalUpgrades ? `<div style="margin-top:12px;font-size:12px;color:#a78bfa">↑ ${totalUpgrades} aluno(s) com upgrade identificado no CSV</div>` : '')
       : '<div class="empty">Nenhum registro encontrado com esse filtro.</div>';
   }
 
@@ -1228,7 +1241,9 @@
     const file = e.target.files[0];
     if (!file) return;
 
-    const text = await file.text();
+    let text = await file.text();
+    // Strip BOM (UTF-8 with BOM)
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
     const lines = text.split(/\r?\n/).filter(l => l.trim());
     if (lines.length < 2) { alert('CSV vazio ou sem dados.'); return; }
 
@@ -1243,8 +1258,10 @@
       if (/nome|name|aluno/.test(h)) colMap.name = i;
       if (/email|e-mail/.test(h)) colMap.email = i;
       if (/telefone|phone|celular|whatsapp/.test(h)) colMap.phone = i;
-      if (/produto|product|curso/.test(h)) colMap.product = i;
+      if (/produto|product|curso|programa/.test(h)) colMap.product = i;
+      if (/^turma$/.test(h)) colMap.turma_origin = i;
       if (/data.*compra|purchase.*date|created/.test(h)) colMap.purchase_date = i;
+      if (/upgrade/.test(h)) colMap.upgrade = i;
     });
     console.log('[CSV] Colunas mapeadas:', colMap);
 
@@ -1264,7 +1281,9 @@
         email: colMap.email !== undefined ? cols[colMap.email] || null : null,
         phone: colMap.phone !== undefined ? cols[colMap.phone] || null : null,
         product: colMap.product !== undefined ? cols[colMap.product] || null : null,
+        turma_origin: colMap.turma_origin !== undefined ? cols[colMap.turma_origin] || null : null,
         purchase_date: colMap.purchase_date !== undefined ? parseDate(cols[colMap.purchase_date]) : null,
+        upgrade: colMap.upgrade !== undefined ? cols[colMap.upgrade] || null : null,
         source: 'csv',
       });
     }
@@ -1408,7 +1427,7 @@
     function getOrCreate(key, name) {
       if (!key) return null;
       if (!unified.has(key)) {
-        unified.set(key, { key, name: name || '', phone: '', email: '', csv: false, wa: false, zoom: false, student: false, student_id: null });
+        unified.set(key, { key, name: name || '', phone: '', email: '', csv: false, wa: false, zoom: false, student: false, student_id: null, upgrade: null });
       }
       return unified.get(key);
     }
@@ -1535,6 +1554,7 @@
     else if (filter === 'csv-only') rows = rows.filter(r => r.csv && !r.student);
     else if (filter === 'wa-only') rows = rows.filter(r => r.wa && !r.student);
     else if (filter === 'zoom-only') rows = rows.filter(r => r.zoom && !r.student);
+    else if (filter === 'upgrades') rows = rows.filter(r => r.upgrade);
 
     rows.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
