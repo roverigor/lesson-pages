@@ -1012,7 +1012,7 @@
   }
 
   // ─── TAB: Fontes (Cross-reference) ─────────────
-  let fontesData = { csv: [], wa: [], zoom: [], students: [] };
+  let fontesData = { csv: [], wa: [], zoom: [] };
 
   async function loadFontesTab() {
     const el = document.getElementById('fontes-content');
@@ -1021,24 +1021,29 @@
     sumEl.innerHTML = '';
 
     try {
-      const { data: { session } } = await sb.auth.getSession();
-      const token = session?.access_token;
+      const classIds = await getLinkedClassIds();
 
-      // Parallel queries
-      const [csvRes, studentsRes, zoomRes] = await Promise.all([
+      // Parallel queries: CSV, WA members, Zoom participants (via class_ids)
+      const queries = [
         sb.from('student_imports').select('*').eq('cohort_id', cohortId).order('name'),
-        sb.from('students').select('id, name, phone, email').eq('cohort_id', cohortId).eq('active', true),
-        sb.from('zoom_participants')
-          .select('participant_name, participant_email, duration_minutes, student_id, meeting_id, zoom_meetings!inner(cohort_id)')
-          .eq('zoom_meetings.cohort_id', cohortId),
-      ]);
+        sb.from('wa_group_members').select('phone, wa_name').eq('cohort_id', cohortId),
+      ];
+      if (classIds.length) {
+        queries.push(
+          sb.from('zoom_participants')
+            .select('participant_name, participant_email, duration_minutes, student_id, meeting_id, zoom_meetings!inner(class_id)')
+            .in('zoom_meetings.class_id', classIds)
+        );
+      }
 
-      fontesData.csv = csvRes.data || [];
-      fontesData.students = studentsRes.data || [];
+      const results = await Promise.all(queries);
+      fontesData.csv = results[0].data || [];
+      fontesData.wa = results[1].data || [];
 
       // Aggregate zoom participants by email/name (dedup)
       const zoomMap = new Map();
-      (zoomRes.data || []).forEach(p => {
+      const zoomRaw = classIds.length ? (results[2].data || []) : [];
+      zoomRaw.forEach(p => {
         const key = (p.participant_email || p.participant_name || '').toLowerCase().trim();
         if (!key) return;
         const existing = zoomMap.get(key);
@@ -1069,35 +1074,23 @@
   }
 
   function renderFontes() {
-    const { csv, students, zoom } = fontesData;
+    const { csv, wa, zoom } = fontesData;
     const el = document.getElementById('fontes-content');
     const sumEl = document.getElementById('fontes-summary');
     const filter = document.getElementById('fontes-filter').value;
 
-    // Build unified map by normalized phone / email
+    // Build unified map — CSV is the source of truth
     const unified = new Map();
 
     function getOrCreate(key, name) {
       if (!key) return null;
       if (!unified.has(key)) {
-        unified.set(key, { key, name: name || '', phone: '', email: '', csv: false, wa: false, zoom: false, student: false, student_id: null, upgrade: null });
+        unified.set(key, { key, name: name || '', phone: '', email: '', csv: false, wa: false, zoom: false, upgrade: null });
       }
       return unified.get(key);
     }
 
-    // Students (registered)
-    students.forEach(s => {
-      const phoneKey = normalizePhone(s.phone);
-      const entry = getOrCreate(phoneKey || s.email || s.id, s.name);
-      if (!entry) return;
-      entry.student = true;
-      entry.student_id = s.id;
-      entry.name = s.name;
-      if (s.phone) entry.phone = s.phone;
-      if (s.email) entry.email = s.email;
-    });
-
-    // CSV imports
+    // 1. CSV imports (source of truth)
     csv.forEach(c => {
       const phoneKey = normalizePhone(c.phone);
       const key = phoneKey || c.email || c.name;
@@ -1105,16 +1098,40 @@
       if (!entry) return;
       entry.csv = true;
       if (!entry.name) entry.name = c.name;
-      if (c.phone && !entry.phone) entry.phone = c.phone;
-      if (c.email && !entry.email) entry.email = c.email;
+      if (c.phone) entry.phone = c.phone;
+      if (c.email) entry.email = c.email;
       if (c.upgrade) entry.upgrade = c.upgrade;
     });
 
-    // Zoom participants
+    // 2. WhatsApp members (from wa_group_members table)
+    (wa || []).forEach(m => {
+      const phoneKey = normalizePhone(m.phone);
+      let matched = false;
+      if (phoneKey) {
+        for (const [, entry] of unified) {
+          if (normalizePhone(entry.phone) === phoneKey) {
+            entry.wa = true;
+            if (m.wa_name && !entry.name) entry.name = m.wa_name;
+            matched = true;
+            break;
+          }
+        }
+      }
+      if (!matched) {
+        const entry = getOrCreate(phoneKey || m.wa_name, m.wa_name || '');
+        if (entry) {
+          entry.wa = true;
+          if (m.phone && !entry.phone) entry.phone = m.phone;
+          if (!entry.name && m.wa_name) entry.name = m.wa_name;
+        }
+      }
+    });
+
+    // 3. Zoom participants
     zoom.forEach(z => {
       const emailKey = (z.email || '').toLowerCase().trim();
-      // Try to match by email first
       let matched = false;
+      // Match by email
       if (emailKey) {
         for (const [, entry] of unified) {
           if (entry.email && entry.email.toLowerCase().trim() === emailKey) {
@@ -1124,10 +1141,11 @@
           }
         }
       }
-      // Try student_id match
-      if (!matched && z.student_id) {
+      // Match by name (contains)
+      if (!matched && z.name) {
+        const zName = z.name.toLowerCase().trim();
         for (const [, entry] of unified) {
-          if (entry.student_id === z.student_id) {
+          if (entry.name && entry.name.toLowerCase().trim().includes(zName)) {
             entry.zoom = true;
             if (z.email && !entry.email) entry.email = z.email;
             matched = true;
@@ -1148,11 +1166,11 @@
 
     // Counts
     const totalCSV = rows.filter(r => r.csv).length;
+    const hasWA = (wa || []).length > 0;
     const totalWA = rows.filter(r => r.wa).length;
     const totalZoom = rows.filter(r => r.zoom).length;
-    const totalStudents = rows.filter(r => r.student).length;
-    const totalAll3 = rows.filter(r => r.csv && r.student && r.zoom).length;
-    const gaps = rows.filter(r => !(r.csv && r.student && r.zoom));
+    const totalComplete = rows.filter(r => r.csv && r.zoom && (hasWA ? r.wa : true)).length;
+    const gapsList = rows.filter(r => !(r.csv && r.zoom && (hasWA ? r.wa : true)));
     const totalUpgradesSum = rows.filter(r => r.upgrade).length;
 
     sumEl.innerHTML = `
@@ -1162,19 +1180,19 @@
           <div style="font-size:10px;color:#555">CSV</div>
         </div>
         <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:#4ade80">${totalStudents}</div>
-          <div style="font-size:10px;color:#555">Cadastrados</div>
+          <div style="font-size:20px;font-weight:800;color:#22c55e">${hasWA ? totalWA : '—'}</div>
+          <div style="font-size:10px;color:#555">WhatsApp</div>
         </div>
         <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
           <div style="font-size:20px;font-weight:800;color:#facc15">${totalZoom}</div>
           <div style="font-size:10px;color:#555">Zoom</div>
         </div>
         <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:${totalAll3 === totalStudents ? '#4ade80' : '#f59e0b'}">${totalAll3}</div>
+          <div style="font-size:20px;font-weight:800;color:${totalComplete === totalCSV ? '#4ade80' : '#f59e0b'}">${totalComplete}</div>
           <div style="font-size:10px;color:#555">Match completo</div>
         </div>
         <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:${gaps.length ? '#f87171' : '#4ade80'}">${gaps.length}</div>
+          <div style="font-size:20px;font-weight:800;color:${gapsList.length ? '#f87171' : '#4ade80'}">${gapsList.length}</div>
           <div style="font-size:10px;color:#555">Com lacunas</div>
         </div>
         ${totalUpgradesSum ? `<div style="background:#101010;border:1px solid #8b5cf630;border-radius:8px;padding:12px 16px;text-align:center">
@@ -1184,10 +1202,10 @@
       </div>`;
 
     // Filter
-    if (filter === 'gaps') rows = rows.filter(r => !(r.csv && r.student && r.zoom));
-    else if (filter === 'csv-only') rows = rows.filter(r => r.csv && !r.student);
-    else if (filter === 'wa-only') rows = rows.filter(r => r.wa && !r.student);
-    else if (filter === 'zoom-only') rows = rows.filter(r => r.zoom && !r.student);
+    if (filter === 'gaps') rows = rows.filter(r => !(r.csv && r.zoom && (hasWA ? r.wa : true)));
+    else if (filter === 'csv-only') rows = rows.filter(r => r.csv && !r.wa && !r.zoom);
+    else if (filter === 'wa-only') rows = rows.filter(r => r.wa && !r.csv);
+    else if (filter === 'zoom-only') rows = rows.filter(r => r.zoom && !r.csv);
     else if (filter === 'upgrades') rows = rows.filter(r => r.upgrade);
 
     rows.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
@@ -1196,21 +1214,28 @@
       ? '<span style="color:#4ade80;font-size:14px" title="Presente">●</span>'
       : '<span style="color:#333;font-size:14px" title="Ausente">○</span>';
 
+    function matchBadge(r) {
+      const sources = [r.csv, r.wa, r.zoom].filter(Boolean).length;
+      const needed = hasWA ? 3 : 2;
+      if (sources >= needed) return '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:#16a34a20;border:1px solid #16a34a40;color:#4ade80;white-space:nowrap">Completo</span>';
+      if (sources >= 2) return '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:#f59e0b20;border:1px solid #f59e0b40;color:#fbbf24;white-space:nowrap">Parcial</span>';
+      return '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:#ef444420;border:1px solid #ef444440;color:#f87171;white-space:nowrap">Pendente</span>';
+    }
+
     const tableRows = rows.map(r => {
       const maskedPhone = r.phone
         ? (r.phone.length > 6 ? r.phone.slice(0, -4).replace(/\d/g, '•') + r.phone.slice(-4) : r.phone)
         : '<span style="color:#555">—</span>';
       const upgradeBadge = r.upgrade
-        ? '<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#8b5cf615;border:1px solid #8b5cf630;color:#a78bfa;white-space:nowrap">' + escHtml(r.upgrade) + '</span>'
+        ? ' <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#8b5cf615;border:1px solid #8b5cf630;color:#a78bfa;white-space:nowrap">' + escHtml(r.upgrade) + '</span>'
         : '';
-      return `<tr class="fontes-row" data-csv="${r.csv}" data-wa="${r.wa}" data-zoom="${r.zoom}" data-student="${r.student}">
-        <td><div class="student-name" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${escHtml(r.name || '?')} ${upgradeBadge}</div></td>
+      return `<tr>
+        <td><div class="student-name" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${escHtml(r.name || '?')}${upgradeBadge}</div></td>
         <td style="font-size:12px;color:#666">${maskedPhone}</td>
-        <td style="font-size:12px;color:#666">${escHtml(r.email || '—')}</td>
         <td style="text-align:center">${dot(r.csv)}</td>
-        <td style="text-align:center">${dot(r.student)}</td>
+        <td style="text-align:center">${dot(r.wa)}</td>
         <td style="text-align:center">${dot(r.zoom)}</td>
-        <td>${r.student_id ? '<a class="btn-sm" href="../aluno/perfil.html?id=' + r.student_id + '">Perfil</a>' : ''}</td>
+        <td style="text-align:center">${matchBadge(r)}</td>
       </tr>`;
     }).join('');
 
@@ -1221,11 +1246,10 @@
           <thead><tr>
             <th>Nome</th>
             <th>Telefone</th>
-            <th>Email</th>
             <th style="text-align:center">CSV</th>
-            <th style="text-align:center">Cadastro</th>
+            <th style="text-align:center">WA</th>
             <th style="text-align:center">Zoom</th>
-            <th>Ação</th>
+            <th style="text-align:center">Match</th>
           </tr></thead>
           <tbody>${tableRows}</tbody>
         </table>` + (totalUpgrades ? `<div style="margin-top:12px;font-size:12px;color:#a78bfa">↑ ${totalUpgrades} aluno(s) com upgrade identificado no CSV</div>` : '')
@@ -1355,247 +1379,33 @@
         return;
       }
 
-      // Update fontes data with WA members
-      fontesData.wa = data.members || [];
+      // Persist WA members to wa_group_members table
+      const members = data.members || [];
+      if (members.length) {
+        // Clear previous sync for this cohort
+        await sb.from('wa_group_members').delete().eq('cohort_id', cohortId);
+        // Batch insert
+        const waRows = members.map(m => ({
+          cohort_id: cohortId,
+          phone: m.phone,
+          wa_name: m.wa_name || m.name || null,
+        }));
+        for (let i = 0; i < waRows.length; i += 500) {
+          const batch = waRows.slice(i, i + 500);
+          const { error: insErr } = await sb.from('wa_group_members').insert(batch);
+          if (insErr) console.error('[WA Sync] Insert error:', insErr);
+        }
+      }
 
-      // Merge WA data into unified view
-      const waMembers = data.members || [];
-      waMembers.forEach(m => {
-        const phoneKey = normalizePhone(m.phone);
-        // Find existing entry by phone
-        let found = false;
-        // We'll re-render with WA data
-      });
-
-      alert(`WhatsApp: ${data.total_members} membros · ${data.matched} matcheados · ${data.unmatched} não vinculados · ${data.not_in_group} alunos fora do grupo`);
+      alert(`WhatsApp: ${data.total_members} membros sincronizados e salvos.`);
       tabLoaded['fontes'] = false;
-      loadFontesTabWithWA(data);
+      loadFontesTab();
     } catch (err) {
       alert('Erro ao sincronizar WhatsApp: ' + err.message);
     } finally {
       btn.disabled = false;
       btn.textContent = '📱 Sync WhatsApp';
     }
-  }
-
-  async function loadFontesTabWithWA(waData) {
-    // Reload base data then merge WA
-    const el = document.getElementById('fontes-content');
-    el.innerHTML = '<div class="spinner"></div>';
-
-    const [csvRes, studentsRes, zoomRes] = await Promise.all([
-      sb.from('student_imports').select('*').eq('cohort_id', cohortId).order('name'),
-      sb.from('students').select('id, name, phone, email').eq('cohort_id', cohortId).eq('active', true),
-      sb.from('zoom_participants')
-        .select('participant_name, participant_email, duration_minutes, student_id, meeting_id, zoom_meetings!inner(cohort_id)')
-        .eq('zoom_meetings.cohort_id', cohortId),
-    ]);
-
-    fontesData.csv = csvRes.data || [];
-    fontesData.students = studentsRes.data || [];
-
-    // Aggregate zoom
-    const zoomMap = new Map();
-    (zoomRes.data || []).forEach(p => {
-      const key = (p.participant_email || p.participant_name || '').toLowerCase().trim();
-      if (!key) return;
-      const existing = zoomMap.get(key);
-      if (existing) {
-        existing.duration_minutes += (p.duration_minutes || 0);
-        existing.sessions++;
-        if (p.student_id) existing.student_id = p.student_id;
-      } else {
-        zoomMap.set(key, { name: p.participant_name || '', email: p.participant_email || '', duration_minutes: p.duration_minutes || 0, student_id: p.student_id || null, sessions: 1 });
-      }
-    });
-    fontesData.zoom = [...zoomMap.values()];
-
-    // Store WA data from sync result
-    fontesData.waSync = waData;
-
-    renderFontesWithWA();
-  }
-
-  function renderFontesWithWA() {
-    const { csv, students, zoom, waSync } = fontesData;
-    const el = document.getElementById('fontes-content');
-    const sumEl = document.getElementById('fontes-summary');
-    const filter = document.getElementById('fontes-filter').value;
-
-    const unified = new Map();
-
-    function getOrCreate(key, name) {
-      if (!key) return null;
-      if (!unified.has(key)) {
-        unified.set(key, { key, name: name || '', phone: '', email: '', csv: false, wa: false, zoom: false, student: false, student_id: null, upgrade: null });
-      }
-      return unified.get(key);
-    }
-
-    // Students
-    students.forEach(s => {
-      const phoneKey = normalizePhone(s.phone);
-      const entry = getOrCreate(phoneKey || s.email || s.id, s.name);
-      if (!entry) return;
-      entry.student = true;
-      entry.student_id = s.id;
-      entry.name = s.name;
-      if (s.phone) entry.phone = s.phone;
-      if (s.email) entry.email = s.email;
-    });
-
-    // CSV
-    csv.forEach(c => {
-      const phoneKey = normalizePhone(c.phone);
-      const key = phoneKey || c.email || c.name;
-      const entry = getOrCreate(key, c.name);
-      if (!entry) return;
-      entry.csv = true;
-      if (!entry.name) entry.name = c.name;
-      if (c.phone && !entry.phone) entry.phone = c.phone;
-      if (c.email && !entry.email) entry.email = c.email;
-    });
-
-    // WhatsApp (from sync)
-    if (waSync && waSync.members) {
-      waSync.members.forEach(m => {
-        const phoneKey = normalizePhone(m.phone);
-        let matched = false;
-        for (const [, entry] of unified) {
-          if (normalizePhone(entry.phone) === phoneKey && phoneKey) {
-            entry.wa = true;
-            matched = true;
-            break;
-          }
-        }
-        if (!matched) {
-          const entry = getOrCreate(phoneKey || m.wa_name, m.wa_name || '');
-          if (entry) {
-            entry.wa = true;
-            if (m.phone && !entry.phone) entry.phone = m.phone;
-            if (!entry.name && m.wa_name) entry.name = m.wa_name;
-          }
-        }
-      });
-    }
-
-    // Zoom
-    zoom.forEach(z => {
-      const emailKey = (z.email || '').toLowerCase().trim();
-      let matched = false;
-      if (emailKey) {
-        for (const [, entry] of unified) {
-          if (entry.email && entry.email.toLowerCase().trim() === emailKey) {
-            entry.zoom = true;
-            matched = true;
-            break;
-          }
-        }
-      }
-      if (!matched && z.student_id) {
-        for (const [, entry] of unified) {
-          if (entry.student_id === z.student_id) {
-            entry.zoom = true;
-            if (z.email && !entry.email) entry.email = z.email;
-            matched = true;
-            break;
-          }
-        }
-      }
-      if (!matched) {
-        const entry = getOrCreate(emailKey || z.name, z.name);
-        if (entry) {
-          entry.zoom = true;
-          if (z.email && !entry.email) entry.email = z.email;
-        }
-      }
-    });
-
-    let rows = [...unified.values()];
-
-    const totalCSV = rows.filter(r => r.csv).length;
-    const totalWA = rows.filter(r => r.wa).length;
-    const totalZoom = rows.filter(r => r.zoom).length;
-    const totalStudents = rows.filter(r => r.student).length;
-    const sources = waSync ? 3 : 2;
-    const totalComplete = rows.filter(r => r.csv && r.student && r.zoom && (waSync ? r.wa : true)).length;
-    const gaps = rows.filter(r => !(r.csv && r.student && r.zoom && (waSync ? r.wa : true)));
-
-    sumEl.innerHTML = `
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:#a5b4fc">${totalCSV}</div>
-          <div style="font-size:10px;color:#555">CSV</div>
-        </div>
-        ${waSync ? `<div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:#22c55e">${totalWA}</div>
-          <div style="font-size:10px;color:#555">WhatsApp</div>
-        </div>` : ''}
-        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:#4ade80">${totalStudents}</div>
-          <div style="font-size:10px;color:#555">Cadastrados</div>
-        </div>
-        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:#facc15">${totalZoom}</div>
-          <div style="font-size:10px;color:#555">Zoom</div>
-        </div>
-        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:${totalComplete === totalStudents ? '#4ade80' : '#f59e0b'}">${totalComplete}</div>
-          <div style="font-size:10px;color:#555">Match completo</div>
-        </div>
-        <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px;font-weight:800;color:${gaps.length ? '#f87171' : '#4ade80'}">${gaps.length}</div>
-          <div style="font-size:10px;color:#555">Com lacunas</div>
-        </div>
-      </div>`;
-
-    // Filter
-    if (filter === 'gaps') rows = rows.filter(r => !(r.csv && r.student && r.zoom && (waSync ? r.wa : true)));
-    else if (filter === 'csv-only') rows = rows.filter(r => r.csv && !r.student);
-    else if (filter === 'wa-only') rows = rows.filter(r => r.wa && !r.student);
-    else if (filter === 'zoom-only') rows = rows.filter(r => r.zoom && !r.student);
-    else if (filter === 'upgrades') rows = rows.filter(r => r.upgrade);
-
-    rows.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-
-    const dot = (ok) => ok
-      ? '<span style="color:#4ade80;font-size:14px" title="Presente">●</span>'
-      : '<span style="color:#333;font-size:14px" title="Ausente">○</span>';
-
-    const waHeader = waSync ? '<th style="text-align:center">WA</th>' : '';
-
-    const tableRows = rows.map(r => {
-      const maskedPhone = r.phone
-        ? (r.phone.length > 6 ? r.phone.slice(0, -4).replace(/\d/g, '•') + r.phone.slice(-4) : r.phone)
-        : '<span style="color:#555">—</span>';
-      const waCol = waSync ? `<td style="text-align:center">${dot(r.wa)}</td>` : '';
-      return `<tr>
-        <td><div class="student-name">${escHtml(r.name || '?')}</div></td>
-        <td style="font-size:12px;color:#666">${maskedPhone}</td>
-        <td style="font-size:12px;color:#666">${escHtml(r.email || '—')}</td>
-        <td style="text-align:center">${dot(r.csv)}</td>
-        ${waCol}
-        <td style="text-align:center">${dot(r.student)}</td>
-        <td style="text-align:center">${dot(r.zoom)}</td>
-        <td>${r.student_id ? '<a class="btn-sm" href="../aluno/perfil.html?id=' + r.student_id + '">Perfil</a>' : ''}</td>
-      </tr>`;
-    }).join('');
-
-    el.innerHTML = rows.length > 0
-      ? `<table>
-          <thead><tr>
-            <th>Nome</th>
-            <th>Telefone</th>
-            <th>Email</th>
-            <th style="text-align:center">CSV</th>
-            ${waHeader}
-            <th style="text-align:center">Cadastro</th>
-            <th style="text-align:center">Zoom</th>
-            <th>Ação</th>
-          </tr></thead>
-          <tbody>${tableRows}</tbody>
-        </table>`
-      : '<div class="empty">Nenhum registro encontrado com esse filtro.</div>';
   }
 
   checkAuth();
