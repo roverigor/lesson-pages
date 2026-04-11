@@ -1235,6 +1235,7 @@
     // Parse header
     const sep = lines[0].includes(';') ? ';' : ',';
     const headers = lines[0].split(sep).map(h => h.trim().toLowerCase().replace(/"/g, ''));
+    console.log('[CSV] Headers:', headers, '| Separador:', sep);
 
     // Map columns (flexible)
     const colMap = {};
@@ -1245,9 +1246,10 @@
       if (/produto|product|curso/.test(h)) colMap.product = i;
       if (/data.*compra|purchase.*date|created/.test(h)) colMap.purchase_date = i;
     });
+    console.log('[CSV] Colunas mapeadas:', colMap);
 
     if (colMap.name === undefined) {
-      alert('Coluna "nome" não encontrada. Verifique o cabeçalho do CSV.');
+      alert('Coluna "nome" não encontrada. Colunas detectadas: ' + headers.join(', '));
       return;
     }
 
@@ -1266,21 +1268,30 @@
         source: 'csv',
       });
     }
+    console.log('[CSV] Registros parseados:', records.length, '| Amostra:', records.slice(0, 2));
 
     if (!records.length) { alert('Nenhum registro válido no CSV.'); return; }
 
     // Clear previous imports for this cohort and insert new
-    const { error: delErr } = await sb.from('student_imports').delete().eq('cohort_id', cohortId);
+    const { data: delData, error: delErr, count: delCount } = await sb.from('student_imports').delete().eq('cohort_id', cohortId).select('id', { count: 'exact' });
+    console.log('[CSV] Delete anterior:', { delData, delErr, delCount });
     if (delErr) { alert('Erro ao limpar imports anteriores: ' + delErr.message); return; }
 
     // Batch insert (max 500 per batch)
+    let inserted = 0;
     for (let i = 0; i < records.length; i += 500) {
       const batch = records.slice(i, i + 500);
-      const { error } = await sb.from('student_imports').insert(batch);
-      if (error) { alert('Erro ao importar: ' + error.message); return; }
+      const { data: insData, error } = await sb.from('student_imports').insert(batch).select('id');
+      console.log('[CSV] Insert batch', i, ':', { count: insData?.length, error });
+      if (error) { alert('Erro ao importar batch ' + (i/500+1) + ': ' + error.message); return; }
+      inserted += (insData?.length || 0);
     }
 
-    alert(`${records.length} registros importados do CSV.`);
+    if (inserted === 0) {
+      alert('⚠️ Nenhum registro foi salvo. Possível problema de permissão (RLS). Verifique o console do navegador (F12).');
+    } else {
+      alert(`✅ ${inserted} registros importados do CSV.`);
+    }
     e.target.value = '';
     tabLoaded['fontes'] = false;
     loadFontesTab();
