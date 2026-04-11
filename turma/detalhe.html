@@ -1309,6 +1309,7 @@
       return `<tr>
         <td><div class="student-name" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${escHtml(r.name || '?')}${upgradeBadge}</div></td>
         <td style="font-size:12px;color:#666">${maskedPhone}</td>
+        <td style="font-size:12px;color:#666">${escHtml(r.email || '—')}</td>
         <td style="text-align:center">${tipoBadge(r.tipo)}</td>
         <td style="text-align:center">${dot(r.csv)}</td>
         <td style="text-align:center">${dot(r.wa)}</td>
@@ -1324,6 +1325,7 @@
           <thead><tr>
             <th>Nome</th>
             <th>Telefone</th>
+            <th>Email</th>
             <th style="text-align:center">Tipo</th>
             <th style="text-align:center">CSV</th>
             <th style="text-align:center">WA</th>
