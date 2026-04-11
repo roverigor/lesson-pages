@@ -678,7 +678,7 @@
       return;
     }
     const list = students.map((s, i) =>
-      `<tr><td style="width:28px;color:#444">${i+1}</td><td>${escHtml(s.student_name)}</td><td style="color:#666">${s.phone}</td></tr>`
+      `<tr><td style="width:28px;color:#444">${i+1}</td><td>${escHtml(s.name)}</td><td style="color:#666">${s.phone}</td></tr>`
     ).join('');
     document.getElementById('dispatch-preview').innerHTML = `
       <div style="font-size:12px;color:#f59e0b;margin-bottom:8px;font-weight:600">
@@ -699,7 +699,7 @@
 
   function copyDispatchList() {
     const students = presencaCurrentStudents.filter(s => s.phone && !s.phone.startsWith('pending_'));
-    const text = students.map(s => `${s.student_name}\t${s.phone}`).join('\n');
+    const text = students.map(s => `${s.name}\t${s.phone}`).join('\n');
     navigator.clipboard.writeText(text).then(() => {
       const el = document.getElementById('copy-confirm');
       el.style.display = 'inline';
@@ -921,36 +921,27 @@
   }
 
   // ─── TAB: Zoom ────────────────────────────────────
-  async function loadZoomTab() {
+  function loadZoomTab() {
     const el = document.getElementById('zoom-content');
-    try {
-      const classIds = await getLinkedClassIds();
-      if (!classIds.length) { el.innerHTML = '<div class="empty">Nenhuma aula vinculada.</div>'; return; }
+    if (!turmaMeetings || !turmaMeetings.length) { el.innerHTML = '<div class="empty">Nenhuma reunião Zoom registrada.</div>'; return; }
 
-      const { data: meetings } = await sb
-        .from('zoom_meetings')
-        .select('id, topic, start_time, duration_minutes, participants_count')
-        .in('class_id', classIds)
-        .order('start_time', { ascending: false })
-        .limit(20);
+    const sorted = [...turmaMeetings].sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+    const rows = sorted.map(m => {
+      const d = m.start_time ? new Date(m.start_time) : null;
+      const date = d ? d.toLocaleDateString('pt-BR') : '?';
+      const time = d ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+      const tipo = m.isPS ? '<span class="badge badge-amber">PS</span>' : '<span class="badge badge-green">Aula</span>';
+      const pCount = m.participants.length;
+      return '<tr>' +
+        '<td>' + date + '</td>' +
+        '<td>' + time + '</td>' +
+        '<td style="color:#a5b4fc;font-weight:700">' + pCount + '</td>' +
+        '<td>' + tipo + '</td>' +
+        '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(m.topic || '') + '</td>' +
+      '</tr>';
+    }).join('');
 
-      if (!meetings || !meetings.length) { el.innerHTML = '<div class="empty">Nenhuma reunião Zoom registrada.</div>'; return; }
-
-      const rows = meetings.map(m => {
-        const d = m.start_time ? new Date(m.start_time) : null;
-        const date = d ? d.toLocaleDateString('pt-BR') : '?';
-        const time = d ? d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
-        return '<tr>' +
-          '<td>' + date + '</td>' +
-          '<td>' + time + '</td>' +
-          '<td style="color:#a5b4fc;font-weight:700">' + (m.participants_count || 0) + '</td>' +
-          '<td>' + (m.duration_minutes || 0) + 'min</td>' +
-          '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(m.topic || '') + '</td>' +
-        '</tr>';
-      }).join('');
-
-      el.innerHTML = '<table><thead><tr><th>Data</th><th>Hora</th><th>Participantes</th><th>Duração</th><th>Tópico</th></tr></thead><tbody>' + rows + '</tbody></table>';
-    } catch (err) { el.innerHTML = '<div class="empty">Erro ao carregar reuniões.</div>'; }
+    el.innerHTML = '<table><thead><tr><th>Data</th><th>Hora</th><th>Participantes</th><th>Tipo</th><th>Tópico</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
 
   // ─── TAB: Resumos ─────────────────────────────────
@@ -1683,15 +1674,12 @@
 <script>
 // ── LINK UNMATCHED PARTICIPANT TO STUDENT ──
 let linkZoomName = '';
-let linkMeetingIds = [];
-let linkClassDate = '';
+let linkMeetingId = '';
 let linkSearchCache = [];
 
 function openLinkModal(zoomName) {
   linkZoomName = zoomName;
-  linkClassDate = document.getElementById('presenca-date-select').value;
-  // Get meeting IDs for this date
-  linkMeetingIds = [];
+  linkMeetingId = document.getElementById('presenca-date-select').value;
   document.getElementById('link-title').textContent = `Vincular: "${zoomName}"`;
   document.getElementById('link-sub').textContent = `Busque o aluno que usou "${zoomName}" no Zoom`;
   document.getElementById('link-search').value = '';
@@ -1769,18 +1757,11 @@ async function executeLink(studentId, studentName) {
     }
   }
 
-  // 2. Update zoom_participants: set matched=true, student_id for this name in this meeting
-  const { data: meetings } = await sb.from('zoom_meetings')
-    .select('id')
-    .eq('cohort_id', cohortId)
-    .gte('start_time', linkClassDate + 'T00:00:00')
-    .lte('start_time', linkClassDate + 'T23:59:59');
-
-  if (meetings && meetings.length > 0) {
-    const mids = meetings.map(m => m.id);
+  // 2. Update zoom_participants: set matched=true, student_id for this meeting
+  if (linkMeetingId) {
     const { error: zpErr } = await sb.from('zoom_participants')
       .update({ matched: true, student_id: studentId })
-      .in('meeting_id', mids)
+      .eq('meeting_id', linkMeetingId)
       .eq('participant_name', linkZoomName)
       .eq('matched', false);
     if (zpErr) {
@@ -1789,11 +1770,11 @@ async function executeLink(studentId, studentName) {
     }
 
     // 3. Add to student_attendance
-    const meetingId = meetings[0].id;
-    // Get max duration for this participant
+    const meeting = turmaMeetings.find(m => m.id === linkMeetingId);
+    const classDate = meeting ? meeting.start_time.split('T')[0] : new Date().toISOString().split('T')[0];
     const { data: zpData } = await sb.from('zoom_participants')
       .select('duration_minutes')
-      .in('meeting_id', mids)
+      .eq('meeting_id', linkMeetingId)
       .eq('student_id', studentId)
       .order('duration_minutes', { ascending: false })
       .limit(1);
@@ -1801,9 +1782,9 @@ async function executeLink(studentId, studentName) {
     const duration = zpData?.[0]?.duration_minutes || null;
     await sb.from('student_attendance').upsert({
       student_id: studentId,
-      class_date: linkClassDate,
+      class_date: classDate,
       cohort_id: cohortId,
-      zoom_meeting_id: meetingId,
+      zoom_meeting_id: linkMeetingId,
       source: 'zoom',
       duration_minutes: duration,
     }, { onConflict: 'student_id,class_date,zoom_meeting_id' });
@@ -1814,7 +1795,7 @@ async function executeLink(studentId, studentName) {
   // Refresh after a pause
   setTimeout(async () => {
     closeLinkModal();
-    await loadPresencaForDate(linkClassDate);
+    loadPresencaForMeeting(linkMeetingId);
   }, 1500);
 }
 
