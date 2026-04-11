@@ -145,9 +145,11 @@
   <div class="stats-row" id="stats-row">
     <div class="stat-card"><div class="stat-num" id="st-total">—</div><div class="stat-label">Alunos (CSV)</div></div>
     <div class="stat-card" id="st-upgrades-card" style="display:none"><div class="stat-num" id="st-upgrades">—</div><div class="stat-label">Upgrades</div></div>
-    <div class="stat-card"><div class="stat-num" id="st-pct" class="green">—</div><div class="stat-label">% Presença Média</div></div>
+    <div class="stat-card"><div class="stat-num" id="st-pct-aula" class="green">—</div><div class="stat-label">% Presença Aulas</div></div>
+    <div class="stat-card"><div class="stat-num" id="st-pct-ps" class="green">—</div><div class="stat-label">% Presença PS</div></div>
     <div class="stat-card"><div class="stat-num" id="st-wa">—</div><div class="stat-label">Ativos no WA</div></div>
-    <div class="stat-card"><div class="stat-num" id="st-aulas">—</div><div class="stat-label">Aulas Registradas</div></div>
+    <div class="stat-card"><div class="stat-num" id="st-aulas">—</div><div class="stat-label">Aulas</div></div>
+    <div class="stat-card"><div class="stat-num" id="st-ps">—</div><div class="stat-label">PS</div></div>
   </div>
 
   <!-- Tabs -->
@@ -320,6 +322,7 @@
   }
 
   async function loadAll() {
+    const classIds = await getLinkedClassIds();
     const [cohortRes, summaryRes, waRes, allStudentsRes, csvStatsRes] = await Promise.all([
       sb.from('cohorts').select('id, name').eq('id', cohortId).single(),
       sb.rpc('get_attendance_summary', { p_cohort_id: cohortId }),
@@ -341,24 +344,60 @@
     const totalCSV = csvImports.length;
     const totalUpgrades = csvImports.filter(c => c.upgrade).length;
 
-    // Stats
-    const avgPct = summary.length ? Math.round(summary.reduce((a, s) => a + parseFloat(s.presence_pct ?? 0), 0) / summary.length) : 0;
+    // Stats — attendance split by Aula vs PS
     const waMessages = waRes.data ?? [];
     const waStudentIds = new Set(waMessages.map(m => m.student_id).filter(Boolean));
-    const totalAulas = summary[0]?.total_classes ?? 0;
-
     const totalAlunos = totalCSV || allStds.length;
+
+    // Fetch meetings with participant counts, split by class type (PS vs Aula)
+    let meetingsData = [];
+    if (classIds.length) {
+      const { data: mData } = await sb.from('zoom_meetings')
+        .select('id, topic, class_id, classes!inner(name)')
+        .in('class_id', classIds);
+      meetingsData = mData || [];
+    }
+
+    // Count unique participants per meeting (duration > 5min)
+    const meetingStats = [];
+    for (const m of meetingsData) {
+      const { count } = await sb.from('zoom_participants')
+        .select('*', { count: 'exact', head: true })
+        .eq('meeting_id', m.id)
+        .gt('duration_minutes', 5);
+      const className = (m.classes?.name || m.topic || '').toLowerCase();
+      const isPS = className.includes('ps') || className.includes('pronto');
+      meetingStats.push({ id: m.id, isPS, presentes: count || 0 });
+    }
+
+    const aulaMeetings = meetingStats.filter(m => !m.isPS);
+    const psMeetings = meetingStats.filter(m => m.isPS);
+
+    const avgAula = aulaMeetings.length && totalAlunos
+      ? (aulaMeetings.reduce((a, m) => a + m.presentes, 0) / aulaMeetings.length / totalAlunos * 100).toFixed(1)
+      : null;
+    const avgPS = psMeetings.length && totalAlunos
+      ? (psMeetings.reduce((a, m) => a + m.presentes, 0) / psMeetings.length / totalAlunos * 100).toFixed(1)
+      : null;
+
     document.getElementById('st-total').textContent = totalAlunos;
     if (totalUpgrades) {
       document.getElementById('st-upgrades').textContent = totalUpgrades;
       document.getElementById('st-upgrades-card').style.display = '';
     }
-    const pctEl = document.getElementById('st-pct');
-    pctEl.textContent = avgPct + '%';
-    pctEl.className = 'stat-num ' + (avgPct >= 80 ? 'green' : avgPct >= 60 ? 'amber' : 'red');
+
+    const pctAulaEl = document.getElementById('st-pct-aula');
+    pctAulaEl.textContent = avgAula !== null ? avgAula + '%' : '—';
+    pctAulaEl.className = 'stat-num ' + (avgAula >= 80 ? 'green' : avgAula >= 60 ? 'amber' : avgAula !== null ? 'red' : '');
+
+    const pctPsEl = document.getElementById('st-pct-ps');
+    pctPsEl.textContent = avgPS !== null ? avgPS + '%' : '—';
+    pctPsEl.className = 'stat-num ' + (avgPS >= 80 ? 'green' : avgPS >= 60 ? 'amber' : avgPS !== null ? 'red' : '');
+
     document.getElementById('st-wa').textContent = waStudentIds.size;
-    document.getElementById('st-aulas').textContent = totalAulas;
-    document.getElementById('turma-sub-header').textContent = totalAlunos + ' alunos · ' + totalAulas + ' aulas';
+    document.getElementById('st-aulas').textContent = aulaMeetings.length;
+    document.getElementById('st-ps').textContent = psMeetings.length;
+    document.getElementById('turma-sub-header').textContent = totalAlunos + ' alunos · ' + aulaMeetings.length + ' aulas · ' + psMeetings.length + ' PS';
 
     // WA days per student
     const waDays = {};
