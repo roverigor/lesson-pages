@@ -179,11 +179,10 @@
   <div id="tab-presenca" style="display:none">
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
       <label style="font-size:12px;color:#555;font-weight:600">Aula:</label>
-      <select id="presenca-date-select" onchange="loadPresencaForDate(this.value)" style="background:#111;border:1px solid #222;color:#ddd;padding:8px 12px;border-radius:8px;font-size:13px;font-family:var(--font-sans);min-width:260px"></select>
+      <select id="presenca-date-select" onchange="loadPresencaForMeeting(this.value)" style="background:#111;border:1px solid #222;color:#ddd;padding:8px 12px;border-radius:8px;font-size:13px;font-family:var(--font-sans);min-width:260px"></select>
       <span id="presenca-count" style="font-size:12px;color:#666"></span>
     </div>
     <div id="presenca-content"><div class="spinner"></div></div>
-    <div id="presenca-match-rate" style="margin-top:16px"></div>
     <div id="presenca-unmatched" style="margin-top:24px"></div>
     <div id="presenca-dispatch" style="margin-top:24px"></div>
   </div>
@@ -327,8 +326,8 @@
   async function loadAll() {
     turmaClassIds = await getLinkedClassIds();
     const [cohortRes, waRes, csvRes] = await Promise.all([
-      sb.from('cohorts').select('id, name').eq('id', cohortId).single(),
-      sb.from('whatsapp_group_messages').select('student_id, sent_at').eq('cohort_id', cohortId),
+      sb.from('cohorts').select('id, name, start_date').eq('id', cohortId).single(),
+      sb.from('wa_group_members').select('phone').eq('cohort_id', cohortId),
       sb.from('student_imports').select('*').eq('cohort_id', cohortId).order('name'),
     ]);
 
@@ -341,12 +340,15 @@
     const totalUpgrades = csvImports.filter(c => c.upgrade).length;
     const totalAlunos = totalCSV;
 
-    // Fetch meetings + participants for linked classes
+    // Fetch meetings + participants for linked classes (filtered by cohort start_date)
     turmaMeetings = [];
+    const cohortStartDate = cohort?.start_date ? new Date(cohort.start_date + 'T00:00:00') : null;
     if (turmaClassIds.length) {
-      const { data: mData } = await sb.from('zoom_meetings')
+      let query = sb.from('zoom_meetings')
         .select('id, topic, start_time, class_id, classes!inner(name)')
         .in('class_id', turmaClassIds);
+      if (cohortStartDate) query = query.gte('start_time', cohort.start_date);
+      const { data: mData } = await query;
       for (const m of (mData || [])) {
         const { data: parts } = await sb.from('zoom_participants')
           .select('participant_name, participant_email, duration_minutes')
@@ -422,7 +424,7 @@
     const pctPsEl = document.getElementById('st-pct-ps');
     pctPsEl.textContent = avgPS !== null ? avgPS + '%' : '—';
     pctPsEl.className = 'stat-num ' + (avgPS >= 80 ? 'green' : avgPS >= 60 ? 'amber' : avgPS !== null ? 'red' : '');
-    document.getElementById('st-wa').textContent = new Set((waRes.data ?? []).map(m => m.student_id).filter(Boolean)).size;
+    document.getElementById('st-wa').textContent = (waRes.data ?? []).length;
     document.getElementById('st-aulas').textContent = aulaMeetings.length;
     document.getElementById('st-ps').textContent = psMeetings.length;
     document.getElementById('turma-sub-header').textContent = totalAlunos + ' alunos · ' + aulaMeetings.length + ' aulas · ' + psMeetings.length + ' PS';
@@ -523,70 +525,139 @@
 
   let presencaCurrentStudents = [];
 
-  async function renderPresencaTab() {
-    // Load available dates for this cohort
-    const { data: dates } = await sb.rpc('get_class_dates', { p_cohort_id: cohortId });
+  function renderPresencaTab() {
     const sel = document.getElementById('presenca-date-select');
-    if (!dates || dates.length === 0) {
+    if (!turmaMeetings || turmaMeetings.length === 0) {
       sel.innerHTML = '<option value="">Sem aulas registradas</option>';
       document.getElementById('presenca-content').innerHTML = '<div class="empty">Nenhuma presença registrada ainda para esta turma.</div>';
       return;
     }
-    sel.innerHTML = dates.map(d => {
-      const dt = new Date(d.class_date + 'T12:00:00');
+    // Sort meetings by start_time desc (most recent first)
+    const sorted = [...turmaMeetings].sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+    sel.innerHTML = sorted.map(m => {
+      const dt = new Date(m.start_time);
       const label = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-      const topic = d.zoom_topic ? ` — ${d.zoom_topic}` : '';
-      return `<option value="${d.class_date}">${label}${topic} (${d.present_count} presentes)</option>`;
+      const tipo = m.isPS ? 'PS' : 'Aula';
+      return `<option value="${m.id}">${label} — ${m.topic} (${tipo}, ${m.participants.length} participantes)</option>`;
     }).join('');
-    // Load the most recent date
-    loadPresencaForDate(dates[0].class_date);
+    // Load the most recent meeting
+    loadPresencaForMeeting(sorted[0].id);
   }
 
-  async function loadPresencaForDate(classDate) {
-    if (!classDate) return;
+  function loadPresencaForMeeting(meetingId) {
+    if (!meetingId) return;
     document.getElementById('presenca-content').innerHTML = '<div class="spinner"></div>';
     document.getElementById('presenca-unmatched').innerHTML = '';
     document.getElementById('presenca-dispatch').innerHTML = '';
 
-    // Load present students (deduplicated by phone)
-    const { data: present } = await sb.rpc('get_present_students', {
-      p_class_date: classDate,
-      p_cohort_id: cohortId,
+    const meeting = turmaMeetings.find(m => m.id === meetingId);
+    if (!meeting) { document.getElementById('presenca-content').innerHTML = '<div class="empty">Meeting não encontrado.</div>'; return; }
+
+    // Match CSV students against this meeting's participants
+    const csvPresent = [];
+    const csvAbsent = [];
+    const matchedZoomNames = new Set();
+
+    (allStudents || []).forEach(cs => {
+      const found = meeting.participants.find(p => {
+        if (cs.email && p.email && cs.email.toLowerCase() === p.email.toLowerCase()) return true;
+        return nameMatch(cs.name, p.name);
+      });
+      if (found) {
+        csvPresent.push({ ...cs, zoomName: found.name, dur: found.dur });
+        matchedZoomNames.add(found.name);
+      } else {
+        csvAbsent.push(cs);
+      }
     });
 
-    presencaCurrentStudents = present ?? [];
-    const count = presencaCurrentStudents.length;
-    const withPhone = presencaCurrentStudents.filter(s => s.phone);
-    const withoutPhone = count - withPhone.length;
-    document.getElementById('presenca-count').textContent = `${count} aluno${count !== 1 ? 's' : ''} presente${count !== 1 ? 's' : ''}`;
+    const totalCSV = (allStudents || []).length;
+    const presentCount = csvPresent.length;
+    const pctPresent = totalCSV ? Math.round(presentCount / totalCSV * 1000) / 10 : 0;
+    document.getElementById('presenca-count').textContent = `${presentCount} de ${totalCSV} alunos presentes (${pctPresent}%)`;
 
-    // Render present students table
-    const presHtml = presencaCurrentStudents.map((s, i) => {
-      const dur = s.duration_minutes;
-      const durStr = dur ? (dur >= 60 ? `${Math.floor(dur/60)}h${String(dur%60).padStart(2,'0')}` : `${dur}min`) : '—';
-      const hasPhone = !!s.phone;
-      const maskedPhone = hasPhone
+    // Render present CSV students
+    const presRows = csvPresent.sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((s, i) => {
+      const durStr = s.dur >= 60 ? `${Math.floor(s.dur/60)}h${String(s.dur%60).padStart(2,'0')}` : `${s.dur}min`;
+      const maskedPhone = s.phone
         ? (s.phone.length > 6 ? s.phone.slice(0, -4).replace(/\d/g, '•') + s.phone.slice(-4) : s.phone)
         : '<span style="color:#f87171;font-size:11px">Sem telefone</span>';
-      return `<tr${!hasPhone ? ' style="opacity:0.6"' : ''}>
+      return `<tr>
         <td style="width:32px;text-align:center;color:#444">${i+1}</td>
-        <td><div class="student-name">${escHtml(s.student_name)}</div></td>
+        <td><div class="student-name">${escHtml(s.name)}</div></td>
         <td style="font-size:12px;color:#666">${maskedPhone}</td>
         <td style="font-size:12px">${durStr}</td>
-        <td><a class="btn-sm" href="../perfil/?tipo=student&id=${s.student_id}" target="_blank">Perfil</a></td>
       </tr>`;
     }).join('');
 
-    document.getElementById('presenca-content').innerHTML = count > 0 ? `
-      <table>
-        <thead><tr><th>#</th><th>Aluno</th><th>Telefone</th><th>Duração</th><th>Perfil</th></tr></thead>
-        <tbody>${presHtml}</tbody>
-      </table>` : '<div class="empty">Nenhum aluno matcheado para esta data.</div>';
+    // Render absent CSV students
+    const absRows = csvAbsent.sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((s, i) => {
+      const maskedPhone = s.phone
+        ? (s.phone.length > 6 ? s.phone.slice(0, -4).replace(/\d/g, '•') + s.phone.slice(-4) : s.phone)
+        : '<span style="color:#f87171;font-size:11px">Sem telefone</span>';
+      return `<tr style="opacity:0.5">
+        <td style="width:32px;text-align:center;color:#444">${i+1}</td>
+        <td><div class="student-name">${escHtml(s.name)}</div></td>
+        <td style="font-size:12px;color:#666">${maskedPhone}</td>
+        <td style="font-size:12px;color:#ef4444">Ausente</td>
+      </tr>`;
+    }).join('');
 
-    // Load unmatched participants for the same date
-    loadUnmatchedForDate(classDate);
+    // Matching rate
+    const totalZoom = meeting.participants.length;
+    const matchedCount = matchedZoomNames.size;
+    const rate = totalZoom > 0 ? Math.round(matchedCount / totalZoom * 100) : 0;
+    const barColor = rate >= 90 ? '#22c55e' : rate >= 70 ? '#f59e0b' : '#ef4444';
 
-    // Show dispatch preview button
+    document.getElementById('presenca-content').innerHTML = `
+      <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:600;color:#ccc">Taxa de Matching</span>
+          <span style="font-size:20px;font-weight:800;color:${barColor}">${rate}%</span>
+          <span style="font-size:12px;color:#555">${matchedCount} de ${totalZoom} participantes vinculados ao CSV</span>
+        </div>
+        <div style="background:#222;border-radius:6px;height:8px;overflow:hidden">
+          <div style="background:${barColor};height:100%;width:${rate}%;border-radius:6px;transition:width 0.4s ease"></div>
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:#4ade80;margin-bottom:8px">✓ Presentes (${presentCount})</div>
+      ${presRows ? `<table><thead><tr><th>#</th><th>Aluno</th><th>Telefone</th><th>Duração</th></tr></thead><tbody>${presRows}</tbody></table>` : '<div class="empty">Nenhum aluno do CSV matcheado nesta aula.</div>'}
+      ${absRows ? `<div style="font-size:13px;font-weight:700;color:#ef4444;margin:20px 0 8px">✗ Ausentes (${csvAbsent.length})</div>
+      <table><thead><tr><th>#</th><th>Aluno</th><th>Telefone</th><th>Status</th></tr></thead><tbody>${absRows}</tbody></table>` : ''}`;
+
+    // Unmatched zoom participants (not in CSV)
+    const unmatched = meeting.participants.filter(p => !matchedZoomNames.has(p.name));
+    if (unmatched.length > 0) {
+      const unmRows = unmatched.sort((a, b) => b.dur - a.dur).map((p, i) => {
+        const durStr = p.dur >= 60 ? `${Math.floor(p.dur/60)}h${String(p.dur%60).padStart(2,'0')}` : `${p.dur}min`;
+        const cls = p.dur >= 60 ? 'badge-green' : 'badge-amber';
+        return `<tr>
+          <td style="width:32px;text-align:center;color:#444">${i+1}</td>
+          <td><div class="student-name">${escHtml(p.name)}</div></td>
+          <td><span class="badge ${cls}">${durStr}</span></td>
+        </tr>`;
+      }).join('');
+      document.getElementById('presenca-unmatched').innerHTML = `
+        <div style="background:#1a1010;border:1px solid #331a1a;border-radius:10px;padding:20px">
+          <div style="font-size:14px;font-weight:700;color:#f59e0b;margin-bottom:4px">
+            Outros Participantes — não encontrados no CSV (${unmatched.length})
+          </div>
+          <div style="font-size:12px;color:#555;margin-bottom:12px">
+            Participaram desta aula mas não são compradores identificados no CSV.
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Nome no Zoom</th><th>Duração</th></tr></thead>
+            <tbody>${unmRows}</tbody>
+          </table>
+        </div>`;
+    } else {
+      document.getElementById('presenca-unmatched').innerHTML = '';
+    }
+
+    // Dispatch section for present students with phone
+    presencaCurrentStudents = csvPresent;
+    const withPhone = csvPresent.filter(s => s.phone);
+    const withoutPhone = csvPresent.length - withPhone.length;
     if (withPhone.length > 0) {
       document.getElementById('presenca-dispatch').innerHTML = `
         <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:20px">
@@ -598,105 +669,6 @@
           <div id="dispatch-preview" style="margin-top:16px"></div>
         </div>`;
     }
-  }
-
-  async function loadUnmatchedForDate(classDate) {
-    document.getElementById('presenca-match-rate').innerHTML = '';
-
-    // Find zoom_meetings for this date that belong to this cohort
-    const { data: meetings } = await sb.from('zoom_meetings')
-      .select('id, topic, participants_count')
-      .eq('cohort_id', cohortId)
-      .gte('start_time', classDate + 'T00:00:00')
-      .lte('start_time', classDate + 'T23:59:59');
-
-    if (!meetings || meetings.length === 0) {
-      document.getElementById('presenca-unmatched').innerHTML = '';
-      return;
-    }
-
-    const meetingIds = meetings.map(m => m.id);
-
-    // Fetch ALL participants (matched + unmatched) to calculate rate
-    const { data: allParticipants } = await sb.from('zoom_participants')
-      .select('participant_name, duration_minutes, matched')
-      .in('meeting_id', meetingIds);
-
-    // Dedup all participants by name, sum durations
-    const allByName = {};
-    (allParticipants || []).forEach(p => {
-      const name = (p.participant_name || '?').trim();
-      if (!allByName[name]) allByName[name] = { dur: 0, matched: p.matched };
-      allByName[name].dur += (p.duration_minutes || 0);
-      if (p.matched) allByName[name].matched = true;
-    });
-    const allReal = Object.entries(allByName).filter(([, v]) => v.dur >= 15);
-    const totalReal = allReal.length;
-    const matchedReal = allReal.filter(([, v]) => v.matched).length;
-    const unmatchedReal = totalReal - matchedReal;
-    const rate = totalReal > 0 ? Math.round((matchedReal / totalReal) * 100) : 0;
-
-    // Show matching rate bar
-    const barColor = rate >= 90 ? '#22c55e' : rate >= 70 ? '#f59e0b' : '#ef4444';
-    document.getElementById('presenca-match-rate').innerHTML = `
-      <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
-          <span style="font-size:13px;font-weight:600;color:#ccc">Taxa de Matching</span>
-          <span style="font-size:20px;font-weight:800;color:${barColor}">${rate}%</span>
-          <span style="font-size:12px;color:#555">${matchedReal} de ${totalReal} participantes vinculados</span>
-        </div>
-        <div style="background:#222;border-radius:6px;height:8px;overflow:hidden">
-          <div style="background:${barColor};height:100%;width:${rate}%;border-radius:6px;transition:width 0.4s ease"></div>
-        </div>
-      </div>`;
-
-    // Filter unmatched only
-    const unmatched = (allParticipants || []).filter(p => !p.matched);
-
-    if (!unmatched || unmatched.length === 0) {
-      document.getElementById('presenca-unmatched').innerHTML = '';
-      return;
-    }
-
-    // Dedup unmatched by name, sum durations
-    const byName = {};
-    unmatched.forEach(p => {
-      const name = (p.participant_name || '?').trim();
-      byName[name] = (byName[name] || 0) + (p.duration_minutes || 0);
-    });
-    const sorted = Object.entries(byName).sort((a, b) => b[1] - a[1]);
-    const realAttendees = sorted.filter(([, dur]) => dur >= 15);
-
-    if (realAttendees.length === 0) {
-      document.getElementById('presenca-unmatched').innerHTML = '';
-      return;
-    }
-
-    const unmHtml = realAttendees.map(([name, dur], i) => {
-      const durStr = dur >= 60 ? `${Math.floor(dur/60)}h${String(dur%60).padStart(2,'0')}` : `${dur}min`;
-      const cls = dur >= 60 ? 'badge-green' : 'badge-amber';
-      const safeName = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-      return `<tr>
-        <td style="width:32px;text-align:center;color:#444">${i+1}</td>
-        <td><div class="student-name">${escHtml(name)}</div></td>
-        <td><span class="badge ${cls}">${durStr}</span></td>
-        <td><button class="btn-link" onclick="openLinkModal('${safeName}')">Vincular</button></td>
-      </tr>`;
-    }).join('');
-
-    document.getElementById('presenca-unmatched').innerHTML = `
-      <div style="background:#1a1010;border:1px solid #331a1a;border-radius:10px;padding:20px">
-        <div style="font-size:14px;font-weight:700;color:#f59e0b;margin-bottom:4px">
-          Participantes não vinculados (${realAttendees.length})
-        </div>
-        <div style="font-size:12px;color:#555;margin-bottom:12px">
-          Estavam na aula mas não foram matcheados com nenhum aluno. Adicione o alias Zoom no perfil do aluno em <a href="../alunos/" target="_blank" style="color:#a5b4fc">/alunos/</a>.
-        </div>
-        <table>
-          <thead><tr><th>#</th><th>Nome no Zoom</th><th>Duração</th><th>Ação</th></tr></thead>
-          <tbody>${unmHtml}</tbody>
-        </table>
-      </div>`;
   }
 
   function previewDispatch() {
@@ -735,8 +707,134 @@
     });
   }
 
-  function renderWaTab() {
-    document.getElementById('wa-content').innerHTML = `<div class="empty">Sem dados de mensagens WhatsApp ainda.<br>A coleta de mensagens do grupo precisa ser configurada via webhook do Evolution API.</div>`;
+  async function renderWaTab() {
+    document.getElementById('wa-content').innerHTML = '<div class="spinner"></div>';
+    // Load WA group members for this cohort
+    const { data: waMembers } = await sb.from('wa_group_members')
+      .select('phone, wa_name, synced_at')
+      .eq('cohort_id', cohortId)
+      .order('wa_name');
+
+    if (!waMembers || waMembers.length === 0) {
+      document.getElementById('wa-content').innerHTML = `<div class="empty">Nenhum membro do grupo WhatsApp sincronizado.<br>Use o botão "Sincronizar Grupo WA" na aba Fontes para importar os membros.</div>`;
+      return;
+    }
+
+    // Match WA members to CSV students
+    const csvStudents = allStudents || [];
+    const matched = [];
+    const unmatched = [];
+
+    waMembers.forEach(wm => {
+      const csvMatch = csvStudents.find(cs => {
+        // Match by phone
+        if (cs.phone && wm.phone) {
+          const csPhone = cs.phone.replace(/\D/g, '');
+          const wmPhone = wm.phone.replace(/\D/g, '');
+          if (csPhone.endsWith(wmPhone.slice(-8)) || wmPhone.endsWith(csPhone.slice(-8))) return true;
+        }
+        // Match by name
+        if (wm.wa_name && cs.name) return nameMatch(cs.name, wm.wa_name);
+        return false;
+      });
+      if (csvMatch) {
+        matched.push({ ...wm, csvName: csvMatch.name, tipo: 'Aluno' });
+      } else {
+        unmatched.push(wm);
+      }
+    });
+
+    // CSV students NOT in WA group
+    const csvNotInWa = csvStudents.filter(cs => {
+      return !waMembers.some(wm => {
+        if (cs.phone && wm.phone) {
+          const csPhone = cs.phone.replace(/\D/g, '');
+          const wmPhone = wm.phone.replace(/\D/g, '');
+          if (csPhone.endsWith(wmPhone.slice(-8)) || wmPhone.endsWith(csPhone.slice(-8))) return true;
+        }
+        if (wm.wa_name && cs.name) return nameMatch(cs.name, wm.wa_name);
+        return false;
+      });
+    });
+
+    const totalWa = waMembers.length;
+    const totalCSV = csvStudents.length;
+    const matchedCount = matched.length;
+
+    // Summary cards
+    let html = `
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+        <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;flex:1;min-width:120px;text-align:center">
+          <div style="font-size:24px;font-weight:800;color:#25d366">${totalWa}</div>
+          <div style="font-size:11px;color:#555">Membros no Grupo</div>
+        </div>
+        <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;flex:1;min-width:120px;text-align:center">
+          <div style="font-size:24px;font-weight:800;color:#4ade80">${matchedCount}</div>
+          <div style="font-size:11px;color:#555">Matcheados com CSV</div>
+        </div>
+        <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;flex:1;min-width:120px;text-align:center">
+          <div style="font-size:24px;font-weight:800;color:#f59e0b">${unmatched.length}</div>
+          <div style="font-size:11px;color:#555">Não Matcheados</div>
+        </div>
+        <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;flex:1;min-width:120px;text-align:center">
+          <div style="font-size:24px;font-weight:800;color:#ef4444">${csvNotInWa.length}</div>
+          <div style="font-size:11px;color:#555">Fora do Grupo</div>
+        </div>
+      </div>`;
+
+    // Matched table
+    if (matched.length) {
+      const mRows = matched.map((m, i) => {
+        const maskedPhone = m.phone ? m.phone.replace(/\d(?=\d{4})/g, '•') : '';
+        return `<tr>
+          <td style="width:32px;text-align:center;color:#444">${i+1}</td>
+          <td><div class="student-name">${escHtml(m.csvName)}</div></td>
+          <td style="font-size:12px;color:#666">${escHtml(m.wa_name || '')}</td>
+          <td style="font-size:12px;color:#444">${maskedPhone}</td>
+          <td><span class="badge badge-green">Aluno</span></td>
+        </tr>`;
+      }).join('');
+      html += `<div style="font-size:13px;font-weight:700;color:#4ade80;margin-bottom:8px">✓ Alunos no Grupo (${matched.length})</div>
+        <table><thead><tr><th>#</th><th>Aluno (CSV)</th><th>Nome WA</th><th>Telefone</th><th>Tipo</th></tr></thead><tbody>${mRows}</tbody></table>`;
+    }
+
+    // CSV not in WA
+    if (csvNotInWa.length) {
+      const nRows = csvNotInWa.map((s, i) => {
+        const maskedPhone = s.phone
+          ? (s.phone.length > 6 ? s.phone.slice(0, -4).replace(/\d/g, '•') + s.phone.slice(-4) : s.phone)
+          : '<span style="color:#f87171;font-size:11px">Sem telefone</span>';
+        return `<tr style="opacity:0.6">
+          <td style="width:32px;text-align:center;color:#444">${i+1}</td>
+          <td><div class="student-name">${escHtml(s.name)}</div></td>
+          <td style="font-size:12px;color:#666">${maskedPhone}</td>
+        </tr>`;
+      }).join('');
+      html += `<div style="font-size:13px;font-weight:700;color:#ef4444;margin:20px 0 8px">✗ Alunos Fora do Grupo WA (${csvNotInWa.length})</div>
+        <div style="font-size:12px;color:#555;margin-bottom:12px">Estes alunos estão no CSV mas não foram encontrados no grupo WhatsApp.</div>
+        <table><thead><tr><th>#</th><th>Aluno (CSV)</th><th>Telefone</th></tr></thead><tbody>${nRows}</tbody></table>`;
+    }
+
+    // Unmatched WA members
+    if (unmatched.length) {
+      const uRows = unmatched.map((m, i) => {
+        const maskedPhone = m.phone ? m.phone.replace(/\d(?=\d{4})/g, '•') : '';
+        return `<tr>
+          <td style="width:32px;text-align:center;color:#444">${i+1}</td>
+          <td><div class="student-name">${escHtml(m.wa_name || 'Sem nome')}</div></td>
+          <td style="font-size:12px;color:#444">${maskedPhone}</td>
+        </tr>`;
+      }).join('');
+      html += `<div style="font-size:13px;font-weight:700;color:#f59e0b;margin:20px 0 8px">⚠ Membros Não Identificados (${unmatched.length})</div>
+        <div style="font-size:12px;color:#555;margin-bottom:12px">Estão no grupo WA mas não matchearam com nenhum aluno do CSV. Podem ser equipe, convidados ou números diferentes.</div>
+        <table><thead><tr><th>#</th><th>Nome WA</th><th>Telefone</th></tr></thead><tbody>${uRows}</tbody></table>`;
+    }
+
+    // Sync info
+    const lastSync = waMembers[0]?.synced_at ? new Date(waMembers[0].synced_at).toLocaleString('pt-BR') : 'Desconhecido';
+    html += `<div style="font-size:11px;color:#333;margin-top:20px;text-align:right">Última sincronização: ${lastSync}</div>`;
+
+    document.getElementById('wa-content').innerHTML = html;
   }
 
   function sortBy(mode) {
