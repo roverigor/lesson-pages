@@ -321,115 +321,190 @@
     }
   }
 
+  let turmaClassIds = [];
+  let turmaMeetings = []; // { id, topic, isPS, participants: [{name, email, dur}] }
+
   async function loadAll() {
-    const classIds = await getLinkedClassIds();
-    const [cohortRes, summaryRes, waRes, allStudentsRes, csvStatsRes] = await Promise.all([
+    turmaClassIds = await getLinkedClassIds();
+    const [cohortRes, waRes, csvRes] = await Promise.all([
       sb.from('cohorts').select('id, name').eq('id', cohortId).single(),
-      sb.rpc('get_attendance_summary', { p_cohort_id: cohortId }),
       sb.from('whatsapp_group_messages').select('student_id, sent_at').eq('cohort_id', cohortId),
-      sb.from('students').select('id, active').eq('cohort_id', cohortId),
-      sb.from('student_imports').select('id, upgrade').eq('cohort_id', cohortId),
+      sb.from('student_imports').select('*').eq('cohort_id', cohortId).order('name'),
     ]);
 
     const cohort = cohortRes.data;
     document.getElementById('turma-name-header').textContent = cohort?.name ?? 'Turma';
     document.title = (cohort?.name ?? 'Turma') + ' — Academia Lendária';
 
-    const summary = summaryRes.data ?? [];
-    allStudents = summary;
-
-    // Student counts
-    const allStds = allStudentsRes.data ?? [];
-    const csvImports = csvStatsRes.data ?? [];
+    const csvImports = csvRes.data ?? [];
     const totalCSV = csvImports.length;
     const totalUpgrades = csvImports.filter(c => c.upgrade).length;
+    const totalAlunos = totalCSV;
 
-    // Stats — attendance split by Aula vs PS
-    const waMessages = waRes.data ?? [];
-    const waStudentIds = new Set(waMessages.map(m => m.student_id).filter(Boolean));
-    const totalAlunos = totalCSV || allStds.length;
-
-    // Fetch meetings with participant counts, split by class type (PS vs Aula)
-    let meetingsData = [];
-    if (classIds.length) {
+    // Fetch meetings + participants for linked classes
+    turmaMeetings = [];
+    if (turmaClassIds.length) {
       const { data: mData } = await sb.from('zoom_meetings')
-        .select('id, topic, class_id, classes!inner(name)')
-        .in('class_id', classIds);
-      meetingsData = mData || [];
+        .select('id, topic, start_time, class_id, classes!inner(name)')
+        .in('class_id', turmaClassIds);
+      for (const m of (mData || [])) {
+        const { data: parts } = await sb.from('zoom_participants')
+          .select('participant_name, participant_email, duration_minutes')
+          .eq('meeting_id', m.id);
+        // Dedup participants by name, sum durations
+        const byName = {};
+        (parts || []).forEach(p => {
+          const n = (p.participant_name || '').trim();
+          if (!n) return;
+          if (!byName[n]) byName[n] = { name: n, email: p.participant_email || '', dur: 0 };
+          byName[n].dur += (p.duration_minutes || 0);
+          if (p.participant_email) byName[n].email = p.participant_email;
+        });
+        const className = (m.classes?.name || m.topic || '').toLowerCase();
+        const isPS = className.includes('ps') || className.includes('pronto');
+        turmaMeetings.push({
+          id: m.id, topic: m.topic, start_time: m.start_time, isPS,
+          participants: Object.values(byName).filter(p => p.dur >= 5),
+        });
+      }
     }
 
-    // Count unique participants per meeting (duration > 5min)
-    const meetingStats = [];
-    for (const m of meetingsData) {
-      const { count } = await sb.from('zoom_participants')
-        .select('*', { count: 'exact', head: true })
-        .eq('meeting_id', m.id)
-        .gt('duration_minutes', 5);
-      const className = (m.classes?.name || m.topic || '').toLowerCase();
-      const isPS = className.includes('ps') || className.includes('pronto');
-      meetingStats.push({ id: m.id, isPS, presentes: count || 0 });
-    }
+    // Match CSV students to Zoom participants across all meetings
+    const csvStudents = csvImports.map(c => ({
+      ...c, presentAulas: 0, presentPS: 0, totalAulas: 0, totalPS: 0,
+    }));
+    const unmatchedByMeeting = [];
 
-    const aulaMeetings = meetingStats.filter(m => !m.isPS);
-    const psMeetings = meetingStats.filter(m => m.isPS);
+    turmaMeetings.forEach(m => {
+      const matched = new Set();
+      csvStudents.forEach(cs => {
+        if (m.isPS) cs.totalPS++; else cs.totalAulas++;
+        const found = m.participants.some(p => {
+          if (cs.email && p.email && cs.email.toLowerCase() === p.email.toLowerCase()) return true;
+          return nameMatch(cs.name, p.name);
+        });
+        if (found) {
+          if (m.isPS) cs.presentPS++; else cs.presentAulas++;
+          // Mark matched participants
+          m.participants.forEach(p => {
+            if ((cs.email && p.email && cs.email.toLowerCase() === p.email.toLowerCase()) || nameMatch(cs.name, p.name)) {
+              matched.add(p.name);
+            }
+          });
+        }
+      });
+      const unmatched = m.participants.filter(p => !matched.has(p.name));
+      if (unmatched.length) unmatchedByMeeting.push({ topic: m.topic, start_time: m.start_time, participants: unmatched });
+    });
+
+    allStudents = csvStudents;
+    window._unmatchedByMeeting = unmatchedByMeeting;
+
+    const aulaMeetings = turmaMeetings.filter(m => !m.isPS);
+    const psMeetings = turmaMeetings.filter(m => m.isPS);
 
     const avgAula = aulaMeetings.length && totalAlunos
-      ? (aulaMeetings.reduce((a, m) => a + m.presentes, 0) / aulaMeetings.length / totalAlunos * 100).toFixed(1)
+      ? (csvStudents.reduce((a, s) => a + s.presentAulas, 0) / csvStudents.length / aulaMeetings.length * 100).toFixed(1)
       : null;
     const avgPS = psMeetings.length && totalAlunos
-      ? (psMeetings.reduce((a, m) => a + m.presentes, 0) / psMeetings.length / totalAlunos * 100).toFixed(1)
+      ? (csvStudents.reduce((a, s) => a + s.presentPS, 0) / csvStudents.length / psMeetings.length * 100).toFixed(1)
       : null;
 
+    // Stats row
     document.getElementById('st-total').textContent = totalAlunos;
     if (totalUpgrades) {
       document.getElementById('st-upgrades').textContent = totalUpgrades;
       document.getElementById('st-upgrades-card').style.display = '';
     }
-
     const pctAulaEl = document.getElementById('st-pct-aula');
     pctAulaEl.textContent = avgAula !== null ? avgAula + '%' : '—';
     pctAulaEl.className = 'stat-num ' + (avgAula >= 80 ? 'green' : avgAula >= 60 ? 'amber' : avgAula !== null ? 'red' : '');
-
     const pctPsEl = document.getElementById('st-pct-ps');
     pctPsEl.textContent = avgPS !== null ? avgPS + '%' : '—';
     pctPsEl.className = 'stat-num ' + (avgPS >= 80 ? 'green' : avgPS >= 60 ? 'amber' : avgPS !== null ? 'red' : '');
-
-    document.getElementById('st-wa').textContent = waStudentIds.size;
+    document.getElementById('st-wa').textContent = new Set((waRes.data ?? []).map(m => m.student_id).filter(Boolean)).size;
     document.getElementById('st-aulas').textContent = aulaMeetings.length;
     document.getElementById('st-ps').textContent = psMeetings.length;
     document.getElementById('turma-sub-header').textContent = totalAlunos + ' alunos · ' + aulaMeetings.length + ' aulas · ' + psMeetings.length + ' PS';
 
-    // WA days per student
-    const waDays = {};
-    waMessages.forEach(m => {
-      if (!m.student_id) return;
-      const day = (m.sent_at ?? '').slice(0, 10);
-      if (!waDays[m.student_id]) waDays[m.student_id] = new Set();
-      waDays[m.student_id].add(day);
-    });
-
-    renderAlunosTable(summary, waDays);
+    renderAlunosTable();
     renderPresencaTab();
-    renderWaTab(summary, waDays);
+    renderWaTab();
   }
 
-  function renderAlunosTable(students, waDays) {
-    const sorted = sortStudents(students, sortMode);
+  function renderAlunosTable() {
+    const totalMeetings = turmaMeetings.length;
+    const sorted = sortMode === 'pct'
+      ? [...allStudents].sort((a, b) => {
+          const pctA = totalMeetings ? (a.presentAulas + a.presentPS) / totalMeetings * 100 : 0;
+          const pctB = totalMeetings ? (b.presentAulas + b.presentPS) / totalMeetings * 100 : 0;
+          return pctB - pctA;
+        })
+      : [...allStudents].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
     const html = sorted.map(s => {
-      const pct = parseFloat(s.presence_pct ?? 0);
+      const total = s.totalAulas + s.totalPS;
+      const present = s.presentAulas + s.presentPS;
+      const pct = total ? Math.round(present / total * 100 * 10) / 10 : 0;
       const cls = pct >= 80 ? 'green' : pct >= 60 ? 'amber' : 'red';
-      const waDias = waDays[s.student_id] ? waDays[s.student_id].size : 0;
-      return `<tr class="student-row" data-name="${escHtml(s.student_name)}">
-        <td><div class="student-name">${escHtml(s.student_name)}</div><div style="font-size:11px;color:#444">${escHtml(s.phone ?? '')}</div></td>
+      const upgradeBadge = s.upgrade
+        ? ' <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#8b5cf615;border:1px solid #8b5cf630;color:#a78bfa">' + escHtml(s.upgrade) + '</span>'
+        : '';
+      const maskedPhone = s.phone
+        ? (s.phone.length > 6 ? s.phone.slice(0, -4).replace(/\d/g, '•') + s.phone.slice(-4) : s.phone)
+        : '';
+      return `<tr class="student-row" data-name="${escHtml(s.name)}">
+        <td><div class="student-name" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${escHtml(s.name)}${upgradeBadge}</div><div style="font-size:11px;color:#444">${maskedPhone}</div></td>
         <td class="hide-mobile">
           <div class="${cls}" style="font-weight:800;font-size:14px">${pct}%</div>
           <div class="pct-bar"><div class="pct-fill fill-${cls}" style="width:${pct}%"></div></div>
         </td>
-        <td>${s.total_present ?? 0}/${s.total_classes ?? 0}</td>
-        <td class="hide-mobile"><span class="badge badge-${waDias > 0 ? 'green' : 'amber'}">${waDias} dias</span></td>
-        <td><a class="btn-sm" href="../aluno/perfil.html?id=${s.student_id}">Ver Perfil →</a></td>
+        <td>${present}/${total}</td>
+        <td class="hide-mobile">${s.presentAulas}/${s.totalAulas}</td>
+        <td class="hide-mobile">${s.presentPS}/${s.totalPS}</td>
       </tr>`;
     }).join('');
+
+    // Unmatched section
+    const unmatched = window._unmatchedByMeeting || [];
+    let unmatchedHtml = '';
+    if (unmatched.length) {
+      const allUnm = [];
+      unmatched.forEach(m => {
+        const dt = m.start_time ? new Date(m.start_time).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : '';
+        m.participants.forEach(p => {
+          allUnm.push({ name: p.name, dur: p.dur, topic: m.topic, date: dt });
+        });
+      });
+      // Dedup by name across meetings
+      const byName = {};
+      allUnm.forEach(u => {
+        if (!byName[u.name]) byName[u.name] = { name: u.name, meetings: [], totalDur: 0 };
+        byName[u.name].meetings.push(u.topic + ' ' + u.date);
+        byName[u.name].totalDur += u.dur;
+      });
+      const unmRows = Object.values(byName).sort((a, b) => b.totalDur - a.totalDur).map(u => {
+        const durStr = u.totalDur >= 60 ? `${Math.floor(u.totalDur/60)}h${String(u.totalDur%60).padStart(2,'0')}` : `${u.totalDur}min`;
+        return `<tr>
+          <td><div class="student-name">${escHtml(u.name)}</div></td>
+          <td style="font-size:12px;color:#666">${u.meetings.join(', ')}</td>
+          <td><span class="badge badge-amber">${durStr}</span></td>
+        </tr>`;
+      }).join('');
+      unmatchedHtml = `
+        <div style="background:#1a1010;border:1px solid #331a1a;border-radius:10px;padding:20px;margin-top:20px">
+          <div style="font-size:14px;font-weight:700;color:#f59e0b;margin-bottom:4px">
+            Outros Participantes — não encontrados no CSV (${Object.keys(byName).length})
+          </div>
+          <div style="font-size:12px;color:#555;margin-bottom:12px">
+            Participaram de aulas/PS mas não são compradores identificados no CSV.
+          </div>
+          <table>
+            <thead><tr><th>Nome Zoom</th><th>Reuniões</th><th>Duração Total</th></tr></thead>
+            <tbody>${unmRows}</tbody>
+          </table>
+        </div>`;
+    }
 
     document.getElementById('alunos-table').innerHTML = `
       <table>
@@ -437,13 +512,13 @@
           <tr>
             <th>Aluno</th>
             <th class="hide-mobile">% Presença</th>
-            <th>Aulas</th>
-            <th class="hide-mobile">WA Dias Ativos</th>
-            <th>Perfil</th>
+            <th>Total</th>
+            <th class="hide-mobile">Aulas</th>
+            <th class="hide-mobile">PS</th>
           </tr>
         </thead>
-        <tbody>${html || '<tr><td colspan="5" class="empty">Nenhum aluno encontrado.</td></tr>'}</tbody>
-      </table>`;
+        <tbody>${html || '<tr><td colspan="5" class="empty">Nenhum aluno encontrado. Importe o CSV na aba Fontes.</td></tr>'}</tbody>
+      </table>` + unmatchedHtml;
   }
 
   let presencaCurrentStudents = [];
@@ -660,45 +735,15 @@
     });
   }
 
-  function renderWaTab(summary, waDays) {
-    const ranked = summary.map(s => ({
-      ...s,
-      waDias: waDays[s.student_id] ? waDays[s.student_id].size : 0,
-    })).sort((a, b) => b.waDias - a.waDias);
-
-    if (ranked.every(s => s.waDias === 0)) {
-      document.getElementById('wa-content').innerHTML = `<div class="empty">Sem dados de WhatsApp ainda.<br>Configure o grupo da turma no Supabase (cohorts.whatsapp_group_jid) e aguarde as primeiras mensagens.</div>`;
-      return;
-    }
-
-    const html = ranked.map((s, i) => {
-      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
-      return `<tr>
-        <td style="width:40px;text-align:center;font-size:14px">${medal}</td>
-        <td><div class="student-name">${escHtml(s.student_name)}</div></td>
-        <td><span class="badge ${s.waDias > 0 ? 'badge-green' : 'badge-amber'}">${s.waDias} dias</span></td>
-        <td><a class="btn-sm" href="../aluno/perfil.html?id=${s.student_id}">Perfil</a></td>
-      </tr>`;
-    }).join('');
-
-    document.getElementById('wa-content').innerHTML = `
-      <table>
-        <thead><tr><th>#</th><th>Aluno</th><th>Dias Ativos</th><th>Perfil</th></tr></thead>
-        <tbody>${html}</tbody>
-      </table>`;
-  }
-
-  function sortStudents(arr, mode) {
-    if (mode === 'pct') return [...arr].sort((a, b) => parseFloat(b.presence_pct ?? 0) - parseFloat(a.presence_pct ?? 0));
-    return [...arr].sort((a, b) => (a.student_name ?? '').localeCompare(b.student_name ?? ''));
+  function renderWaTab() {
+    document.getElementById('wa-content').innerHTML = `<div class="empty">Sem dados de mensagens WhatsApp ainda.<br>A coleta de mensagens do grupo precisa ser configurada via webhook do Evolution API.</div>`;
   }
 
   function sortBy(mode) {
     sortMode = mode;
     document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('sort-' + mode).classList.add('active');
-    renderAlunosTable(allStudents, {});
-    loadAll(); // reload to get waDays again
+    renderAlunosTable();
   }
 
   function filterAlunos() {
