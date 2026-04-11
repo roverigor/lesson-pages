@@ -240,7 +240,10 @@
       <button class="btn-sm" style="padding:8px 16px;font-size:12px" onclick="loadFontesTab()">🔄 Atualizar</button>
       <select id="fontes-filter" onchange="filterFontes()" style="background:#111;border:1px solid #222;color:#ddd;padding:8px 12px;border-radius:8px;font-size:12px;font-family:var(--font-sans)">
         <option value="all">Todos</option>
-        <option value="gaps">Apenas com lacunas</option>
+        <option value="alunos">Apenas alunos</option>
+        <option value="gaps">Alunos com lacunas</option>
+        <option value="equipe">Equipe</option>
+        <option value="desconhecidos">Desconhecidos</option>
         <option value="csv-only">Só no CSV</option>
         <option value="wa-only">Só no WhatsApp</option>
         <option value="zoom-only">Só no Zoom</option>
@@ -1012,7 +1015,7 @@
   }
 
   // ─── TAB: Fontes (Cross-reference) ─────────────
-  let fontesData = { csv: [], wa: [], zoom: [] };
+  let fontesData = { csv: [], wa: [], zoom: [], mentorNames: [] };
 
   async function loadFontesTab() {
     const el = document.getElementById('fontes-content');
@@ -1023,7 +1026,7 @@
     try {
       const classIds = await getLinkedClassIds();
 
-      // Parallel queries: CSV, WA members, Zoom participants (via class_ids)
+      // Parallel queries: CSV, WA members, Zoom (via class_ids), Mentors
       const queries = [
         sb.from('student_imports').select('*').eq('cohort_id', cohortId).order('name'),
         sb.from('wa_group_members').select('phone, wa_name').eq('cohort_id', cohortId),
@@ -1033,6 +1036,12 @@
           sb.from('zoom_participants')
             .select('participant_name, participant_email, duration_minutes, student_id, meeting_id, zoom_meetings!inner(class_id)')
             .in('zoom_meetings.class_id', classIds)
+        );
+        queries.push(
+          sb.from('class_mentors')
+            .select('mentor_id, mentors!inner(name)')
+            .in('class_id', classIds)
+            .is('valid_until', null)
         );
       }
 
@@ -1063,6 +1072,15 @@
       });
       fontesData.zoom = [...zoomMap.values()];
 
+      // Extract unique mentor names (lowercase for matching)
+      const mentorSet = new Set();
+      const mentorRaw = classIds.length && results[3] ? (results[3].data || []) : [];
+      mentorRaw.forEach(cm => {
+        const name = cm.mentors?.name;
+        if (name) mentorSet.add(name.toLowerCase().trim());
+      });
+      fontesData.mentorNames = [...mentorSet];
+
       renderFontes();
     } catch (err) {
       el.innerHTML = '<div class="empty">Erro ao carregar fontes: ' + escHtml(String(err)) + '</div>';
@@ -1074,7 +1092,7 @@
   }
 
   function renderFontes() {
-    const { csv, wa, zoom } = fontesData;
+    const { csv, wa, zoom, mentorNames } = fontesData;
     const el = document.getElementById('fontes-content');
     const sumEl = document.getElementById('fontes-summary');
     const filter = document.getElementById('fontes-filter').value;
@@ -1085,7 +1103,7 @@
     function getOrCreate(key, name) {
       if (!key) return null;
       if (!unified.has(key)) {
-        unified.set(key, { key, name: name || '', phone: '', email: '', csv: false, wa: false, zoom: false, upgrade: null });
+        unified.set(key, { key, name: name || '', phone: '', email: '', csv: false, wa: false, zoom: false, upgrade: null, tipo: null });
       }
       return unified.get(key);
     }
@@ -1131,7 +1149,6 @@
     zoom.forEach(z => {
       const emailKey = (z.email || '').toLowerCase().trim();
       let matched = false;
-      // Match by email
       if (emailKey) {
         for (const [, entry] of unified) {
           if (entry.email && entry.email.toLowerCase().trim() === emailKey) {
@@ -1141,7 +1158,6 @@
           }
         }
       }
-      // Match by name (contains)
       if (!matched && z.name) {
         const zName = z.name.toLowerCase().trim();
         for (const [, entry] of unified) {
@@ -1162,22 +1178,36 @@
       }
     });
 
+    // 4. Classify tipo: aluno / equipe / desconhecido
+    for (const [, r] of unified) {
+      if (r.csv) {
+        r.tipo = 'aluno';
+      } else {
+        const nameLower = (r.name || '').toLowerCase().trim();
+        const isTeam = mentorNames.some(mn => nameLower.includes(mn) || mn.includes(nameLower));
+        r.tipo = isTeam ? 'equipe' : 'desconhecido';
+      }
+    }
+
     let rows = [...unified.values()];
 
-    // Counts
-    const totalCSV = rows.filter(r => r.csv).length;
+    // Counts (only alunos count for match metrics)
+    const alunos = rows.filter(r => r.tipo === 'aluno');
     const hasWA = (wa || []).length > 0;
+    const totalCSV = alunos.length;
     const totalWA = rows.filter(r => r.wa).length;
     const totalZoom = rows.filter(r => r.zoom).length;
-    const totalComplete = rows.filter(r => r.csv && r.zoom && (hasWA ? r.wa : true)).length;
-    const gapsList = rows.filter(r => !(r.csv && r.zoom && (hasWA ? r.wa : true)));
+    const totalComplete = alunos.filter(r => r.csv && r.zoom && (hasWA ? r.wa : true)).length;
+    const gapsList = alunos.filter(r => !(r.csv && r.zoom && (hasWA ? r.wa : true)));
     const totalUpgradesSum = rows.filter(r => r.upgrade).length;
+    const totalEquipe = rows.filter(r => r.tipo === 'equipe').length;
+    const totalDesconhecidos = rows.filter(r => r.tipo === 'desconhecido').length;
 
     sumEl.innerHTML = `
       <div style="display:flex;gap:12px;flex-wrap:wrap">
         <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
           <div style="font-size:20px;font-weight:800;color:#a5b4fc">${totalCSV}</div>
-          <div style="font-size:10px;color:#555">CSV</div>
+          <div style="font-size:10px;color:#555">Alunos (CSV)</div>
         </div>
         <div style="background:#101010;border:1px solid #1a1a1a;border-radius:8px;padding:12px 16px;text-align:center">
           <div style="font-size:20px;font-weight:800;color:#22c55e">${hasWA ? totalWA : '—'}</div>
@@ -1195,6 +1225,14 @@
           <div style="font-size:20px;font-weight:800;color:${gapsList.length ? '#f87171' : '#4ade80'}">${gapsList.length}</div>
           <div style="font-size:10px;color:#555">Com lacunas</div>
         </div>
+        ${totalEquipe ? `<div style="background:#101010;border:1px solid #38bdf830;border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:#38bdf8">${totalEquipe}</div>
+          <div style="font-size:10px;color:#555">Equipe</div>
+        </div>` : ''}
+        ${totalDesconhecidos ? `<div style="background:#101010;border:1px solid #ef444430;border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px;font-weight:800;color:#f87171">${totalDesconhecidos}</div>
+          <div style="font-size:10px;color:#555">Desconhecidos</div>
+        </div>` : ''}
         ${totalUpgradesSum ? `<div style="background:#101010;border:1px solid #8b5cf630;border-radius:8px;padding:12px 16px;text-align:center">
           <div style="font-size:20px;font-weight:800;color:#a78bfa">${totalUpgradesSum}</div>
           <div style="font-size:10px;color:#555">Upgrades</div>
@@ -1202,19 +1240,33 @@
       </div>`;
 
     // Filter
-    if (filter === 'gaps') rows = rows.filter(r => !(r.csv && r.zoom && (hasWA ? r.wa : true)));
+    if (filter === 'alunos') rows = rows.filter(r => r.tipo === 'aluno');
+    else if (filter === 'gaps') rows = rows.filter(r => r.tipo === 'aluno' && !(r.csv && r.zoom && (hasWA ? r.wa : true)));
+    else if (filter === 'equipe') rows = rows.filter(r => r.tipo === 'equipe');
+    else if (filter === 'desconhecidos') rows = rows.filter(r => r.tipo === 'desconhecido');
     else if (filter === 'csv-only') rows = rows.filter(r => r.csv && !r.wa && !r.zoom);
     else if (filter === 'wa-only') rows = rows.filter(r => r.wa && !r.csv);
     else if (filter === 'zoom-only') rows = rows.filter(r => r.zoom && !r.csv);
     else if (filter === 'upgrades') rows = rows.filter(r => r.upgrade);
 
-    rows.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    rows.sort((a, b) => {
+      const order = { aluno: 0, equipe: 1, desconhecido: 2 };
+      const d = (order[a.tipo] || 0) - (order[b.tipo] || 0);
+      return d !== 0 ? d : (a.name || '').localeCompare(b.name || '');
+    });
 
     const dot = (ok) => ok
       ? '<span style="color:#4ade80;font-size:14px" title="Presente">●</span>'
       : '<span style="color:#333;font-size:14px" title="Ausente">○</span>';
 
+    function tipoBadge(tipo) {
+      if (tipo === 'aluno') return '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:#16a34a20;border:1px solid #16a34a40;color:#4ade80;white-space:nowrap">Aluno</span>';
+      if (tipo === 'equipe') return '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:#0ea5e920;border:1px solid #0ea5e940;color:#38bdf8;white-space:nowrap">Equipe</span>';
+      return '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:#ef444420;border:1px solid #ef444440;color:#f87171;white-space:nowrap">⚠ Desconhecido</span>';
+    }
+
     function matchBadge(r) {
+      if (r.tipo !== 'aluno') return '<span style="color:#333">—</span>';
       const sources = [r.csv, r.wa, r.zoom].filter(Boolean).length;
       const needed = hasWA ? 3 : 2;
       if (sources >= needed) return '<span style="font-size:10px;padding:2px 8px;border-radius:4px;background:#16a34a20;border:1px solid #16a34a40;color:#4ade80;white-space:nowrap">Completo</span>';
@@ -1232,6 +1284,7 @@
       return `<tr>
         <td><div class="student-name" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${escHtml(r.name || '?')}${upgradeBadge}</div></td>
         <td style="font-size:12px;color:#666">${maskedPhone}</td>
+        <td style="text-align:center">${tipoBadge(r.tipo)}</td>
         <td style="text-align:center">${dot(r.csv)}</td>
         <td style="text-align:center">${dot(r.wa)}</td>
         <td style="text-align:center">${dot(r.zoom)}</td>
@@ -1246,6 +1299,7 @@
           <thead><tr>
             <th>Nome</th>
             <th>Telefone</th>
+            <th style="text-align:center">Tipo</th>
             <th style="text-align:center">CSV</th>
             <th style="text-align:center">WA</th>
             <th style="text-align:center">Zoom</th>
