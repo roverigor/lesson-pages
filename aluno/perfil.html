@@ -5,22 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Perfil 360 — Academia Lendária</title>
   <link rel="stylesheet" href="../templates/design-tokens-dark-premium.css">
+  <link rel="stylesheet" href="../templates/login-overlay.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: var(--font-sans); background: #080808; color: #888; min-height: 100vh; }
-
-    /* LOGIN */
-    .login-overlay { position: fixed; inset: 0; background: #080808; display: flex; align-items: center; justify-content: center; z-index: 9999; }
-    .login-overlay.hidden { display: none; }
-    .login-box { background: #111; border: 1px solid #222; border-radius: 16px; padding: 40px; width: 90%; max-width: 380px; text-align: center; }
-    .login-icon { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; }
-    .login-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px; }
-    .login-field { width: 100%; padding: 12px 16px; border-radius: 8px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd; font-size: 14px; font-family: var(--font-sans); margin-bottom: 12px; outline: none; }
-    .login-field:focus { border-color: #6366f1; }
-    .login-btn { width: 100%; padding: 12px; border-radius: 8px; border: none; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: var(--font-sans); }
-    .login-error { color: #ef4444; font-size: 12px; margin-top: 10px; display: none; }
-    .login-error.show { display: block; }
 
     /* HEADER */
     .header { background: #101010; border-bottom: 1px solid #1a1a1a; padding: 16px 32px; position: sticky; top: 0; z-index: 200; }
@@ -130,6 +119,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
 <script src="/js/config.js"></script>
+<script src="../templates/utils.js"></script>
 <script>
   const SUPABASE_URL = window.SUPABASE_CONFIG.url;
   const SUPABASE_KEY = window.SUPABASE_CONFIG.anonKey;
@@ -137,23 +127,7 @@
 
   const studentId = new URLSearchParams(location.search).get('id');
 
-  async function handleLogin(e) {
-    e.preventDefault();
-    const btn = document.getElementById('login-btn');
-    const errEl = document.getElementById('login-error');
-    btn.disabled = true;
-    errEl.textContent = '';
-    const { error } = await sb.auth.signInWithPassword({
-      email: document.getElementById('login-email').value.trim(),
-      password: document.getElementById('login-password').value,
-    });
-    if (error) {
-      errEl.textContent = 'Email ou senha incorretos';
-      btn.disabled = false;
-      return;
-    }
-    showApp();
-  }
+  // handleLogin provided by utils.js
 
   function showApp() {
     document.getElementById('login-overlay').classList.add('hidden');
@@ -392,9 +366,7 @@
     return dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   }
 
-  function escHtml(s) {
-    return (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
+  // escHtml provided by utils.js
 
   checkAuth();
 </script>

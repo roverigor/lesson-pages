@@ -24,6 +24,45 @@ function mentorColor(name) {
 // Alias for pages that use getAvatarColor
 const getAvatarColor = mentorColor;
 
+// ── HTML escape ─────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return (s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ── Name matching (token-based) ─────────────────────────────────────────────
+function nameMatch(a, b) {
+  if (!a || !b) return false;
+  const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  const ta = norm(a).split(/\s+/).filter(Boolean);
+  const tb = norm(b).split(/\s+/).filter(Boolean);
+  if (ta.length === 0 || tb.length === 0) return false;
+  if (ta[0] !== tb[0]) return false;
+  const shared = ta.filter(t => tb.includes(t));
+  return shared.length >= Math.min(2, Math.min(ta.length, tb.length));
+}
+
+// ── Login handler (requires Supabase client `sb`) ───────────────────────────
+function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  btn.disabled = true;
+  errEl.textContent = '';
+  errEl.classList.remove('show');
+  sb.auth.signInWithPassword({
+    email: document.getElementById('login-email').value.trim(),
+    password: document.getElementById('login-password').value,
+  }).then(({ error }) => {
+    if (error) {
+      errEl.textContent = 'Email ou senha incorretos';
+      errEl.classList.add('show');
+      btn.disabled = false;
+      return;
+    }
+    showApp();
+  });
+}
+
 // ── Date helpers ─────────────────────────────────────────────────────────────
 function generateWeeklyDates(startStr, endStr, weekday, format = 'iso') {
   const dates = [];

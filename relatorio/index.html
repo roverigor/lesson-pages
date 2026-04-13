@@ -6,51 +6,17 @@
   <title>Relatório de Presenças — Equipe Pedagógica</title>
   <link rel="stylesheet" href="../templates/design-tokens-dark-premium.css">
   <link rel="stylesheet" href="../templates/admin-shared.css">
+  <link rel="stylesheet" href="../templates/login-overlay.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="/js/config.js"></script>
+<script src="../templates/utils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     body { font-family: 'Inter', sans-serif; background: #080808; color: #888; min-height: 100vh; }
 
-    /* ── LOGIN ── */
-    .login-overlay {
-      position: fixed; inset: 0; background: #080808;
-      display: flex; align-items: center; justify-content: center; z-index: 9999;
-    }
-    .login-overlay.hidden { display: none; }
-    .login-box {
-      background: #111; border: 1px solid #222; border-radius: 16px;
-      padding: 40px; width: 90%; max-width: 400px; text-align: center;
-    }
-    .login-icon {
-      width: 56px; height: 56px; border-radius: 14px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 24px; margin-bottom: 20px;
-    }
-    .login-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px; }
-    .login-subtitle { font-size: 13px; color: #555; margin-bottom: 28px; }
-    .login-field {
-      width: 100%; padding: 12px 16px; border-radius: 8px;
-      background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd;
-      font-size: 14px; font-family: 'Inter', sans-serif;
-      margin-bottom: 12px; outline: none; transition: border-color 0.15s;
-    }
-    .login-field:focus { border-color: #6366f1; }
-    .login-field::placeholder { color: #333; }
-    .login-btn {
-      width: 100%; padding: 12px; border-radius: 8px; border: none;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      color: #fff; font-size: 14px; font-weight: 700; cursor: pointer;
-      font-family: 'Inter', sans-serif; margin-top: 8px; transition: opacity 0.15s;
-    }
-    .login-btn:hover { opacity: 0.9; }
-    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .login-error { color: #ef4444; font-size: 12px; margin-top: 12px; display: none; }
-    .login-error.show { display: block; }
 
     /* ── HEADER ── */
     .header {
@@ -389,11 +355,7 @@ function fmtDateShort(iso) {
   return d.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
 }
 
-function showToast(msg, type = 'success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = `toast ${type} show`;
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
+// showToast provided by utils.js
 
 // ── AUTH ───────────────────────────────────────
 async function checkAuth() {
@@ -864,9 +826,7 @@ function roleTag(role) {
   return `<span class="role-badge ${cls}">${escHtml(role)}</span>`;
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+// escHtml provided by utils.js
 
 // ── CSV EXPORT ─────────────────────────────────
 function exportCSV() {
