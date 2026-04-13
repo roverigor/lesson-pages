@@ -329,14 +329,17 @@
 
   let turmaClassIds = [];
   let turmaMeetings = []; // { id, topic, isPS, participants: [{name, email, dur}] }
+  let staffMembers = []; // { name, aliases[], category }
 
   async function loadAll() {
     turmaClassIds = await getLinkedClassIds();
-    const [cohortRes, waRes, csvRes] = await Promise.all([
+    const [cohortRes, waRes, csvRes, staffRes] = await Promise.all([
       sb.from('cohorts').select('id, name, start_date').eq('id', cohortId).single(),
       sb.from('wa_group_members').select('phone').eq('cohort_id', cohortId),
       sb.from('student_imports').select('*').eq('cohort_id', cohortId).order('name'),
+      sb.from('staff').select('name, email, aliases, category').eq('active', true),
     ]);
+    staffMembers = staffRes.data || [];
 
     const cohort = cohortRes.data;
     document.getElementById('turma-name-header').textContent = cohort?.name ?? 'Turma';
@@ -660,9 +663,75 @@
       ${absRows ? `<div style="font-size:13px;font-weight:700;color:#ef4444;margin:20px 0 8px">✗ Ausentes (${csvAbsent.length})</div>
       <table><thead><tr><th>#</th><th>Aluno (CSV)</th><th>Status</th><th>Ação</th></tr></thead><tbody>${absRows}</tbody></table>` : ''}`;
 
-    // Unmatched zoom participants (not in CSV)
-    if (unmatchedZoom.length > 0) {
-      const unmRows = unmatchedZoom.sort((a, b) => b.dur - a.dur).map((p, i) => {
+    // Separate unmatched zoom participants into Staff (equipe) and Others
+    const staffParticipants = [];
+    const otherParticipants = [];
+
+    unmatchedZoom.forEach(p => {
+      const isStaff = staffMembers.some(s => {
+        // Match by name
+        if (nameMatch(s.name, p.name)) return true;
+        if (s.name && p.name && s.name.toLowerCase().trim() === p.name.toLowerCase().trim()) return true;
+        // Match by aliases
+        if (s.aliases && s.aliases.length) {
+          return s.aliases.some(alias => {
+            if (alias.toLowerCase().trim() === p.name.toLowerCase().trim()) return true;
+            return nameMatch(alias, p.name);
+          });
+        }
+        return false;
+      });
+      const staffMatch = isStaff ? staffMembers.find(s => {
+        if (nameMatch(s.name, p.name)) return true;
+        if (s.name && p.name && s.name.toLowerCase().trim() === p.name.toLowerCase().trim()) return true;
+        if (s.aliases && s.aliases.length) return s.aliases.some(a => a.toLowerCase().trim() === p.name.toLowerCase().trim() || nameMatch(a, p.name));
+        return false;
+      }) : null;
+      if (isStaff) {
+        staffParticipants.push({ ...p, staffName: staffMatch?.name, category: staffMatch?.category });
+      } else {
+        otherParticipants.push(p);
+      }
+    });
+
+    let unmatchedHtml = '';
+
+    // Staff section
+    if (staffParticipants.length > 0) {
+      const categoryColors = { Professor: '#a5b4fc', Mentor: '#facc15', Host: '#888' };
+      const categoryBg = { Professor: 'rgba(99,102,241,0.12)', Mentor: 'rgba(250,204,21,0.1)', Host: 'rgba(255,255,255,0.05)' };
+      const staffRows = staffParticipants.sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((p, i) => {
+        const durStr = p.dur >= 60 ? `${Math.floor(p.dur/60)}h${String(p.dur%60).padStart(2,'0')}` : `${p.dur}min`;
+        const cat = p.category || 'Equipe';
+        const catColor = categoryColors[cat] || '#888';
+        const catBg = categoryBg[cat] || 'rgba(255,255,255,0.05)';
+        const matchLabel = p.staffName && p.staffName.toLowerCase() !== p.name.toLowerCase()
+          ? `<span style="font-size:10px;color:#555;margin-left:4px">→ ${escHtml(p.staffName)}</span>` : '';
+        return `<tr>
+          <td style="width:32px;text-align:center;color:#444">${i+1}</td>
+          <td><div class="student-name">${escHtml(p.name)}</div>${matchLabel}</td>
+          <td><span style="color:${catColor};background:${catBg};padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">${cat}</span></td>
+          <td style="font-size:12px">${durStr}</td>
+        </tr>`;
+      }).join('');
+      unmatchedHtml += `
+        <div style="background:#0d1117;border:1px solid #1a2332;border-radius:10px;padding:20px;margin-bottom:16px">
+          <div style="font-size:14px;font-weight:700;color:#a5b4fc;margin-bottom:4px">
+            🎓 Equipe Presente (${staffParticipants.length})
+          </div>
+          <div style="font-size:12px;color:#555;margin-bottom:12px">
+            Membros da equipe educacional identificados nesta aula.
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Nome no Zoom</th><th>Função</th><th>Duração</th></tr></thead>
+            <tbody>${staffRows}</tbody>
+          </table>
+        </div>`;
+    }
+
+    // Others section
+    if (otherParticipants.length > 0) {
+      const unmRows = otherParticipants.sort((a, b) => b.dur - a.dur).map((p, i) => {
         const durStr = p.dur >= 60 ? `${Math.floor(p.dur/60)}h${String(p.dur%60).padStart(2,'0')}` : `${p.dur}min`;
         const cls = p.dur >= 60 ? 'badge-green' : 'badge-amber';
         return `<tr>
@@ -672,22 +741,22 @@
           <td><button class="btn-link" onclick="openLinkModal('${escHtml(p.name).replace(/'/g,"\\'")}')">Vincular</button></td>
         </tr>`;
       }).join('');
-      document.getElementById('presenca-unmatched').innerHTML = `
+      unmatchedHtml += `
         <div style="background:#1a1010;border:1px solid #331a1a;border-radius:10px;padding:20px">
           <div style="font-size:14px;font-weight:700;color:#f59e0b;margin-bottom:4px">
-            Outros Participantes — não encontrados no CSV (${unmatchedZoom.length})
+            Outros Participantes — não identificados (${otherParticipants.length})
           </div>
           <div style="font-size:12px;color:#555;margin-bottom:12px">
-            Participaram desta aula mas não são compradores identificados no CSV.
+            Participaram desta aula mas não são compradores do CSV nem membros da equipe.
           </div>
           <table>
             <thead><tr><th>#</th><th>Nome no Zoom</th><th>Duração</th><th>Ação</th></tr></thead>
             <tbody>${unmRows}</tbody>
           </table>
         </div>`;
-    } else {
-      document.getElementById('presenca-unmatched').innerHTML = '';
     }
+
+    document.getElementById('presenca-unmatched').innerHTML = unmatchedHtml;
 
     // Dispatch section for present students with phone
     presencaCurrentStudents = csvPresent;
