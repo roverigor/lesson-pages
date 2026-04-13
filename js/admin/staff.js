@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════
-// STAFF MANAGEMENT
+// STAFF MANAGEMENT (reads from mentors table)
 // ═══════════════════════════════════════
 async function loadStaff() {
-  const { data, error } = await sb.from('staff').select('*').order('name');
+  const { data, error } = await sb.from('mentors').select('*').order('name');
   if (error) { console.error('Load staff error:', error); return; }
   staffList = data || [];
   renderStaffList();
@@ -84,26 +84,15 @@ async function saveStaff() {
 
   if (!name) { showToast('Nome é obrigatório', 'error'); return; }
 
-  const staffRecord  = { name, email: email || null, phone: rawPhone || null, category, aliases };
-  const mentorRole   = category === 'Host' ? 'Host' : category === 'Mentor' ? 'Mentor' : 'Professor';
+  const role = category === 'Host' ? 'Host' : 'Professor';
+  const record = { name, email: email || null, phone: rawPhone || null, role, category, aliases };
 
   if (id) {
-    const { error } = await sb.from('staff').update(staffRecord).eq('id', id);
+    const { error } = await sb.from('mentors').update(record).eq('id', id);
     if (error) { showToast('Erro: ' + error.message, 'error'); return; }
   } else {
-    const { error } = await sb.from('staff').insert(staffRecord);
+    const { error } = await sb.from('mentors').insert(record);
     if (error) { showToast('Erro: ' + error.message, 'error'); return; }
-  }
-
-  // Sync to mentors table (including aliases)
-  if (rawPhone) {
-    await sb.rpc('upsert_mentor_from_staff', { p_name: name, p_phone: rawPhone, p_role: mentorRole });
-    // Update aliases on mentor (RPC doesn't handle aliases)
-    const { data: mentor } = await sb.from('mentors').select('id').eq('phone', rawPhone).single();
-    if (mentor) await sb.from('mentors').update({ aliases }).eq('id', mentor.id);
-  } else {
-    const { data: existing } = await sb.from('mentors').select('id').eq('name', name).single();
-    if (existing) await sb.from('mentors').update({ name, role: mentorRole, aliases }).eq('id', existing.id);
   }
 
   showToast(id ? 'Cadastro atualizado!' : 'Membro adicionado!', 'success');
@@ -113,7 +102,7 @@ async function saveStaff() {
 
 async function deleteStaff(id, name) {
   showDeleteConfirm(name, async () => {
-    const { error } = await sb.from('staff').delete().eq('id', id);
+    const { error } = await sb.from('mentors').delete().eq('id', id);
     if (error) { showToast('Erro: ' + error.message, 'error'); return; }
     showToast(`${name} removido`, 'success');
     await loadStaff();

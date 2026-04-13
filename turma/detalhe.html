@@ -311,7 +311,7 @@
       sb.from('cohorts').select('id, name, start_date').eq('id', cohortId).single(),
       sb.from('wa_group_members').select('phone').eq('cohort_id', cohortId),
       sb.from('student_imports').select('*').eq('cohort_id', cohortId).order('name'),
-      sb.from('staff').select('name, email, aliases, category').eq('active', true),
+      sb.from('mentors').select('name, email, aliases, category').eq('active', true),
     ]);
     staffMembers = staffRes.data || [];
 
@@ -2035,7 +2035,7 @@ async function executeLinkStaff(staffName) {
   const currentAliases = staffMember.aliases || [];
   if (!currentAliases.includes(linkZoomName)) {
     const newAliases = [...currentAliases, linkZoomName];
-    await sb.from('staff').update({ aliases: newAliases }).eq('name', staffName);
+    await sb.from('mentors').update({ aliases: newAliases }).eq('name', staffName);
     // Sync to mentors
     if (staffMember.phone) {
       const { data: mentor } = await sb.from('mentors').select('id').eq('phone', staffMember.phone.replace(/\D/g,'')).single();
@@ -2158,7 +2158,7 @@ async function executeWaLinkStaff(staffName) {
   if (staffMember && waLinkPhone) {
     const cleanPhone = waLinkPhone.replace(/\D/g, '');
     if (!staffMember.phone) {
-      await sb.from('staff').update({ phone: cleanPhone }).eq('name', staffName);
+      await sb.from('mentors').update({ phone: cleanPhone }).eq('name', staffName);
       staffMember.phone = cleanPhone;
     }
   }

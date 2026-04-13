@@ -221,9 +221,7 @@ async function applyFuzzyMatches() {
         if (staffMember) {
           const cur = staffMember.aliases || [];
           if (!cur.includes(zoomName)) {
-            await sb.from('staff').update({ aliases: [...cur, zoomName] }).eq('id', sid);
-            const { data: mentor } = await sb.from('mentors').select('id').eq('phone', staffMember.phone?.replace(/\D/g,'')).single();
-            if (mentor) await sb.from('mentors').update({ aliases: [...cur, zoomName] }).eq('id', mentor.id);
+            await sb.from('mentors').update({ aliases: [...cur, zoomName] }).eq('id', sid);
             staffMember.aliases = [...cur, zoomName];
           }
         }
@@ -281,7 +279,7 @@ async function loadZoomMeetings() {
   // Carregar CSV (student_imports) + Staff para vinculação
   const [csvRes, staffRes] = await Promise.all([
     sb.from('student_imports').select('id, name, email, phone, cohort_id, aliases').order('name'),
-    sb.from('staff').select('id, name, email, phone, category, aliases').eq('active', true).order('name'),
+    sb.from('mentors').select('id, name, email, phone, category, aliases').eq('active', true).order('name'),
   ]);
   zoomAllStudents = (csvRes.data || []).filter(s => s.name && s.name.trim());
   zoomStaffList = (staffRes.data || []).filter(s => s.name && s.name.trim());
@@ -546,10 +544,7 @@ async function linkParticipantNew(partId, zoomName) {
     if (staffMember) {
       const currentAliases = staffMember.aliases || [];
       if (!currentAliases.includes(zoomName)) {
-        await sb.from('staff').update({ aliases: [...currentAliases, zoomName] }).eq('id', id);
-        // Sync to mentors
-        const { data: mentor } = await sb.from('mentors').select('id').eq('phone', staffMember.phone?.replace(/\D/g,'')).single();
-        if (mentor) await sb.from('mentors').update({ aliases: [...currentAliases, zoomName] }).eq('id', mentor.id);
+        await sb.from('mentors').update({ aliases: [...currentAliases, zoomName] }).eq('id', id);
         staffMember.aliases = [...currentAliases, zoomName];
       }
     }
