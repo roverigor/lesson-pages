@@ -300,8 +300,8 @@
     <div class="header-title">
       <div class="header-icon">👥</div>
       <div>
-        <h1>Gestao de Alunos</h1>
-        <p>Cadastro, edicao e disparos individuais</p>
+        <h1>Gestão de Alunos</h1>
+        <p>Fonte: CSV importados por turma</p>
       </div>
     </div>
     <div class="header-actions">
@@ -322,13 +322,7 @@
 
   <!-- TOOLBAR -->
   <div class="toolbar">
-    <input class="search-input" id="search" placeholder="Buscar por nome ou telefone..." oninput="handleSearch()">
-    <div class="filter-type">
-      <button class="type-btn active" id="filter-all" onclick="setTypeFilter('all')">Todos</button>
-      <button class="type-btn" id="filter-students" onclick="setTypeFilter('students')">Alunos</button>
-      <button class="type-btn" id="filter-staff" onclick="setTypeFilter('staff')">Equipe</button>
-    </div>
-    <button class="merge-bulk-btn" onclick="showBulkMerge()">Mesclar Duplicados</button>
+    <input class="search-input" id="search" placeholder="Buscar por nome, email, telefone ou produto..." oninput="handleSearch()">
     <div id="cohort-tabs"></div>
   </div>
 
@@ -339,11 +333,10 @@
         <tr>
           <th>Aluno</th>
           <th>Telefone</th>
-          <th>Cohort</th>
-          <th>Apelidos Zoom</th>
-          <th>Tipo</th>
-          <th>WhatsApp</th>
-          <th>Acoes</th>
+          <th>Email</th>
+          <th>Turma</th>
+          <th>Compra</th>
+          <th>WA</th>
         </tr>
       </thead>
       <tbody id="students-body"></tbody>
@@ -420,42 +413,50 @@ async function showApp() {
 }
 
 // DATA
-let studentCohorts = []; // N:N mapping
-
 async function loadData() {
-  const [{ data: c }, { data: s }, { data: sc }] = await Promise.all([
+  const [{ data: c }, { data: csv }, { data: sysStudents }] = await Promise.all([
     sb.from('cohorts').select('*').order('name'),
-    sb.from('students').select('*, cohorts(name, whatsapp_group_jid), aliases').eq('active', true).order('name'),
-    sb.from('student_cohorts').select('student_id, cohort_id, cohorts(name)'),
+    sb.from('student_imports').select('*, cohorts(name)').order('name'),
+    sb.from('students').select('id, name, phone, cohort_id, is_mentor, aliases').eq('active', true),
   ]);
   cohorts = c || [];
-  allStudents = s || [];
-  studentCohorts = sc || [];
 
-  // Attach all cohort names to each student (N:N)
-  for (const s of allStudents) {
-    const scs = studentCohorts.filter(sc => sc.student_id === s.id);
-    s._cohortNames = scs.map(sc => sc.cohorts?.name || '').filter(Boolean);
-    // Keep primary cohort from students.cohort_id
-    if (s.cohorts?.name && !s._cohortNames.includes(s.cohorts.name)) {
-      s._cohortNames.unshift(s.cohorts.name);
+  // Build lookup from students table (for enrichment: aliases, is_mentor)
+  const sysByPhone = {};
+  (sysStudents || []).forEach(s => {
+    if (s.phone) {
+      const key = s.phone.replace(/\D/g, '');
+      if (!sysByPhone[key]) sysByPhone[key] = [];
+      sysByPhone[key].push(s);
     }
-    if (!s._cohortNames.length && s.cohorts?.name) {
-      s._cohortNames = [s.cohorts.name];
-    }
-  }
+  });
 
-  // Cross-cohort lookup: find other cohorts where the same phone exists
-  // This shows e.g. "Fundamental T1" badge on Advanced T2 students
+  // Map CSV imports to allStudents, enriched with system data
+  allStudents = (csv || []).map(ci => {
+    const phoneKey = (ci.phone || '').replace(/\D/g, '');
+    const sysMatch = phoneKey ? (sysByPhone[phoneKey] || []).find(s => s.cohort_id === ci.cohort_id) || (sysByPhone[phoneKey] || [])[0] : null;
+    return {
+      ...ci,
+      _cohortNames: [ci.cohorts?.name || ''],
+      _sysId: sysMatch?.id || null,
+      is_mentor: sysMatch?.is_mentor || false,
+      aliases: sysMatch?.aliases || [],
+      _hasSystemRecord: !!sysMatch,
+    };
+  });
+
+  // Cross-cohort: show other cohorts for same phone
   const phoneMap = {};
   for (const s of allStudents) {
     if (!s.phone) continue;
-    if (!phoneMap[s.phone]) phoneMap[s.phone] = [];
-    phoneMap[s.phone].push(s);
+    const key = s.phone.replace(/\D/g, '');
+    if (!phoneMap[key]) phoneMap[key] = [];
+    phoneMap[key].push(s);
   }
   for (const s of allStudents) {
     if (!s.phone) continue;
-    const siblings = phoneMap[s.phone] || [];
+    const key = s.phone.replace(/\D/g, '');
+    const siblings = phoneMap[key] || [];
     for (const sib of siblings) {
       if (sib.id === s.id) continue;
       const sibCohort = sib.cohorts?.name;
@@ -473,34 +474,33 @@ async function loadData() {
 // STATS
 function renderStats() {
   const filtered = getFiltered();
-  const staffCount = allStudents.filter(s => s.is_mentor).length;
-  const studentCount = allStudents.length - staffCount;
-  const withName = filtered.filter(s => s.name && s.name.trim() !== '').length;
-  const withoutName = filtered.length - withName;
+  const totalCSV = allStudents.length;
+  const withSystem = allStudents.filter(s => s._hasSystemRecord).length;
+  const withoutSystem = totalCSV - withSystem;
+  // Unique phones (dedup across cohorts)
+  const uniquePhones = new Set(allStudents.filter(s => s.phone).map(s => s.phone.replace(/\D/g, '')));
+  const cohortCount = new Set(allStudents.map(s => s.cohort_id)).size;
   document.getElementById('stats-bar').innerHTML = `
-    <div class="stat-card"><div><div class="stat-num">${allStudents.length}</div><div class="stat-label">Total cadastrados</div></div></div>
-    <div class="stat-card"><div><div class="stat-num">${studentCount}</div><div class="stat-label">Alunos</div></div></div>
-    <div class="stat-card"><div><div class="stat-num" style="color:#fbbf24">${staffCount}</div><div class="stat-label">Equipe</div></div></div>
-    <div class="stat-card"><div><div class="stat-num" style="color:${withoutName > 0 ? '#f59e0b' : '#4ade80'}">${withoutName}</div><div class="stat-label">Sem nome</div></div></div>
+    <div class="stat-card"><div><div class="stat-num">${totalCSV}</div><div class="stat-label">Total Alunos (CSV)</div></div></div>
+    <div class="stat-card"><div><div class="stat-num">${uniquePhones.size}</div><div class="stat-label">Telefones únicos</div></div></div>
+    <div class="stat-card"><div><div class="stat-num">${cohortCount}</div><div class="stat-label">Turmas</div></div></div>
+    <div class="stat-card"><div><div class="stat-num" style="color:#4ade80">${withSystem}</div><div class="stat-label">Com registro sistema</div></div></div>
+    <div class="stat-card"><div><div class="stat-num" style="color:${withoutSystem > 0 ? '#f59e0b' : '#4ade80'}">${withoutSystem}</div><div class="stat-label">Sem registro sistema</div></div></div>
   `;
 }
 
 function setTypeFilter(type) {
-  currentTypeFilter = type;
+  // CSV-only mode: type filter not applicable
   currentPage = 1;
-  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('filter-' + (type === 'all' ? 'all' : type)).classList.add('active');
-  renderStats();
   renderTable();
 }
 
 // COHORT TABS
 function renderCohortTabs() {
   const tabs = document.getElementById('cohort-tabs');
-  // Count from N:N table
   const counts = {};
-  for (const sc of studentCohorts) {
-    const cn = sc.cohorts?.name || 'Sem cohort';
+  for (const s of allStudents) {
+    const cn = s.cohorts?.name || 'Sem turma';
     counts[cn] = (counts[cn] || 0) + 1;
   }
   tabs.innerHTML = `<button class="cohort-tab ${currentCohort === 'all' ? 'active' : ''}" onclick="setCohort('all')">Todos (${allStudents.length})</button>` +
@@ -530,14 +530,11 @@ function handleSearch() {
 function getFiltered() {
   return allStudents.filter(s => {
     if (currentCohort !== 'all') {
-      // Check N:N cohorts
       if (!(s._cohortNames || []).includes(currentCohort)) return false;
     }
-    if (currentTypeFilter === 'students' && s.is_mentor) return false;
-    if (currentTypeFilter === 'staff' && !s.is_mentor) return false;
     if (currentSearch) {
       const aliasStr = (Array.isArray(s.aliases) ? s.aliases : []).join(' ');
-      const hay = `${s.name || ''} ${s.phone} ${(s._cohortNames || []).join(' ')} ${aliasStr}`.toLowerCase();
+      const hay = `${s.name || ''} ${s.email || ''} ${s.phone || ''} ${s.product || ''} ${(s._cohortNames || []).join(' ')} ${aliasStr}`.toLowerCase();
       if (!hay.includes(currentSearch)) return false;
     }
     return true;
@@ -554,7 +551,7 @@ function renderTable() {
 
   const body = document.getElementById('students-body');
   if (!page.length) {
-    body.innerHTML = '<tr><td colspan="6" class="empty">Nenhum aluno encontrado</td></tr>';
+    body.innerHTML = '<tr><td colspan="6" class="empty">Nenhum aluno encontrado no CSV</td></tr>';
     renderPagination(filtered.length, totalPages);
     return;
   }
@@ -575,53 +572,31 @@ function renderTable() {
     const color = getColor(s.name || s.phone);
     const initials = getInitials(s.name || s.phone);
     const displayName = s.name || '<span style="color:#333;font-style:italic">Sem nome</span>';
-    const phone = s.phone;
-    const waLink = `https://wa.me/${phone}`;
+    const phone = s.phone || '';
+    const waLink = phone ? `https://wa.me/${phone}` : '#';
 
-    const staffLabel = s.is_mentor ? 'Equipe' : 'Aluno';
-    const staffBtnClass = s.is_mentor ? 'staff active' : 'staff';
-    const staffBadge = s.is_mentor ? '<span class="staff-badge">Equipe</span>' : '';
+    const upgradeBadge = s.upgrade
+      ? ` <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#8b5cf615;border:1px solid #8b5cf630;color:#a78bfa">${s.upgrade}</span>`
+      : '';
+    const sysIcon = s._hasSystemRecord
+      ? '<span title="Registro no sistema" style="color:#4ade80;font-size:10px;margin-left:4px">●</span>'
+      : '<span title="Sem registro no sistema" style="color:#333;font-size:10px;margin-left:4px">○</span>';
 
-    const aliasesArr = Array.isArray(s.aliases) ? s.aliases : [];
-    const aliasesTags = aliasesArr.map(a => `<span class="alias-tag">${a}</span>`).join('');
-    const aliasesCell = aliasesTags ? `<div class="aliases-cell">${aliasesTags}</div>` : '<span style="color:#2a2a2a;font-size:11px">—</span>';
+    const emailCell = s.email
+      ? `<span style="font-size:11px;color:#555">${s.email}</span>`
+      : '<span style="color:#2a2a2a;font-size:11px">—</span>';
 
-    if (editingId === s.id) {
-      return `<tr class="editing">
-        <td><input class="edit-input" id="edit-name" value="${s.name || ''}" placeholder="Nome do aluno"></td>
-        <td><input class="edit-input" id="edit-phone" value="${s.phone}" placeholder="Telefone"></td>
-        <td>${cohortBadges}</td>
-        <td>
-          <input class="edit-input" id="edit-aliases" value="${aliasesArr.join(', ')}" placeholder="Apelido 1, Apelido 2...">
-          <div class="edit-hint">Nomes usados no Zoom, separados por vírgula</div>
-        </td>
-        <td></td>
-        <td></td>
-        <td><div class="actions-cell">
-          <button class="action-btn save" onclick="saveEdit('${s.id}')">Salvar</button>
-          <button class="action-btn cancel" onclick="cancelEdit()">Cancelar</button>
-        </div></td>
-      </tr>`;
-    }
-
-    // Check if this student has duplicates (same phone)
-    const hasDupes = phone && !phone.startsWith('pending_') && !phone.startsWith('merged_') &&
-      allStudents.filter(x => x.phone === phone && x.id !== s.id).length > 0;
-    const mergeBtn = hasDupes ? `<button class="action-btn merge" onclick="showMergeForPhone('${phone}')">Mesclar</button>` : '';
+    const purchaseDate = s.purchase_date
+      ? new Date(s.purchase_date + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+      : '';
 
     return `<tr>
-      <td><div class="student-name"><div class="avatar" style="background:${color}">${initials}</div>${displayName}${staffBadge}</div></td>
+      <td><div class="student-name"><div class="avatar" style="background:${color}">${initials}</div>${displayName}${upgradeBadge}${sysIcon}</div></td>
       <td><span class="student-phone">${formatPhone(phone)}</span></td>
+      <td>${emailCell}</td>
       <td>${cohortBadges}</td>
-      <td>${aliasesCell}</td>
-      <td><button class="action-btn ${staffBtnClass}" onclick="toggleStaff('${s.id}', ${!s.is_mentor})">${staffLabel}</button></td>
-      <td><a href="${waLink}" target="_blank" class="action-btn whatsapp">Abrir</a></td>
-      <td><div class="actions-cell">
-        <a href="/perfil/?id=${s.id}&tipo=student" class="action-btn" style="text-decoration:none" title="Ver histórico de presença">📊</a>
-        <button class="action-btn edit" onclick="startEdit('${s.id}')">Editar</button>
-        ${mergeBtn}
-        <button class="action-btn delete" data-id="${s.id}" data-name="${(s.name || s.phone).replace(/"/g, '&quot;')}" onclick="deleteStudent(this.dataset.id, this.dataset.name)">X</button>
-      </div></td>
+      <td style="font-size:11px;color:#444">${purchaseDate}</td>
+      <td>${phone ? `<a href="${waLink}" target="_blank" class="action-btn whatsapp">WA</a>` : ''}</td>
     </tr>`;
   }).join('');
 
@@ -665,47 +640,12 @@ function goPage(p) {
   window.scrollTo({ top: 300, behavior: 'smooth' });
 }
 
-// EDIT
-function startEdit(id) {
-  editingId = id;
-  renderTable();
-}
-
-function cancelEdit() {
-  editingId = null;
-  renderTable();
-}
-
-async function saveEdit(id) {
-  const name = document.getElementById('edit-name').value.trim();
-  const phone = document.getElementById('edit-phone').value.trim();
-  const aliasesRaw = document.getElementById('edit-aliases').value;
-  const aliases = aliasesRaw.split(',').map(a => a.trim()).filter(Boolean);
-  if (!phone) { showToast('Telefone obrigatorio', 'error'); return; }
-  const { error } = await sb.from('students').update({ name, phone, aliases }).eq('id', id);
-  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
-  editingId = null;
-  showToast('Aluno atualizado');
-  await loadData();
-}
-
-async function toggleStaff(id, isMentor) {
-  const { error } = await sb.from('students').update({ is_mentor: isMentor }).eq('id', id);
-  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
-  const s = allStudents.find(x => x.id === id);
-  if (s) s.is_mentor = isMentor;
-  showToast(isMentor ? 'Marcado como equipe' : 'Marcado como aluno');
-  renderStats();
-  renderTable();
-}
-
-async function deleteStudent(id, label) {
-  if (!confirm(`Remover "${label}"?`)) return;
-  const { error } = await sb.from('students').delete().eq('id', id);
-  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
-  showToast('Aluno removido');
-  await loadData();
-}
+// EDIT — CSV students are read-only (imported via CSV upload)
+function startEdit(id) { showToast('Edição não disponível — dados vêm do CSV', 'error'); }
+function cancelEdit() { editingId = null; renderTable(); }
+async function saveEdit(id) { showToast('Edição não disponível — dados vêm do CSV', 'error'); }
+async function toggleStaff(id, isMentor) { showToast('Operação não disponível — dados vêm do CSV', 'error'); }
+async function deleteStudent(id, label) { showToast('Remoção não disponível — dados vêm do CSV', 'error'); }
 
 // UTILS
 function getColor(name) {
