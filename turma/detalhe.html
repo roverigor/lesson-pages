@@ -103,6 +103,13 @@
     .link-success { background: #052e16; border: 1px solid #166534; border-radius: 8px; padding: 10px; font-size: 12px; color: #4ade80; margin-top: 10px; }
     .btn-link { padding: 4px 10px; border-radius: 6px; border: 1px solid #6366f1; background: rgba(99,102,241,0.08); color: #a5b4fc; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); }
     .btn-link:hover { background: rgba(99,102,241,0.15); }
+    .match-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 6px; font-size: 11px; background: rgba(74,222,128,.08); border: 1px solid rgba(74,222,128,.15); color: #4ade80; }
+    .match-chip.email { background: rgba(99,102,241,.08); border-color: rgba(99,102,241,.15); color: #a5b4fc; }
+    .match-chip .match-type { font-size: 9px; opacity: .6; text-transform: uppercase; letter-spacing: .05em; }
+    .btn-edit-match { padding: 2px 6px; border-radius: 4px; border: 1px solid #333; background: transparent; color: #555; font-size: 11px; cursor: pointer; font-family: var(--font-sans); }
+    .btn-edit-match:hover { border-color: #6366f1; color: #a5b4fc; }
+    .btn-vincular { padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(245,158,11,.3); background: rgba(245,158,11,.06); color: #f59e0b; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); }
+    .btn-vincular:hover { background: rgba(245,158,11,.12); }
 
     /* Mobile */
     @media (max-width: 768px) {
@@ -553,18 +560,40 @@
     const meeting = turmaMeetings.find(m => m.id === meetingId);
     if (!meeting) { document.getElementById('presenca-content').innerHTML = '<div class="empty">Meeting não encontrado.</div>'; return; }
 
-    // Match CSV students against this meeting's participants
+    // Match CSV students against this meeting's participants (with manual overrides)
     const csvPresent = [];
     const csvAbsent = [];
     const matchedZoomNames = new Set();
+    const overrides = window._manualOverrides || {};
 
     (allStudents || []).forEach(cs => {
+      const overrideKey = meetingId + '::' + cs.name;
+      const override = overrides[overrideKey];
+
+      // Manual unlink
+      if (override === '__UNLINKED__') {
+        csvAbsent.push(cs);
+        return;
+      }
+
+      // Manual link to specific zoom participant
+      if (override) {
+        const p = meeting.participants.find(p => p.name === override);
+        if (p) {
+          csvPresent.push({ ...cs, zoomName: p.name, dur: p.dur, matchType: 'manual' });
+          matchedZoomNames.add(p.name);
+          return;
+        }
+      }
+
+      // Auto matching
       const found = meeting.participants.find(p => {
         if (cs.email && p.email && cs.email.toLowerCase() === p.email.toLowerCase()) return true;
         return nameMatch(cs.name, p.name);
       });
       if (found) {
-        csvPresent.push({ ...cs, zoomName: found.name, dur: found.dur });
+        const matchType = (cs.email && found.email && cs.email.toLowerCase() === found.email.toLowerCase()) ? 'email' : 'nome';
+        csvPresent.push({ ...cs, zoomName: found.name, dur: found.dur, matchType });
         matchedZoomNames.add(found.name);
       } else {
         csvAbsent.push(cs);
@@ -576,30 +605,36 @@
     const pctPresent = totalCSV ? Math.round(presentCount / totalCSV * 1000) / 10 : 0;
     document.getElementById('presenca-count').textContent = `${presentCount} de ${totalCSV} alunos presentes (${pctPresent}%)`;
 
-    // Render present CSV students
+    // Render present CSV students with match details
     const presRows = csvPresent.sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((s, i) => {
       const durStr = s.dur >= 60 ? `${Math.floor(s.dur/60)}h${String(s.dur%60).padStart(2,'0')}` : `${s.dur}min`;
-      const maskedPhone = s.phone
-        ? (s.phone.length > 6 ? s.phone.slice(0, -4).replace(/\d/g, '•') + s.phone.slice(-4) : s.phone)
-        : '<span style="color:#f87171;font-size:11px">Sem telefone</span>';
+      const csvName = escHtml(s.name);
+      const zoomName = escHtml(s.zoomName);
+      const chipClass = s.matchType === 'email' ? 'match-chip email' : s.matchType === 'manual' ? 'match-chip' : 'match-chip';
+      const typeLabel = s.matchType === 'manual' ? '✋ manual' : s.matchType === 'email' ? 'email' : 'nome';
+      const manualStyle = s.matchType === 'manual' ? 'border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.08);color:#f59e0b' : '';
+      const matchInfo = `<span class="${chipClass}" style="${manualStyle}"><span class="match-type">${typeLabel}</span> ${zoomName}</span>`;
+      const csvIdx = i; // for re-link
       return `<tr>
         <td style="width:32px;text-align:center;color:#444">${i+1}</td>
-        <td><div class="student-name">${escHtml(s.name)}</div></td>
-        <td style="font-size:12px;color:#666">${maskedPhone}</td>
+        <td><div class="student-name">${csvName}</div></td>
+        <td style="font-size:12px">${matchInfo} <button class="btn-edit-match" title="Alterar vínculo" onclick="openRelinkModal('${escHtml(s.name).replace(/'/g,"\\'")}', '${escHtml(s.zoomName).replace(/'/g,"\\'")}')">✏️</button></td>
         <td style="font-size:12px">${durStr}</td>
       </tr>`;
     }).join('');
 
-    // Render absent CSV students
+    // Store unmatched zoom participants for linking
+    const unmatchedZoom = meeting.participants.filter(p => !matchedZoomNames.has(p.name));
+    window._currentUnmatchedZoom = unmatchedZoom;
+    window._currentMeetingId = meetingId;
+
+    // Render absent CSV students with link button
     const absRows = csvAbsent.sort((a, b) => (a.name || '').localeCompare(b.name || '')).map((s, i) => {
-      const maskedPhone = s.phone
-        ? (s.phone.length > 6 ? s.phone.slice(0, -4).replace(/\d/g, '•') + s.phone.slice(-4) : s.phone)
-        : '<span style="color:#f87171;font-size:11px">Sem telefone</span>';
-      return `<tr style="opacity:0.5">
+      return `<tr style="opacity:0.7">
         <td style="width:32px;text-align:center;color:#444">${i+1}</td>
         <td><div class="student-name">${escHtml(s.name)}</div></td>
-        <td style="font-size:12px;color:#666">${maskedPhone}</td>
         <td style="font-size:12px;color:#ef4444">Ausente</td>
+        <td style="font-size:12px"><button class="btn-vincular" onclick="openManualLinkModal('${escHtml(s.name).replace(/'/g,"\\'")}')">Vincular ↗</button></td>
       </tr>`;
     }).join('');
 
@@ -621,32 +656,32 @@
         </div>
       </div>
       <div style="font-size:13px;font-weight:700;color:#4ade80;margin-bottom:8px">✓ Presentes (${presentCount})</div>
-      ${presRows ? `<table><thead><tr><th>#</th><th>Aluno</th><th>Telefone</th><th>Duração</th></tr></thead><tbody>${presRows}</tbody></table>` : '<div class="empty">Nenhum aluno do CSV matcheado nesta aula.</div>'}
+      ${presRows ? `<table><thead><tr><th>#</th><th>Aluno (CSV)</th><th>Vínculo Zoom</th><th>Duração</th></tr></thead><tbody>${presRows}</tbody></table>` : '<div class="empty">Nenhum aluno do CSV matcheado nesta aula.</div>'}
       ${absRows ? `<div style="font-size:13px;font-weight:700;color:#ef4444;margin:20px 0 8px">✗ Ausentes (${csvAbsent.length})</div>
-      <table><thead><tr><th>#</th><th>Aluno</th><th>Telefone</th><th>Status</th></tr></thead><tbody>${absRows}</tbody></table>` : ''}`;
+      <table><thead><tr><th>#</th><th>Aluno (CSV)</th><th>Status</th><th>Ação</th></tr></thead><tbody>${absRows}</tbody></table>` : ''}`;
 
     // Unmatched zoom participants (not in CSV)
-    const unmatched = meeting.participants.filter(p => !matchedZoomNames.has(p.name));
-    if (unmatched.length > 0) {
-      const unmRows = unmatched.sort((a, b) => b.dur - a.dur).map((p, i) => {
+    if (unmatchedZoom.length > 0) {
+      const unmRows = unmatchedZoom.sort((a, b) => b.dur - a.dur).map((p, i) => {
         const durStr = p.dur >= 60 ? `${Math.floor(p.dur/60)}h${String(p.dur%60).padStart(2,'0')}` : `${p.dur}min`;
         const cls = p.dur >= 60 ? 'badge-green' : 'badge-amber';
         return `<tr>
           <td style="width:32px;text-align:center;color:#444">${i+1}</td>
           <td><div class="student-name">${escHtml(p.name)}</div></td>
           <td><span class="badge ${cls}">${durStr}</span></td>
+          <td><button class="btn-link" onclick="openLinkModal('${escHtml(p.name).replace(/'/g,"\\'")}')">Vincular</button></td>
         </tr>`;
       }).join('');
       document.getElementById('presenca-unmatched').innerHTML = `
         <div style="background:#1a1010;border:1px solid #331a1a;border-radius:10px;padding:20px">
           <div style="font-size:14px;font-weight:700;color:#f59e0b;margin-bottom:4px">
-            Outros Participantes — não encontrados no CSV (${unmatched.length})
+            Outros Participantes — não encontrados no CSV (${unmatchedZoom.length})
           </div>
           <div style="font-size:12px;color:#555;margin-bottom:12px">
             Participaram desta aula mas não são compradores identificados no CSV.
           </div>
           <table>
-            <thead><tr><th>#</th><th>Nome no Zoom</th><th>Duração</th></tr></thead>
+            <thead><tr><th>#</th><th>Nome no Zoom</th><th>Duração</th><th>Ação</th></tr></thead>
             <tbody>${unmRows}</tbody>
           </table>
         </div>`;
@@ -1680,6 +1715,14 @@ function openLinkModal(zoomName) {
   document.getElementById('link-search').value = '';
   document.getElementById('link-results').innerHTML = '';
   document.getElementById('link-feedback').innerHTML = '';
+  // Reset actions to default
+  document.querySelector('.link-actions').innerHTML = `
+    <button class="link-btn" onclick="closeLinkModal()">Cancelar</button>
+    <button class="link-btn new-student" onclick="createAndLink()">Criar novo aluno</button>
+  `;
+  // Reset search handler to student search
+  document.getElementById('link-search').placeholder = 'Buscar por nome, telefone ou email...';
+  document.getElementById('link-search').oninput = searchStudentsForLink;
   document.getElementById('link-modal').classList.remove('hidden');
   document.getElementById('link-search').focus();
   // Pre-search with the zoom name
@@ -1817,6 +1860,146 @@ async function createAndLink() {
 
   // Now link the zoom participant
   await executeLink(newStudent.id, newStudent.name);
+}
+
+// ── RE-LINK: Edit existing match (CSV student → pick different Zoom participant) ──
+function openRelinkModal(csvName, currentZoomName) {
+  const meetingId = document.getElementById('presenca-date-select').value;
+  if (!meetingId) return;
+  const meeting = turmaMeetings.find(m => m.id === meetingId);
+  if (!meeting) return;
+
+  document.getElementById('link-title').textContent = `Editar vínculo: "${csvName}"`;
+  document.getElementById('link-sub').textContent = `Atualmente vinculado a "${currentZoomName}". Escolha outro participante ou desvincule.`;
+  document.getElementById('link-search').value = '';
+  document.getElementById('link-feedback').innerHTML = '';
+
+  // Show all zoom participants as options (unmatched first, then all)
+  const allParts = meeting.participants.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  const partsHtml = allParts.map(p => {
+    const durStr = p.dur >= 60 ? `${Math.floor(p.dur/60)}h${String(p.dur%60).padStart(2,'0')}` : `${p.dur}min`;
+    const isCurrent = p.name === currentZoomName;
+    const borderStyle = isCurrent ? 'border-color:#4ade80' : '';
+    const currentBadge = isCurrent ? '<span style="font-size:9px;color:#4ade80;margin-left:6px">ATUAL</span>' : '';
+    return `<div class="link-result" style="${borderStyle}" onclick="executeRelink('${escHtml(csvName).replace(/'/g,"\\'")}', '${escHtml(currentZoomName).replace(/'/g,"\\'")}', '${escHtml(p.name).replace(/'/g,"\\'")}')">
+      <div style="flex:1">
+        <div class="lr-name">${escHtml(p.name)}${currentBadge}</div>
+        <div class="lr-meta">${durStr}</div>
+      </div>
+      <div style="font-size:11px;color:#6366f1;font-weight:600">${isCurrent ? '' : 'Selecionar'}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('link-results').innerHTML = partsHtml;
+  document.getElementById('link-modal').classList.remove('hidden');
+
+  // Override link-actions: show desvincular + cancelar
+  const actionsEl = document.querySelector('.link-actions');
+  actionsEl.innerHTML = `
+    <button class="link-btn" onclick="closeLinkModal()">Cancelar</button>
+    <button class="link-btn" style="border-color:#ef4444;color:#f87171;background:rgba(239,68,68,.06)" onclick="executeUnlink('${escHtml(csvName).replace(/'/g,"\\'")}', '${escHtml(currentZoomName).replace(/'/g,"\\'")}')">Desvincular</button>
+  `;
+
+  // Add search filter for participants
+  document.getElementById('link-search').placeholder = 'Filtrar participantes...';
+  document.getElementById('link-search').oninput = function() {
+    const q = this.value.toLowerCase().trim();
+    const filtered = q.length < 1 ? allParts : allParts.filter(p => p.name.toLowerCase().includes(q));
+    document.getElementById('link-results').innerHTML = filtered.map(p => {
+      const durStr = p.dur >= 60 ? `${Math.floor(p.dur/60)}h${String(p.dur%60).padStart(2,'0')}` : `${p.dur}min`;
+      const isCurrent = p.name === currentZoomName;
+      const borderStyle = isCurrent ? 'border-color:#4ade80' : '';
+      const currentBadge = isCurrent ? '<span style="font-size:9px;color:#4ade80;margin-left:6px">ATUAL</span>' : '';
+      return `<div class="link-result" style="${borderStyle}" onclick="executeRelink('${escHtml(csvName).replace(/'/g,"\\'")}', '${escHtml(currentZoomName).replace(/'/g,"\\'")}', '${escHtml(p.name).replace(/'/g,"\\'")}')">
+        <div style="flex:1">
+          <div class="lr-name">${escHtml(p.name)}${currentBadge}</div>
+          <div class="lr-meta">${durStr}</div>
+        </div>
+        <div style="font-size:11px;color:#6366f1;font-weight:600">${isCurrent ? '' : 'Selecionar'}</div>
+      </div>`;
+    }).join('');
+  };
+}
+
+// Execute re-link: change CSV student's zoom match (local only, re-renders presença)
+function executeRelink(csvName, oldZoomName, newZoomName) {
+  if (oldZoomName === newZoomName) { closeLinkModal(); return; }
+  // Store manual overrides in session
+  if (!window._manualOverrides) window._manualOverrides = {};
+  const meetingId = document.getElementById('presenca-date-select').value;
+  const key = meetingId + '::' + csvName;
+  window._manualOverrides[key] = newZoomName;
+  closeLinkModal();
+  loadPresencaForMeeting(meetingId);
+  showToast(`Vínculo atualizado: "${csvName}" → "${newZoomName}"`);
+}
+
+// Execute unlink: remove CSV student's zoom match (mark as absent)
+function executeUnlink(csvName, zoomName) {
+  if (!window._manualOverrides) window._manualOverrides = {};
+  const meetingId = document.getElementById('presenca-date-select').value;
+  const key = meetingId + '::' + csvName;
+  window._manualOverrides[key] = '__UNLINKED__';
+  closeLinkModal();
+  loadPresencaForMeeting(meetingId);
+  showToast(`"${csvName}" desvinculado de "${zoomName}"`);
+}
+
+// ── MANUAL LINK: Link absent CSV student to unmatched Zoom participant ──
+function openManualLinkModal(csvName) {
+  const meetingId = document.getElementById('presenca-date-select').value;
+  if (!meetingId) return;
+  const meeting = turmaMeetings.find(m => m.id === meetingId);
+  if (!meeting) return;
+
+  document.getElementById('link-title').textContent = `Vincular: "${csvName}"`;
+  document.getElementById('link-sub').textContent = `Escolha o participante Zoom correspondente a este aluno.`;
+  document.getElementById('link-search').value = '';
+  document.getElementById('link-feedback').innerHTML = '';
+
+  // Show unmatched zoom participants first, then all
+  const unmatched = window._currentUnmatchedZoom || [];
+  const allParts = meeting.participants.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+  function renderParts(list) {
+    return list.map(p => {
+      const durStr = p.dur >= 60 ? `${Math.floor(p.dur/60)}h${String(p.dur%60).padStart(2,'0')}` : `${p.dur}min`;
+      const isUnmatched = unmatched.some(u => u.name === p.name);
+      const label = isUnmatched ? '<span style="font-size:9px;color:#f59e0b;margin-left:4px">NÃO VINCULADO</span>' : '';
+      return `<div class="link-result" onclick="executeRelink('${escHtml(csvName).replace(/'/g,"\\'")}', '', '${escHtml(p.name).replace(/'/g,"\\'")}')">
+        <div style="flex:1">
+          <div class="lr-name">${escHtml(p.name)}${label}</div>
+          <div class="lr-meta">${durStr}</div>
+        </div>
+        <div style="font-size:11px;color:#6366f1;font-weight:600">Vincular</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Show unmatched first
+  const sortedParts = [...unmatched.sort((a,b) => (a.name||'').localeCompare(b.name||'')), ...allParts.filter(p => !unmatched.some(u => u.name === p.name))];
+  document.getElementById('link-results').innerHTML = renderParts(sortedParts);
+  document.getElementById('link-modal').classList.remove('hidden');
+
+  // Reset actions
+  const actionsEl = document.querySelector('.link-actions');
+  actionsEl.innerHTML = `<button class="link-btn" onclick="closeLinkModal()">Cancelar</button>`;
+
+  // Search filter
+  document.getElementById('link-search').placeholder = 'Filtrar participantes...';
+  document.getElementById('link-search').oninput = function() {
+    const q = this.value.toLowerCase().trim();
+    const filtered = q.length < 1 ? sortedParts : sortedParts.filter(p => p.name.toLowerCase().includes(q));
+    document.getElementById('link-results').innerHTML = renderParts(filtered);
+  };
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e1e2e;border:1px solid #333;color:#ddd;padding:10px 20px;border-radius:10px;font-size:13px;z-index:9999;transition:opacity .3s';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
 }
 </script>
 </body>
