@@ -1,0 +1,95 @@
+/* ─── turma/detalhe.css — Turma Detail Page Styles ─── */
+
+/* HEADER */
+.header { background: #101010; border-bottom: 1px solid #1a1a1a; padding: 16px 32px; position: sticky; top: 0; z-index: 200; }
+.header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.back-btn { color: #555; font-size: 12px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 7px; border: 1px solid #1a1a1a; }
+.back-btn:hover { color: #888; border-color: #333; }
+.header-title { font-size: 16px; font-weight: 800; color: #fff; }
+.header-sub { font-size: 11px; color: #444; }
+
+/* LAYOUT */
+.layout { max-width: 1200px; margin: 0 auto; padding: 28px 32px 80px; }
+
+/* STATS ROW */
+.stats-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
+.stat-card { background: #101010; border: 1px solid #1a1a1a; border-radius: 10px; padding: 16px 20px; flex: 1; min-width: 130px; }
+.stat-num { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
+.stat-num.green { color: #4ade80; }
+.stat-num.amber { color: #f59e0b; }
+.stat-num.red { color: #f87171; }
+.stat-label { font-size: 11px; color: #444; margin-top: 3px; }
+
+/* TABS */
+.tabs { display: flex; gap: 4px; background: #0d0d0d; padding: 4px; border-radius: 10px; border: 1px solid #1a1a1a; margin-bottom: 20px; flex-wrap: wrap; }
+.tab { padding: 8px 16px; border-radius: 7px; font-size: 12px; font-weight: 600; color: #444; cursor: pointer; border: none; background: transparent; font-family: var(--font-sans); }
+.tab.active { background: #1e1e2e; color: #a5b4fc; }
+
+/* ALUNOS TABLE */
+.toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.search { flex: 1; min-width: 200px; padding: 10px 14px; border-radius: 8px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd; font-size: 13px; font-family: var(--font-sans); outline: none; }
+.search:focus { border-color: #6366f1; }
+.search::placeholder { color: #333; }
+.sort-btn { padding: 8px 14px; border-radius: 8px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #666; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); }
+.sort-btn.active { color: #a5b4fc; border-color: rgba(99,102,241,0.4); }
+
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 11px; font-weight: 700; color: #444; text-transform: uppercase; letter-spacing: .06em; padding: 8px 12px; border-bottom: 1px solid #1a1a1a; }
+td { padding: 12px; font-size: 13px; color: #888; border-bottom: 1px solid #111; vertical-align: middle; }
+tr:hover td { background: #0d0d0d; }
+.student-name { font-weight: 700; color: #fff; }
+.pct-bar { height: 4px; background: #1a1a1a; border-radius: 2px; width: 80px; overflow: hidden; margin-top: 4px; }
+.pct-fill { height: 100%; border-radius: 2px; }
+.fill-green { background: #4ade80; }
+.fill-amber { background: #f59e0b; }
+.fill-red { background: #f87171; }
+.badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: 700; }
+.badge-green { background: rgba(74,222,128,.12); color: #4ade80; }
+.badge-amber { background: rgba(245,158,11,.12); color: #f59e0b; }
+.badge-red { background: rgba(239,68,68,.12); color: #f87171; }
+.btn-sm { padding: 5px 12px; border-radius: 6px; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25); color: #a5b4fc; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); text-decoration: none; display: inline-block; }
+.btn-sm:hover { background: rgba(99,102,241,0.2); }
+
+/* WA ranking section */
+.section-title { font-size: 11px; font-weight: 700; color: #444; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; margin-top: 24px; }
+
+/* LOADING / EMPTY */
+.spinner { width: 28px; height: 28px; border: 3px solid #1e1e1e; border-top-color: #6366f1; border-radius: 50%; animation: spin .7s linear infinite; margin: 60px auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty { text-align: center; padding: 40px; font-size: 13px; color: #333; }
+
+/* LINK MODAL */
+.link-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 5000; display: flex; align-items: center; justify-content: center; }
+.link-overlay.hidden { display: none; }
+.link-box { background: #111; border: 1px solid #222; border-radius: 16px; padding: 24px; width: 95%; max-width: 520px; max-height: 80vh; overflow-y: auto; }
+.link-title { font-size: 15px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+.link-sub { font-size: 12px; color: #555; margin-bottom: 16px; }
+.link-search { width: 100%; padding: 10px 14px; border-radius: 8px; background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd; font-size: 13px; font-family: var(--font-sans); outline: none; margin-bottom: 12px; }
+.link-search:focus { border-color: #6366f1; }
+.link-result { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 8px; padding: 10px 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: border-color 0.15s; }
+.link-result:hover { border-color: #333; }
+.link-result .lr-name { font-size: 13px; font-weight: 600; color: #ddd; }
+.link-result .lr-meta { font-size: 11px; color: #555; }
+.link-result .lr-cohort { font-size: 10px; color: #666; }
+.link-actions { display: flex; gap: 8px; margin-top: 14px; }
+.link-btn { padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); border: 1px solid #333; background: #1a1a1a; color: #aaa; }
+.link-btn:hover { background: #222; }
+.link-btn.primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); border-color: #6366f1; color: #fff; }
+.link-btn.primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.link-btn.new-student { border-color: #059669; color: #34d399; background: rgba(5,150,105,0.08); }
+.link-success { background: #052e16; border: 1px solid #166534; border-radius: 8px; padding: 10px; font-size: 12px; color: #4ade80; margin-top: 10px; }
+.btn-link { padding: 4px 10px; border-radius: 6px; border: 1px solid #6366f1; background: rgba(99,102,241,0.08); color: #a5b4fc; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); }
+.btn-link:hover { background: rgba(99,102,241,0.15); }
+.match-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 6px; font-size: 11px; background: rgba(74,222,128,.08); border: 1px solid rgba(74,222,128,.15); color: #4ade80; }
+.match-chip.email { background: rgba(99,102,241,.08); border-color: rgba(99,102,241,.15); color: #a5b4fc; }
+.match-chip .match-type { font-size: 9px; opacity: .6; text-transform: uppercase; letter-spacing: .05em; }
+.btn-edit-match { padding: 2px 6px; border-radius: 4px; border: 1px solid #333; background: transparent; color: #555; font-size: 11px; cursor: pointer; font-family: var(--font-sans); }
+.btn-edit-match:hover { border-color: #6366f1; color: #a5b4fc; }
+.btn-vincular { padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(245,158,11,.3); background: rgba(245,158,11,.06); color: #f59e0b; font-size: 11px; font-weight: 600; cursor: pointer; font-family: var(--font-sans); }
+.btn-vincular:hover { background: rgba(245,158,11,.12); }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .layout { padding: 20px 16px 60px; }
+  th.hide-mobile, td.hide-mobile { display: none; }
+}
