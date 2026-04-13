@@ -1281,15 +1281,10 @@
   function nameMatch(a, b) {
     const tokA = nameTokens(a);
     const tokB = nameTokens(b);
-    if (!tokA.length || !tokB.length) return false;
-    // First token (first name) must match
-    if (tokA[0] !== tokB[0]) return false;
-    // If both have last name, it must match too
-    if (tokA.length > 1 && tokB.length > 1) {
-      return tokA[tokA.length - 1] === tokB[tokB.length - 1];
-    }
-    // Single name matched first token — accept
-    return true;
+    // Require at least 2 tokens in BOTH names (first + last) to avoid false positives
+    if (tokA.length < 2 || tokB.length < 2) return false;
+    // First name + last name must match
+    return tokA[0] === tokB[0] && tokA[tokA.length - 1] === tokB[tokB.length - 1];
   }
 
   function renderFontes() {
