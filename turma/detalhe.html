@@ -392,14 +392,23 @@
       csvStudents.forEach(cs => {
         if (m.isPS) cs.totalPS++; else cs.totalAulas++;
         const found = m.participants.some(p => {
+          // 1. Email exact
           if (cs.email && p.email && cs.email.toLowerCase() === p.email.toLowerCase()) return true;
+          // 2. Alias exact
+          if (cs.aliases && cs.aliases.length) {
+            for (const alias of cs.aliases) {
+              if (alias.toLowerCase().trim() === (p.name || '').toLowerCase().trim()) return true;
+            }
+          }
+          // 3. Name token match
           return nameMatch(cs.name, p.name);
         });
         if (found) {
           if (m.isPS) cs.presentPS++; else cs.presentAulas++;
-          // Mark matched participants
           m.participants.forEach(p => {
-            if ((cs.email && p.email && cs.email.toLowerCase() === p.email.toLowerCase()) || nameMatch(cs.name, p.name)) {
+            if ((cs.email && p.email && cs.email.toLowerCase() === p.email.toLowerCase()) ||
+                (cs.aliases && cs.aliases.some(a => a.toLowerCase().trim() === (p.name || '').toLowerCase().trim())) ||
+                nameMatch(cs.name, p.name)) {
               matched.add(p.name);
             }
           });
@@ -563,39 +572,38 @@
     const meeting = turmaMeetings.find(m => m.id === meetingId);
     if (!meeting) { document.getElementById('presenca-content').innerHTML = '<div class="empty">Meeting não encontrado.</div>'; return; }
 
-    // Match CSV students against this meeting's participants (with manual overrides)
+    // Match CSV students against this meeting's participants
+    // Priority: 1) email exact  2) alias exact  3) nameMatch tokens
     const csvPresent = [];
     const csvAbsent = [];
     const matchedZoomNames = new Set();
-    const overrides = window._manualOverrides || {};
 
     (allStudents || []).forEach(cs => {
-      const overrideKey = meetingId + '::' + cs.name;
-      const override = overrides[overrideKey];
+      let found = null;
+      let matchType = '';
 
-      // Manual unlink
-      if (override === '__UNLINKED__') {
-        csvAbsent.push(cs);
-        return;
+      // 1. Email exact match
+      if (!found && cs.email) {
+        const byEmail = meeting.participants.find(p => p.email && cs.email.toLowerCase() === p.email.toLowerCase());
+        if (byEmail) { found = byEmail; matchType = 'email'; }
       }
 
-      // Manual link to specific zoom participant
-      if (override) {
-        const p = meeting.participants.find(p => p.name === override);
-        if (p) {
-          csvPresent.push({ ...cs, zoomName: p.name, dur: p.dur, matchType: 'manual' });
-          matchedZoomNames.add(p.name);
-          return;
+      // 2. Alias exact match (student_imports.aliases)
+      if (!found && cs.aliases && cs.aliases.length) {
+        for (const alias of cs.aliases) {
+          const norm = alias.toLowerCase().trim();
+          const byAlias = meeting.participants.find(p => (p.name || '').toLowerCase().trim() === norm);
+          if (byAlias) { found = byAlias; matchType = 'alias'; break; }
         }
       }
 
-      // Auto matching
-      const found = meeting.participants.find(p => {
-        if (cs.email && p.email && cs.email.toLowerCase() === p.email.toLowerCase()) return true;
-        return nameMatch(cs.name, p.name);
-      });
+      // 3. Name token match (nameMatch)
+      if (!found) {
+        const byName = meeting.participants.find(p => nameMatch(cs.name, p.name));
+        if (byName) { found = byName; matchType = 'nome'; }
+      }
+
       if (found) {
-        const matchType = (cs.email && found.email && cs.email.toLowerCase() === found.email.toLowerCase()) ? 'email' : 'nome';
         csvPresent.push({ ...cs, zoomName: found.name, dur: found.dur, matchType });
         matchedZoomNames.add(found.name);
       } else {
@@ -613,10 +621,10 @@
       const durStr = s.dur >= 60 ? `${Math.floor(s.dur/60)}h${String(s.dur%60).padStart(2,'0')}` : `${s.dur}min`;
       const csvName = escHtml(s.name);
       const zoomName = escHtml(s.zoomName);
-      const chipClass = s.matchType === 'email' ? 'match-chip email' : s.matchType === 'manual' ? 'match-chip' : 'match-chip';
-      const typeLabel = s.matchType === 'manual' ? '✋ manual' : s.matchType === 'email' ? 'email' : 'nome';
-      const manualStyle = s.matchType === 'manual' ? 'border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.08);color:#f59e0b' : '';
-      const matchInfo = `<span class="${chipClass}" style="${manualStyle}"><span class="match-type">${typeLabel}</span> ${zoomName}</span>`;
+      const chipClass = s.matchType === 'email' ? 'match-chip email' : 'match-chip';
+      const typeLabel = s.matchType === 'alias' ? '🔗 alias' : s.matchType === 'email' ? 'email' : 'nome';
+      const aliasStyle = s.matchType === 'alias' ? 'border-color:rgba(139,92,246,.4);background:rgba(139,92,246,.08);color:#a78bfa' : '';
+      const matchInfo = `<span class="${chipClass}" style="${aliasStyle}"><span class="match-type">${typeLabel}</span> ${zoomName}</span>`;
       const csvIdx = i; // for re-link
       return `<tr>
         <td style="width:32px;text-align:center;color:#444">${i+1}</td>
@@ -1765,7 +1773,6 @@
     <div id="link-feedback"></div>
     <div class="link-actions">
       <button class="link-btn" onclick="closeLinkModal()">Cancelar</button>
-      <button class="link-btn new-student" onclick="createAndLink()">Criar novo aluno</button>
     </div>
   </div>
 </div>
@@ -1984,25 +1991,44 @@ function openRelinkModal(csvName, currentZoomName) {
   };
 }
 
-// Execute re-link: change CSV student's zoom match (local only, re-renders presença)
-function executeRelink(csvName, oldZoomName, newZoomName) {
+// Execute re-link: save zoom name as alias in student_imports (persistent)
+async function executeRelink(csvName, oldZoomName, newZoomName) {
   if (oldZoomName === newZoomName) { closeLinkModal(); return; }
-  // Store manual overrides in session
-  if (!window._manualOverrides) window._manualOverrides = {};
   const meetingId = document.getElementById('presenca-date-select').value;
-  const key = meetingId + '::' + csvName;
-  window._manualOverrides[key] = newZoomName;
+
+  // Find the CSV student by name and save alias
+  const student = (allStudents || []).find(s => s.name === csvName);
+  if (student && student.id) {
+    const currentAliases = student.aliases || [];
+    const normNew = newZoomName.toLowerCase().trim();
+    if (!currentAliases.some(a => a.toLowerCase().trim() === normNew)) {
+      const updated = [...currentAliases, newZoomName];
+      await sb.from('student_imports').update({ aliases: updated }).eq('id', student.id);
+      student.aliases = updated;
+    }
+  }
+
   closeLinkModal();
   loadPresencaForMeeting(meetingId);
-  showToast(`Vínculo atualizado: "${csvName}" → "${newZoomName}"`);
+  showToast(`Vínculo salvo: "${csvName}" → "${newZoomName}" (alias persistente)`);
 }
 
-// Execute unlink: remove CSV student's zoom match (mark as absent)
-function executeUnlink(csvName, zoomName) {
-  if (!window._manualOverrides) window._manualOverrides = {};
+// Execute unlink: remove specific alias from student_imports
+async function executeUnlink(csvName, zoomName) {
   const meetingId = document.getElementById('presenca-date-select').value;
-  const key = meetingId + '::' + csvName;
-  window._manualOverrides[key] = '__UNLINKED__';
+
+  // Find the CSV student and remove this alias
+  const student = (allStudents || []).find(s => s.name === csvName);
+  if (student && student.id) {
+    const currentAliases = student.aliases || [];
+    const normZoom = zoomName.toLowerCase().trim();
+    const updated = currentAliases.filter(a => a.toLowerCase().trim() !== normZoom);
+    if (updated.length !== currentAliases.length) {
+      await sb.from('student_imports').update({ aliases: updated }).eq('id', student.id);
+      student.aliases = updated;
+    }
+  }
+
   closeLinkModal();
   loadPresencaForMeeting(meetingId);
   showToast(`"${csvName}" desvinculado de "${zoomName}"`);
