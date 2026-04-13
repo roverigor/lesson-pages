@@ -873,22 +873,26 @@
     const totalCSV = csvStudents.length;
     const matchedCount = matched.length;
 
-    // Summary cards
+    // Summary cards (equipe count will be filled after staff split below)
     let html = `
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
-        <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;flex:1;min-width:120px;text-align:center">
+        <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;flex:1;min-width:100px;text-align:center">
           <div style="font-size:24px;font-weight:800;color:#25d366">${totalWa}</div>
-          <div style="font-size:11px;color:#555">Membros no Grupo</div>
+          <div style="font-size:11px;color:#555">No Grupo</div>
         </div>
-        <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;flex:1;min-width:120px;text-align:center">
+        <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;flex:1;min-width:100px;text-align:center">
           <div style="font-size:24px;font-weight:800;color:#4ade80">${matchedCount}</div>
-          <div style="font-size:11px;color:#555">Matcheados com CSV</div>
+          <div style="font-size:11px;color:#555">Alunos CSV</div>
         </div>
-        <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;flex:1;min-width:120px;text-align:center">
+        <div id="wa-equipe-card" style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;flex:1;min-width:100px;text-align:center">
+          <div style="font-size:24px;font-weight:800;color:#a5b4fc">—</div>
+          <div style="font-size:11px;color:#555">Equipe</div>
+        </div>
+        <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;flex:1;min-width:100px;text-align:center">
           <div style="font-size:24px;font-weight:800;color:#f59e0b">${unmatched.length}</div>
-          <div style="font-size:11px;color:#555">Não Matcheados</div>
+          <div style="font-size:11px;color:#555">Não Identificados</div>
         </div>
-        <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;flex:1;min-width:120px;text-align:center">
+        <div style="background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;flex:1;min-width:100px;text-align:center">
           <div style="font-size:24px;font-weight:800;color:#ef4444">${csvNotInWa.length}</div>
           <div style="font-size:11px;color:#555">Fora do Grupo</div>
         </div>
@@ -927,19 +931,81 @@
         <table><thead><tr><th>#</th><th>Aluno (CSV)</th><th>Telefone</th></tr></thead><tbody>${nRows}</tbody></table>`;
     }
 
-    // Unmatched WA members
-    if (unmatched.length) {
-      const uRows = unmatched.map((m, i) => {
+    // Separate unmatched WA members into Staff vs Others
+    const waStaff = [];
+    const waOthers = [];
+    unmatched.forEach(wm => {
+      const wmName = (wm.wa_name || '').toLowerCase().trim();
+      const wmPhone = (wm.phone || '').replace(/\D/g, '');
+      const staffMatch = (staffMembers || []).find(s => {
+        // Match by phone
+        if (s.phone && wmPhone) {
+          const sPhone = (s.phone || '').replace(/\D/g, '');
+          if (sPhone && (sPhone.endsWith(wmPhone.slice(-8)) || wmPhone.endsWith(sPhone.slice(-8)))) return true;
+        }
+        // Match by name exact
+        if (s.name && wmName && s.name.toLowerCase().trim() === wmName) return true;
+        // Match by nameMatch tokens
+        if (s.name && wm.wa_name && nameMatch(s.name, wm.wa_name)) return true;
+        // Match by aliases
+        if (s.aliases && s.aliases.length) {
+          return s.aliases.some(a => {
+            const na = a.toLowerCase().trim();
+            return na === wmName || nameMatch(a, wm.wa_name || '');
+          });
+        }
+        return false;
+      });
+      if (staffMatch) {
+        waStaff.push({ ...wm, staffName: staffMatch.name, category: staffMatch.category });
+      } else {
+        waOthers.push(wm);
+      }
+    });
+
+    // Update equipe card count
+    setTimeout(() => {
+      const eqCard = document.getElementById('wa-equipe-card');
+      if (eqCard) eqCard.querySelector('div').textContent = waStaff.length;
+    }, 0);
+
+    // Staff in WA group
+    if (waStaff.length > 0) {
+      const categoryColors = { Professor: '#a5b4fc', Mentor: '#facc15', Host: '#888' };
+      const categoryBg = { Professor: 'rgba(99,102,241,0.12)', Mentor: 'rgba(250,204,21,0.1)', Host: 'rgba(255,255,255,0.05)' };
+      const sRows = waStaff.sort((a, b) => (a.wa_name || '').localeCompare(b.wa_name || '')).map((m, i) => {
+        const maskedPhone = m.phone ? m.phone.replace(/\d(?=\d{4})/g, '•') : '';
+        const cat = m.category || 'Equipe';
+        const catColor = categoryColors[cat] || '#888';
+        const catBg = categoryBg[cat] || 'rgba(255,255,255,0.05)';
+        const matchLabel = m.staffName && m.staffName.toLowerCase() !== (m.wa_name || '').toLowerCase()
+          ? `<span style="font-size:10px;color:#555;margin-left:4px">(${escHtml(m.staffName)})</span>` : '';
+        return `<tr>
+          <td style="width:32px;text-align:center;color:#444">${i+1}</td>
+          <td><div class="student-name">${escHtml(m.wa_name || 'Sem nome')}</div>${matchLabel}</td>
+          <td style="font-size:12px;color:#444">${maskedPhone}</td>
+          <td><span style="color:${catColor};background:${catBg};padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">${cat}</span></td>
+        </tr>`;
+      }).join('');
+      html += `<div style="font-size:13px;font-weight:700;color:#a5b4fc;margin:20px 0 8px">🎓 Equipe no Grupo (${waStaff.length})</div>
+        <div style="font-size:12px;color:#555;margin-bottom:12px">Membros da equipe educacional identificados no grupo WhatsApp.</div>
+        <table><thead><tr><th>#</th><th>Nome WA</th><th>Telefone</th><th>Função</th></tr></thead><tbody>${sRows}</tbody></table>`;
+    }
+
+    // Others (truly unidentified)
+    if (waOthers.length > 0) {
+      const uRows = waOthers.map((m, i) => {
         const maskedPhone = m.phone ? m.phone.replace(/\d(?=\d{4})/g, '•') : '';
         return `<tr>
           <td style="width:32px;text-align:center;color:#444">${i+1}</td>
           <td><div class="student-name">${escHtml(m.wa_name || 'Sem nome')}</div></td>
           <td style="font-size:12px;color:#444">${maskedPhone}</td>
+          <td><button class="btn-vincular" onclick="openWaLinkModal('${escHtml(m.wa_name || '').replace(/'/g,"\\'")}', '${(m.phone || '').replace(/'/g,"\\'")}')">Vincular</button></td>
         </tr>`;
       }).join('');
-      html += `<div style="font-size:13px;font-weight:700;color:#f59e0b;margin:20px 0 8px">⚠ Membros Não Identificados (${unmatched.length})</div>
-        <div style="font-size:12px;color:#555;margin-bottom:12px">Estão no grupo WA mas não matchearam com nenhum aluno do CSV. Podem ser equipe, convidados ou números diferentes.</div>
-        <table><thead><tr><th>#</th><th>Nome WA</th><th>Telefone</th></tr></thead><tbody>${uRows}</tbody></table>`;
+      html += `<div style="font-size:13px;font-weight:700;color:#f59e0b;margin:20px 0 8px">⚠ Não Identificados (${waOthers.length})</div>
+        <div style="font-size:12px;color:#555;margin-bottom:12px">Estão no grupo WA mas não matchearam com nenhum aluno CSV nem equipe.</div>
+        <table><thead><tr><th>#</th><th>Nome WA</th><th>Telefone</th><th>Ação</th></tr></thead><tbody>${uRows}</tbody></table>`;
     }
 
     // Sync info
@@ -991,24 +1057,28 @@
       const classIds = await getLinkedClassIds();
       if (!classIds.length) { el.innerHTML = '<div class="empty">Nenhuma aula vinculada a esta turma.</div>'; return; }
 
-      const [classesRes, mentorsRes, cmRes] = await Promise.all([
+      const [classesRes, mentorsRes, cmRes, waRes] = await Promise.all([
         sb.from('classes').select('id, name, color, time_start, time_end, weekday').in('id', classIds),
-        sb.from('mentors').select('id, name').eq('active', true),
+        sb.from('mentors').select('id, name, phone, role, aliases').eq('active', true),
         sb.from('class_mentors').select('class_id, mentor_id, role, weekday').in('class_id', classIds).is('valid_until', null),
+        sb.from('wa_group_members').select('phone, wa_name').eq('cohort_id', cohortId),
       ]);
 
       const classes = classesRes.data || [];
       const mentors = mentorsRes.data || [];
       const cms = cmRes.data || [];
+      const waMembers = waRes.data || [];
       const mentorMap = {};
-      mentors.forEach(m => { mentorMap[m.id] = m.name; });
+      mentors.forEach(m => { mentorMap[m.id] = m; });
 
-      const html = classes.map(c => {
+      // ── Per-class cards (existing) ──
+      const classCards = classes.map(c => {
         const byDay = {};
         cms.filter(cm => cm.class_id === c.id).forEach(cm => {
           const wd = cm.weekday ?? c.weekday ?? 0;
           if (!byDay[wd]) byDay[wd] = [];
-          byDay[wd].push({ name: mentorMap[cm.mentor_id] || '?', role: cm.role });
+          const mentor = mentorMap[cm.mentor_id];
+          byDay[wd].push({ name: mentor?.name || '?', role: cm.role });
         });
 
         const daysHtml = Object.entries(byDay).sort((a,b) => a[0]-b[0]).map(([wd, members]) => {
@@ -1028,8 +1098,86 @@
         '</div>';
       }).join('');
 
-      el.innerHTML = html || '<div class="empty">Nenhuma equipe encontrada.</div>';
-    } catch (err) { el.innerHTML = '<div class="empty">Erro ao carregar equipe.</div>'; }
+      // ── Cross-channel presence summary per staff member ──
+      const uniqueMentorIds = [...new Set(cms.map(cm => cm.mentor_id))];
+      const totalMeetings = turmaMeetings.length;
+
+      const staffSummary = uniqueMentorIds.map(mid => {
+        const mentor = mentorMap[mid];
+        if (!mentor) return null;
+        const mName = mentor.name || '';
+        const mPhone = (mentor.phone || '').replace(/\D/g, '');
+        const mAliases = mentor.aliases || [];
+
+        // Zoom presence: count meetings where this staff was present
+        let zoomCount = 0;
+        (turmaMeetings || []).forEach(m => {
+          const found = m.participants.some(p => {
+            if (mName && nameMatch(mName, p.name)) return true;
+            if (mName && p.name && mName.toLowerCase().trim() === p.name.toLowerCase().trim()) return true;
+            return mAliases.some(a => {
+              const na = a.toLowerCase().trim();
+              return na === (p.name || '').toLowerCase().trim() || nameMatch(a, p.name || '');
+            });
+          });
+          if (found) zoomCount++;
+        });
+
+        // WA presence: check if in group
+        const inWa = waMembers.some(wm => {
+          const wmPhone = (wm.phone || '').replace(/\D/g, '');
+          if (mPhone && wmPhone && (mPhone.endsWith(wmPhone.slice(-8)) || wmPhone.endsWith(mPhone.slice(-8)))) return true;
+          if (wm.wa_name && mName && nameMatch(mName, wm.wa_name)) return true;
+          return mAliases.some(a => wm.wa_name && nameMatch(a, wm.wa_name));
+        });
+
+        // Role from class_mentors
+        const roles = [...new Set(cms.filter(cm => cm.mentor_id === mid).map(cm => cm.role))];
+
+        return { name: mName, roles, zoomCount, inWa };
+      }).filter(Boolean);
+
+      // Render summary table
+      let summaryHtml = '';
+      if (staffSummary.length) {
+        const sRows = staffSummary.sort((a, b) => a.name.localeCompare(b.name)).map((s, i) => {
+          const roleChips = s.roles.map(r => {
+            const clr = r === 'Professor' ? '#a5b4fc' : r === 'Host' ? '#888' : '#facc15';
+            return `<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:${clr}15;border:1px solid ${clr}30;color:${clr}">${r}</span>`;
+          }).join(' ');
+
+          const zoomPct = totalMeetings ? Math.round(s.zoomCount / totalMeetings * 100) : 0;
+          const zoomColor = zoomPct >= 80 ? '#4ade80' : zoomPct >= 50 ? '#f59e0b' : '#ef4444';
+          const zoomBadge = totalMeetings
+            ? `<span style="font-size:11px;font-weight:700;color:${zoomColor}">${s.zoomCount}/${totalMeetings}</span> <span style="font-size:10px;color:#555">(${zoomPct}%)</span>`
+            : '<span style="font-size:11px;color:#555">—</span>';
+
+          const waBadge = s.inWa
+            ? '<span style="font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.3);color:#25d366;font-weight:600">No grupo</span>'
+            : '<span style="font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#f87171;font-weight:600">Fora</span>';
+
+          return `<tr>
+            <td style="width:32px;text-align:center;color:#444">${i+1}</td>
+            <td><div class="student-name">${escHtml(s.name)}</div></td>
+            <td>${roleChips}</td>
+            <td style="text-align:center">${zoomBadge}</td>
+            <td style="text-align:center">${waBadge}</td>
+          </tr>`;
+        }).join('');
+
+        summaryHtml = `
+          <div style="background:#0d1117;border:1px solid #1a2332;border-radius:10px;padding:20px;margin-bottom:16px">
+            <div style="font-size:14px;font-weight:700;color:#a5b4fc;margin-bottom:4px">Presença da Equipe — Visão Consolidada</div>
+            <div style="font-size:12px;color:#555;margin-bottom:12px">Presença no Zoom e status no grupo WhatsApp desta turma.</div>
+            <table>
+              <thead><tr><th>#</th><th>Nome</th><th>Função</th><th>Zoom</th><th>WhatsApp</th></tr></thead>
+              <tbody>${sRows}</tbody>
+            </table>
+          </div>`;
+      }
+
+      el.innerHTML = (summaryHtml + classCards) || '<div class="empty">Nenhuma equipe encontrada.</div>';
+    } catch (err) { el.innerHTML = '<div class="empty">Erro ao carregar equipe.</div>'; console.error(err); }
   }
 
   // ─── TAB: Zoom ────────────────────────────────────
@@ -1930,6 +2078,121 @@ async function executeLinkStaff(staffName) {
     closeLinkModal();
     loadPresencaForMeeting(linkMeetingId);
   }, 1200);
+}
+
+// ── WA LINK: Link unidentified WA member to CSV student or Staff ──
+let waLinkName = '';
+let waLinkPhone = '';
+
+function openWaLinkModal(waName, waPhone) {
+  waLinkName = waName;
+  waLinkPhone = waPhone;
+  document.getElementById('link-title').textContent = `Vincular WA: "${waName}"`;
+  document.getElementById('link-sub').textContent = `Escolha o aluno (CSV) ou membro da equipe que usa "${waName}" no WhatsApp`;
+  document.getElementById('link-search').value = '';
+  document.getElementById('link-results').innerHTML = '';
+  document.getElementById('link-feedback').innerHTML = '';
+  document.querySelector('.link-actions').innerHTML = `
+    <button class="link-btn" onclick="closeLinkModal()">Cancelar</button>
+  `;
+  document.getElementById('link-search').placeholder = 'Filtrar alunos ou equipe...';
+  document.getElementById('link-search').oninput = searchWaForLink;
+  document.getElementById('link-modal').classList.remove('hidden');
+  document.getElementById('link-search').focus();
+  if (waName) {
+    document.getElementById('link-search').value = waName.split(' ')[0];
+    searchWaForLink();
+  }
+}
+
+function searchWaForLink() {
+  const q = document.getElementById('link-search').value.toLowerCase().trim();
+
+  const csvResults = (allStudents || []).filter(s => {
+    if (q.length < 2) return true;
+    const name = (s.name || '').toLowerCase();
+    const email = (s.email || '').toLowerCase();
+    const phone = (s.phone || '').replace(/\D/g, '');
+    return name.includes(q) || email.includes(q) || phone.includes(q);
+  }).slice(0, 15);
+
+  const staffResults = (staffMembers || []).filter(s => {
+    if (q.length < 2) return true;
+    const name = (s.name || '').toLowerCase();
+    const aliases = (s.aliases || []).join(' ').toLowerCase();
+    return name.includes(q) || aliases.includes(q);
+  });
+
+  let html = '';
+
+  if (csvResults.length) {
+    html += '<div style="font-size:10px;color:#4ade80;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:6px 8px;margin-top:4px">Alunos CSV</div>';
+    html += csvResults.map(s => {
+      const phone = s.phone && !s.phone.startsWith('pending_') ? formatPhoneShort(s.phone) : 'Sem telefone';
+      return `<div class="link-result" onclick="executeWaLinkCSV('${s.id}', '${escHtml(s.name || '').replace(/'/g,"\\'")}')">
+        <div style="flex:1">
+          <div class="lr-name">${escHtml(s.name || 'Sem nome')}</div>
+          <div class="lr-meta">${phone}</div>
+        </div>
+        <div style="font-size:11px;color:#4ade80;font-weight:600">Aluno</div>
+      </div>`;
+    }).join('');
+  }
+
+  if (staffResults.length) {
+    html += '<div style="font-size:10px;color:#a5b4fc;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:6px 8px;margin-top:8px">Equipe</div>';
+    html += staffResults.map(s => {
+      return `<div class="link-result" onclick="executeWaLinkStaff('${escHtml(s.name).replace(/'/g,"\\'")}')">
+        <div style="flex:1">
+          <div class="lr-name">${escHtml(s.name)}</div>
+          <div class="lr-meta">${s.category || 'Equipe'}</div>
+        </div>
+        <div style="font-size:11px;color:#a5b4fc;font-weight:600">Equipe</div>
+      </div>`;
+    }).join('');
+  }
+
+  if (!html) html = '<div style="font-size:12px;color:#555;padding:8px">Nenhum resultado encontrado.</div>';
+  document.getElementById('link-results').innerHTML = html;
+}
+
+// Vincular membro WA a aluno CSV — salva telefone WA no student_imports se vazio
+async function executeWaLinkCSV(csvId, csvName) {
+  document.getElementById('link-feedback').innerHTML = '<div style="font-size:12px;color:#a5b4fc;padding:8px">Vinculando...</div>';
+
+  const csvStudent = (allStudents || []).find(s => s.id === csvId);
+  if (csvStudent && waLinkPhone) {
+    const cleanPhone = waLinkPhone.replace(/\D/g, '');
+    // Se o aluno não tem telefone ou tem placeholder, salva o telefone WA
+    if (!csvStudent.phone || csvStudent.phone.startsWith('pending_')) {
+      const { error } = await sb.from('student_imports').update({ phone: cleanPhone }).eq('id', csvId);
+      if (error) {
+        document.getElementById('link-feedback').innerHTML = `<div style="color:#f87171;font-size:12px;padding:8px">Erro: ${error.message}</div>`;
+        return;
+      }
+      csvStudent.phone = cleanPhone;
+    }
+  }
+
+  document.getElementById('link-feedback').innerHTML = `<div class="link-success">Vinculado! "${waLinkName}" (WA) agora vinculado a "${csvName}" (CSV).</div>`;
+  setTimeout(() => { closeLinkModal(); renderWaTab(); }, 1200);
+}
+
+// Vincular membro WA como equipe — salva telefone WA no staff se vazio
+async function executeWaLinkStaff(staffName) {
+  document.getElementById('link-feedback').innerHTML = '<div style="font-size:12px;color:#a5b4fc;padding:8px">Vinculando como equipe...</div>';
+
+  const staffMember = (staffMembers || []).find(s => s.name === staffName);
+  if (staffMember && waLinkPhone) {
+    const cleanPhone = waLinkPhone.replace(/\D/g, '');
+    if (!staffMember.phone) {
+      await sb.from('staff').update({ phone: cleanPhone }).eq('name', staffName);
+      staffMember.phone = cleanPhone;
+    }
+  }
+
+  document.getElementById('link-feedback').innerHTML = `<div class="link-success">Vinculado como equipe! "${waLinkName}" (WA) = "${staffName}".</div>`;
+  setTimeout(() => { closeLinkModal(); renderWaTab(); }, 1200);
 }
 
 // ── RE-LINK: Edit existing match (CSV student → pick different Zoom participant) ──
