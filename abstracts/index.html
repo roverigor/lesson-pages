@@ -1046,10 +1046,11 @@
 
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@0.469.0"></script>
+  <script src="/js/config.js"></script>
   <script>
   (function() {
-    var SUPABASE_URL = 'https://gpufcipkajppykmnmdeh.supabase.co';
-    var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU';
+    var SUPABASE_URL = window.SUPABASE_CONFIG.url;
+    var SUPABASE_KEY = window.SUPABASE_CONFIG.anonKey;
 
     // ============================================================
     // FETCH LESSON ABSTRACTS FROM SUPABASE

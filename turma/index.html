@@ -110,9 +110,10 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
+<script src="/js/config.js"></script>
 <script>
-  const SUPABASE_URL = 'https://gpufcipkajppykmnmdeh.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwdWZjaXBrYWpwcHlrbW5tZGVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNzE1NzgsImV4cCI6MjA4OTk0NzU3OH0.BBmvIGbMtp3bPirWxjMXwdXkpABBV6zD1wgSQ2cB8aU';
+  const SUPABASE_URL = window.SUPABASE_CONFIG.url;
+  const SUPABASE_KEY = window.SUPABASE_CONFIG.anonKey;
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 

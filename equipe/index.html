@@ -207,6 +207,7 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<script src="/js/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0/dist/umd/supabase.min.js"></script>
 <script>
 const SUPABASE_URL = window.SUPABASE_CONFIG.url;
@@ -656,7 +657,7 @@ async function removeZoomAlias(alias) {
 }
 
 // ── ZOOM VINCULAÇÃO ───────────────────────────────────────────────────
-const ZOOM_FN_URL = 'https://gpufcipkajppykmnmdeh.supabase.co/functions/v1/zoom-attendance';
+const ZOOM_FN_URL = window.SUPABASE_CONFIG.url + '/functions/v1/zoom-attendance';
 let _candidatesLoaded = false;
 let _ignoredCandidates = new Set();
 
