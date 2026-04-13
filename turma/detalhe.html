@@ -1780,23 +1780,22 @@ function openLinkModal(zoomName) {
   linkZoomName = zoomName;
   linkMeetingId = document.getElementById('presenca-date-select').value;
   document.getElementById('link-title').textContent = `Vincular: "${zoomName}"`;
-  document.getElementById('link-sub').textContent = `Busque o aluno que usou "${zoomName}" no Zoom`;
+  document.getElementById('link-sub').textContent = `Escolha o aluno (CSV) ou membro da equipe que usou "${zoomName}" no Zoom`;
   document.getElementById('link-search').value = '';
   document.getElementById('link-results').innerHTML = '';
   document.getElementById('link-feedback').innerHTML = '';
-  // Reset actions to default
+  // Reset actions
   document.querySelector('.link-actions').innerHTML = `
     <button class="link-btn" onclick="closeLinkModal()">Cancelar</button>
-    <button class="link-btn new-student" onclick="createAndLink()">Criar novo aluno</button>
   `;
-  // Reset search handler to student search
-  document.getElementById('link-search').placeholder = 'Buscar por nome, telefone ou email...';
-  document.getElementById('link-search').oninput = searchStudentsForLink;
+  // Reset search handler to local search
+  document.getElementById('link-search').placeholder = 'Filtrar alunos ou equipe...';
+  document.getElementById('link-search').oninput = searchLocalForLink;
   document.getElementById('link-modal').classList.remove('hidden');
   document.getElementById('link-search').focus();
   // Pre-search with the zoom name
   document.getElementById('link-search').value = zoomName.split(' ')[0];
-  searchStudentsForLink();
+  searchLocalForLink();
 }
 
 function closeLinkModal() {
@@ -1804,41 +1803,63 @@ function closeLinkModal() {
   linkZoomName = '';
 }
 
-async function searchStudentsForLink() {
+function searchLocalForLink() {
   const q = document.getElementById('link-search').value.toLowerCase().trim();
-  if (q.length < 2) {
-    document.getElementById('link-results').innerHTML = '<div style="font-size:12px;color:#333;padding:8px">Digite ao menos 2 caracteres...</div>';
-    return;
+
+  // Search in CSV students (allStudents) + staff (staffMembers) — local, no DB query
+  const csvResults = (allStudents || []).filter(s => {
+    if (q.length < 2) return true; // show all if no filter
+    const name = (s.name || '').toLowerCase();
+    const email = (s.email || '').toLowerCase();
+    const phone = (s.phone || '').replace(/\D/g, '');
+    return name.includes(q) || email.includes(q) || phone.includes(q);
+  }).slice(0, 15);
+
+  const staffResults = (staffMembers || []).filter(s => {
+    if (q.length < 2) return true;
+    const name = (s.name || '').toLowerCase();
+    const aliases = (s.aliases || []).join(' ').toLowerCase();
+    return name.includes(q) || aliases.includes(q);
+  });
+
+  let html = '';
+
+  // CSV section
+  if (csvResults.length) {
+    html += '<div style="font-size:10px;color:#4ade80;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:6px 8px;margin-top:4px">Alunos CSV</div>';
+    html += csvResults.map(s => {
+      const phone = s.phone && !s.phone.startsWith('pending_') ? formatPhoneShort(s.phone) : '';
+      const aliases = (s.aliases || []).length ? ` · ${s.aliases.join(', ')}` : '';
+      return `<div class="link-result" onclick="executeLinkCSV('${s.id}', '${escHtml(s.name || '').replace(/'/g,"\\'")}')">
+        <div style="flex:1">
+          <div class="lr-name">${escHtml(s.name || 'Sem nome')}</div>
+          <div class="lr-meta">${phone || 'Sem telefone'}${aliases}</div>
+        </div>
+        <div style="font-size:11px;color:#4ade80;font-weight:600">Aluno</div>
+      </div>`;
+    }).join('');
   }
 
-  // Search students
-  const { data: students } = await sb.from('students')
-    .select('id, name, phone, email, cohort_id, cohorts(name), aliases')
-    .eq('active', true)
-    .or(`name.ilike.%${q}%,phone.ilike.%${q}%,email.ilike.%${q}%`)
-    .order('name')
-    .limit(15);
-
-  linkSearchCache = students || [];
-
-  if (!linkSearchCache.length) {
-    document.getElementById('link-results').innerHTML = '<div style="font-size:12px;color:#555;padding:8px">Nenhum aluno encontrado. Use "Criar novo aluno" abaixo.</div>';
-    return;
+  // Staff section
+  if (staffResults.length) {
+    html += '<div style="font-size:10px;color:#a5b4fc;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:6px 8px;margin-top:8px">Equipe</div>';
+    html += staffResults.map(s => {
+      const aliases = (s.aliases || []).length ? ` · ${s.aliases.join(', ')}` : '';
+      return `<div class="link-result" onclick="executeLinkStaff('${s.name.replace(/'/g,"\\'")}')">
+        <div style="flex:1">
+          <div class="lr-name">${escHtml(s.name)}</div>
+          <div class="lr-meta">${s.category}${aliases}</div>
+        </div>
+        <div style="font-size:11px;color:#a5b4fc;font-weight:600">Equipe</div>
+      </div>`;
+    }).join('');
   }
 
-  document.getElementById('link-results').innerHTML = linkSearchCache.map(s => {
-    const phone = s.phone && !s.phone.startsWith('pending_') ? s.phone : '';
-    const cohort = s.cohorts?.name || '—';
-    const aliases = (s.aliases || []).length ? ` · Aliases: ${s.aliases.join(', ')}` : '';
-    return `<div class="link-result" onclick="executeLink('${s.id}', '${escHtml(s.name || '')}')">
-      <div style="flex:1">
-        <div class="lr-name">${escHtml(s.name || 'Sem nome')}</div>
-        <div class="lr-meta">${phone ? formatPhoneShort(phone) : 'Sem telefone'}${aliases}</div>
-        <div class="lr-cohort">${cohort}</div>
-      </div>
-      <div style="font-size:11px;color:#6366f1;font-weight:600">Vincular</div>
-    </div>`;
-  }).join('');
+  if (!html) {
+    html = '<div style="font-size:12px;color:#555;padding:8px">Nenhum resultado encontrado.</div>';
+  }
+
+  document.getElementById('link-results').innerHTML = html;
 }
 
 function formatPhoneShort(phone) {
@@ -1849,86 +1870,59 @@ function formatPhoneShort(phone) {
   return `+${phone.slice(0, -4)}•••${phone.slice(-4)}`;
 }
 
-async function executeLink(studentId, studentName) {
+// Vincular participante Zoom a aluno CSV — salva alias persistente no student_imports
+async function executeLinkCSV(csvId, csvName) {
   document.getElementById('link-feedback').innerHTML = '<div style="font-size:12px;color:#a5b4fc;padding:8px">Vinculando...</div>';
 
-  // 1. Add zoom name as alias to the student
-  const { data: student } = await sb.from('students').select('aliases').eq('id', studentId).single();
-  const currentAliases = student?.aliases || [];
+  // 1. Salvar zoom name como alias no student_imports
+  const csvStudent = (allStudents || []).find(s => s.id === csvId);
+  const currentAliases = csvStudent?.aliases || [];
   if (!currentAliases.includes(linkZoomName)) {
     const newAliases = [...currentAliases, linkZoomName];
-    const { error: aliasErr } = await sb.from('students').update({ aliases: newAliases }).eq('id', studentId);
-    if (aliasErr) {
-      document.getElementById('link-feedback').innerHTML = `<div style="color:#f87171;font-size:12px;padding:8px">Erro ao adicionar alias: ${aliasErr.message}</div>`;
+    const { error } = await sb.from('student_imports').update({ aliases: newAliases }).eq('id', csvId);
+    if (error) {
+      document.getElementById('link-feedback').innerHTML = `<div style="color:#f87171;font-size:12px;padding:8px">Erro: ${error.message}</div>`;
       return;
     }
+    if (csvStudent) csvStudent.aliases = newAliases;
   }
 
-  // 2. Update zoom_participants: set matched=true, student_id for this meeting
-  if (linkMeetingId) {
-    const { error: zpErr } = await sb.from('zoom_participants')
-      .update({ matched: true, student_id: studentId })
-      .eq('meeting_id', linkMeetingId)
-      .eq('participant_name', linkZoomName)
-      .eq('matched', false);
-    if (zpErr) {
-      document.getElementById('link-feedback').innerHTML = `<div style="color:#f87171;font-size:12px;padding:8px">Erro ao vincular participante: ${zpErr.message}</div>`;
-      return;
-    }
+  document.getElementById('link-feedback').innerHTML = `<div class="link-success">Vinculado! "${linkZoomName}" agora é alias de "${csvName}". Valido para todas as reunioes.</div>`;
 
-    // 3. Add to student_attendance
-    const meeting = turmaMeetings.find(m => m.id === linkMeetingId);
-    const classDate = meeting ? meeting.start_time.split('T')[0] : new Date().toISOString().split('T')[0];
-    const { data: zpData } = await sb.from('zoom_participants')
-      .select('duration_minutes')
-      .eq('meeting_id', linkMeetingId)
-      .eq('student_id', studentId)
-      .order('duration_minutes', { ascending: false })
-      .limit(1);
-
-    const duration = zpData?.[0]?.duration_minutes || null;
-    await sb.from('student_attendance').upsert({
-      student_id: studentId,
-      class_date: classDate,
-      cohort_id: cohortId,
-      zoom_meeting_id: linkMeetingId,
-      source: 'zoom',
-      duration_minutes: duration,
-    }, { onConflict: 'student_id,class_date,zoom_meeting_id' });
-  }
-
-  document.getElementById('link-feedback').innerHTML = `<div class="link-success">Vinculado! "${linkZoomName}" agora é alias de "${studentName}". Presença registrada.</div>`;
-
-  // Refresh after a pause
-  setTimeout(async () => {
+  setTimeout(() => {
     closeLinkModal();
     loadPresencaForMeeting(linkMeetingId);
-  }, 1500);
+  }, 1200);
 }
 
-async function createAndLink() {
-  if (!linkZoomName) return;
-  document.getElementById('link-feedback').innerHTML = '<div style="font-size:12px;color:#a5b4fc;padding:8px">Criando aluno...</div>';
+// Vincular participante Zoom como membro da equipe — salva alias persistente no staff
+async function executeLinkStaff(staffName) {
+  document.getElementById('link-feedback').innerHTML = '<div style="font-size:12px;color:#a5b4fc;padding:8px">Vinculando como equipe...</div>';
 
-  // Create a new student with zoom name, in this cohort, no phone (pending)
-  const pendingPhone = 'pending_' + Math.random().toString(36).slice(2, 10);
-  const { data: newStudent, error } = await sb.from('students').insert({
-    name: linkZoomName,
-    phone: pendingPhone,
-    cohort_id: cohortId,
-    aliases: [linkZoomName],
-  }).select('id, name').single();
-
-  if (error || !newStudent) {
-    document.getElementById('link-feedback').innerHTML = `<div style="color:#f87171;font-size:12px;padding:8px">Erro ao criar: ${error?.message || 'Desconhecido'}</div>`;
+  const staffMember = (staffMembers || []).find(s => s.name === staffName);
+  if (!staffMember) {
+    document.getElementById('link-feedback').innerHTML = '<div style="color:#f87171;font-size:12px;padding:8px">Membro não encontrado.</div>';
     return;
   }
 
-  // Also insert into student_cohorts
-  await sb.from('student_cohorts').insert({ student_id: newStudent.id, cohort_id: cohortId }).select();
+  const currentAliases = staffMember.aliases || [];
+  if (!currentAliases.includes(linkZoomName)) {
+    const newAliases = [...currentAliases, linkZoomName];
+    await sb.from('staff').update({ aliases: newAliases }).eq('name', staffName);
+    // Sync to mentors
+    if (staffMember.phone) {
+      const { data: mentor } = await sb.from('mentors').select('id').eq('phone', staffMember.phone.replace(/\D/g,'')).single();
+      if (mentor) await sb.from('mentors').update({ aliases: newAliases }).eq('id', mentor.id);
+    }
+    staffMember.aliases = newAliases;
+  }
 
-  // Now link the zoom participant
-  await executeLink(newStudent.id, newStudent.name);
+  document.getElementById('link-feedback').innerHTML = `<div class="link-success">Vinculado como equipe! "${linkZoomName}" agora é alias de "${staffName}".</div>`;
+
+  setTimeout(() => {
+    closeLinkModal();
+    loadPresencaForMeeting(linkMeetingId);
+  }, 1200);
 }
 
 // ── RE-LINK: Edit existing match (CSV student → pick different Zoom participant) ──

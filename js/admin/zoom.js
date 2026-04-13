@@ -69,14 +69,57 @@ const FUZZY_AUTO     = 0.92;
 const FUZZY_SUGGEST  = 0.80;
 
 async function autoMatchParticipants() {
-  const unmatched = zoomParticipantsData.filter(p => !p.matched);
+  const unmatched = zoomParticipantsData.filter(p => !p.matched && !p._isStaff);
   if (!unmatched.length) { showToast('Nenhum participante sem vínculo', 'success'); return; }
+
+  // Match contra CSV (prioridade) + Staff
+  const meetingOpt = document.getElementById('zoom-meeting-select').selectedOptions[0];
+  const meetingCohortId = meetingOpt?.dataset?.cohortId || null;
+  const csvFiltered = meetingCohortId
+    ? zoomAllStudents.filter(s => s.cohort_id === meetingCohortId)
+    : zoomAllStudents;
+
+  // Incluir aliases na busca fuzzy
+  const expandedCSV = [];
+  csvFiltered.forEach(s => {
+    expandedCSV.push(s);
+    // Adicionar aliases como entradas extras para matching
+    (s.aliases || []).forEach(alias => {
+      expandedCSV.push({ ...s, _aliasName: alias });
+    });
+  });
 
   const suggestions = [];
   for (const p of unmatched) {
-    const { student, score } = bestStudentMatch(p.participant_name, zoomAllStudents);
-    if (student && score >= FUZZY_SUGGEST) {
-      suggestions.push({ p, student, score, auto: score >= FUZZY_AUTO });
+    let bestMatch = null, bestScore = 0, bestType = 'csv';
+
+    // Buscar no CSV (incluindo aliases)
+    for (const s of expandedCSV) {
+      const matchName = s._aliasName || s.name;
+      // Check exact alias match first
+      if (s._aliasName && normName(s._aliasName) === normName(p.participant_name)) {
+        bestMatch = s; bestScore = 1.0; break;
+      }
+      const score = fuzzyScore(p.participant_name, matchName);
+      if (score > bestScore) { bestScore = score; bestMatch = s; }
+    }
+
+    // Buscar no Staff (se score CSV não é perfeito)
+    if (bestScore < 0.95) {
+      for (const s of zoomStaffList) {
+        const score = fuzzyScore(p.participant_name, s.name);
+        if (score > bestScore) { bestScore = score; bestMatch = s; bestType = 'staff'; }
+        for (const alias of (s.aliases || [])) {
+          if (normName(alias) === normName(p.participant_name)) { bestMatch = s; bestScore = 1.0; bestType = 'staff'; break; }
+          const aScore = fuzzyScore(p.participant_name, alias);
+          if (aScore > bestScore) { bestScore = aScore; bestMatch = s; bestType = 'staff'; }
+        }
+        if (bestScore >= 1.0) break;
+      }
+    }
+
+    if (bestMatch && bestScore >= FUZZY_SUGGEST) {
+      suggestions.push({ p, student: bestMatch, score: bestScore, auto: bestScore >= FUZZY_AUTO, type: bestType });
     }
   }
 
@@ -95,9 +138,13 @@ function renderMatchModal(suggestions) {
   const rowHTML = (s) => {
     const pct  = Math.round(s.score * 100);
     const color = s.auto ? '#4ade80' : '#f59e0b';
-    return `<tr data-pid="${s.p.id}" data-sid="${s.student.id}" class="fuzzy-row">
+    const typeLabel = s.type === 'staff'
+      ? `<span style="font-size:9px;color:#a5b4fc;background:rgba(99,102,241,.12);padding:1px 5px;border-radius:3px;margin-left:4px">EQUIPE</span>`
+      : `<span style="font-size:9px;color:#4ade80;background:rgba(74,222,128,.12);padding:1px 5px;border-radius:3px;margin-left:4px">CSV</span>`;
+    const pIds = (s.p._ids || [s.p.id]).join(',');
+    return `<tr data-pid="${pIds}" data-sid="${s.student.id}" data-type="${s.type || 'csv'}" data-zoom-name="${s.p.participant_name}" class="fuzzy-row">
       <td style="padding:8px 6px;font-size:12px;color:#ccc">${s.p.participant_name}</td>
-      <td style="padding:8px 6px;font-size:12px;color:#fff;font-weight:600">${s.student.name}</td>
+      <td style="padding:8px 6px;font-size:12px;color:#fff;font-weight:600">${s.student._aliasName || s.student.name}${typeLabel}</td>
       <td style="padding:8px 6px;text-align:center">
         <span style="font-size:11px;font-weight:700;color:${color};background:${color}22;padding:2px 8px;border-radius:999px">${pct}%</span>
       </td>
@@ -153,21 +200,64 @@ async function applyFuzzyMatches() {
   const toLink = [];
   rows.forEach(row => {
     const cb = row.querySelector('.fuzzy-check');
-    if (cb && cb.checked) toLink.push({ pid: row.dataset.pid, sid: row.dataset.sid });
+    if (cb && cb.checked) {
+      toLink.push({
+        pids: row.dataset.pid.split(','),
+        sid: row.dataset.sid,
+        type: row.dataset.type || 'csv',
+        zoomName: row.dataset.zoomName,
+      });
+    }
   });
 
   if (!toLink.length) { closeFuzzyModal(); return; }
 
   let ok = 0, fail = 0;
-  for (const { pid, sid } of toLink) {
-    const { error } = await sb.from('zoom_participants')
-      .update({ student_id: sid, matched: true })
-      .eq('id', pid);
-    error ? fail++ : ok++;
+  for (const { pids, sid, type, zoomName } of toLink) {
+    try {
+      if (type === 'staff') {
+        // Salvar alias no staff
+        const staffMember = zoomStaffList.find(s => s.id === sid);
+        if (staffMember) {
+          const cur = staffMember.aliases || [];
+          if (!cur.includes(zoomName)) {
+            await sb.from('staff').update({ aliases: [...cur, zoomName] }).eq('id', sid);
+            const { data: mentor } = await sb.from('mentors').select('id').eq('phone', staffMember.phone?.replace(/\D/g,'')).single();
+            if (mentor) await sb.from('mentors').update({ aliases: [...cur, zoomName] }).eq('id', mentor.id);
+            staffMember.aliases = [...cur, zoomName];
+          }
+        }
+        for (const pid of pids) {
+          await sb.from('zoom_participants').update({ matched: true }).eq('id', pid);
+        }
+      } else {
+        // CSV: salvar alias + vincular via legacy
+        const csvStudent = zoomAllStudents.find(s => s.id === sid);
+        if (csvStudent) {
+          const cur = csvStudent.aliases || [];
+          if (!cur.includes(zoomName)) {
+            await sb.from('student_imports').update({ aliases: [...cur, zoomName] }).eq('id', sid);
+            csvStudent.aliases = [...cur, zoomName];
+          }
+        }
+        // Find legacy student for FK
+        const legacy = zoomLegacyStudents.find(s =>
+          (s.phone && csvStudent?.phone && s.phone.replace(/\D/g,'').slice(-8) === csvStudent.phone.replace(/\D/g,'').slice(-8)) ||
+          (s.name && csvStudent?.name && normName(s.name) === normName(csvStudent.name))
+        );
+        for (const pid of pids) {
+          await sb.from('zoom_participants').update({
+            student_id: legacy?.id || null,
+            matched: true,
+          }).eq('id', pid);
+        }
+      }
+      ok++;
+    } catch (e) { fail++; }
   }
 
   closeFuzzyModal();
-  showToast(`✅ ${ok} vinculados${fail ? ` · ❌ ${fail} erros` : ''}`, ok ? 'success' : 'error');
+  showToast(`✅ ${ok} vinculados + aliases salvos${fail ? ` · ❌ ${fail} erros` : ''}`, ok ? 'success' : 'error');
   await loadZoomParticipants();
 }
 
@@ -185,11 +275,20 @@ async function loadZoomMeetings() {
   for (const m of (meetings || [])) {
     const d = new Date(m.start_time);
     const label = `${d.toLocaleDateString('pt-BR')} — ${m.topic}${m.cohorts?.name ? ' ('+m.cohorts.name+')' : ''}`;
-    sel.innerHTML += `<option value="${m.id}">${label}</option>`;
+    sel.innerHTML += `<option value="${m.id}" data-cohort-id="${m.cohort_id || ''}">${label}</option>`;
   }
 
-  const { data: students } = await sb.from('students').select('id, name, phone').order('name');
-  zoomAllStudents = (students || []).filter(s => s.name && s.name.trim());
+  // Carregar CSV (student_imports) + Staff para vinculação
+  const [csvRes, staffRes] = await Promise.all([
+    sb.from('student_imports').select('id, name, email, phone, cohort_id, aliases').order('name'),
+    sb.from('staff').select('id, name, email, phone, category, aliases').eq('active', true).order('name'),
+  ]);
+  zoomAllStudents = (csvRes.data || []).filter(s => s.name && s.name.trim());
+  zoomStaffList = (staffRes.data || []).filter(s => s.name && s.name.trim());
+
+  // Fallback: carregar students legado para manter compatibilidade com student_id FK
+  const { data: legacyStudents } = await sb.from('students').select('id, name, phone').order('name');
+  zoomLegacyStudents = (legacyStudents || []).filter(s => s.name && s.name.trim());
 }
 
 async function loadZoomParticipants() {
@@ -199,21 +298,68 @@ async function loadZoomParticipants() {
   document.getElementById('zoom-participants-list').innerHTML = '<div style="color:#555;padding:20px">Carregando...</div>';
 
   const { data: parts, error } = await sb.from('zoom_participants')
-    .select('id, participant_name, duration_minutes, matched, student_id, students(name)')
+    .select('id, participant_name, participant_email, duration_minutes, matched, student_id, students(name)')
     .eq('meeting_id', meetingId)
     .order('duration_minutes', { ascending: false });
 
   if (error) { showToast('Erro: ' + error.message, 'error'); return; }
-  zoomParticipantsData = parts || [];
+
+  // ── DEDUP: agrupar por nome normalizado, somar duração ──
+  const rawParts = parts || [];
+  const byName = {};
+  rawParts.forEach(p => {
+    const key = normName(p.participant_name || '');
+    if (!key) return;
+    if (!byName[key]) {
+      byName[key] = { ...p, _ids: [p.id], _totalDur: p.duration_minutes || 0 };
+    } else {
+      byName[key]._ids.push(p.id);
+      byName[key]._totalDur += (p.duration_minutes || 0);
+      // Preservar o match/student_id se algum registro tinha
+      if (p.matched && !byName[key].matched) {
+        byName[key].matched = true;
+        byName[key].student_id = p.student_id;
+        byName[key].students = p.students;
+      }
+      // Preservar email se disponível
+      if (p.participant_email && !byName[key].participant_email) {
+        byName[key].participant_email = p.participant_email;
+      }
+    }
+  });
+  zoomParticipantsData = Object.values(byName).map(p => ({
+    ...p, duration_minutes: p._totalDur,
+  })).sort((a, b) => b.duration_minutes - a.duration_minutes);
+
+  // ── Auto-classificar equipe ──
+  zoomParticipantsData.forEach(p => {
+    p._isStaff = false;
+    p._staffMatch = null;
+    const pName = normName(p.participant_name || '');
+    for (const s of zoomStaffList) {
+      if (normName(s.name) === pName) { p._isStaff = true; p._staffMatch = s; break; }
+      if (s.aliases && s.aliases.length) {
+        for (const alias of s.aliases) {
+          if (normName(alias) === pName) { p._isStaff = true; p._staffMatch = s; break; }
+        }
+        if (p._isStaff) break;
+      }
+      // Fuzzy com threshold alto
+      if (fuzzyScore(p.participant_name, s.name) >= 0.90) { p._isStaff = true; p._staffMatch = s; break; }
+    }
+  });
 
   const total = zoomParticipantsData.length;
+  const rawTotal = rawParts.length;
   const matched = zoomParticipantsData.filter(p => p.matched).length;
-  const unmatched = total - matched;
+  const staffCount = zoomParticipantsData.filter(p => p._isStaff && !p.matched).length;
+  const unmatched = total - matched - staffCount;
 
   document.getElementById('zoom-stats').style.display = 'flex';
   document.getElementById('zoom-stats').innerHTML = `
-    <span style="font-size:13px;color:#888"><span style="color:#fff;font-weight:700;font-size:20px">${total}</span> participantes</span>
+    <span style="font-size:13px;color:#888"><span style="color:#fff;font-weight:700;font-size:20px">${total}</span> participantes${rawTotal > total ? ` <span style="color:#333;font-size:11px">(${rawTotal} brutos)</span>` : ''}</span>
     <span style="font-size:13px;color:#888"><span style="color:#4ade80;font-weight:700;font-size:20px">${matched}</span> vinculados</span>
+    <span style="font-size:13px;color:#888"><span style="color:#a5b4fc;font-weight:700;font-size:20px">${staffCount}</span> equipe</span>
     <span style="font-size:13px;color:#888"><span style="color:#f87171;font-weight:700;font-size:20px">${unmatched}</span> não vinculados</span>
   `;
   document.getElementById('zoom-search-wrap').style.display = 'flex';
@@ -232,27 +378,67 @@ function renderZoomParticipants() {
   const container = document.getElementById('zoom-participants-list');
   if (!zoomParticipantsData.length) { container.innerHTML = '<div style="color:#555;padding:20px">Nenhum participante.</div>'; return; }
 
-  const unmatched = zoomParticipantsData.filter(p => !p.matched);
-  const matched   = zoomParticipantsData.filter(p =>  p.matched);
+  // Filtrar reunião por cohort para mostrar CSV da turma certa
+  const meetingId = document.getElementById('zoom-meeting-select').value;
+  const meetingOpt = document.getElementById('zoom-meeting-select').selectedOptions[0];
+  const meetingCohortId = meetingOpt?.dataset?.cohortId || null;
 
-  const studentOptions = zoomAllStudents.map(s =>
-    `<option value="${s.id}">${s.name}${s.phone ? ' · '+s.phone : ''}</option>`
-  ).join('');
+  const csvFiltered = meetingCohortId
+    ? zoomAllStudents.filter(s => s.cohort_id === meetingCohortId)
+    : zoomAllStudents;
 
-  const rowHTML = (p, isMatched) => {
+  // Separar em 3 grupos
+  const staff     = zoomParticipantsData.filter(p => p._isStaff && !p.matched);
+  const unmatched = zoomParticipantsData.filter(p => !p.matched && !p._isStaff);
+  const matched   = zoomParticipantsData.filter(p => p.matched);
+
+  // Optgroups: CSV da turma + CSV outros + Equipe + Legado
+  const csvOther = meetingCohortId ? zoomAllStudents.filter(s => s.cohort_id !== meetingCohortId) : [];
+  const optCSV = csvFiltered.map(s => `<option value="csv::${s.id}" data-type="csv">${s.name}${s.phone ? ' · '+s.phone.slice(-4) : ''}</option>`).join('');
+  const optCSVOther = csvOther.length ? csvOther.map(s => `<option value="csv::${s.id}" data-type="csv">${s.name}</option>`).join('') : '';
+  const optStaff = zoomStaffList.map(s => `<option value="staff::${s.id}" data-type="staff">${s.name} (${s.category})</option>`).join('');
+  // Legado como fallback para manter FK compatível
+  const optLegacy = zoomLegacyStudents.map(s => `<option value="legacy::${s.id}" data-type="legacy">${s.name}</option>`).join('');
+
+  const selectHTML = `
+    <option value="">— Vincular a... —</option>
+    <optgroup label="Alunos CSV${meetingCohortId ? ' (turma)' : ''}">${optCSV}</optgroup>
+    ${optCSVOther ? `<optgroup label="Alunos CSV (outras turmas)">${optCSVOther}</optgroup>` : ''}
+    <optgroup label="Equipe">${optStaff}</optgroup>
+    <optgroup label="Sistema (legado)">${optLegacy}</optgroup>
+  `;
+
+  const staffRowHTML = (p) => {
+    const dur = p.duration_minutes;
+    const cat = p._staffMatch?.category || 'Equipe';
+    const catColors = { Professor: '#a5b4fc', Mentor: '#facc15', Host: '#888' };
+    const c = catColors[cat] || '#888';
+    const matchLabel = p._staffMatch && normName(p._staffMatch.name) !== normName(p.participant_name)
+      ? `<span style="font-size:10px;color:#555;margin-left:4px">→ ${p._staffMatch.name}</span>` : '';
+    return `<div class="zoom-part-row" data-name="${p.participant_name}" data-id="${p.id}"
+      style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid #161625">
+      <span style="flex:1;font-size:13px;color:#ccc">${p.participant_name}${matchLabel}</span>
+      <span style="font-size:11px;font-weight:700;color:${c};background:${c}15;padding:2px 8px;border-radius:4px">${cat}</span>
+      <span style="font-size:11px;color:#555;min-width:60px;text-align:right">${dur} min</span>
+    </div>`;
+  };
+
+  const matchedRowHTML = (p) => {
+    const dur = p.duration_minutes;
+    return `<div class="zoom-part-row" data-name="${p.participant_name}" data-id="${p.id}"
+      style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid #161616">
+      <span style="flex:1;font-size:13px;color:#555">${p.participant_name}</span>
+      <span style="font-size:12px;color:#4ade80;font-weight:600">${p.students?.name || '—'}</span>
+      <span style="font-size:11px;color:#555;min-width:60px;text-align:right">${dur} min</span>
+      <button onclick="unlinkParticipant('${p._ids ? p._ids[0] : p.id}')"
+        style="font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid #333;background:transparent;color:#555;cursor:pointer">✕</button>
+    </div>`;
+  };
+
+  const unmatchedRowHTML = (p) => {
     const dur = p.duration_minutes;
     const pct = Math.round(dur / 272 * 100);
     const barColor = dur >= 200 ? '#4ade80' : dur >= 100 ? '#facc15' : '#f87171';
-    if (isMatched) {
-      return `<div class="zoom-part-row" data-name="${p.participant_name}" data-id="${p.id}"
-        style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid #161616">
-        <span style="flex:1;font-size:13px;color:#555">${p.participant_name}</span>
-        <span style="font-size:12px;color:#4ade80;font-weight:600">${p.students?.name || '—'}</span>
-        <span style="font-size:11px;color:#555;min-width:60px;text-align:right">${dur} min</span>
-        <button onclick="unlinkParticipant('${p.id}')"
-          style="font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid #333;background:transparent;color:#555;cursor:pointer">✕</button>
-      </div>`;
-    }
     return `<div class="zoom-part-row" data-name="${p.participant_name}" data-id="${p.id}"
       style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #1a1a1a">
       <div style="flex:1;min-width:0">
@@ -265,31 +451,37 @@ function renderZoomParticipants() {
         </div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
-        <select class="substitute-select" style="padding:6px 8px;font-size:12px;min-width:200px" id="sel-${p.id}">
-          <option value="">— Selecionar aluno —</option>
-          ${studentOptions}
+        <select class="substitute-select" style="padding:6px 8px;font-size:12px;min-width:220px" id="sel-${p._ids ? p._ids[0] : p.id}">
+          ${selectHTML}
         </select>
-        <button onclick="linkParticipant('${p.id}')"
+        <button onclick="linkParticipantNew('${p._ids ? p._ids[0] : p.id}', '${p.participant_name.replace(/'/g, "\\'")}')"
           style="padding:6px 14px;border-radius:6px;border:none;background:#6366f1;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Vincular</button>
       </div>
     </div>`;
   };
 
   container.innerHTML = `
+    ${staff.length ? `
+      <div style="font-size:12px;font-weight:700;color:#a5b4fc;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">
+        🎓 Equipe (${staff.length})
+      </div>
+      <div style="background:#0d1117;border:1px solid #1a2332;border-radius:12px;overflow:hidden;margin-bottom:20px">
+        ${staff.map(staffRowHTML).join('')}
+      </div>` : ''}
     ${unmatched.length ? `
       <div style="font-size:12px;font-weight:700;color:#f87171;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">
         Não vinculados (${unmatched.length})
       </div>
       <div style="background:#111;border:1px solid #1e1e1e;border-radius:12px;overflow:hidden;margin-bottom:20px">
-        ${unmatched.map(p => rowHTML(p, false)).join('')}
+        ${unmatched.map(unmatchedRowHTML).join('')}
       </div>` : ''}
     ${matched.length ? `
       <details>
         <summary style="font-size:12px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;margin-bottom:8px">
-          Vinculados (${matched.length})
+          ✓ Vinculados (${matched.length})
         </summary>
         <div style="background:#111;border:1px solid #1e1e1e;border-radius:12px;overflow:hidden;margin-top:8px">
-          ${matched.map(p => rowHTML(p, true)).join('')}
+          ${matched.map(matchedRowHTML).join('')}
         </div>
       </details>` : ''}
   `;
@@ -306,11 +498,85 @@ async function linkParticipant(partId) {
   await loadZoomParticipants();
 }
 
+// Nova função de vinculação com suporte a CSV/Staff/Legacy + alias persistente
+async function linkParticipantNew(partId, zoomName) {
+  const sel = document.getElementById(`sel-${partId}`);
+  const val = sel?.value;
+  if (!val) { showToast('Selecione um aluno ou membro da equipe', 'error'); return; }
+
+  const [type, id] = val.split('::');
+
+  // Encontrar o agrupamento dedup para pegar todos os IDs
+  const grouped = zoomParticipantsData.find(p => (p._ids || [p.id]).includes(partId));
+  const allIds = grouped?._ids || [partId];
+
+  if (type === 'csv') {
+    // Vincular ao CSV: salvar alias no student_imports + vincular via students legado
+    const csvStudent = zoomAllStudents.find(s => s.id === id);
+    if (csvStudent) {
+      // Salvar zoom name como alias no student_imports
+      const currentAliases = csvStudent.aliases || [];
+      if (!currentAliases.includes(zoomName)) {
+        await sb.from('student_imports').update({ aliases: [...currentAliases, zoomName] }).eq('id', id);
+        csvStudent.aliases = [...currentAliases, zoomName];
+      }
+      // Encontrar ou criar registro na tabela students para FK
+      let legacyId = null;
+      const legacy = zoomLegacyStudents.find(s =>
+        (s.phone && csvStudent.phone && s.phone.replace(/\D/g,'').slice(-8) === csvStudent.phone.replace(/\D/g,'').slice(-8)) ||
+        (s.name && csvStudent.name && normName(s.name) === normName(csvStudent.name))
+      );
+      legacyId = legacy?.id || null;
+      if (legacyId) {
+        for (const pid of allIds) {
+          await sb.from('zoom_participants').update({ student_id: legacyId, matched: true }).eq('id', pid);
+        }
+      } else {
+        // Marcar como matched sem student_id (nenhum legado correspondente)
+        for (const pid of allIds) {
+          await sb.from('zoom_participants').update({ matched: true }).eq('id', pid);
+        }
+      }
+    }
+    showToast(`Vinculado a ${csvStudent?.name || 'aluno'} + alias salvo!`, 'success');
+
+  } else if (type === 'staff') {
+    // Vincular como equipe: salvar alias no staff
+    const staffMember = zoomStaffList.find(s => s.id === id);
+    if (staffMember) {
+      const currentAliases = staffMember.aliases || [];
+      if (!currentAliases.includes(zoomName)) {
+        await sb.from('staff').update({ aliases: [...currentAliases, zoomName] }).eq('id', id);
+        // Sync to mentors
+        const { data: mentor } = await sb.from('mentors').select('id').eq('phone', staffMember.phone?.replace(/\D/g,'')).single();
+        if (mentor) await sb.from('mentors').update({ aliases: [...currentAliases, zoomName] }).eq('id', mentor.id);
+        staffMember.aliases = [...currentAliases, zoomName];
+      }
+    }
+    // Marcar como matched
+    for (const pid of allIds) {
+      await sb.from('zoom_participants').update({ matched: true }).eq('id', pid);
+    }
+    showToast(`Vinculado como equipe (${staffMember?.name}) + alias salvo!`, 'success');
+
+  } else {
+    // Legacy: comportamento antigo
+    for (const pid of allIds) {
+      await sb.from('zoom_participants').update({ student_id: id, matched: true }).eq('id', pid);
+    }
+    showToast('Vinculado!', 'success');
+  }
+
+  await loadZoomParticipants();
+}
+
 async function unlinkParticipant(partId) {
-  const { error } = await sb.from('zoom_participants')
-    .update({ student_id: null, matched: false })
-    .eq('id', partId);
-  if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+  // Encontrar agrupamento para desvincular todos os IDs
+  const grouped = zoomParticipantsData.find(p => (p._ids || [p.id]).includes(partId));
+  const allIds = grouped?._ids || [partId];
+  for (const pid of allIds) {
+    await sb.from('zoom_participants').update({ student_id: null, matched: false }).eq('id', pid);
+  }
   showToast('Vínculo removido', 'success');
   await loadZoomParticipants();
 }

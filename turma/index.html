@@ -162,14 +162,14 @@
       return;
     }
 
-    // Load student counts and attendance summaries in parallel
-    const [studentsRes, attendanceRes] = await Promise.all([
-      sb.from('students').select('id, cohort_id').eq('active', true).eq('is_mentor', false),
-      sb.from('student_attendance').select('student_id, cohort_id:zoom_meetings!inner(cohort_id)', { count: 'exact' }),
-    ]);
+    // Load student counts from CSV (student_imports) — single source of truth
+    const { data: csvStudents } = await sb
+      .from('student_imports')
+      .select('id, cohort_id')
+      .order('name');
 
     const studentsByCohort = {};
-    (studentsRes.data ?? []).forEach(s => {
+    (csvStudents ?? []).forEach(s => {
       if (!studentsByCohort[s.cohort_id]) studentsByCohort[s.cohort_id] = 0;
       studentsByCohort[s.cohort_id]++;
     });

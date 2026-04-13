@@ -14,6 +14,8 @@ let classSchedules = [];
 let linkedCohorts = [];
 
 let zoomAllStudents = [];
+let zoomStaffList = [];
+let zoomLegacyStudents = [];
 let zoomParticipantsData = [];
 
 let notifyCohorts = [];

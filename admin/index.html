@@ -964,8 +964,7 @@ window.switchView = async function(view) {
 
 // ─── DASHBOARD ────────────────────────────────────────
 async function loadDashboard() {
-  const { data: students } = await sb.from('students').select('id', { count: 'exact', head: true }).eq('active', true).eq('is_mentor', false);
-  const { count: studentCount } = await sb.from('students').select('*', { count: 'exact', head: true }).eq('active', true).eq('is_mentor', false);
+  const { count: studentCount } = await sb.from('student_imports').select('*', { count: 'exact', head: true });
   const { count: cohortCount }  = await sb.from('cohorts').select('*', { count: 'exact', head: true }).eq('active', true);
   const { count: meetingCount } = await sb.from('zoom_meetings').select('*', { count: 'exact', head: true });
 
@@ -984,9 +983,9 @@ async function loadTurmasView() {
   const { data: cohorts, error } = await sb.from('cohorts').select('id, name, active').order('name');
   if (error || !cohorts) { container.innerHTML = '<div style="color:#444;text-align:center;padding:40px">Erro ao carregar turmas.</div>'; return; }
 
-  const { data: studentsData } = await sb.from('students').select('id, cohort_id').eq('active', true).eq('is_mentor', false);
+  const { data: csvData } = await sb.from('student_imports').select('id, cohort_id');
   const byC = {};
-  (studentsData ?? []).forEach(s => { byC[s.cohort_id] = (byC[s.cohort_id] || 0) + 1; });
+  (csvData ?? []).forEach(s => { byC[s.cohort_id] = (byC[s.cohort_id] || 0) + 1; });
 
   const html = cohorts.map(c => {
     const total = byC[c.id] ?? 0;

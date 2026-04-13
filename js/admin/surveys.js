@@ -599,8 +599,8 @@ async function openDispatchModal(surveyId) {
   let pending = 0;
 
   if (survey.cohort_id) {
-    const { count } = await sb.from('students').select('id', { count: 'exact', head: true })
-      .eq('cohort_id', survey.cohort_id).eq('active', true).eq('is_mentor', false);
+    const { count } = await sb.from('student_imports').select('id', { count: 'exact', head: true })
+      .eq('cohort_id', survey.cohort_id);
     studentCount = count ?? 0;
   }
 
