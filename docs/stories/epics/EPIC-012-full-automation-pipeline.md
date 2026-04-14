@@ -5,7 +5,7 @@
 ```yaml
 epic_id: EPIC-012
 title: Full Automation Pipeline — Daily Cron Chain, WA Group Sync, Auto-Match & Transfer
-status: Ready
+status: Done
 created_by: "@pm (Morgan)"
 created_at: 2026-04-08
 priority: P1
@@ -249,14 +249,14 @@ Implementar alertas automaticos via WhatsApp quando o pipeline falha ou nao roda
 
 **Acceptance Criteria:**
 
-- [ ] AC1: pg_cron job `pipeline-health-check` roda as 06:00 AM UTC-3
-- [ ] AC2: Verifica se `automation_runs` tem registro de `daily_pipeline` com `started_at` no dia corrente
-- [ ] AC3: Se nao encontrou execucao → envia alerta "Pipeline diario NAO executou hoje"
-- [ ] AC4: Se encontrou com status=error → envia alerta com step que falhou e mensagem de erro
-- [ ] AC5: Se encontrou com status=success → nao envia nada (silencioso quando tudo OK)
-- [ ] AC6: Alertas enviados via `send-whatsapp` para numero do coordenador (configuravel em env var `COORDINATOR_PHONE`)
-- [ ] AC7: Mesma logica para `wa_sync` — alertar se nao rodou ou falhou
-- [ ] AC8: Registrar o proprio health check em `automation_runs` com run_type=`health_check`
+- [x] AC1: pg_cron job `pipeline-health-check` roda as 06:00 AM UTC-3
+- [x] AC2: Verifica se `automation_runs` tem registro de `daily_pipeline` com `started_at` no dia corrente
+- [x] AC3: Se nao encontrou execucao → envia alerta "Pipeline diario NAO executou hoje"
+- [x] AC4: Se encontrou com status=error → envia alerta com step que falhou e mensagem de erro
+- [x] AC5: Se encontrou com status=success → nao envia nada (silencioso quando tudo OK)
+- [x] AC6: Alertas enviados via Evolution API para numero do coordenador (env var `COORDINATOR_PHONE`)
+- [x] AC7: Mesma logica para `wa_sync` — alertar se nao rodou ou falhou
+- [x] AC8: Registrar o proprio health check em `automation_runs` com run_type=`health_check`
 
 **Technical Notes:**
 - pg_cron pode verificar via SQL puro: `SELECT * FROM automation_runs WHERE run_type='daily_pipeline' AND started_at >= CURRENT_DATE`

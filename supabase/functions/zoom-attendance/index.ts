@@ -397,6 +397,71 @@ serve(async (req: Request) => {
     const body = await req.json();
     const { action, meeting_id, cohort_id, class_id } = body;
 
+    // ── ACTION: health_check (Story 12.6 — EPIC-012) ───────────────────
+    // Called by pg_cron at 06:00 AM UTC-3. Checks if daily_pipeline and wa_sync
+    // ran today. Sends WhatsApp alert to coordinator if missing or failed.
+    if (action === "health_check") {
+      const sb = getSupabaseClient();
+      const EVOLUTION_URL      = Deno.env.get("EVOLUTION_API_URL") ?? "";
+      const EVOLUTION_KEY      = Deno.env.get("EVOLUTION_API_KEY") ?? "";
+      const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
+      const COORDINATOR_PHONE  = Deno.env.get("COORDINATOR_PHONE") ?? "";
+
+      const today = new Date().toISOString().slice(0, 10);
+      const alerts: string[] = [];
+
+      // Check each pipeline
+      for (const runType of ["daily_pipeline", "wa_sync"] as const) {
+        const { data: runs } = await sb
+          .from("automation_runs")
+          .select("status, error_message, step_name")
+          .eq("run_type", runType)
+          .gte("started_at", today + "T00:00:00Z")
+          .order("started_at", { ascending: false })
+          .limit(1);
+
+        if (!runs || runs.length === 0) {
+          alerts.push(`⚠️ ${runType === "daily_pipeline" ? "Pipeline Zoom diário" : "Sync WhatsApp"} NÃO executou hoje.`);
+        } else if (runs[0].status === "error") {
+          alerts.push(`❌ ${runType === "daily_pipeline" ? "Pipeline Zoom" : "Sync WhatsApp"} falhou: ${runs[0].error_message || runs[0].step_name || "erro desconhecido"}`);
+        }
+      }
+
+      // Send alert if any issues found
+      let alertSent = false;
+      if (alerts.length > 0 && COORDINATOR_PHONE && EVOLUTION_URL && EVOLUTION_KEY) {
+        const msg = `🩺 Health Check — ${today}\n\n${alerts.join("\n")}\n\nAcesse: https://painel.igorrover.com.br/admin/?view=automations`;
+        try {
+          const phone = COORDINATOR_PHONE.replace(/\D/g, "");
+          await fetch(`${EVOLUTION_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "apikey": EVOLUTION_KEY },
+            body: JSON.stringify({ number: phone, text: msg }),
+          });
+          alertSent = true;
+        } catch (e) {
+          console.error("health_check: WA alert send failed:", e);
+        }
+      }
+
+      // Log the health check itself
+      await sb.rpc("log_automation_step", {
+        p_run_type: "health_check",
+        p_step_name: "daily_health_check",
+        p_status: alerts.length > 0 ? "error" : "success",
+        p_processed: 2,
+        p_created: 0,
+        p_failed: alerts.length,
+        p_error: alerts.length > 0 ? alerts.join("; ") : null,
+        p_metadata: { date: today, alerts, alert_sent: alertSent },
+      }).catch((e: Error) => console.error("log_automation_step error:", e));
+
+      return new Response(
+        JSON.stringify({ ok: true, date: today, issues: alerts.length, alerts, alert_sent: alertSent }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     // ── ACTION: daily_pipeline (Story 12.2 — EPIC-012) ─────────────────
     // Orchestrates the full daily Zoom pipeline: list → import → rematch → propagate → transfer → chat
     // Called by pg_cron at 03:00 AM UTC-3. Each step logs to automation_runs.
