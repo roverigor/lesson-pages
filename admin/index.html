@@ -826,7 +826,7 @@
       </div>
 
     </div><!-- /view-wrap -->
-    <iframe id="embed-frame" src="" style="display:none;width:100%;height:100vh;border:none"></iframe>
+    <iframe id="embed-frame" src="" style="display:none;width:100%;border:none;overflow:hidden"></iframe>
   </main>
 </div><!-- /app-shell -->
 
@@ -885,7 +885,7 @@ window.handleLogin = async function(e) {
     return;
   }
   showApp();
-  switchView('dashboard');
+  switchView(_getInitialView(), true);
   await loadClasses(); await loadOverrides(); await loadAttendance();
 };
 
@@ -897,6 +897,7 @@ window.handleLogout = async function() {
 
 // ─── PAINEL: override switchView ─────────────────────
 const IFRAME_ROUTES = { alunos: '/alunos/', presenca: '/presenca/', aulas: '/aulas/', relatorio: '/relatorio/' };
+let _embedObserver = null;
 
 function openInFrame(url) {
   const viewWrap   = document.getElementById('view-wrap');
@@ -904,11 +905,46 @@ function openInFrame(url) {
   const mobileNav  = document.getElementById('mobile-nav');
   if (viewWrap)   viewWrap.style.display = 'none';
   if (mobileNav)  mobileNav.style.display = 'none';
-  if (embedFrame) { embedFrame.src = url; embedFrame.style.display = ''; }
+  if (embedFrame) {
+    embedFrame.src = url;
+    embedFrame.style.display = '';
+    _setupIframeResize(embedFrame);
+  }
   document.querySelectorAll('.nav-item[data-view]').forEach(b => b.classList.remove('active'));
+  history.pushState({ view: '__frame', url }, '', '?frame=' + encodeURIComponent(url));
 }
 
-window.switchView = async function(view) {
+function _setupIframeResize(frame) {
+  if (_embedObserver) { _embedObserver.disconnect(); _embedObserver = null; }
+  frame.onload = () => {
+    try {
+      const iDoc = frame.contentDocument;
+      // Hide standalone page header (admin already has sidebar nav)
+      const hdr = iDoc.getElementById('app-header');
+      if (hdr) hdr.style.display = 'none';
+      // Prevent double scrollbar
+      iDoc.body.style.overflow = 'hidden';
+      iDoc.body.style.minHeight = 'auto';
+      iDoc.documentElement.style.overflow = 'hidden';
+      // Auto-resize height to fit content
+      const resize = () => {
+        const h = Math.max(iDoc.body.scrollHeight, iDoc.documentElement.scrollHeight, 400);
+        frame.style.height = h + 'px';
+      };
+      resize();
+      // Watch for dynamic content changes
+      _embedObserver = new MutationObserver(resize);
+      _embedObserver.observe(iDoc.body, { childList: true, subtree: true, attributes: true });
+      // Also resize after images/data load
+      setTimeout(resize, 500);
+      setTimeout(resize, 1500);
+    } catch(e) {
+      frame.style.height = '100vh';
+    }
+  };
+}
+
+window.switchView = async function(view, skipPush) {
   const allViews = ['dashboard','calendar','turmas','report','staff','classes',
                     'notify','schedules','zoom','abstracts','surveys'];
   const viewWrap   = document.getElementById('view-wrap') || document.querySelector('.view-wrap');
@@ -925,15 +961,23 @@ window.switchView = async function(view) {
   const activeMobile = document.querySelector(`.mobile-nav-btn[data-view="${view}"]`);
   if (activeMobile) activeMobile.classList.add('active');
 
+  // URL tracking
+  if (!skipPush) history.pushState({ view }, '', '?view=' + view);
+
   // Iframe views (alunos, presenca, aulas, relatorio)
   if (IFRAME_ROUTES[view]) {
     if (viewWrap)   viewWrap.style.display = 'none';
     if (mobileNav)  mobileNav.style.display = 'none';
-    if (embedFrame) { embedFrame.src = IFRAME_ROUTES[view]; embedFrame.style.display = ''; }
+    if (embedFrame) {
+      embedFrame.src = IFRAME_ROUTES[view];
+      embedFrame.style.display = '';
+      _setupIframeResize(embedFrame);
+    }
     return;
   }
 
-  // Normal views
+  // Normal views — disconnect iframe observer, hide iframe
+  if (_embedObserver) { _embedObserver.disconnect(); _embedObserver = null; }
   if (viewWrap)   viewWrap.style.display = '';
   if (mobileNav)  mobileNav.style.display = '';
   if (embedFrame) { embedFrame.style.display = 'none'; embedFrame.src = ''; }
@@ -961,6 +1005,19 @@ window.switchView = async function(view) {
   if (view === 'dashboard') loadDashboard();
   if (view === 'turmas')    loadTurmasView();
 };
+
+// ─── BACK BUTTON: restore view on popstate ───────────
+window.addEventListener('popstate', (e) => {
+  if (e.state && e.state.view) {
+    if (e.state.view === '__frame' && e.state.url) {
+      openInFrame(e.state.url);
+    } else {
+      switchView(e.state.view, true);
+    }
+  } else {
+    switchView('dashboard', true);
+  }
+});
 
 // ─── DASHBOARD ────────────────────────────────────────
 async function loadDashboard() {
@@ -1007,13 +1064,20 @@ async function loadTurmasView() {
 
 function escHtml(s) { return (s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// Start on dashboard view after login
+// Determine initial view from URL params
+function _getInitialView() {
+  const params = new URLSearchParams(location.search);
+  return params.get('view') || 'dashboard';
+}
+
+// Start on the correct view after login
 const _origAuth = window.checkAuth;
 window.checkAuth = async function() {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     showApp();
-    switchView('dashboard');
+    const initial = _getInitialView();
+    switchView(initial, true);
     await loadClasses(); await loadOverrides(); await loadAttendance();
   }
 };
