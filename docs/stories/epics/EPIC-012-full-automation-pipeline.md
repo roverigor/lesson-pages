@@ -221,14 +221,14 @@ Adicionar uma aba "Automacoes" no painel admin que mostra o status das ultimas e
 
 **Acceptance Criteria:**
 
-- [ ] AC1: Nova aba "Automacoes" no menu principal do admin (ao lado de Zoom, WhatsApp etc.)
-- [ ] AC2: Secao "Pipeline Diario" mostrando ultima execucao: data/hora, status (badge verde/vermelho), contadores por step
-- [ ] AC3: Secao "Sync WhatsApp" mostrando ultima execucao: turmas sincronizadas, novos alunos criados
-- [ ] AC4: Secao "Notificacoes de Gravacao" mostrando ultimas 5 notificacoes enviadas
-- [ ] AC5: Historico: tabela com ultimas 30 execucoes de cada tipo, paginada
-- [ ] AC6: Botao "Executar Agora" para cada pipeline (chama a edge function manualmente)
-- [ ] AC7: Auto-refresh a cada 60 segundos quando a pagina esta aberta
-- [ ] AC8: Indicador visual de "proximo agendamento" baseado no horario do cron
+- [x] AC1: Nova aba "Automacoes" no menu principal do admin (ao lado de Zoom, WhatsApp etc.)
+- [x] AC2: Secao "Pipeline Diario" mostrando ultima execucao: data/hora, status (badge verde/vermelho), contadores por step
+- [x] AC3: Secao "Sync WhatsApp" mostrando ultima execucao: turmas sincronizadas, novos alunos criados
+- [x] AC4: Secao "Notificacoes de Gravacao" mostrando ultimas 5 notificacoes enviadas
+- [x] AC5: Historico: tabela com ultimas 30 execucoes de cada tipo, paginada
+- [x] AC6: Botao "Executar Agora" para cada pipeline (chama a edge function manualmente)
+- [x] AC7: Auto-refresh a cada 60 segundos quando a pagina esta aberta
+- [x] AC8: Indicador visual de "proximo agendamento" baseado no horario do cron
 
 **Technical Notes:**
 - Pagina HTML pura seguindo padrao do projeto (vanilla JS, sem framework)

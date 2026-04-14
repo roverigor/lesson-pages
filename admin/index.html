@@ -458,6 +458,9 @@
       <button class="nav-item" data-view="abstracts" onclick="switchView('abstracts')">
         <i data-lucide="file-text" class="nav-item-icon"></i> Resumos de Aulas
       </button>
+      <button class="nav-item" data-view="automations" onclick="switchView('automations')">
+        <i data-lucide="cpu" class="nav-item-icon"></i> Automações
+      </button>
     </nav>
 
     <div class="sidebar-footer">
@@ -825,6 +828,17 @@
         </div>
       </div>
 
+      <!-- ═══ AUTOMATIONS VIEW (Story 12.5) ═══ -->
+      <div id="automations-view" style="display:none">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Automações</div>
+            <div class="page-sub">Status dos pipelines automáticos</div>
+          </div>
+        </div>
+        <div id="automations-content"></div>
+      </div>
+
     </div><!-- /view-wrap -->
     <iframe id="embed-frame" src="" style="display:none;width:100%;border:none;overflow:hidden"></iframe>
   </main>
@@ -858,6 +872,7 @@
 <script src="/js/admin/zoom.js"></script>
 <script src="/js/admin/abstracts.js"></script>
 <script src="/js/admin/surveys.js"></script>
+<script src="/js/admin/automations.js"></script>
 <script src="/js/admin/views.js"></script>
 <script src="/js/admin/init.js"></script>
 <script src="https://unpkg.com/lucide@0.469.0"></script>
@@ -946,7 +961,7 @@ function _setupIframeResize(frame) {
 
 window.switchView = async function(view, skipPush) {
   const allViews = ['dashboard','calendar','turmas','report','staff','classes',
-                    'notify','schedules','zoom','abstracts','surveys'];
+                    'notify','schedules','zoom','abstracts','surveys','automations'];
   const viewWrap   = document.getElementById('view-wrap') || document.querySelector('.view-wrap');
   const embedFrame = document.getElementById('embed-frame');
   const mobileNav  = document.getElementById('mobile-nav');
@@ -1002,8 +1017,9 @@ window.switchView = async function(view, skipPush) {
     await loadAttendance();
     renderAll();
   }
-  if (view === 'dashboard') loadDashboard();
-  if (view === 'turmas')    loadTurmasView();
+  if (view === 'dashboard')   loadDashboard();
+  if (view === 'turmas')      loadTurmasView();
+  if (view === 'automations') loadAutomationsView();
 };
 
 // ─── BACK BUTTON: restore view on popstate ───────────
