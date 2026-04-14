@@ -97,11 +97,17 @@
 
 ### MEDIOS (oportunistico)
 
-#### TD-08: Limpar tabelas orfas
+#### TD-08: Tabelas com 0 rows — DECISAO: MANTER ✅
 
-6 tabelas com 0 rows: `engagement_daily_ranking`, `zoom_chat_messages`, `whatsapp_group_messages`, `class_materials`, `class_recording_notifications`, `mentor_attendance`.
+6 tabelas com 0 rows, TODAS referenciadas no codigo frontend ou planejadas para EPIC-012:
+- `engagement_daily_ranking` → `aluno/perfil.html` (grafico engajamento, cron nightly)
+- `zoom_chat_messages` → `aluno/perfil.html` (atividade chat Zoom)
+- `whatsapp_group_messages` → `aluno/perfil.html` (atividade WA, delivery-webhook)
+- `class_materials` → `aulas/index.html` (upload/download de materiais)
+- `class_recording_notifications` → EPIC-012 Story 12.4 (notificacao automatica)
+- `mentor_attendance` → `equipe/`, `relatorio/`, `perfil/` (presenca mentores)
 
-**Acao:** Verificar se ha funcionalidade planejada. Se nao, documentar como "schema reservado".
+**Auditoria (2026-04-14):** Vazias porque pipelines de dados nao foram ativados ainda (pre-requisito: `cohorts.whatsapp_group_jid`). Nenhuma acao necessaria.
 
 #### TD-09: Eliminar indexes duplicados
 
@@ -109,9 +115,11 @@
 
 **Acao:** DROP dos duplicados.
 
-#### TD-10: Desabilitar Realtime e Storage nao utilizados
+#### TD-10: Realtime desabilitado, Storage mantido ✅
 
-Ambos habilitados no config.toml mas sem uso no frontend.
+**Auditoria (2026-04-14):**
+- **Realtime:** Nenhum uso no frontend (sem `.subscribe()`, `.channel()`). Desabilitado em `config.toml`.
+- **Storage:** Usado por `aulas/index.html` — bucket `class-materials` para upload de materiais didaticos. Mantido habilitado.
 
 #### TD-11: Remover paginas de conteudo obsoletas
 
@@ -155,7 +163,8 @@ TD-07 (RLS) → independente, rapido
 | **Sprint 2 (fundacao)** | TD-04 (CSS/JS compartilhado), TD-03 (staff/mentors) | ~1 dia | ✅ DONE |
 | **Sprint 3 (refatoracao)** | TD-05 (turma/detalhe split), TD-01 (students — backlog) | ~3 dias | ✅ DONE (TD-01 adiado) |
 | **Sprint 4 (UX)** | TD-06 (fix iframe UX), TD-11 (paginas obsoletas) | ~2 dias | ✅ DONE |
-| **Backlog** | TD-12 (manter), TD-01, TD-08, TD-10 | Oportunistico | TD-12 ✅ decidido |
+| **Backlog** | TD-08 (manter), TD-10 (realtime off), TD-12 (manter) | Oportunistico | ✅ Todos decididos |
+| **Adiado** | TD-01 (students unification) | Grande | Decisao do PO: CSV e fonte da verdade |
 
 ---
 

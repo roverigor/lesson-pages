@@ -30,7 +30,7 @@ default_pool_size = 20
 max_client_conn = 100
 
 [realtime]
-enabled = true
+enabled = false
 
 [studio]
 enabled = true
