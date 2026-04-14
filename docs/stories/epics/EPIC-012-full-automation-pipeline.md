@@ -161,18 +161,18 @@ Criar edge function `sync-wa-group-members` que consulta a Evolution API para ca
 
 **Acceptance Criteria:**
 
-- [ ] AC1: Edge function `sync-wa-group-members/index.ts` criada em `supabase/functions/`
-- [ ] AC2: Query `cohorts` onde `whatsapp_group_jid IS NOT NULL`
-- [ ] AC3: Para cada cohort, GET `{EVOLUTION_API_URL}/group/participants/{instance}?groupJid={jid}`
-- [ ] AC4: Normalizar telefones: remover `@s.whatsapp.net`, garantir formato `55XXXXXXXXXXX`
-- [ ] AC5: Para cada participante WA, buscar em `students` por telefone normalizado
-- [ ] AC6: Se estudante existe mas nao esta na turma → INSERT em `student_cohorts`
-- [ ] AC7: Se estudante nao existe → INSERT em `students` (name do perfil WA, phone, active=true) + INSERT em `student_cohorts`
-- [ ] AC8: Nunca duplicar: usar `ON CONFLICT (phone) DO NOTHING` em students e `ON CONFLICT (student_id, cohort_id) DO NOTHING` em student_cohorts
-- [ ] AC9: Registrar em `automation_runs`: cohort_id no metadata, records_processed (total WA members), records_created (novos estudantes)
-- [ ] AC10: pg_cron job `wa-group-sync` criado para rodar as 04:00 AM UTC-3
-- [ ] AC11: Credenciais Evolution API lidas de env vars (EVOLUTION_API_URL, EVOLUTION_API_KEY, EVOLUTION_INSTANCE)
-- [ ] AC12: Se Evolution API retorna erro para um grupo, log e continua para o proximo
+- [x] AC1: Edge function `sync-wa-group-members/index.ts` criada em `supabase/functions/` — *Implementada como action `auto_sync` na edge function `sync-wa-group` existente*
+- [x] AC2: Query `cohorts` onde `whatsapp_group_jid IS NOT NULL`
+- [x] AC3: Para cada cohort, GET `{EVOLUTION_API_URL}/group/participants/{instance}?groupJid={jid}`
+- [x] AC4: Normalizar telefones: remover `@s.whatsapp.net`, garantir formato `55XXXXXXXXXXX`
+- [x] AC5: Para cada participante WA, buscar em `students` por telefone normalizado
+- [x] AC6: Se estudante existe mas nao esta na turma → INSERT em `student_cohorts`
+- [x] AC7: Se estudante nao existe → INSERT em `students` (name do perfil WA, phone, active=true) + INSERT em `student_cohorts`
+- [x] AC8: Nunca duplicar: usar `UNIQUE(phone, cohort_id)` em students e unique index `(student_id, cohort_id)` em student_cohorts
+- [x] AC9: Registrar em `automation_runs`: cohort_id no metadata, records_processed (total WA members), records_created (novos estudantes)
+- [x] AC10: pg_cron job `wa-group-sync` criado para rodar as 04:00 AM UTC-3
+- [x] AC11: Credenciais Evolution API lidas de env vars (EVOLUTION_API_URL, EVOLUTION_API_KEY, EVOLUTION_INSTANCE)
+- [x] AC12: Se Evolution API retorna erro para um grupo, log e continua para o proximo
 
 **Technical Notes:**
 - Evolution API endpoint: `GET /group/participants/{instanceName}?groupJid={jid}`
