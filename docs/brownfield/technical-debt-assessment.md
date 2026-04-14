@@ -117,9 +117,13 @@ Ambos habilitados no config.toml mas sem uso no frontend.
 
 `analise-interna/` (9.075 LOC), `cohort-fundamentals-c3/`, aulas individuais — verificar se ainda sao acessadas.
 
-#### TD-12: student_cohorts (N:N) nao utilizado
+#### TD-12: student_cohorts (N:N) — DECISAO: MANTER ✅
 
-Tabela de juncao com 869 rows, mas o frontend usa `student_imports.cohort_id` (1:1). Decidir se o modelo multi-turma sera adotado ou se a tabela deve ser eliminada.
+Tabela de juncao com 869 rows. O frontend usa `student_imports.cohort_id` (1:1) para display, mas `student_cohorts` e ativamente usada por:
+- `merge_students` RPC (consolidacao de cohorts ao mesclar duplicados)
+- EPIC-012 (auto-sync WA → students)
+
+**Auditoria (2026-04-14):** unique constraint `(student_id, cohort_id)` presente, indexes OK, RLS admin-only write, 0 orphans. Nenhuma acao necessaria.
 
 ---
 
@@ -151,7 +155,7 @@ TD-07 (RLS) → independente, rapido
 | **Sprint 2 (fundacao)** | TD-04 (CSS/JS compartilhado), TD-03 (staff/mentors) | ~1 dia | ✅ DONE |
 | **Sprint 3 (refatoracao)** | TD-05 (turma/detalhe split), TD-01 (students — backlog) | ~3 dias | ✅ DONE (TD-01 adiado) |
 | **Sprint 4 (UX)** | TD-06 (fix iframe UX), TD-11 (paginas obsoletas) | ~2 dias | ✅ DONE |
-| **Backlog** | TD-01, TD-08, TD-10, TD-12 | Oportunistico | |
+| **Backlog** | TD-12 (manter), TD-01, TD-08, TD-10 | Oportunistico | TD-12 ✅ decidido |
 
 ---
 
