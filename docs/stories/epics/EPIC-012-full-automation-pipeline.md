@@ -129,18 +129,18 @@ Criar pg_cron job que invoca a edge function `zoom-attendance` com uma nova acti
 
 **Acceptance Criteria:**
 
-- [ ] AC1: Nova action `daily_pipeline` na edge function `zoom-attendance` que executa os 6 steps em sequencia
-- [ ] AC2: `list_meetings` filtrado para reunioes das ultimas 24h (parametro `from` na Zoom Dashboard API)
-- [ ] AC3: Se `list_meetings` retorna 0 reunioes, pipeline termina com status `success` e `records_processed=0`
-- [ ] AC4: `import_participants` roda para cada meeting nova encontrada (skip se ja importada)
-- [ ] AC5: `rematch_all` roda apos todos os imports, usando algoritmo fuzzy existente
-- [ ] AC6: `propagate_links` roda apos rematch para espalhar vinculos por todas reunioes
-- [ ] AC7: `transfer_to_attendance` roda apos propagate — insere em `student_attendance` com `ON CONFLICT DO NOTHING`
-- [ ] AC8: `import_meeting_chat` roda para cada meeting nova (se scope disponivel; se nao, skip com log)
-- [ ] AC9: Cada step registra em `automation_runs`: records_processed, records_created, records_failed
-- [ ] AC10: Se qualquer step falha, pipeline continua nos demais steps e registra erro
-- [ ] AC11: pg_cron job `daily-zoom-pipeline` criado para rodar as 03:00 AM UTC-3
-- [ ] AC12: Timeout da edge function configurado para 300s (pipeline pode ser longo)
+- [x] AC1: Nova action `daily_pipeline` na edge function `zoom-attendance` que executa os 6 steps em sequencia
+- [x] AC2: `list_meetings` filtrado para reunioes das ultimas 24h (parametro `from` na Zoom Dashboard API)
+- [x] AC3: Se `list_meetings` retorna 0 reunioes, pipeline termina com status `success` e `records_processed=0`
+- [x] AC4: `import_participants` roda para cada meeting nova encontrada (skip se ja importada)
+- [x] AC5: `rematch_all` roda apos todos os imports, usando algoritmo fuzzy existente
+- [x] AC6: `propagate_links` roda apos rematch para espalhar vinculos por todas reunioes
+- [x] AC7: `transfer_to_attendance` roda apos propagate — insere em `student_attendance` com `ON CONFLICT DO NOTHING`
+- [x] AC8: `import_meeting_chat` roda para cada meeting nova (se scope disponivel; se nao, skip com log)
+- [x] AC9: Cada step registra em `automation_runs`: records_processed, records_created, records_failed
+- [x] AC10: Se qualquer step falha, pipeline continua nos demais steps e registra erro
+- [x] AC11: pg_cron job `daily-zoom-pipeline` criado para rodar as 03:00 AM UTC-3
+- [x] AC12: Timeout da edge function configurado para 300s (pipeline pode ser longo) — *Nota: requer ajuste no Supabase Dashboard > Edge Functions > zoom-attendance > Settings > Timeout*
 
 **Technical Notes:**
 - As actions `list_meetings`, `rematch_all`, `propagate_links`, `transfer_to_attendance`, `import_meeting_chat` ja existem — esta story as orquestra

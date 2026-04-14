@@ -397,6 +397,146 @@ serve(async (req: Request) => {
     const body = await req.json();
     const { action, meeting_id, cohort_id, class_id } = body;
 
+    // ── ACTION: daily_pipeline (Story 12.2 — EPIC-012) ─────────────────
+    // Orchestrates the full daily Zoom pipeline: list → import → rematch → propagate → transfer → chat
+    // Called by pg_cron at 03:00 AM UTC-3. Each step logs to automation_runs.
+    if (action === "daily_pipeline") {
+      const sb = getSupabaseClient();
+      const selfUrl = `${SUPABASE_URL}/functions/v1/zoom-attendance`;
+      const selfHeaders = { "Content-Type": "application/json", "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` };
+      const pipelineResults: Record<string, { ok: boolean; [k: string]: unknown }> = {};
+
+      async function callSelf(payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+        const resp = await fetch(selfUrl, { method: "POST", headers: selfHeaders, body: JSON.stringify(payload) });
+        return resp.json() as Promise<Record<string, unknown>>;
+      }
+
+      async function logStep(step: string, status: "success" | "error", processed = 0, created = 0, failed = 0, error: string | null = null, meta: Record<string, unknown> = {}) {
+        await sb.rpc("log_automation_step", {
+          p_run_type: "daily_pipeline", p_step_name: step, p_status: status,
+          p_processed: processed, p_created: created, p_failed: failed,
+          p_error: error, p_metadata: meta,
+        }).catch((e: Error) => console.error(`log_automation_step(${step}) error:`, e));
+      }
+
+      // ── Step 1: list_meetings (last 26h for timezone buffer) ──
+      const yesterday = new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      const today = new Date().toISOString().slice(0, 10);
+      let meetingIds: string[] = [];
+
+      try {
+        const r = await callSelf({ action: "list_meetings", from: yesterday, to: today });
+        const meetings = (r.meetings || []) as Array<{ id: string }>;
+        meetingIds = [...new Set(meetings.map(m => m.id))];
+        await logStep("list_meetings", "success", (r.total_raw as number) || 0, meetingIds.length, 0, null, { from: yesterday, to: today });
+        pipelineResults.list_meetings = { ok: true, found: meetingIds.length };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        await logStep("list_meetings", "error", 0, 0, 0, msg);
+        pipelineResults.list_meetings = { ok: false, error: msg };
+      }
+
+      if (meetingIds.length === 0) {
+        return new Response(
+          JSON.stringify({ ok: true, pipeline: "no_meetings", results: pipelineResults }),
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+
+      // ── Step 2: import_participants for each meeting ──
+      let totalImported = 0, totalParticipants = 0, importFailed = 0;
+      for (const mid of meetingIds) {
+        try {
+          let offset = 0;
+          let hasMore = true;
+          while (hasMore) {
+            const r = await callSelf({ meeting_id: mid, offset, batch_size: 5 });
+            const instances = (r.instances || []) as Array<{ status: string; participants?: number }>;
+            for (const inst of instances) {
+              if (inst.status === "processed") totalImported++;
+              totalParticipants += (inst.participants || 0);
+            }
+            hasMore = !!(r.has_more);
+            offset = (r.next_offset as number) || 0;
+          }
+        } catch (e) { importFailed++; console.error(`daily_pipeline import ${mid}:`, e); }
+      }
+      await logStep("import_participants", importFailed > 0 && totalImported === 0 ? "error" : "success",
+        meetingIds.length, totalImported, importFailed, importFailed > 0 ? `${importFailed} meetings failed` : null,
+        { total_participants: totalParticipants });
+      pipelineResults.import_participants = { ok: importFailed === 0, imported: totalImported, failed: importFailed };
+
+      // ── Step 3: rematch_all (paginated until done) ──
+      let rematchTotal = 0, rematchMatched = 0;
+      try {
+        let offset = 0;
+        let hasMore = true;
+        while (hasMore) {
+          const r = await callSelf({ action: "rematch_all", offset, limit: 300 });
+          rematchTotal += (r.processed as number) || 0;
+          rematchMatched += (r.newly_matched as number) || 0;
+          hasMore = !!(r.has_more);
+          offset = (r.next_offset as number) || 0;
+        }
+        await logStep("rematch_all", "success", rematchTotal, rematchMatched);
+        pipelineResults.rematch_all = { ok: true, processed: rematchTotal, matched: rematchMatched };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        await logStep("rematch_all", "error", rematchTotal, rematchMatched, 0, msg);
+        pipelineResults.rematch_all = { ok: false, error: msg };
+      }
+
+      // ── Step 4: propagate_links ──
+      try {
+        const r = await callSelf({ action: "propagate_links" });
+        const linked = (r.newly_linked as number) || 0;
+        await logStep("propagate_links", "success", linked, linked);
+        pipelineResults.propagate_links = { ok: true, newly_linked: linked };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        await logStep("propagate_links", "error", 0, 0, 0, msg);
+        pipelineResults.propagate_links = { ok: false, error: msg };
+      }
+
+      // ── Step 5: transfer_to_attendance (paginated) ──
+      let tfInserted = 0, tfTotal = 0;
+      try {
+        let offset = 0;
+        let hasMore = true;
+        while (hasMore) {
+          const r = await callSelf({ action: "transfer_to_attendance", tfOffset: offset, tfLimit: 1000 });
+          tfInserted += (r.inserted as number) || 0;
+          tfTotal += (r.total_source as number) || 0;
+          hasMore = !!(r.has_more);
+          offset = (r.next_offset as number) || 0;
+        }
+        await logStep("transfer_to_attendance", "success", tfTotal, tfInserted);
+        pipelineResults.transfer_to_attendance = { ok: true, inserted: tfInserted, total: tfTotal };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        await logStep("transfer_to_attendance", "error", tfTotal, tfInserted, 0, msg);
+        pipelineResults.transfer_to_attendance = { ok: false, error: msg };
+      }
+
+      // ── Step 6: import_meeting_chat for newly imported meetings ──
+      let chatImported = 0, chatFailed = 0;
+      for (const mid of meetingIds) {
+        try {
+          const r = await callSelf({ action: "import_meeting_chat", zoom_meeting_id: mid });
+          if (r.ok) chatImported++;
+          else chatFailed++;
+        } catch { chatFailed++; }
+      }
+      await logStep("import_meeting_chat", chatFailed > 0 && chatImported === 0 ? "error" : "success",
+        meetingIds.length, chatImported, chatFailed, chatFailed > 0 ? `${chatFailed} chats failed` : null);
+      pipelineResults.import_meeting_chat = { ok: chatFailed === 0, imported: chatImported, failed: chatFailed };
+
+      return new Response(
+        JSON.stringify({ ok: true, pipeline: "completed", meetings: meetingIds.length, results: pipelineResults }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     // ── ACTION: debug_scopes ──────────────────────────────────────────
     // Tests multiple Zoom API endpoints to identify which scopes are active.
     if (action === "debug_scopes") {
