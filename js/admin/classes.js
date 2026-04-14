@@ -147,6 +147,11 @@ function renderClassesList() {
       <div style="font-size:12px;color:#555;margin-bottom:10px">
         ${c.time_start || ''}–${c.time_end || ''} | ${startFmt} a ${endFmt} | ${allDates.length} aulas
       </div>
+      ${c.zoom_link ? `<div style="font-size:11px;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+        <span style="color:#555">🔗</span>
+        <a href="${c.zoom_link}" target="_blank" style="color:#60a5fa;text-decoration:none;font-size:11px">${c.zoom_link}</a>
+        ${c.zoom_meeting_id ? `<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(96,165,250,0.1);color:#60a5fa;border:1px solid rgba(96,165,250,0.2)">ID: ${c.zoom_meeting_id}</span>` : ''}
+      </div>` : ''}
       ${daysHtml}
       ${historyHtml}
       ${(c._linkedCohorts || []).length > 0 ? `
@@ -324,6 +329,8 @@ function openClassForm() {
   document.getElementById('class-time-start').value = '18:00';
   document.getElementById('class-time-end').value = '20:00';
   document.getElementById('class-color').value = '#6366f1';
+  document.getElementById('class-zoom-link').value = '';
+  document.getElementById('class-zoom-id').value = '';
   classSchedules = [];
   linkedCohorts = [];
   renderScheduleDays();
@@ -352,6 +359,8 @@ function editClass(id) {
   document.getElementById('class-time-start').value = c.time_start || '18:00';
   document.getElementById('class-time-end').value = c.time_end || '20:00';
   document.getElementById('class-color').value = c.color || '#6366f1';
+  document.getElementById('class-zoom-link').value = c.zoom_link || '';
+  document.getElementById('class-zoom-id').value = c.zoom_meeting_id || '';
 
   const byDay = {};
   for (const cm of (c._mentors || [])) {
@@ -387,6 +396,8 @@ async function saveClassV2() {
   const time_start = document.getElementById('class-time-start').value;
   const time_end = document.getElementById('class-time-end').value;
   const color = document.getElementById('class-color').value;
+  const zoom_link = document.getElementById('class-zoom-link').value.trim() || null;
+  const zoom_meeting_id = document.getElementById('class-zoom-id').value.trim().replace(/\s/g, '') || null;
 
   if (!name || !start_date || !end_date) { showToast('Preencha nome e datas', 'error'); return; }
 
@@ -395,7 +406,7 @@ async function saveClassV2() {
   saveBtn.textContent = 'Salvando...';
 
   const weekday = classSchedules.length > 0 ? classSchedules[0].weekday : 1;
-  const record = { name, type, start_date, end_date, weekday, time_start, time_end, color, active: true };
+  const record = { name, type, start_date, end_date, weekday, time_start, time_end, color, zoom_link, zoom_meeting_id, active: true };
 
   let classId = id;
   if (id) {
