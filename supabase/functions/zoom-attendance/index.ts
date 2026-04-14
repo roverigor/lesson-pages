@@ -1048,8 +1048,22 @@ serve(async (req: Request) => {
         if (status === "sent") await waSleep();
       }
 
+      // ── Log to automation_runs (Story 12.4) ──
+      const total = (students || []).length;
+      const runStatus = failed > 0 && sent === 0 ? "error" : "success";
+      await sb.rpc("log_automation_step", {
+        p_run_type:  "recording_notification",
+        p_step_name: `notify_recording_${recordingId.slice(0, 8)}`,
+        p_status:    runStatus,
+        p_processed: total,
+        p_created:   sent,
+        p_failed:    failed,
+        p_error:     failed > 0 ? `${failed} notifications failed` : null,
+        p_metadata:  { recording_id: recordingId, cohort_id: cohortId, skipped },
+      }).catch((e: Error) => console.error("log_automation_step error:", e));
+
       return new Response(
-        JSON.stringify({ ok: true, sent, skipped, failed, total: (students || []).length }),
+        JSON.stringify({ ok: true, sent, skipped, failed, total }),
         { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }

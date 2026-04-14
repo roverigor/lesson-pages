@@ -107,10 +107,10 @@ Criar tabela `automation_runs` e funcao helper para registrar execucoes do pipel
 
 **Acceptance Criteria:**
 
-- [ ] AC1: Tabela `automation_runs` criada via migration com campos: `id`, `run_type` (enum: daily_pipeline, wa_sync, recording_notification), `step_name`, `started_at`, `finished_at`, `status` (enum: running, success, error), `records_processed`, `records_created`, `records_failed`, `error_message`, `metadata` (jsonb)
-- [ ] AC2: Funcao SQL `log_automation_step(run_type, step_name, status, counts, error)` disponivel para uso nas edge functions e pg_cron
-- [ ] AC3: Index em `(run_type, started_at DESC)` para queries de dashboard
-- [ ] AC4: RLS: SELECT para authenticated, INSERT/UPDATE via service_role apenas
+- [x] AC1: Tabela `automation_runs` criada via migration com campos: `id`, `run_type` (enum: daily_pipeline, wa_sync, recording_notification), `step_name`, `started_at`, `finished_at`, `status` (enum: running, success, error), `records_processed`, `records_created`, `records_failed`, `error_message`, `metadata` (jsonb)
+- [x] AC2: Funcao SQL `log_automation_step(run_type, step_name, status, counts, error)` disponivel para uso nas edge functions e pg_cron
+- [x] AC3: Index em `(run_type, started_at DESC)` para queries de dashboard
+- [x] AC4: RLS: SELECT para authenticated, INSERT/UPDATE via service_role apenas
 
 **Technical Notes:**
 - Migration file em `supabase/migrations/`
@@ -194,14 +194,14 @@ Garantir que o webhook `recording.completed` (ja implementado em `zoom-webhook`)
 
 **Acceptance Criteria:**
 
-- [ ] AC1: Apos `recording.completed` salvar em `class_recordings` e gerar AI summary, chamar `send_recording_notification` automaticamente
-- [ ] AC2: Identificar a turma (cohort) da gravacao via `zoom_meetings.cohort_id` ou matching do meeting topic
-- [ ] AC3: Notificacao enviada via `send-whatsapp` edge function para todos os alunos ativos da turma
-- [ ] AC4: Template da mensagem inclui: titulo da aula, link da gravacao, resumo curto (primeiros 200 chars do AI summary)
-- [ ] AC5: Registrar em `class_recording_notifications`: recording_id, cohort_id, sent_at, status
-- [ ] AC6: Se cohort nao encontrado, log warning e nao envia (nao falhar silenciosamente)
-- [ ] AC7: Cooldown: nao enviar notificacao se ja enviou para o mesmo recording_id (idempotente)
-- [ ] AC8: Registrar em `automation_runs` com run_type=`recording_notification`
+- [x] AC1: Apos `recording.completed` salvar em `class_recordings` e gerar AI summary, chamar `send_recording_notification` automaticamente
+- [x] AC2: Identificar a turma (cohort) da gravacao via `zoom_meetings.cohort_id` ou matching do meeting topic
+- [x] AC3: Notificacao enviada via `send-whatsapp` edge function para todos os alunos ativos da turma
+- [x] AC4: Template da mensagem inclui: titulo da aula, link da gravacao, resumo curto (primeiros 200 chars do AI summary)
+- [x] AC5: Registrar em `class_recording_notifications`: recording_id, cohort_id, sent_at, status
+- [x] AC6: Se cohort nao encontrado, log warning e nao envia (nao falhar silenciosamente)
+- [x] AC7: Cooldown: nao enviar notificacao se ja enviou para o mesmo recording_id (idempotente)
+- [x] AC8: Registrar em `automation_runs` com run_type=`recording_notification`
 
 **Technical Notes:**
 - `zoom-webhook/index.ts` ja trata `recording.completed` — adicionar chamada a `send_recording_notification` no final do handler
