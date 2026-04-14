@@ -145,13 +145,13 @@ TD-07 (RLS) → independente, rapido
 
 ## Recomendacao de Sequencia
 
-| Sprint | Debitos | Esforco Total |
-|--------|---------|---------------|
-| **Sprint 1 (urgente)** | TD-02 (key), TD-07 (RLS), TD-09 (indexes) | ~2h |
-| **Sprint 2 (fundacao)** | TD-04 (CSS/JS compartilhado), TD-03 (staff/mentors) | ~1 dia |
-| **Sprint 3 (refatoracao)** | TD-05 (turma/detalhe split), TD-01 (students unification) | ~3 dias |
-| **Sprint 4 (UX)** | TD-06 (eliminar iframes), TD-11 (paginas obsoletas) | ~2 dias |
-| **Backlog** | TD-08, TD-10, TD-12 | Oportunistico |
+| Sprint | Debitos | Esforco Total | Status |
+|--------|---------|---------------|--------|
+| **Sprint 1 (urgente)** | TD-02 (key), TD-07 (RLS), TD-09 (indexes) | ~2h | ✅ DONE |
+| **Sprint 2 (fundacao)** | TD-04 (CSS/JS compartilhado), TD-03 (staff/mentors) | ~1 dia | ✅ DONE |
+| **Sprint 3 (refatoracao)** | TD-05 (turma/detalhe split), TD-01 (students — backlog) | ~3 dias | ✅ DONE (TD-01 adiado) |
+| **Sprint 4 (UX)** | TD-06 (fix iframe UX), TD-11 (paginas obsoletas) | ~2 dias | ✅ DONE |
+| **Backlog** | TD-01, TD-08, TD-10, TD-12 | Oportunistico | |
 
 ---
 
