@@ -5,7 +5,7 @@
 ```yaml
 epic_id: EPIC-013
 title: Simplificação da gestão de equipe com edição granular preservando histórico
-status: Ready
+status: Done
 created_by: "@pm (Morgan)"
 created_at: 2026-04-14
 priority: High
@@ -48,8 +48,8 @@ O calendário deve continuar mostrando corretamente quem era mentor/host em cada
 ## Stories
 
 - [x] **13.1** — Refatorar saveClassV2 com diff granular
-- [ ] **13.2** — Remover UI de ciclos e adicionar histórico visual
-- [ ] **13.3** — Migration de limpeza e validação end-to-end
+- [x] **13.2** — Remover UI de ciclos e adicionar histórico visual
+- [x] **13.3** — Migration de limpeza e validação end-to-end
 
 ## Dependências
 
