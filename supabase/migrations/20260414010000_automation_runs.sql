@@ -40,10 +40,12 @@ CREATE INDEX IF NOT EXISTS idx_automation_runs_status
 ALTER TABLE automation_runs ENABLE ROW LEVEL SECURITY;
 
 -- Authenticated users can read (for dashboard)
+DROP POLICY IF EXISTS "Authenticated read automation_runs" ON automation_runs;
 CREATE POLICY "Authenticated read automation_runs"
   ON automation_runs FOR SELECT TO authenticated USING (true);
 
 -- Only service_role can write (edge functions / pg_cron)
+DROP POLICY IF EXISTS "Service role write automation_runs" ON automation_runs;
 CREATE POLICY "Service role write automation_runs"
   ON automation_runs FOR ALL TO service_role USING (true) WITH CHECK (true);
 

@@ -8,6 +8,7 @@ ALTER TABLE public.student_imports
 -- Fix RLS: simplify policy to allow any authenticated user
 -- (only admins have login credentials, so this is safe)
 DROP POLICY IF EXISTS "Admin full access on student_imports" ON public.student_imports;
+DROP POLICY IF EXISTS "Authenticated full access on student_imports" ON public.student_imports;
 
 CREATE POLICY "Authenticated full access on student_imports"
   ON public.student_imports
