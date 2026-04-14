@@ -15,6 +15,7 @@ CREATE INDEX IF NOT EXISTS idx_wa_group_members_phone ON public.wa_group_members
 
 ALTER TABLE public.wa_group_members ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated full access on wa_group_members" ON public.wa_group_members;
 CREATE POLICY "Authenticated full access on wa_group_members"
   ON public.wa_group_members
   FOR ALL
