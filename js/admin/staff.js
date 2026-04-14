@@ -88,11 +88,19 @@ async function saveStaff() {
   const record = { name, email: email || null, phone: rawPhone || null, role, category, aliases };
 
   if (id) {
-    const { error } = await sb.from('mentors').update(record).eq('id', id);
+    const { data, error } = await sb.from('mentors').update(record).eq('id', id).select();
     if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+    if (!data || data.length === 0) {
+      showToast('Erro: atualização não foi salva. Verifique se você está logado como admin.', 'error');
+      return;
+    }
   } else {
-    const { error } = await sb.from('mentors').insert(record);
+    const { data, error } = await sb.from('mentors').insert(record).select();
     if (error) { showToast('Erro: ' + error.message, 'error'); return; }
+    if (!data || data.length === 0) {
+      showToast('Erro: cadastro não foi salvo. Verifique se você está logado como admin.', 'error');
+      return;
+    }
   }
 
   showToast(id ? 'Cadastro atualizado!' : 'Membro adicionado!', 'success');
