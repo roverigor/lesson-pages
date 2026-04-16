@@ -478,11 +478,12 @@ serve(async (req: Request) => {
       }
 
       async function logStep(step: string, status: "success" | "error", processed = 0, created = 0, failed = 0, error: string | null = null, meta: Record<string, unknown> = {}) {
-        await sb.rpc("log_automation_step", {
+        const { error: logErr } = await sb.rpc("log_automation_step", {
           p_run_type: "daily_pipeline", p_step_name: step, p_status: status,
           p_processed: processed, p_created: created, p_failed: failed,
           p_error: error, p_metadata: meta,
-        }).catch((e: Error) => console.error(`log_automation_step(${step}) error:`, e));
+        });
+        if (logErr) console.error(`log_automation_step(${step}) error:`, logErr);
       }
 
       // ── Step 1: list_meetings (last 26h for timezone buffer) ──
@@ -596,6 +597,24 @@ serve(async (req: Request) => {
       await logStep("import_meeting_chat", chatFailed > 0 && chatImported === 0 ? "error" : "success",
         meetingIds.length, chatImported, chatFailed, chatFailed > 0 ? `${chatFailed} chats failed` : null);
       pipelineResults.import_meeting_chat = { ok: chatFailed === 0, imported: chatImported, failed: chatFailed };
+
+      // ── Step 7: sync_staff_attendance (Story 14.1 — EPIC-014) ──
+      // Matches zoom participants to mentors and inserts into mentor_attendance
+      try {
+        const { data: staffResult, error: staffErr } = await sb.rpc("sync_staff_attendance_from_zoom", { p_days_back: 2 });
+        if (staffErr) throw new Error(staffErr.message);
+        const row = Array.isArray(staffResult) ? staffResult[0] : staffResult;
+        const staffProcessed = row?.processed ?? 0;
+        const staffInserted = row?.inserted ?? 0;
+        const staffSkipped = row?.skipped ?? 0;
+        await logStep("sync_staff_attendance", "success", staffProcessed, staffInserted, staffSkipped, null,
+          { processed: staffProcessed, inserted: staffInserted, skipped: staffSkipped });
+        pipelineResults.sync_staff_attendance = { ok: true, processed: staffProcessed, inserted: staffInserted, skipped: staffSkipped };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        await logStep("sync_staff_attendance", "error", 0, 0, 0, msg);
+        pipelineResults.sync_staff_attendance = { ok: false, error: msg };
+      }
 
       return new Response(
         JSON.stringify({ ok: true, pipeline: "completed", meetings: meetingIds.length, results: pipelineResults }),
