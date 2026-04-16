@@ -14,6 +14,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "
 const ZOOM_S2S_ACCOUNT_ID = Deno.env.get("ZOOM_S2S_ACCOUNT_ID") ?? "";
 const ZOOM_S2S_CLIENT_ID = Deno.env.get("ZOOM_S2S_CLIENT_ID") ?? "";
 const ZOOM_S2S_CLIENT_SECRET = Deno.env.get("ZOOM_S2S_CLIENT_SECRET") ?? "";
+const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
 
 const ALLOWED_ORIGINS = [
   "https://lesson-pages.vercel.app",
@@ -1194,6 +1195,120 @@ serve(async (req: Request) => {
 
       return new Response(
         JSON.stringify({ ok: true, sent, failed, total: (alerts || []).length }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
+    // ── batch_import_transcripts (Story 14.4 — EPIC-014) ──────────────────────
+    // Downloads VTT transcripts from Zoom API for recordings missing transcriptions,
+    // then generates AI summaries via OpenAI. Processes in batches of 5.
+    if (action === "batch_import_transcripts") {
+      const sb = getSupabaseClient();
+      const batchSize = (body.batch_size as number) || 5;
+
+      // Find recordings without transcript
+      const { data: recordings, error: recErr } = await sb
+        .from("class_recordings")
+        .select("id, zoom_meeting_id, title")
+        .is("transcript_text", null)
+        .not("zoom_meeting_id", "is", null)
+        .order("recording_date", { ascending: false })
+        .limit(batchSize);
+
+      if (recErr) {
+        return new Response(
+          JSON.stringify({ ok: false, error: recErr.message }),
+          { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+
+      if (!recordings?.length) {
+        return new Response(
+          JSON.stringify({ ok: true, message: "no_pending_transcripts", processed: 0 }),
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+        );
+      }
+
+      const token = await getS2SToken();
+      let imported = 0, summarized = 0, failed = 0;
+      const details: Array<{ id: string; title: string; status: string; error?: string }> = [];
+
+      for (const rec of recordings) {
+        try {
+          // Get recording files from Zoom API
+          const recData = await zoomGet(token, `/meetings/${rec.zoom_meeting_id}/recordings`);
+          const files = (recData?.recording_files || []) as Array<{ file_type: string; download_url: string }>;
+          const transcriptFile = files.find((f: { file_type: string }) => f.file_type === "TRANSCRIPT");
+
+          if (!transcriptFile?.download_url) {
+            details.push({ id: rec.id, title: rec.title, status: "no_transcript_file" });
+            continue;
+          }
+
+          // Download VTT using S2S token
+          const vttResp = await fetch(`${transcriptFile.download_url}?access_token=${token}`);
+          if (!vttResp.ok) {
+            details.push({ id: rec.id, title: rec.title, status: "download_failed", error: `HTTP ${vttResp.status}` });
+            failed++;
+            continue;
+          }
+
+          const transcriptText = await vttResp.text();
+          if (!transcriptText || transcriptText.length < 100) {
+            details.push({ id: rec.id, title: rec.title, status: "transcript_too_short" });
+            continue;
+          }
+
+          // Save transcript
+          await sb.from("class_recordings").update({
+            transcript_text: transcriptText.slice(0, 50000),
+            transcript_vtt: transcriptText.slice(0, 50000),
+          }).eq("id", rec.id);
+          imported++;
+
+          // Generate AI summary if OPENAI_API_KEY is available
+          if (OPENAI_API_KEY) {
+            const cleanTranscript = transcriptText
+              .split("\n")
+              .filter((l: string) => !l.match(/^\d{2}:\d{2}/) && l.trim() !== "" && l !== "WEBVTT")
+              .join("\n")
+              .slice(0, 8000);
+
+            const aiResp = await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${OPENAI_API_KEY}`,
+              },
+              body: JSON.stringify({
+                model: "gpt-4o-mini",
+                max_tokens: 600,
+                messages: [{
+                  role: "user",
+                  content: `Você recebeu a transcrição de uma aula chamada "${rec.title || "Aula"}". Gere um resumo estruturado em português com:\n\n**Temas abordados:**\n• tema 1\n• tema 2\n• (máximo 5 bullets)\n\n**Próximos passos mencionados:**\n• (se houver, senão omitir esta seção)\n\nTranscrição:\n${cleanTranscript}`,
+                }],
+              }),
+            });
+
+            if (aiResp.ok) {
+              const aiData = await aiResp.json() as { choices: { message: { content: string } }[] };
+              const summary = aiData?.choices?.[0]?.message?.content ?? "";
+              if (summary) {
+                await sb.from("class_recordings").update({ summary }).eq("id", rec.id);
+                summarized++;
+              }
+            }
+          }
+
+          details.push({ id: rec.id, title: rec.title, status: "ok" });
+        } catch (e) {
+          failed++;
+          details.push({ id: rec.id, title: rec.title, status: "error", error: String(e) });
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ ok: true, total: recordings.length, imported, summarized, failed, details }),
         { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }

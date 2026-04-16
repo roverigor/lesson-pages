@@ -113,6 +113,14 @@ async function loadAutomationsView() {
   }
   html += '</div>';
 
+  // Utility actions
+  html += `
+    <div style="display:flex;gap:12px;margin-bottom:24px">
+      <button onclick="triggerBatchTranscripts()" style="padding:10px 20px;border-radius:8px;border:1px solid #1e1e1e;background:#111;color:#a5b4fc;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
+        📝 Importar Transcrições Pendentes
+      </button>
+    </div>`;
+
   // History table
   html += `
     <div style="background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px">
@@ -173,6 +181,7 @@ async function triggerPipeline(type) {
 
   const ep = endpoints[type];
   if (!ep) { showToast('Este pipeline é acionado por evento (webhook)', 'info'); return; }
+  if (type === 'batch_transcripts') { triggerBatchTranscripts(); return; }
 
   showToast('Executando...', 'info');
 
@@ -189,6 +198,32 @@ async function triggerPipeline(type) {
     if (data.ok) {
       showToast(`Pipeline executado com sucesso`, 'success');
       setTimeout(() => loadAutomationsView(), 2000);
+    } else {
+      showToast(`Erro: ${data.error || 'desconhecido'}`, 'error');
+    }
+  } catch (e) {
+    showToast(`Erro: ${e.message}`, 'error');
+  }
+}
+
+async function triggerBatchTranscripts() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { showToast('Sessão expirada', 'error'); return; }
+
+  showToast('Importando transcrições...', 'info');
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/zoom-attendance`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ action: 'batch_import_transcripts', batch_size: 5 }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showToast(`Transcrições: ${data.imported} importadas, ${data.summarized} resumos gerados`, 'success');
     } else {
       showToast(`Erro: ${data.error || 'desconhecido'}`, 'error');
     }
