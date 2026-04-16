@@ -445,7 +445,7 @@ serve(async (req: Request) => {
       }
 
       // Log the health check itself
-      await sb.rpc("log_automation_step", {
+      const { error: logErr } = await sb.rpc("log_automation_step", {
         p_run_type: "health_check",
         p_step_name: "daily_health_check",
         p_status: alerts.length > 0 ? "error" : "success",
@@ -454,7 +454,8 @@ serve(async (req: Request) => {
         p_failed: alerts.length,
         p_error: alerts.length > 0 ? alerts.join("; ") : null,
         p_metadata: { date: today, alerts, alert_sent: alertSent },
-      }).catch((e: Error) => console.error("log_automation_step error:", e));
+      });
+      if (logErr) console.error("log_automation_step error:", logErr);
 
       return new Response(
         JSON.stringify({ ok: true, date: today, issues: alerts.length, alerts, alert_sent: alertSent }),

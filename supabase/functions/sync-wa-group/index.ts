@@ -80,11 +80,12 @@ serve(async (req: Request) => {
       .not("whatsapp_group_jid", "is", null);
 
     if (!cohorts?.length) {
-      await sb.rpc("log_automation_step", {
+      const { error: logErr0 } = await sb.rpc("log_automation_step", {
         p_run_type: "wa_sync", p_step_name: "auto_sync",
         p_status: "success", p_processed: 0,
         p_metadata: { reason: "no cohorts with whatsapp_group_jid" },
-      }).catch(() => {});
+      });
+      if (logErr0) console.error("log_automation_step error:", logErr0);
       return new Response(JSON.stringify({ ok: true, synced: 0, reason: "no_cohorts" }), {
         headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
       });
@@ -166,8 +167,7 @@ serve(async (req: Request) => {
               totalCreated++;
               // Also link in student_cohorts
               await sb.from("student_cohorts")
-                .insert({ student_id: newStudent.id, cohort_id: cohort.id })
-                .catch(() => {});
+                .insert({ student_id: newStudent.id, cohort_id: cohort.id });
               // Update local cache
               existingPhones.add(phone);
               studentByPhone[phone] = { id: newStudent.id, cohort_id: cohort.id };
@@ -184,13 +184,14 @@ serve(async (req: Request) => {
 
     // Log to automation_runs
     const runStatus = totalFailed > 0 && totalCreated === 0 && totalLinked === 0 ? "error" : "success";
-    await sb.rpc("log_automation_step", {
+    const { error: logErr } = await sb.rpc("log_automation_step", {
       p_run_type: "wa_sync", p_step_name: "auto_sync",
       p_status: runStatus,
       p_processed: totalProcessed, p_created: totalCreated + totalLinked, p_failed: totalFailed,
       p_error: totalFailed > 0 ? `${totalFailed} cohorts failed` : null,
       p_metadata: { cohorts_synced: cohorts.length, cohort_results: cohortResults },
-    }).catch((e: Error) => console.error("log_automation_step error:", e));
+    });
+    if (logErr) console.error("log_automation_step error:", logErr);
 
     return new Response(
       JSON.stringify({ ok: true, cohorts: cohorts.length, processed: totalProcessed, new_students: totalCreated, new_links: totalLinked, failed: totalFailed, details: cohortResults }),
