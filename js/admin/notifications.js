@@ -121,9 +121,9 @@ function resetNotifyForm() {
 
 async function loadNotifyHistory() {
   const { data } = await sb.from('notifications')
-    .select('id, type, target_type, status, message_rendered, message_template, error_message, created_at, sent_at, retry_count, max_retries, cohort_id, cohorts(name)')
+    .select('id, type, target_type, status, message_rendered, message_template, error_message, created_at, sent_at, retry_count, max_retries, cohort_id, cohorts(name), mentor_id, mentors(name)')
     .order('created_at', { ascending: false })
-    .limit(20);
+    .limit(30);
 
   const el = document.getElementById('notify-history');
   if (!data || !data.length) {
@@ -141,7 +141,16 @@ async function loadNotifyHistory() {
       cancelled:  { bg: 'rgba(102,102,102,0.1)',border: '#333',    color: '#666',    label: 'Cancelado',   icon: '—' },
     };
     const s = statusCfg[n.status] || statusCfg.pending;
-    const cohortName = n.cohorts?.name || '—';
+    const typeCfg = {
+      class_reminder:     { label: 'Lembrete', icon: '📚' },
+      staff_reminder:     { label: 'Escalação', icon: '📋' },
+      mentor_individual:  { label: 'Individual', icon: '👤' },
+      group_announcement: { label: 'Anúncio', icon: '📢' },
+      schedule_change:    { label: 'Mudança', icon: '🔄' },
+      custom:             { label: 'Custom', icon: '✉️' },
+    };
+    const t = typeCfg[n.type] || { label: n.type, icon: '📌' };
+    const cohortName = n.cohorts?.name || (n.type === 'staff_reminder' && n.mentors?.name ? n.mentors.name : '—');
     const msg = (n.message_rendered || n.message_template || '').slice(0, 120);
     const date = new Date(n.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
     const targetLabel = { group: 'Grupo', individual: 'Individual', both: 'Grupo + Individual' }[n.target_type] || n.target_type;
@@ -151,6 +160,7 @@ async function loadNotifyHistory() {
       <div style="flex:1;min-width:0">
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
           <span style="font-size:12px;font-weight:700;color:#ddd">${cohortName}</span>
+          <span style="font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(139,92,246,0.1);border:1px solid #5b21b6;color:#a78bfa;font-weight:700">${t.icon} ${t.label}</span>
           <span style="font-size:10px;padding:2px 8px;border-radius:999px;background:${s.bg};border:1px solid ${s.border};color:${s.color};font-weight:700">${s.icon} ${s.label}</span>
           <span style="font-size:10px;color:#444">${targetLabel}</span>
           <span style="font-size:10px;color:#333;margin-left:auto">${date}</span>
