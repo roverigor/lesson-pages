@@ -940,6 +940,16 @@ serve(async (req: Request) => {
           });
         }
       }
+      // Backfill cohort_id from student's own cohort when meeting has no cohort
+      const rowsWithoutCohort = [...aggMap.values()].filter(r => !r.cohort_id);
+      if (rowsWithoutCohort.length > 0) {
+        const studentIds = [...new Set(rowsWithoutCohort.map(r => r.student_id))];
+        const { data: students } = await sb.from("students").select("id, cohort_id").in("id", studentIds);
+        const studentCohortMap = new Map((students || []).map(s => [s.id, s.cohort_id]));
+        for (const r of rowsWithoutCohort) {
+          if (!r.cohort_id) r.cohort_id = studentCohortMap.get(r.student_id) || null;
+        }
+      }
       const rows = [...aggMap.values()].map(r => ({ ...r, source: "zoom" as const }));
 
       // Apply optional cohort filter
@@ -1668,11 +1678,11 @@ serve(async (req: Request) => {
     const token = await getS2SToken();
 
     // ── Auto-resolve cohort_id when not provided ──
-    // 1. Check existing zoom_meetings entries (pre-registered templates)
-    // 2. Fallback: match meeting topic against cohort names
+    // Priority: 1. Existing zoom_meetings  2. classes.zoom_meeting_id → first cohort  3. Topic matching
     let resolvedCohortId = cohort_id || null;
+    let resolvedClassId: string | null = null;
     if (!resolvedCohortId) {
-      // Try pre-registered zoom_meetings with this meeting_id
+      // 1. Try pre-registered zoom_meetings with this meeting_id
       const { data: existingMeeting } = await sb
         .from("zoom_meetings")
         .select("cohort_id")
@@ -1683,8 +1693,35 @@ serve(async (req: Request) => {
 
       if (existingMeeting?.cohort_id) {
         resolvedCohortId = existingMeeting.cohort_id;
-      } else {
-        // Fetch topic from Zoom API for topic-based matching
+      }
+
+      // 2. Try classes.zoom_meeting_id → class_cohort_access → first cohort
+      if (!resolvedCohortId) {
+        const { data: classMatch } = await sb
+          .from("classes")
+          .select("id, name")
+          .eq("zoom_meeting_id", meeting_id)
+          .eq("active", true)
+          .limit(1)
+          .maybeSingle();
+
+        if (classMatch) {
+          resolvedClassId = classMatch.id;
+          // Get first cohort mapped to this class
+          const { data: cohortAccess } = await sb
+            .from("class_cohort_access")
+            .select("cohort_id")
+            .eq("class_id", classMatch.id)
+            .limit(1)
+            .maybeSingle();
+          if (cohortAccess?.cohort_id) {
+            resolvedCohortId = cohortAccess.cohort_id;
+          }
+        }
+      }
+
+      // 3. Fallback: match meeting topic against cohort names
+      if (!resolvedCohortId) {
         const instData = await zoomGet(token, `/past_meetings/${meeting_id}/instances`).catch(() => null);
         let meetingTopic = "";
         if (instData?.meetings?.length) {
@@ -1697,7 +1734,6 @@ serve(async (req: Request) => {
           const { data: cohorts } = await sb.from("cohorts").select("id, name");
           for (const c of (cohorts || [])) {
             const normalizedCohortName = c.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-            // Match if topic contains cohort name or vice versa
             if (normalizedTopic.includes(normalizedCohortName) || normalizedCohortName.includes(normalizedTopic)) {
               resolvedCohortId = c.id;
               break;
