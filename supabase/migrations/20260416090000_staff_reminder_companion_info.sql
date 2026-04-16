@@ -1,21 +1,8 @@
 -- ═══════════════════════════════════════
--- LESSON PAGES — Daily Staff Reminder (8h BRT)
--- Sends individual WhatsApp to each staff member
--- with their role for today's classes
+-- Staff Reminder: show companion role info
+-- Professor sees Host name, Host sees Professor name
 -- ═══════════════════════════════════════
 
--- ─── 1. Add 'staff_reminder' to notifications.type CHECK constraint ───
-ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_type_check;
-ALTER TABLE notifications ADD CONSTRAINT notifications_type_check CHECK (type IN (
-  'class_reminder',
-  'mentor_individual',
-  'group_announcement',
-  'schedule_change',
-  'staff_reminder',
-  'custom'
-));
-
--- ─── 2. PL/pgSQL function: process_daily_staff_reminders ───
 CREATE OR REPLACE FUNCTION public.process_daily_staff_reminders()
 RETURNS void
 LANGUAGE plpgsql
@@ -49,7 +36,7 @@ BEGIN
       m.phone      AS mentor_phone
     FROM classes c
     JOIN class_mentors cm ON c.id = cm.class_id
-      AND cm.valid_until IS NULL                -- active cycle only
+      AND cm.valid_until IS NULL
     JOIN mentors m ON cm.mentor_id = m.id
       AND m.active = true
       AND m.phone IS NOT NULL
@@ -57,7 +44,6 @@ BEGIN
       AND c.weekday = today_dow
       AND (c.start_date IS NULL OR c.start_date <= today_date)
       AND (c.end_date   IS NULL OR c.end_date   >= today_date)
-      -- Anti-duplicate: skip if already sent today
       AND NOT EXISTS (
         SELECT 1 FROM notifications n
         WHERE n.type      = 'staff_reminder'
@@ -105,7 +91,7 @@ BEGIN
       END IF;
     END IF;
 
-    -- Build message template with placeholders already resolved
+    -- Build message
     msg_template := format(
       E'Bom dia, *%s*! 👋\n\nVocê está escalado(a) hoje como %s *%s* na aula:\n\n📚 *%s* — %s às %s%s\n%s\n\nPosso confirmar sua presença?\n✅ Confirmado\n❌ Não vou conseguir',
       rec.mentor_name,
@@ -121,17 +107,9 @@ BEGIN
       END
     );
 
-    -- Insert notification → triggers webhook → send-whatsapp
     INSERT INTO notifications (
-      type,
-      class_id,
-      mentor_id,
-      target_type,
-      target_phone,
-      message_template,
-      message_rendered,
-      metadata,
-      status
+      type, class_id, mentor_id, target_type, target_phone,
+      message_template, message_rendered, metadata, status
     ) VALUES (
       'staff_reminder',
       rec.class_id,
@@ -139,7 +117,7 @@ BEGIN
       'individual',
       rec.mentor_phone,
       msg_template,
-      msg_template,  -- already fully rendered
+      msg_template,
       jsonb_build_object(
         'staff_role', rec.staff_role,
         'role_emoji', role_emoji,
@@ -157,15 +135,3 @@ BEGIN
     inserted_count, today_date;
 END;
 $$;
-
--- ─── 3. pg_cron job: daily at 08:00 BRT (11:00 UTC) ───
-SELECT cron.unschedule('daily-staff-reminder')
-WHERE EXISTS (
-  SELECT 1 FROM cron.job WHERE jobname = 'daily-staff-reminder'
-);
-
-SELECT cron.schedule(
-  'daily-staff-reminder',
-  '0 11 * * *',
-  $$SELECT process_daily_staff_reminders()$$
-);
