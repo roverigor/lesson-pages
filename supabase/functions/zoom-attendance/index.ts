@@ -44,6 +44,57 @@ function waSleep(): Promise<void> {
   return new Promise((r) => setTimeout(r, WA_SAFE_DELAY_MS));
 }
 
+// ─── WhatsApp send helper (Meta Cloud API preferred, Evolution fallback) ───
+async function sendWA(phone: string, text: string): Promise<boolean> {
+  const digits = phone.replace(/\D/g, "");
+  const META_PID = Deno.env.get("META_PHONE_NUMBER_ID") ?? "";
+  const META_KEY = Deno.env.get("META_API_KEY") ?? "";
+
+  if (META_PID && META_KEY) {
+    try {
+      const res = await fetch(
+        `https://graph.facebook.com/v21.0/${META_PID}/messages`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${META_KEY}`,
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            to: digits,
+            type: "text",
+            text: { body: text },
+          }),
+        }
+      );
+      if (res.ok) return true;
+      const errBody = await res.text();
+      console.error(`Meta WA API error: ${res.status} ${errBody}`);
+    } catch (e) {
+      console.error("Meta WA API exception:", e);
+    }
+  }
+
+  // Fallback: Evolution API
+  const EVO_URL = Deno.env.get("EVOLUTION_API_URL") ?? "";
+  const EVO_KEY = Deno.env.get("EVOLUTION_API_KEY") ?? "";
+  const EVO_INST = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
+  if (EVO_URL && EVO_KEY) {
+    try {
+      const res = await fetch(`${EVO_URL}/message/sendText/${EVO_INST}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: EVO_KEY },
+        body: JSON.stringify({ number: digits, text }),
+      });
+      return res.ok;
+    } catch { return false; }
+  }
+
+  console.error("No WhatsApp provider configured");
+  return false;
+}
+
 // ─── Zoom S2S Auth ───
 
 async function getS2SToken(): Promise<string> {
@@ -403,9 +454,6 @@ serve(async (req: Request) => {
     // ran today. Sends WhatsApp alert to coordinator if missing or failed.
     if (action === "health_check") {
       const sb = getSupabaseClient();
-      const EVOLUTION_URL      = Deno.env.get("EVOLUTION_API_URL") ?? "";
-      const EVOLUTION_KEY      = Deno.env.get("EVOLUTION_API_KEY") ?? "";
-      const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
       const COORDINATOR_PHONE  = Deno.env.get("COORDINATOR_PHONE") ?? "";
 
       const today = new Date().toISOString().slice(0, 10);
@@ -440,16 +488,10 @@ serve(async (req: Request) => {
 
       // Send alert if any issues found
       let alertSent = false;
-      if (alerts.length > 0 && COORDINATOR_PHONE && EVOLUTION_URL && EVOLUTION_KEY) {
+      if (alerts.length > 0 && COORDINATOR_PHONE) {
         const msg = `🩺 Health Check — ${today}\n\n${alerts.join("\n")}\n\nAcesse: https://painel.igorrover.com.br/admin/?view=automations`;
         try {
-          const phone = COORDINATOR_PHONE.replace(/\D/g, "");
-          await fetch(`${EVOLUTION_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "apikey": EVOLUTION_KEY },
-            body: JSON.stringify({ number: phone, text: msg }),
-          });
-          alertSent = true;
+          alertSent = await sendWA(COORDINATOR_PHONE, msg);
         } catch (e) {
           console.error("health_check: WA alert send failed:", e);
         }
@@ -631,9 +673,6 @@ serve(async (req: Request) => {
       // After syncing staff attendance, check who was scheduled but NOT found.
       // Sends WhatsApp to COORDINATOR_PHONE with the absent staff list.
       try {
-        const EVOLUTION_URL      = Deno.env.get("EVOLUTION_API_URL") ?? "";
-        const EVOLUTION_KEY      = Deno.env.get("EVOLUTION_API_KEY") ?? "";
-        const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
         const COORDINATOR_PHONE  = Deno.env.get("COORDINATOR_PHONE") ?? "";
 
         // Check yesterday (pipeline runs at 03:00 BRT, processes previous day's meetings)
@@ -644,15 +683,10 @@ serve(async (req: Request) => {
 
         const absentList = (absent || []) as Array<{ mentor_name: string; mentor_role: string; class_name: string; class_time: string }>;
 
-        if (absentList.length > 0 && COORDINATOR_PHONE && EVOLUTION_URL && EVOLUTION_KEY) {
+        if (absentList.length > 0 && COORDINATOR_PHONE) {
           const lines = absentList.map(a => `  • ${a.mentor_name} (${a.mentor_role}) — ${a.class_name} ${a.class_time}`);
           const msg = `⚠️ Staff não encontrado no Zoom — ${checkDate}\n\n${lines.join("\n")}\n\nTotal: ${absentList.length} ausência(s)\n📊 https://painel.igorrover.com.br/relatorio/`;
-          const phone = COORDINATOR_PHONE.replace(/\D/g, "");
-          await fetch(`${EVOLUTION_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "apikey": EVOLUTION_KEY },
-            body: JSON.stringify({ number: phone, text: msg }),
-          });
+          await sendWA(COORDINATOR_PHONE, msg);
         }
 
         await logStep("staff_absence_alert", "success", absentList.length, absentList.length > 0 ? 1 : 0, 0, null,
@@ -1187,17 +1221,6 @@ serve(async (req: Request) => {
     // body: { action: "send_absence_alerts" }
     if (action === "send_absence_alerts") {
       const sb = getSupabaseClient();
-      const EVOLUTION_URL = Deno.env.get("EVOLUTION_API_URL") ?? "";
-      const EVOLUTION_KEY = Deno.env.get("EVOLUTION_API_KEY") ?? "";
-      const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
-
-      if (!EVOLUTION_URL || !EVOLUTION_KEY) {
-        return new Response(
-          JSON.stringify({ ok: false, error: "Evolution API not configured" }),
-          { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
-        );
-      }
-
       const { data: alerts, error: alertErr } = await sb.rpc("get_consecutive_absences_needing_alert");
       if (alertErr) {
         return new Response(
@@ -1216,14 +1239,9 @@ serve(async (req: Request) => {
         const msg = `Oi ${a.student_name}! 👋 Sentimos sua falta nas últimas ${a.consecutive_count} aulas de ${a.cohort_name}. Se precisar de ajuda ou tiver algum problema, fala com a gente. A turma te espera! 💪`;
 
         try {
-          const evRes = await fetch(`${EVOLUTION_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "apikey": EVOLUTION_KEY },
-            body: JSON.stringify({ number: phone, text: msg }),
-          });
-
-          const status = evRes.ok ? "sent" : "error";
-          const errMsg = evRes.ok ? null : await evRes.text();
+          const ok = await sendWA(phone, msg);
+          const status = ok ? "sent" : "error";
+          const errMsg = ok ? null : "sendWA failed";
 
           await sb.from("zoom_absence_alerts").insert({
             student_id:        a.student_id,
@@ -1234,7 +1252,7 @@ serve(async (req: Request) => {
             error_message:     errMsg,
           });
 
-          if (evRes.ok) sent++; else failed++;
+          if (ok) sent++; else failed++;
         } catch (e) {
           await sb.from("zoom_absence_alerts").insert({
             student_id:        a.student_id,
@@ -1386,9 +1404,6 @@ serve(async (req: Request) => {
     // ── send_recording_notification (Story 10.4) ─────────────────────────────
     if (action === "send_recording_notification") {
       const sb = getSupabaseClient();
-      const EVOLUTION_URL      = Deno.env.get("EVOLUTION_API_URL") ?? "";
-      const EVOLUTION_KEY      = Deno.env.get("EVOLUTION_API_KEY") ?? "";
-      const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
 
       const recordingId = body.recording_id as string;
       const cohortId    = body.cohort_id as string;
@@ -1431,20 +1446,12 @@ serve(async (req: Request) => {
         let status = "sent";
         let errMsg = null;
 
-        if (EVOLUTION_URL && EVOLUTION_KEY) {
-          try {
-            const evRes = await fetch(`${EVOLUTION_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json", "apikey": EVOLUTION_KEY },
-              body: JSON.stringify({ number: phone, text: msg }),
-            });
-            if (!evRes.ok) { status = "error"; errMsg = await evRes.text(); failed++; }
-            else sent++;
-          } catch (e) {
-            status = "error"; errMsg = String(e); failed++;
-          }
-        } else {
-          status = "skipped"; errMsg = "Evolution API not configured"; skipped++;
+        try {
+          const ok = await sendWA(phone, msg);
+          if (!ok) { status = "error"; errMsg = "sendWA failed"; failed++; }
+          else sent++;
+        } catch (e) {
+          status = "error"; errMsg = String(e); failed++;
         }
 
         await sb.from("class_recording_notifications").insert({

@@ -11,6 +11,11 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 
+// Meta WhatsApp Cloud API
+const META_PHONE_NUMBER_ID = Deno.env.get("META_PHONE_NUMBER_ID") ?? "";
+const META_API_KEY = Deno.env.get("META_API_KEY") ?? "";
+
+// Fallback: Evolution API (legacy)
 const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL") ?? "";
 const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY") ?? "";
 const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
@@ -47,17 +52,53 @@ async function verifyAdmin(authHeader: string | null): Promise<boolean> {
 }
 
 async function sendWhatsApp(phone: string, message: string): Promise<boolean> {
-  const remoteJid = phone.replace(/\D/g, "") + "@s.whatsapp.net";
-  try {
-    const res = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", apikey: EVOLUTION_API_KEY },
-      body: JSON.stringify({ number: remoteJid, text: message }),
-    });
-    return res.ok;
-  } catch {
-    return false;
+  const digits = phone.replace(/\D/g, "");
+
+  // Prefer Meta Cloud API
+  if (META_PHONE_NUMBER_ID && META_API_KEY) {
+    try {
+      const res = await fetch(
+        `https://graph.facebook.com/v21.0/${META_PHONE_NUMBER_ID}/messages`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${META_API_KEY}`,
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            to: digits,
+            type: "text",
+            text: { body: message },
+          }),
+        }
+      );
+      if (res.ok) return true;
+      const errBody = await res.text();
+      console.error(`Meta WA API error: ${res.status} ${errBody}`);
+      return false;
+    } catch (e) {
+      console.error("Meta WA API exception:", e);
+      return false;
+    }
   }
+
+  // Fallback: Evolution API
+  if (EVOLUTION_API_URL && EVOLUTION_API_KEY) {
+    try {
+      const res = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: EVOLUTION_API_KEY },
+        body: JSON.stringify({ number: digits + "@s.whatsapp.net", text: message }),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  console.error("No WhatsApp provider configured");
+  return false;
 }
 
 serve(async (req: Request) => {

@@ -12,6 +12,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
+// Meta WhatsApp Cloud API
+const META_PHONE_NUMBER_ID = Deno.env.get("META_PHONE_NUMBER_ID") ?? "";
+const META_API_KEY = Deno.env.get("META_API_KEY") ?? "";
+
+// Fallback: Evolution API (legacy)
 const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL") ?? "";
 const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY") ?? "";
 const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
@@ -93,8 +98,47 @@ async function sendTextMessage(
   text: string
 ): Promise<{ success: boolean; response?: EvolutionResponse; error?: string }> {
   await waitForCadence();
-  const url = `${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`;
 
+  // Extract digits from remoteJid (strip @s.whatsapp.net, @g.us, etc.)
+  const digits = remoteJid.replace(/@.*$/, "").replace(/\D/g, "");
+  const isGroup = remoteJid.includes("@g.us");
+
+  // Prefer Meta Cloud API (individual messages only — groups not supported by Meta)
+  if (META_PHONE_NUMBER_ID && META_API_KEY && !isGroup) {
+    try {
+      const res = await fetch(
+        `https://graph.facebook.com/v21.0/${META_PHONE_NUMBER_ID}/messages`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${META_API_KEY}`,
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            to: digits,
+            type: "text",
+            text: { body: text },
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        const errBody = await res.text();
+        console.error(`Meta WA API error: ${res.status} ${errBody}`);
+        // Fall through to Evolution API
+      } else {
+        const data = await res.json();
+        return { success: true, response: { key: { remoteJid, id: data?.messages?.[0]?.id ?? "" }, message: {}, status: "sent" } };
+      }
+    } catch (err) {
+      console.error("Meta WA API exception:", err);
+      // Fall through to Evolution API
+    }
+  }
+
+  // Fallback: Evolution API (also handles group messages)
+  const url = `${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`;
   try {
     const res = await fetch(url, {
       method: "POST",
