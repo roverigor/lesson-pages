@@ -627,6 +627,43 @@ serve(async (req: Request) => {
         pipelineResults.sync_staff_attendance = { ok: false, error: msg };
       }
 
+      // ── Step 8: staff_absence_alert — notify coordinator of staff not found in Zoom ──
+      // After syncing staff attendance, check who was scheduled but NOT found.
+      // Sends WhatsApp to COORDINATOR_PHONE with the absent staff list.
+      try {
+        const EVOLUTION_URL      = Deno.env.get("EVOLUTION_API_URL") ?? "";
+        const EVOLUTION_KEY      = Deno.env.get("EVOLUTION_API_KEY") ?? "";
+        const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
+        const COORDINATOR_PHONE  = Deno.env.get("COORDINATOR_PHONE") ?? "";
+
+        // Check yesterday (pipeline runs at 03:00 BRT, processes previous day's meetings)
+        const checkDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+        const { data: absent, error: absentErr } = await sb.rpc("get_staff_not_found_in_zoom", { p_date: checkDate });
+        if (absentErr) throw new Error(absentErr.message);
+
+        const absentList = (absent || []) as Array<{ mentor_name: string; mentor_role: string; class_name: string; class_time: string }>;
+
+        if (absentList.length > 0 && COORDINATOR_PHONE && EVOLUTION_URL && EVOLUTION_KEY) {
+          const lines = absentList.map(a => `  • ${a.mentor_name} (${a.mentor_role}) — ${a.class_name} ${a.class_time}`);
+          const msg = `⚠️ Staff não encontrado no Zoom — ${checkDate}\n\n${lines.join("\n")}\n\nTotal: ${absentList.length} ausência(s)\n📊 https://painel.igorrover.com.br/relatorio/`;
+          const phone = COORDINATOR_PHONE.replace(/\D/g, "");
+          await fetch(`${EVOLUTION_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "apikey": EVOLUTION_KEY },
+            body: JSON.stringify({ number: phone, text: msg }),
+          });
+        }
+
+        await logStep("staff_absence_alert", "success", absentList.length, absentList.length > 0 ? 1 : 0, 0, null,
+          { date: checkDate, absent_count: absentList.length, absent: absentList });
+        pipelineResults.staff_absence_alert = { ok: true, absent_count: absentList.length, alert_sent: absentList.length > 0 };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        await logStep("staff_absence_alert", "error", 0, 0, 0, msg);
+        pipelineResults.staff_absence_alert = { ok: false, error: msg };
+      }
+
       return new Response(
         JSON.stringify({ ok: true, pipeline: "completed", meetings: meetingIds.length, results: pipelineResults }),
         { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
