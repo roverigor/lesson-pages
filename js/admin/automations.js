@@ -9,6 +9,7 @@ const RUN_TYPE_LABELS = {
   wa_sync:                 'Sync WhatsApp',
   recording_notification:  'Notificação Gravação',
   health_check:            'Health Check',
+  absence_alerts:          'Alerta de Ausência',
 };
 
 const RUN_TYPE_ICONS = {
@@ -16,12 +17,14 @@ const RUN_TYPE_ICONS = {
   wa_sync:                '💬',
   recording_notification: '🎬',
   health_check:           '🩺',
+  absence_alerts:         '📊',
 };
 
 const CRON_SCHEDULES = {
   daily_pipeline:         '03:00 AM',
   wa_sync:                '04:00 AM',
   health_check:           '06:00 AM',
+  absence_alerts:         '18:00 (seg-sex)',
   recording_notification: 'Evento (webhook)',
 };
 
@@ -75,7 +78,7 @@ async function loadAutomationsView() {
   }
 
   // Summary cards for each pipeline type
-  const types = ['daily_pipeline', 'wa_sync', 'recording_notification', 'health_check'];
+  const types = ['daily_pipeline', 'wa_sync', 'absence_alerts', 'recording_notification', 'health_check'];
   let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:32px">';
 
   for (const type of types) {
@@ -175,6 +178,7 @@ async function triggerPipeline(type) {
   const endpoints = {
     daily_pipeline:         { fn: 'zoom-attendance', body: { action: 'daily_pipeline' } },
     wa_sync:                { fn: 'sync-wa-group',   body: { action: 'auto_sync' } },
+    absence_alerts:         { fn: 'zoom-attendance', body: { action: 'send_absence_alerts' } },
     recording_notification: null,
     health_check:           { fn: 'zoom-attendance', body: { action: 'health_check' } },
   };

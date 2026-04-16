@@ -5,7 +5,7 @@
 ```yaml
 epic_id: EPIC-014
 title: Fechamento de gaps de automação — presença de staff, overrides, alertas e transcrições
-status: Draft
+status: Done
 created_by: "@pm (Morgan)"
 created_at: 2026-04-16
 priority: P1
@@ -39,7 +39,7 @@ O EPIC-012 automatizou o pipeline principal (Zoom → presença alunos, chat, en
 
 ## Stories
 
-- [ ] **14.1** — Auto sync presença de staff do Zoom para relatório
-- [ ] **14.2** — Incorporar schedule_overrides no staff reminder
-- [ ] **14.3** — Agendar alerta de ausência para alunos no cron
-- [ ] **14.4** — Import batch de transcrições históricas com resumo AI
+- [x] **14.1** — Auto sync presença de staff do Zoom para relatório
+- [x] **14.2** — Incorporar schedule_overrides no staff reminder
+- [x] **14.3** — Agendar alerta de ausência para alunos no cron
+- [x] **14.4** — Import batch de transcrições históricas com resumo AI

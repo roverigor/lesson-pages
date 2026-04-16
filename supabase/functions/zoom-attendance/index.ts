@@ -412,7 +412,7 @@ serve(async (req: Request) => {
       const alerts: string[] = [];
 
       // Check each pipeline
-      for (const runType of ["daily_pipeline", "wa_sync"] as const) {
+      for (const runType of ["daily_pipeline", "wa_sync", "absence_alerts"] as const) {
         const { data: runs } = await sb
           .from("automation_runs")
           .select("status, error_message, step_name")
@@ -421,10 +421,20 @@ serve(async (req: Request) => {
           .order("started_at", { ascending: false })
           .limit(1);
 
+        const labelMap: Record<string, string> = {
+          daily_pipeline: "Pipeline Zoom diário",
+          wa_sync: "Sync WhatsApp",
+          absence_alerts: "Alerta de Ausência",
+        };
+        const label = labelMap[runType] || runType;
+
         if (!runs || runs.length === 0) {
-          alerts.push(`⚠️ ${runType === "daily_pipeline" ? "Pipeline Zoom diário" : "Sync WhatsApp"} NÃO executou hoje.`);
+          // absence_alerts may not run on weekends — only alert on weekdays
+          const dow = new Date().getDay();
+          if (runType === "absence_alerts" && (dow === 0 || dow === 6)) continue;
+          alerts.push(`⚠️ ${label} NÃO executou hoje.`);
         } else if (runs[0].status === "error") {
-          alerts.push(`❌ ${runType === "daily_pipeline" ? "Pipeline Zoom" : "Sync WhatsApp"} falhou: ${runs[0].error_message || runs[0].step_name || "erro desconhecido"}`);
+          alerts.push(`❌ ${label} falhou: ${runs[0].error_message || runs[0].step_name || "erro desconhecido"}`);
         }
       }
 
@@ -1192,6 +1202,19 @@ serve(async (req: Request) => {
         // Safe cadence between messages
         await waSleep();
       }
+
+      // Log to automation_runs
+      const { error: logAbsErr } = await sb.rpc("log_automation_step", {
+        p_run_type: "absence_alerts",
+        p_step_name: "send_absence_alerts",
+        p_status: failed > 0 && sent === 0 ? "error" : "success",
+        p_processed: (alerts || []).length,
+        p_created: sent,
+        p_failed: failed,
+        p_error: failed > 0 ? `${failed} alerts failed to send` : null,
+        p_metadata: { sent, failed, total: (alerts || []).length },
+      });
+      if (logAbsErr) console.error("log_automation_step(absence_alerts) error:", logAbsErr);
 
       return new Response(
         JSON.stringify({ ok: true, sent, failed, total: (alerts || []).length }),
