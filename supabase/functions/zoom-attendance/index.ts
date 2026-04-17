@@ -7,6 +7,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+import { sendApprovalMessage, sendDM, sendMessage } from "../_shared/slack.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -486,14 +487,22 @@ serve(async (req: Request) => {
         }
       }
 
-      // Send alert if any issues found
+      // Send alert via Slack DM to Igor (no approval needed for health checks — informational only)
       let alertSent = false;
-      if (alerts.length > 0 && COORDINATOR_PHONE) {
-        const msg = `🩺 Health Check — ${today}\n\n${alerts.join("\n")}\n\nAcesse: https://painel.igorrover.com.br/admin/?view=automations`;
+      const SLACK_IGOR = Deno.env.get("SLACK_IGOR_USER_ID") ?? "";
+      if (alerts.length > 0 && SLACK_IGOR) {
+        const msg = `🩺 *Health Check — ${today}*\n\n${alerts.join("\n")}\n\n<https://painel.igorrover.com.br/admin/?view=automations|Abrir Automações>`;
         try {
-          alertSent = await sendWA(COORDINATOR_PHONE, msg);
+          await sendDM(SLACK_IGOR, msg);
+          alertSent = true;
         } catch (e) {
-          console.error("health_check: WA alert send failed:", e);
+          console.error("health_check: Slack alert send failed:", e);
+          // Fallback to WhatsApp
+          if (COORDINATOR_PHONE) {
+            try {
+              alertSent = await sendWA(COORDINATOR_PHONE, `🩺 Health Check — ${today}\n\n${alerts.join("\n")}\n\nAcesse: https://painel.igorrover.com.br/admin/?view=automations`);
+            } catch { /* ignore */ }
+          }
         }
       }
 
@@ -683,10 +692,57 @@ serve(async (req: Request) => {
 
         const absentList = (absent || []) as Array<{ mentor_name: string; mentor_role: string; class_name: string; class_time: string }>;
 
-        if (absentList.length > 0 && COORDINATOR_PHONE) {
+        if (absentList.length > 0) {
+          const SLACK_IGOR = Deno.env.get("SLACK_IGOR_USER_ID") ?? "";
           const lines = absentList.map(a => `  • ${a.mentor_name} (${a.mentor_role}) — ${a.class_name} ${a.class_time}`);
-          const msg = `⚠️ Staff não encontrado no Zoom — ${checkDate}\n\n${lines.join("\n")}\n\nTotal: ${absentList.length} ausência(s)\n📊 https://painel.igorrover.com.br/relatorio/`;
-          await sendWA(COORDINATOR_PHONE, msg);
+
+          if (SLACK_IGOR) {
+            // Get staff with slack_user_id for the absent members
+            const absentNames = absentList.map(a => a.mentor_name);
+            const { data: staffRecords } = await sb
+              .from("staff")
+              .select("id, name, slack_user_id")
+              .in("name", absentNames)
+              .not("slack_user_id", "is", null);
+
+            const recipients = (staffRecords || []).map(s => ({
+              staff_id: s.id,
+              slack_user_id: s.slack_user_id,
+              name: s.name,
+            }));
+
+            // Queue notification for approval
+            const msgText = `⚠️ Staff não encontrado no Zoom — ${checkDate}\n\n${lines.join("\n")}\n\nTotal: ${absentList.length} ausência(s)\n<https://painel.igorrover.com.br/relatorio/|Ver Relatório>`;
+
+            const { data: notif } = await sb
+              .from("notification_queue")
+              .insert({
+                type: "attendance_alert",
+                title: `Staff ausente — ${checkDate}`,
+                payload: {
+                  message: `⚠️ Você não foi detectado(a) na aula do Zoom em ${checkDate}.\n\nSe participou, pode ter entrado com nome diferente. Verifique com a coordenação.\n\n<https://painel.igorrover.com.br/relatorio/|Ver Relatório>`,
+                  message_builder: "personalized",
+                  summary: msgText,
+                },
+                recipients,
+                status: "pending_approval",
+              })
+              .select("id")
+              .single();
+
+            if (notif) {
+              await sendApprovalMessage(SLACK_IGOR, {
+                title: "⚠️ Alerta de Ausência de Staff",
+                summary: `*${absentList.length}* membro(s) do staff não encontrado(s) no Zoom em ${checkDate}`,
+                details: lines.map(l => `• ${l.trim()}`),
+                notificationId: notif.id,
+              });
+            }
+          } else if (COORDINATOR_PHONE) {
+            // Fallback to WhatsApp
+            const msg = `⚠️ Staff não encontrado no Zoom — ${checkDate}\n\n${lines.join("\n")}\n\nTotal: ${absentList.length} ausência(s)\n📊 https://painel.igorrover.com.br/relatorio/`;
+            await sendWA(COORDINATOR_PHONE, msg);
+          }
         }
 
         await logStep("staff_absence_alert", "success", absentList.length, absentList.length > 0 ? 1 : 0, 0, null,

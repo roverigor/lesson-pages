@@ -6,6 +6,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+import { sendDM } from "../_shared/slack.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -343,6 +344,25 @@ serve(async (req: Request) => {
     .eq("send_status", "pending");
 
   const hasMore = (remainingPending ?? 0) > 0;
+
+  // Notify Igor via Slack DM with dispatch results
+  const SLACK_IGOR = Deno.env.get("SLACK_IGOR_USER_ID") ?? "";
+  if (SLACK_IGOR && dispatched > 0) {
+    try {
+      const statusEmoji = skipped > 0 ? "⚠️" : "✅";
+      await sendDM(
+        SLACK_IGOR,
+        `${statusEmoji} *Dispatch Survey*\n\n` +
+        `📋 Pesquisa: ${survey.title || survey.id.slice(0, 8)}\n` +
+        `✅ Enviados: ${dispatched}\n` +
+        `⏭️ Pulados: ${skipped}\n` +
+        `📬 Pendentes: ${remainingPending ?? 0}\n` +
+        `${hasMore ? "⏳ Ainda há pendentes — continue o dispatch." : "🏁 Todos enviados!"}`
+      );
+    } catch (e) {
+      console.error("Slack notification failed:", e);
+    }
+  }
 
   return new Response(
     JSON.stringify({
