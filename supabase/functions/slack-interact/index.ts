@@ -101,8 +101,6 @@ serve(async (req) => {
 
     // ─── Register in attendance table (single source of truth) ───
     if (info.class_details && info.date) {
-      const [, mo, d] = info.date.split("-");
-      const lessonDateFmt = `${d}/${mo}`;
       const status = confirmed ? "present" : "absent";
       const notes = confirmed ? "Confirmou via Slack" : "Recusou via Slack";
 
@@ -136,20 +134,9 @@ serve(async (req) => {
           console.error("Failed to upsert attendance:", e);
         }
 
-        // On decline: also add schedule_override to remove from grid
-        if (!confirmed) {
-          try {
-            await supabase.from("schedule_overrides").insert({
-              lesson_date: lessonDateFmt,
-              course: cls.class_name,
-              teacher_name: info.mentor_name,
-              action: "remove",
-              role: cls.role,
-            });
-          } catch (e) {
-            console.error("Failed to insert schedule_override:", e);
-          }
-        }
+        // Note: no schedule_override insert — the mentor stays visible in the grid
+        // but shows as "absent" via attendance.status. Schedule overrides are only
+        // for manual admin operations (adding substitutes).
       }
     }
 
