@@ -661,7 +661,7 @@ serve(async (req: Request) => {
       pipelineResults.import_meeting_chat = { ok: chatFailed === 0, imported: chatImported, failed: chatFailed };
 
       // ── Step 7: sync_staff_attendance (Story 14.1 — EPIC-014) ──
-      // Matches zoom participants to mentors and inserts into mentor_attendance
+      // Matches zoom participants to mentors and inserts into attendance
       try {
         const { data: staffResult, error: staffErr } = await sb.rpc("sync_staff_attendance_from_zoom", { p_days_back: 2 });
         if (staffErr) throw new Error(staffErr.message);

@@ -99,14 +99,15 @@ serve(async (req) => {
       console.error("Failed to update message:", e);
     }
 
-    // ─── Register in DB (both attendance + mentor_attendance) ───
-    if (info.mentor_id && info.class_details && info.date) {
+    // ─── Register in attendance table (single source of truth) ───
+    if (info.class_details && info.date) {
       const [, mo, d] = info.date.split("-");
       const lessonDateFmt = `${d}/${mo}`;
       const status = confirmed ? "present" : "absent";
+      const notes = confirmed ? "Confirmou via Slack" : "Recusou via Slack";
 
       for (const cls of info.class_details) {
-        // 1. attendance table (used by report/grid in admin panel)
+        // Upsert into attendance (unique on lesson_date + course + teacher_name)
         try {
           const { data: existing } = await supabase
             .from("attendance")
@@ -119,7 +120,7 @@ serve(async (req) => {
           if (existing) {
             await supabase
               .from("attendance")
-              .update({ status, notes: confirmed ? "Confirmou via Slack" : "Recusou via Slack" })
+              .update({ status, notes })
               .eq("id", existing.id);
           } else {
             await supabase.from("attendance").insert({
@@ -128,30 +129,14 @@ serve(async (req) => {
               teacher_name: info.mentor_name,
               role: cls.role,
               status,
-              notes: confirmed ? "Confirmou via Slack" : "Recusou via Slack",
+              notes,
             });
           }
         } catch (e) {
           console.error("Failed to upsert attendance:", e);
         }
 
-        // 2. mentor_attendance table (used by zoom pipeline)
-        try {
-          await supabase.from("mentor_attendance").upsert(
-            {
-              mentor_id: info.mentor_id,
-              class_id: cls.class_id,
-              session_date: info.date,
-              status,
-              comment: confirmed ? "Confirmou via Slack" : "Recusou via Slack",
-            },
-            { onConflict: "mentor_id,class_id,session_date" }
-          );
-        } catch (e) {
-          console.error("Failed to upsert mentor_attendance:", e);
-        }
-
-        // 3. On decline: also add schedule_override to remove from grid
+        // On decline: also add schedule_override to remove from grid
         if (!confirmed) {
           try {
             await supabase.from("schedule_overrides").insert({
