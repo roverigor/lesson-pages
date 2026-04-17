@@ -120,7 +120,6 @@ const config = [
         schedCohorts: 'writable',
         abstractsList: 'writable',
         // Config globals (defined in config.js)
-        TEACHERS: 'readonly',
         COURSE_CFG: 'readonly',
         MENTOR_COLORS: 'readonly',
         NOTIFY_TEMPLATES: 'readonly',

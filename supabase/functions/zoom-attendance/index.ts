@@ -699,16 +699,16 @@ serve(async (req: Request) => {
           if (SLACK_IGOR) {
             // Get staff with slack_user_id for the absent members
             const absentNames = absentList.map(a => a.mentor_name);
-            const { data: staffRecords } = await sb
-              .from("staff")
+            const { data: mentorRecords } = await sb
+              .from("mentors")
               .select("id, name, slack_user_id")
               .in("name", absentNames)
               .not("slack_user_id", "is", null);
 
-            const recipients = (staffRecords || []).map(s => ({
-              staff_id: s.id,
-              slack_user_id: s.slack_user_id,
-              name: s.name,
+            const recipients = (mentorRecords || []).map(m => ({
+              staff_id: m.id,
+              slack_user_id: m.slack_user_id,
+              name: m.name,
             }));
 
             // Queue notification for approval

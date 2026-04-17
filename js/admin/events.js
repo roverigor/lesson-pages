@@ -1,35 +1,6 @@
 // ═══════════════════════════════════════
-// BUILD EVENTS MAP (applies overrides)
+// BUILD EVENTS MAP from DB data (class_mentors + classes + mentors)
 // ═══════════════════════════════════════
-function buildEventsMap() {
-  const map = {};
-  for (const teacher of TEACHERS) {
-    for (const a of teacher.assignments) {
-      for (const date of a.dates) {
-        if (!map[date]) map[date] = {};
-        if (!map[date][a.course]) map[date][a.course] = { course: a.course, mentors: [] };
-        const already = map[date][a.course].mentors.some(m => m.name === teacher.name);
-        if (!already) map[date][a.course].mentors.push({ name: teacher.name, role: a.role });
-      }
-    }
-  }
-  for (const ov of overridesCache) {
-    if (ov.action === 'remove') {
-      if (map[ov.lesson_date] && map[ov.lesson_date][ov.course]) {
-        map[ov.lesson_date][ov.course].mentors = map[ov.lesson_date][ov.course].mentors.filter(m => m.name !== ov.teacher_name);
-      }
-    } else if (ov.action === 'add') {
-      if (!map[ov.lesson_date]) map[ov.lesson_date] = {};
-      if (!map[ov.lesson_date][ov.course]) map[ov.lesson_date][ov.course] = { course: ov.course, mentors: [] };
-      const already = map[ov.lesson_date][ov.course].mentors.some(m => m.name === ov.teacher_name);
-      if (!already) map[ov.lesson_date][ov.course].mentors.push({ name: ov.teacher_name, role: ov.role });
-    }
-  }
-  return map;
-}
-
-// Build EVENTS map from DB data (class_mentors + classes + mentors)
-// Falls back to hardcoded TEACHERS if DB data not yet loaded
 function buildEventsFromDB() {
   const map = {};
 
@@ -101,8 +72,8 @@ function buildEventsFromDB() {
 async function loadOverrides() {
   const { data } = await sb.from('schedule_overrides').select('*');
   overridesCache = data || [];
-  EVENTS = classesList.length ? buildEventsFromDB() : buildEventsMap();
+  EVENTS = buildEventsFromDB();
 }
 
-// Initialise EVENTS from hardcoded data (DB data not yet loaded)
-EVENTS = buildEventsMap();
+// Initialise empty — DB data will be loaded via loadClasses() → buildEventsFromDB()
+EVENTS = {};

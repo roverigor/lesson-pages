@@ -1,58 +1,6 @@
 // ═══════════════════════════════════════
-// TEACHERS DATA (mesmo do calendário público)
+// COURSE CONFIGURATION
 // ═══════════════════════════════════════
-const TEACHERS = [
-  { name:"Talles", total:45, assignments:[
-    {course:"PS Advanced T1",  role:"Professor", dates:["24/02","27/02","03/03","06/03","10/03","13/03","17/03","20/03","24/03","27/03","31/03","03/04"]},
-    {course:"PS Advanced T2",  role:"Professor", dates:["07/04","10/04","14/04","17/04","21/04","24/04","28/04","01/05","05/05","08/05","12/05","15/05","19/05","22/05","26/05","29/05"]},
-    {course:"Aulas Advanced T1",role:"Host",     dates:["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"]},
-    {course:"Aulas Advanced T2",role:"Host",     dates:["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"]},
-  ]},
-  { name:"José Amorim", total:25, assignments:[
-    {course:"PS Advanced T1",   role:"Professor", dates:["27/02","06/03","13/03","20/03","27/03","03/04"]},
-    {course:"PS Advanced T2",   role:"Professor", dates:["10/04","17/04","24/04","01/05","08/05","15/05","22/05","29/05"]},
-    {course:"Aulas Fund T1",    role:"Professor", dates:["12/02","16/02","19/02","23/02","26/02","02/03","05/03"]},
-    {course:"AIOS Fund (Manhã)", role:"Professor", dates:["21/02","28/02","07/03","14/03"]},
-    {course:"AIOS Fund (Tarde)", role:"Professor", dates:["21/02","28/02","07/03","14/03"]},
-  ]},
-  { name:"Sidney", total:11, assignments:[
-    {course:"PS Fundamentals",    role:"Professor", dates:["17/02","20/02","03/03","06/03","13/03","20/03","27/03"]},
-    {course:"AIOS Fund (Manhã)",  role:"Host",      dates:["21/02","28/02","07/03","14/03"]},
-  ]},
-  { name:"Rodrigo Feldman", total:6, assignments:[
-    {course:"PS Fundamentals",role:"Professor", dates:["13/02","24/02","27/02","10/03","17/03","24/03"]},
-  ]},
-  { name:"Bruno Gentil", total:16, assignments:[
-    {course:"PS Fundamentals",  role:"Professor", dates:["13/02","17/02","20/02","27/02","03/03","06/03","10/03","13/03","17/03","20/03","24/03","27/03"]},
-    {course:"AIOS Fund (Tarde)",role:"Host",      dates:["21/02","28/02","07/03","14/03"]},
-  ]},
-  { name:"Diego", total:14, assignments:[
-    {course:"PS Fundamentals",role:"Professor", dates:["17/02","24/02","03/03","10/03","17/03","24/03"]},
-    {course:"Aulas Fund T1",  role:"Host",      dates:["12/02","19/02","26/02","05/03"]},
-    {course:"Aulas Fund T3",  role:"Host",      dates:["05/03","12/03","19/03","26/03"]},
-  ]},
-  { name:"Adavio", total:8, assignments:[
-    {course:"Aulas Advanced T2",role:"Host",      dates:["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"]},
-  ]},
-  { name:"Alan Nicolas", total:9, assignments:[
-    {course:"Aulas Advanced T1",role:"Professor", dates:["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"]},
-  ]},
-  { name:"Adriano", total:25, assignments:[
-    {course:"Aulas Advanced T1",role:"Host",      dates:["04/02","11/02","18/02","25/02","04/03","11/03","18/03","25/03","01/04"]},
-    {course:"Aulas Advanced T2",role:"Professor", dates:["08/04","15/04","22/04","29/04","06/05","13/05","20/05","27/05"]},
-    {course:"Aulas Fund T3",   role:"Professor", dates:["02/03","05/03","09/03","12/03","16/03","19/03","23/03","26/03"]},
-  ]},
-  { name:"Fran", total:3, assignments:[
-    {course:"Aulas Fund T1",role:"Host", dates:["16/02","23/02","02/03"]},
-  ]},
-  { name:"Douglas", total:8, assignments:[
-    {course:"Aulas Fund T3",role:"Host", dates:["02/03","05/03","09/03","12/03","16/03","19/03","23/03","26/03"]},
-  ]},
-  { name:"Lucas Charão", total:7, assignments:[
-    {course:"Aulas Fund T1",role:"Host", dates:["12/02","16/02","19/02","23/02","26/02","02/03","05/03"]},
-  ]},
-];
-
 const COURSE_CFG = {
   'PS Advanced':       {color:'#6366f1', bg:'rgba(99,102,241,0.08)'},
   'PS Advanced T1':    {color:'#6366f1', bg:'rgba(99,102,241,0.08)'},

@@ -86,7 +86,7 @@ function renderStats() {
   document.getElementById('stats-bar').innerHTML = `
     <div class="stat-card">
       <span style="font-size:20px">👥</span>
-      <div><div class="stat-num">${TEACHERS.length}</div><div class="stat-label">Professores</div></div>
+      <div><div class="stat-num">${(mentorsList || []).length}</div><div class="stat-label">Professores</div></div>
     </div>
     <div class="stat-card">
       <span style="font-size:20px">📆</span>
@@ -198,9 +198,7 @@ function openAttendance(dateKey) {
   const date = new Date(2026, parseInt(mm)-1, parseInt(dd));
   const weekday = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'][date.getDay()];
 
-  const allNames = staffList.length > 0
-    ? staffList.map(s => s.name)
-    : TEACHERS.map(t => t.name);
+  const allNames = (staffList.length > 0 ? staffList : mentorsList || []).map(s => s.name);
 
   const removedForDate = overridesCache.filter(o => o.lesson_date === dateKey && o.action === 'remove');
 
@@ -316,16 +314,8 @@ function openAttendance(dateKey) {
 }
 
 function buildOriginalEventsForDate(dateKey) {
-  const map = {};
-  for (const teacher of TEACHERS) {
-    for (const a of teacher.assignments) {
-      if (a.dates.includes(dateKey)) {
-        if (!map[a.course]) map[a.course] = { course: a.course, mentors: [] };
-        map[a.course].mentors.push({ name: teacher.name, role: a.role });
-      }
-    }
-  }
-  return map;
+  // Use DB-sourced EVENTS map (built from class_mentors + mentors)
+  return EVENTS[dateKey] || {};
 }
 
 function toggleAtt(btn) {
