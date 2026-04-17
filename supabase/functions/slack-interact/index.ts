@@ -24,8 +24,8 @@ serve(async (req) => {
   if (SIGNING_SECRET && signature && timestamp) {
     const valid = await verifySignatureAsync(SIGNING_SECRET, signature, timestamp, body);
     if (!valid) {
-      console.warn("Slack signature mismatch — allowing in dev mode. sig:", signature?.slice(0, 20), "ts:", timestamp);
-      // TODO: enforce in production — return new Response("Invalid signature", { status: 401 });
+      console.error("Invalid Slack signature");
+      return new Response("Invalid signature", { status: 401 });
     }
   }
 
