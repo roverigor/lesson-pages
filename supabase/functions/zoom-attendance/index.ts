@@ -487,6 +487,32 @@ serve(async (req: Request) => {
         }
       }
 
+      // ── Evolution API connectivity check ──
+      const EVO_URL = Deno.env.get("EVOLUTION_API_URL") ?? "";
+      const EVO_KEY = Deno.env.get("EVOLUTION_API_KEY") ?? "";
+      const EVO_INST = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
+      if (EVO_URL && EVO_KEY && EVO_INST) {
+        try {
+          const evoRes = await fetch(
+            `${EVO_URL}/instance/connectionState/${EVO_INST}`,
+            { headers: { apikey: EVO_KEY }, signal: AbortSignal.timeout(10000) }
+          );
+          if (!evoRes.ok) {
+            alerts.push(`📱 Evolution API retornou HTTP ${evoRes.status} — WhatsApp pode estar offline.`);
+          } else {
+            const evoData = await evoRes.json();
+            const state = evoData?.instance?.state ?? evoData?.state ?? "unknown";
+            if (state !== "open" && state !== "connected") {
+              alerts.push(`📱 Evolution API: instância "${EVO_INST}" em estado *${state}* — WhatsApp desconectado!`);
+            }
+          }
+        } catch (e) {
+          alerts.push(`📱 Evolution API INACESSÍVEL: ${e instanceof Error ? e.message : "timeout/network error"} — WhatsApp offline!`);
+        }
+      } else {
+        alerts.push("📱 Evolution API: variáveis de ambiente não configuradas (EVOLUTION_API_URL/KEY/INSTANCE).");
+      }
+
       // Send alert via Slack DM to Igor (no approval needed for health checks — informational only)
       let alertSent = false;
       const SLACK_IGOR = Deno.env.get("SLACK_IGOR_USER_ID") ?? "";
@@ -511,7 +537,7 @@ serve(async (req: Request) => {
         p_run_type: "health_check",
         p_step_name: "daily_health_check",
         p_status: alerts.length > 0 ? "error" : "success",
-        p_processed: 2,
+        p_processed: 4,
         p_created: 0,
         p_failed: alerts.length,
         p_error: alerts.length > 0 ? alerts.join("; ") : null,
