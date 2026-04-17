@@ -43,14 +43,72 @@ serve(async (req) => {
   }
 
   const actionId = action.action_id;
-  const notificationId = action.value;
+  const actionValue = action.value;
   const channel = payload.channel?.id;
   const messageTs = payload.message?.ts;
   const userName = payload.user?.real_name || payload.user?.name || "?";
 
-  console.log(`Action: ${actionId}, notification: ${notificationId}, by: ${userName}`);
+  console.log(`Action: ${actionId}, value: ${actionValue}, by: ${userName}`);
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ─── Handle presence confirmation from staff reminders ───
+  if (actionId === "confirm_presence" || actionId === "decline_presence") {
+    const confirmed = actionId === "confirm_presence";
+    let info: { mentor_name: string; classes: string; date: string };
+    try {
+      info = JSON.parse(actionValue);
+    } catch {
+      info = { mentor_name: userName, classes: "?", date: "?" };
+    }
+
+    const statusEmoji = confirmed ? "\u2705" : "\u274C";
+    const statusText = confirmed ? "Confirmado" : "N\u00E3o vai conseguir";
+
+    // Update the original message to show the response (remove buttons)
+    try {
+      const token = Deno.env.get("SLACK_BOT_TOKEN")!;
+      await fetch("https://slack.com/api/chat.update", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify({
+          channel,
+          ts: messageTs,
+          text: `${statusEmoji} ${statusText}`,
+          blocks: [
+            {
+              type: "section",
+              text: {
+                type: "mrkdwn",
+                text: `${statusEmoji} *${statusText}* \u2014 ${info.classes} (${info.date})`,
+              },
+            },
+          ],
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to update message:", e);
+    }
+
+    // Notify Igor about the response
+    const igorUserId = Deno.env.get("SLACK_IGOR_USER_ID");
+    if (igorUserId) {
+      const notifyMsg = `${statusEmoji} *${info.mentor_name}* respondeu: *${statusText}*\n\u{1F4DA} ${info.classes} \u2014 ${info.date}`;
+      try {
+        await sendDM(igorUserId, notifyMsg);
+      } catch (e) {
+        console.error("Failed to notify Igor:", e);
+      }
+    }
+
+    return new Response(JSON.stringify({ ok: true }));
+  }
+
+  // ─── Handle notification queue approvals ───
+  const notificationId = actionValue;
 
   // Get notification from queue
   const { data: notification, error: fetchErr } = await supabase
