@@ -99,60 +99,71 @@ serve(async (req) => {
       console.error("Failed to update message:", e);
     }
 
-    // ─── On DECLINE: register absence in DB ───
-    if (!confirmed && info.mentor_id && info.class_details && info.date) {
-      // Format date for schedule_overrides (DD/MM — no year)
+    // ─── Register in DB (both attendance + mentor_attendance) ───
+    if (info.mentor_id && info.class_details && info.date) {
       const [, mo, d] = info.date.split("-");
       const lessonDateFmt = `${d}/${mo}`;
+      const status = confirmed ? "present" : "absent";
 
       for (const cls of info.class_details) {
-        // 1. Insert into mentor_attendance with status 'absent'
+        // 1. attendance table (used by report/grid in admin panel)
+        try {
+          const { data: existing } = await supabase
+            .from("attendance")
+            .select("id")
+            .eq("lesson_date", info.date)
+            .eq("course", cls.class_name)
+            .eq("teacher_name", info.mentor_name)
+            .maybeSingle();
+
+          if (existing) {
+            await supabase
+              .from("attendance")
+              .update({ status, notes: confirmed ? "Confirmou via Slack" : "Recusou via Slack" })
+              .eq("id", existing.id);
+          } else {
+            await supabase.from("attendance").insert({
+              lesson_date: info.date,
+              course: cls.class_name,
+              teacher_name: info.mentor_name,
+              role: cls.role,
+              status,
+              notes: confirmed ? "Confirmou via Slack" : "Recusou via Slack",
+            });
+          }
+        } catch (e) {
+          console.error("Failed to upsert attendance:", e);
+        }
+
+        // 2. mentor_attendance table (used by zoom pipeline)
         try {
           await supabase.from("mentor_attendance").upsert(
             {
               mentor_id: info.mentor_id,
               class_id: cls.class_id,
               session_date: info.date,
-              status: "absent",
-              comment: "Recusou via Slack",
+              status,
+              comment: confirmed ? "Confirmou via Slack" : "Recusou via Slack",
             },
             { onConflict: "mentor_id,class_id,session_date" }
           );
         } catch (e) {
-          console.error("Failed to insert mentor_attendance:", e);
+          console.error("Failed to upsert mentor_attendance:", e);
         }
 
-        // 2. Insert into schedule_overrides with action 'remove'
-        try {
-          await supabase.from("schedule_overrides").insert({
-            lesson_date: lessonDateFmt,
-            course: cls.class_name,
-            teacher_name: info.mentor_name,
-            action: "remove",
-            role: cls.role,
-          });
-        } catch (e) {
-          console.error("Failed to insert schedule_override:", e);
-        }
-      }
-    }
-
-    // ─── On CONFIRM: register presence in DB ───
-    if (confirmed && info.mentor_id && info.class_details && info.date) {
-      for (const cls of info.class_details) {
-        try {
-          await supabase.from("mentor_attendance").upsert(
-            {
-              mentor_id: info.mentor_id,
-              class_id: cls.class_id,
-              session_date: info.date,
-              status: "present",
-              comment: "Confirmou via Slack",
-            },
-            { onConflict: "mentor_id,class_id,session_date" }
-          );
-        } catch (e) {
-          console.error("Failed to insert mentor_attendance:", e);
+        // 3. On decline: also add schedule_override to remove from grid
+        if (!confirmed) {
+          try {
+            await supabase.from("schedule_overrides").insert({
+              lesson_date: lessonDateFmt,
+              course: cls.class_name,
+              teacher_name: info.mentor_name,
+              action: "remove",
+              role: cls.role,
+            });
+          } catch (e) {
+            console.error("Failed to insert schedule_override:", e);
+          }
         }
       }
     }
