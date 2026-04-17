@@ -87,10 +87,12 @@ Deno.serve(async (req) => {
         const m = cm.mentors;
         if (!m || !m.slack_user_id) continue;
         flatRows.push({
+          class_id: c.id,
           class_name: c.name,
           time_start: c.time_start,
           time_end: c.time_end,
           zoom_link: c.zoom_link,
+          mentor_id: m.id,
           mentor_name: m.name,
           slack_user_id: m.slack_user_id,
           mentor_role: cm.role,
@@ -109,7 +111,7 @@ Deno.serve(async (req) => {
     const mentorMap = new Map<string, {
       mentor_name: string;
       slack_user_id: string;
-      classes: Array<{ class_name: string; role: string; time_start: string; time_end: string; zoom_link: string }>;
+      classes: Array<{ class_id: string; class_name: string; role: string; time_start: string; time_end: string; zoom_link: string; mentor_id: string }>;
     }>();
 
     for (const r of flatRows) {
@@ -122,11 +124,13 @@ Deno.serve(async (req) => {
         });
       }
       mentorMap.get(key)!.classes.push({
+        class_id: r.class_id,
         class_name: r.class_name,
         role: r.mentor_role,
         time_start: r.time_start?.substring(0, 5) || "",
         time_end: r.time_end?.substring(0, 5) || "",
         zoom_link: r.zoom_link || "",
+        mentor_id: r.mentor_id,
       });
     }
 
@@ -156,11 +160,17 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Value encodes mentor info for slack-interact callback
+      // Value encodes mentor info for slack-interact callback (absence tracking)
       const classNames = mentor.classes.map((c) => c.class_name).join(", ");
       const buttonValue = JSON.stringify({
         mentor_name: mentor.mentor_name,
+        mentor_id: mentor.classes[0].mentor_id,
         classes: classNames,
+        class_details: mentor.classes.map((c) => ({
+          class_id: c.class_id,
+          class_name: c.class_name,
+          role: c.role,
+        })),
         date: todayISO,
       });
 

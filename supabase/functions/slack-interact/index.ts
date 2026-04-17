@@ -55,7 +55,13 @@ serve(async (req) => {
   // ─── Handle presence confirmation from staff reminders ───
   if (actionId === "confirm_presence" || actionId === "decline_presence") {
     const confirmed = actionId === "confirm_presence";
-    let info: { mentor_name: string; classes: string; date: string };
+    let info: {
+      mentor_name: string;
+      mentor_id?: string;
+      classes: string;
+      class_details?: Array<{ class_id: string; class_name: string; role: string }>;
+      date: string;
+    };
     try {
       info = JSON.parse(actionValue);
     } catch {
@@ -93,10 +99,69 @@ serve(async (req) => {
       console.error("Failed to update message:", e);
     }
 
+    // ─── On DECLINE: register absence in DB ───
+    if (!confirmed && info.mentor_id && info.class_details && info.date) {
+      // Format date for schedule_overrides (DD/MM — no year)
+      const [, mo, d] = info.date.split("-");
+      const lessonDateFmt = `${d}/${mo}`;
+
+      for (const cls of info.class_details) {
+        // 1. Insert into mentor_attendance with status 'absent'
+        try {
+          await supabase.from("mentor_attendance").upsert(
+            {
+              mentor_id: info.mentor_id,
+              class_id: cls.class_id,
+              session_date: info.date,
+              status: "absent",
+              comment: "Recusou via Slack",
+            },
+            { onConflict: "mentor_id,class_id,session_date" }
+          );
+        } catch (e) {
+          console.error("Failed to insert mentor_attendance:", e);
+        }
+
+        // 2. Insert into schedule_overrides with action 'remove'
+        try {
+          await supabase.from("schedule_overrides").insert({
+            lesson_date: lessonDateFmt,
+            course: cls.class_name,
+            teacher_name: info.mentor_name,
+            action: "remove",
+            role: cls.role,
+          });
+        } catch (e) {
+          console.error("Failed to insert schedule_override:", e);
+        }
+      }
+    }
+
+    // ─── On CONFIRM: register presence in DB ───
+    if (confirmed && info.mentor_id && info.class_details && info.date) {
+      for (const cls of info.class_details) {
+        try {
+          await supabase.from("mentor_attendance").upsert(
+            {
+              mentor_id: info.mentor_id,
+              class_id: cls.class_id,
+              session_date: info.date,
+              status: "present",
+              comment: "Confirmou via Slack",
+            },
+            { onConflict: "mentor_id,class_id,session_date" }
+          );
+        } catch (e) {
+          console.error("Failed to insert mentor_attendance:", e);
+        }
+      }
+    }
+
     // Notify Igor about the response
     const igorUserId = Deno.env.get("SLACK_IGOR_USER_ID");
     if (igorUserId) {
-      const notifyMsg = `${statusEmoji} *${info.mentor_name}* respondeu: *${statusText}*\n\u{1F4DA} ${info.classes} \u2014 ${info.date}`;
+      const absenceTag = !confirmed ? " \u{1F6A8} *FALTA REGISTRADA*" : "";
+      const notifyMsg = `${statusEmoji} *${info.mentor_name}* respondeu: *${statusText}*\n\u{1F4DA} ${info.classes} \u2014 ${info.date}${absenceTag}`;
       try {
         await sendDM(igorUserId, notifyMsg);
       } catch (e) {
