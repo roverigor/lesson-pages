@@ -3,7 +3,7 @@ import { sendDM } from "../_shared/slack.ts";
 
 /**
  * Evolution API Health Ping
- * Called by pg_cron every 2 hours to verify Evolution API (WhatsApp) is reachable.
+ * Called by pg_cron once daily at 09:00 BRT to verify Evolution API (WhatsApp) is reachable.
  * If unreachable or disconnected, sends Slack DM alert to Igor.
  * If Slack fails, logs the error (no WA fallback since WA is what's being checked).
  */

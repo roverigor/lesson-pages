@@ -455,8 +455,6 @@ serve(async (req: Request) => {
     // ran today. Sends WhatsApp alert to coordinator if missing or failed.
     if (action === "health_check") {
       const sb = getSupabaseClient();
-      const COORDINATOR_PHONE  = Deno.env.get("COORDINATOR_PHONE") ?? "";
-
       const today = new Date().toISOString().slice(0, 10);
       const alerts: string[] = [];
 
@@ -523,12 +521,6 @@ serve(async (req: Request) => {
           alertSent = true;
         } catch (e) {
           console.error("health_check: Slack alert send failed:", e);
-          // Fallback to WhatsApp
-          if (COORDINATOR_PHONE) {
-            try {
-              alertSent = await sendWA(COORDINATOR_PHONE, `🩺 Health Check — ${today}\n\n${alerts.join("\n")}\n\nAcesse: https://painel.igorrover.com.br/admin/?view=automations`);
-            } catch { /* ignore */ }
-          }
         }
       }
 
