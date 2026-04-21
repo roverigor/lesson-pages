@@ -102,6 +102,71 @@ async function sendWhatsApp(phone: string, message: string): Promise<boolean> {
   return false;
 }
 
+// ── Send via Meta Template (approved templates bypass 24h window) ──
+async function sendWhatsAppTemplate(
+  phone: string,
+  templateName: string,
+  bodyParams: string[],
+  buttonUrlParams: string[],
+): Promise<boolean> {
+  const digits = phone.replace(/\D/g, "");
+
+  if (!META_PHONE_NUMBER_ID || !META_API_KEY) {
+    console.error("Meta API not configured for template send");
+    return false;
+  }
+
+  const components: Record<string, unknown>[] = [];
+
+  if (bodyParams.length > 0) {
+    components.push({
+      type: "body",
+      parameters: bodyParams.map((p) => ({ type: "text", text: p })),
+    });
+  }
+
+  if (buttonUrlParams.length > 0) {
+    buttonUrlParams.forEach((param, idx) => {
+      components.push({
+        type: "button",
+        sub_type: "url",
+        index: idx.toString(),
+        parameters: [{ type: "text", text: param }],
+      });
+    });
+  }
+
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/v21.0/${META_PHONE_NUMBER_ID}/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${META_API_KEY}`,
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          to: digits,
+          type: "template",
+          template: {
+            name: templateName,
+            language: { code: "pt_BR" },
+            components,
+          },
+        }),
+      }
+    );
+    if (res.ok) return true;
+    const errBody = await res.text();
+    console.error(`Meta Template API error: ${res.status} ${errBody}`);
+    return false;
+  } catch (e) {
+    console.error("Meta Template API exception:", e);
+    return false;
+  }
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
@@ -127,6 +192,8 @@ serve(async (req: Request) => {
     custom_message?: string;
     prepare_only?: boolean;
     limit?: number;
+    use_template?: string;       // Meta template name (e.g. "pesquisa_csat_painel")
+    template_cohort_name?: string; // Cohort display name for template body {{2}}
   };
   try {
     body = await req.json();
@@ -297,24 +364,40 @@ serve(async (req: Request) => {
       continue;
     }
 
-    const link = `${BASE_URL}/avaliacao/responder?token=${pl.token}`;
     const rawName = (student.name || "").trim();
-    const firstName = (!rawName || /^\d+$/.test(rawName)) ? "aluno" : rawName.split(" ")[0];
+    const firstName = (!rawName || /^\d+$/.test(rawName) || rawName.startsWith("WA ")) ? "aluno" : rawName.split(" ")[0];
 
-    let message: string;
-    if (body.custom_message?.trim()) {
-      message = body.custom_message
-        .replace(/\{nome\}/g, firstName)
-        .replace(/\{link\}/g, link);
+    let sent: boolean;
+
+    if (body.use_template) {
+      // Send via approved Meta template
+      // Template "pesquisa_csat_painel":
+      //   BODY {{1}} = firstName, {{2}} = cohort name
+      //   BUTTON URL {{1}} = token (appended to base URL in template)
+      const cohortName = body.template_cohort_name || survey.name || "sua turma";
+      sent = await sendWhatsAppTemplate(
+        student.phone,
+        body.use_template,
+        [firstName, cohortName],  // body params
+        [pl.token],                // button URL params
+      );
     } else {
-      const intro = survey.intro_text?.trim();
-      message =
-        `Olá *${firstName}*! 👋\n\n` +
-        (intro ? `${intro}\n\n` : `Sua opinião é muito importante para nós.\n\n`) +
-        `Responda em 1 minuto: ${link}\n\n_Academia Lendária_ 🚀`;
+      // Legacy: plain text message
+      const link = `${BASE_URL}/avaliacao/responder?token=${pl.token}`;
+      let message: string;
+      if (body.custom_message?.trim()) {
+        message = body.custom_message
+          .replace(/\{nome\}/g, firstName)
+          .replace(/\{link\}/g, link);
+      } else {
+        const intro = survey.intro_text?.trim();
+        message =
+          `Olá *${firstName}*! 👋\n\n` +
+          (intro ? `${intro}\n\n` : `Sua opinião é muito importante para nós.\n\n`) +
+          `Responda em 1 minuto: ${link}\n\n_Academia Lendária_ 🚀`;
+      }
+      sent = await sendWhatsApp(student.phone, message);
     }
-
-    const sent = await sendWhatsApp(student.phone, message);
 
     if (sent) {
       await client
