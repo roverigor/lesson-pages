@@ -73,23 +73,37 @@ serve(async (req: Request) => {
   if (body.action === "auto_sync") {
     const sb = sbService();
 
-    // Fetch all cohorts with WA group configured
-    const { data: cohorts } = await sb
-      .from("cohorts")
-      .select("id, name, whatsapp_group_jid")
-      .not("whatsapp_group_jid", "is", null);
+    // Log start before any external I/O so crashes (Evolution offline, env missing)
+    // still leave a breadcrumb in automation_runs.
+    await sb.rpc("log_automation_step", {
+      p_run_type: "wa_sync", p_step_name: "auto_sync_started",
+      p_status: "success", p_processed: 0,
+      p_metadata: { phase: "started" },
+    }).then(({ error }) => { if (error) console.error("log_automation_step(start) error:", error); });
 
-    if (!cohorts?.length) {
-      const { error: logErr0 } = await sb.rpc("log_automation_step", {
-        p_run_type: "wa_sync", p_step_name: "auto_sync",
-        p_status: "success", p_processed: 0,
-        p_metadata: { reason: "no cohorts with whatsapp_group_jid" },
-      });
-      if (logErr0) console.error("log_automation_step error:", logErr0);
-      return new Response(JSON.stringify({ ok: true, synced: 0, reason: "no_cohorts" }), {
-        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-      });
-    }
+    try {
+      if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY || !EVOLUTION_INSTANCE) {
+        throw new Error("Evolution API env vars missing (EVOLUTION_API_URL/KEY/INSTANCE)");
+      }
+
+      // Fetch all cohorts with WA group configured
+      const { data: cohorts, error: cohortErr } = await sb
+        .from("cohorts")
+        .select("id, name, whatsapp_group_jid")
+        .not("whatsapp_group_jid", "is", null);
+      if (cohortErr) throw cohortErr;
+
+      if (!cohorts?.length) {
+        const { error: logErr0 } = await sb.rpc("log_automation_step", {
+          p_run_type: "wa_sync", p_step_name: "auto_sync",
+          p_status: "success", p_processed: 0,
+          p_metadata: { reason: "no cohorts with whatsapp_group_jid" },
+        });
+        if (logErr0) console.error("log_automation_step error:", logErr0);
+        return new Response(JSON.stringify({ ok: true, synced: 0, reason: "no_cohorts" }), {
+          headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+        });
+      }
 
     let totalProcessed = 0, totalCreated = 0, totalLinked = 0, totalFailed = 0;
     const cohortResults: Array<{ cohort: string; members: number; new_students: number; new_links: number; error?: string }> = [];
@@ -197,6 +211,20 @@ serve(async (req: Request) => {
       JSON.stringify({ ok: true, cohorts: cohorts.length, processed: totalProcessed, new_students: totalCreated, new_links: totalLinked, failed: totalFailed, details: cohortResults }),
       { headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error("auto_sync fatal:", msg);
+      await sb.rpc("log_automation_step", {
+        p_run_type: "wa_sync", p_step_name: "auto_sync",
+        p_status: "error", p_processed: 0, p_failed: 1,
+        p_error: msg,
+        p_metadata: { phase: "fatal" },
+      }).then(({ error }) => { if (error) console.error("log_automation_step(fatal) error:", error); });
+      return new Response(JSON.stringify({ ok: false, error: msg }), {
+        status: 500,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
   }
 
   // ── Manual sync (existing behavior — requires admin) ──
