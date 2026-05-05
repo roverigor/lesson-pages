@@ -391,6 +391,14 @@
       <input class="login-field" type="password" id="login-password" placeholder="Senha" required autocomplete="current-password">
       <button class="login-btn" type="submit" id="login-btn">Entrar</button>
       <div class="login-error" id="login-error"></div>
+      <a href="#" id="forgot-link" onclick="toggleForgot(event)" style="display:block;margin-top:14px;font-size:12px;color:#6366f1;text-decoration:none;text-align:center">Esqueci minha senha</a>
+    </form>
+    <form id="forgot-form" onsubmit="handleForgot(event)" style="display:none">
+      <div class="login-subtitle" style="margin-bottom:18px">Informe seu email — enviaremos link de recuperação.</div>
+      <input class="login-field" type="email" id="forgot-email" placeholder="Email" required autocomplete="email">
+      <button class="login-btn" type="submit" id="forgot-btn">Enviar link</button>
+      <div class="login-error" id="forgot-error" style="color:#10b981"></div>
+      <a href="#" onclick="toggleForgot(event)" style="display:block;margin-top:14px;font-size:12px;color:#6366f1;text-decoration:none;text-align:center">← Voltar ao login</a>
     </form>
   </div>
 </div>
@@ -912,6 +920,36 @@ window.handleLogout = async function() {
   await sb.auth.signOut();
   document.getElementById('login-overlay').classList.remove('hidden');
   document.getElementById('app-shell').classList.add('hidden');
+};
+
+window.toggleForgot = function(e) {
+  e.preventDefault();
+  const loginForm  = document.getElementById('login-form');
+  const forgotForm = document.getElementById('forgot-form');
+  const isForgot   = forgotForm.style.display !== 'none';
+  loginForm.style.display  = isForgot ? '' : 'none';
+  forgotForm.style.display = isForgot ? 'none' : '';
+  document.getElementById('forgot-error').textContent = '';
+};
+
+window.handleForgot = async function(e) {
+  e.preventDefault();
+  const btn   = document.getElementById('forgot-btn');
+  const errEl = document.getElementById('forgot-error');
+  const email = document.getElementById('forgot-email').value.trim();
+  btn.disabled = true;
+  errEl.style.color = '#10b981';
+  errEl.textContent = '';
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/admin/reset-password.html`
+  });
+  btn.disabled = false;
+  if (error) {
+    errEl.style.color = '#ef4444';
+    errEl.textContent = 'Erro ao enviar — verifique o email';
+    return;
+  }
+  errEl.textContent = '✓ Link enviado para ' + email + '. Confira sua caixa de entrada.';
 };
 
 // ─── PAINEL: override switchView ─────────────────────
