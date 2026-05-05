@@ -47,12 +47,20 @@ async function handleLogin(e) {
 async function handleLogout() {
   await sb.auth.signOut();
   document.getElementById('login-overlay').classList.remove('hidden');
-  document.getElementById('app-header').style.display = 'none';
-  document.getElementById('app-content').style.display = 'none';
+  const shell = document.getElementById('app-shell');
+  if (shell) shell.classList.add('hidden');
+  const header = document.getElementById('app-header');
+  if (header) header.style.display = 'none';
+  const content = document.getElementById('app-content');
+  if (content) content.style.display = 'none';
 }
 
 function showApp() {
   document.getElementById('login-overlay').classList.add('hidden');
-  document.getElementById('app-header').style.display = '';
-  document.getElementById('app-content').style.display = '';
+  const shell = document.getElementById('app-shell');
+  if (shell) shell.classList.remove('hidden');
+  const header = document.getElementById('app-header');
+  if (header) header.style.display = '';
+  const content = document.getElementById('app-content');
+  if (content) content.style.display = '';
 }

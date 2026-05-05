@@ -114,6 +114,8 @@ const config = [
         linkedCohorts: 'writable',
         zoomAllStudents: 'writable',
         zoomParticipantsData: 'writable',
+        zoomStaffList: 'writable',
+        zoomLegacyStudents: 'writable',
         notifyCohorts: 'writable',
         notifyClasses: 'writable',
         schedClasses: 'writable',
