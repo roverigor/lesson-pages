@@ -1,8 +1,7 @@
 // ═══════════════════════════════════════
-// ZOOM MODULE — State
+// ZOOM MODULE
+// State (zoomStaffList, zoomLegacyStudents) declarado em state.js
 // ═══════════════════════════════════════
-let zoomStaffList = [];
-let zoomLegacyStudents = [];
 
 // ═══════════════════════════════════════
 // FUZZY MATCHING — Jaro-Winkler
