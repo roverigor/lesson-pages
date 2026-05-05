@@ -1,8 +1,9 @@
 # ADR-017 — Engagement Scoring Engine (Multi-Signal Probabilistic)
 
-**Status:** Proposed
+**Status:** Approved with Modifications
 **Data:** 2026-05-05
-**Autor:** Morgan (@pm) — propondo pra Aria (@architect) review
+**Autor original:** Morgan (@pm)
+**Reviewer:** Aria (@architect) — review 2026-05-05
 **Contexto:** EPIC-020 — Probabilistic Engagement Engine
 **Spike validador:** `docs/reports/spike-engagement-2026-05-05.md`
 
@@ -311,4 +312,339 @@ CREATE POLICY "CS or Admin write feedback"
 
 ## Status
 
-**Aguardando revisão Aria (@architect)** antes de pass to @sm para criar stories detalhadas.
+**APROVADO COM MODIFICAÇÕES** por Aria (@architect) em 2026-05-05.
+
+Próximas etapas:
+1. @sm cria 13 story files baseado em ADR atualizado + EPIC-020
+2. @po valida via 10-point checklist
+3. @dev implementa Story 020.0 + 020.1a-d (foundation)
+
+---
+
+# 🏛️ DECISÕES FINAIS ARIA (2026-05-05)
+
+## Resumo executivo
+
+Arquitetura 3 camadas APROVADA. Adições críticas: partitioning desde criação, step decay function, config table cohort-aware, trigger condicional + worker incremental, MV at-risk dashboard, health check + alert stale.
+
+---
+
+## Decisões nos 7 pontos abertos
+
+### 1. Single table `engagement_signals` ✅ APROVADO + PARTITIONING DESDE INÍCIO
+
+```sql
+CREATE TABLE engagement_signals (
+  id uuid DEFAULT gen_random_uuid(),
+  student_id uuid NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  cohort_id_at_event uuid REFERENCES cohorts(id),  -- NEW: snapshot cohort
+  signal_type text NOT NULL CHECK (signal_type IN (
+    'zoom_attendance','manual_attendance','survey_response',
+    'meta_link_click','login_painel'
+  )),
+  signal_value numeric(4,3) NOT NULL CHECK (signal_value BETWEEN 0 AND 1),
+  occurred_at timestamptz NOT NULL,
+  meta jsonb,
+  source_record_id uuid,
+  created_at timestamptz DEFAULT now(),
+  PRIMARY KEY (id, occurred_at)
+) PARTITION BY RANGE (occurred_at);
+
+-- Particionamento mensal
+CREATE TABLE engagement_signals_2026_05 PARTITION OF engagement_signals
+  FOR VALUES FROM ('2026-05-01') TO ('2026-06-01');
+CREATE TABLE engagement_signals_2026_06 PARTITION OF engagement_signals
+  FOR VALUES FROM ('2026-06-01') TO ('2026-07-01');
+-- pré-criar próximas 6 meses; auto-create via pg_partman se disponível
+
+-- Indexes
+CREATE INDEX idx_signals_student_time
+  ON engagement_signals (student_id, occurred_at DESC);
+CREATE INDEX idx_signals_type_student
+  ON engagement_signals (signal_type, student_id, occurred_at DESC);
+CREATE INDEX idx_signals_meta_gin
+  ON engagement_signals USING GIN (meta);
+```
+
+**Rationale:** Partition pruning garante performance constante quando volume crescer 10x. Composite `(signal_type, student_id, occurred_at DESC)` cobre 90% queries do recompute. GIN em `meta` habilita queries tipo "todos signals onde meeting_id = X".
+
+**Adição:** `cohort_id_at_event` snapshot — aluno pode trocar cohort, signal preserva contexto histórico.
+
+### 2. Decay function ❌ REJEITADO exponential → ✅ STEP FUNCTION
+
+**Justificativa arquitetural:** `EXP()` per-row em recompute = 39M operações exp() diariamente (45K rows × 865 alunos). Step function aproxima 95% da curva exponential com SQL trivial:
+
+```sql
+CREATE OR REPLACE FUNCTION engagement_decay_weight(occurred_at timestamptz)
+RETURNS numeric LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+  SELECT CASE
+    WHEN now() - occurred_at <= interval '7 days'  THEN 1.00
+    WHEN now() - occurred_at <= interval '14 days' THEN 0.70
+    WHEN now() - occurred_at <= interval '30 days' THEN 0.40
+    WHEN now() - occurred_at <= interval '60 days' THEN 0.15
+    ELSE 0.05
+  END;
+$$;
+```
+
+**Vantagens:** indexável via `WHERE occurred_at > now() - interval '60 days'`, pure-SQL, debuggable, sem float drift, IMMUTABLE+PARALLEL SAFE permite query planner otimizar agressivamente.
+
+### 3. Cohort weights — V1 com CONFIG TABLE (não hardcoded)
+
+```sql
+CREATE TABLE engagement_config (
+  cohort_id uuid PRIMARY KEY REFERENCES cohorts(id),
+  weight_attendance numeric(3,2) NOT NULL DEFAULT 0.50,
+  weight_survey numeric(3,2) NOT NULL DEFAULT 0.30,
+  weight_manual numeric(3,2) NOT NULL DEFAULT 0.20,
+  decay_short_days int NOT NULL DEFAULT 7,
+  decay_medium_days int NOT NULL DEFAULT 30,
+  notes text,
+  updated_at timestamptz DEFAULT now(),
+  CHECK (weight_attendance + weight_survey + weight_manual = 1.0)
+);
+
+-- Default global (cohort_id NULL = fallback)
+INSERT INTO engagement_config (cohort_id) VALUES (NULL);
+
+-- Pre-popular per-cohort com defaults
+INSERT INTO engagement_config (cohort_id) SELECT id FROM cohorts;
+```
+
+`recompute_engagement_scores()` faz LEFT JOIN config + COALESCE com row NULL (default global). CS team ajusta via UI Story 020.9 sem migration.
+
+**Tradeoff aceito:** +2h dev pra ganhar autonomia operacional + flexibilidade Imersão (curto) vs Fundamental (longo) imediata.
+
+### 4. Refresh cadence — TRIGGER INCREMENTAL + DAILY FULL
+
+V1 entrega ambos:
+
+```sql
+-- Score table additions
+ALTER TABLE student_engagement_scores
+  ADD COLUMN needs_recompute boolean DEFAULT false;
+
+CREATE INDEX idx_engagement_scores_dirty
+  ON student_engagement_scores (needs_recompute) WHERE needs_recompute = true;
+
+-- Trigger marca dirty
+CREATE OR REPLACE FUNCTION trigger_mark_recompute()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+  -- Skip ruído (login_painel não justifica recompute imediato)
+  IF NEW.signal_type IN ('zoom_attendance','manual_attendance','survey_response') THEN
+    UPDATE student_engagement_scores
+       SET needs_recompute = true
+     WHERE student_id = NEW.student_id;
+  END IF;
+  RETURN NEW;
+END $$;
+
+CREATE TRIGGER signals_invalidate_score
+  AFTER INSERT ON engagement_signals
+  FOR EACH ROW EXECUTE FUNCTION trigger_mark_recompute();
+
+-- Worker incremental (5min)
+SELECT cron.schedule(
+  'epic020-incremental-recompute',
+  '*/5 * * * *',
+  $$ SELECT recompute_engagement_scores_for_dirty(); $$
+);
+
+-- Worker full (safety net 03:00)
+SELECT cron.schedule(
+  'epic020-full-recompute',
+  '0 3 * * *',
+  $$ SELECT recompute_engagement_scores(); $$
+);
+```
+
+**UX impact:** aluno responde survey → 5min depois bucket atualiza no dashboard CS. Daily full safety net se trigger falhar.
+
+### 5. Backfill 180d ✅ APROVADO
+
+Volume estimado ~90K rows = trivial. Trend signal precisa histórico (degradação só visível com 90+ dias). GO 180d.
+
+### 6. Recompute strategy — PARCIAL (V1.5 trigger-driven) + FULL safety net
+
+Combinado com decisão #4. Função `recompute_engagement_scores_for_dirty()` processa apenas alunos com `needs_recompute=true`. Função `recompute_engagement_scores()` (full) roda diariamente como safety net.
+
+### 7. `data_quality_flag` na score table ✅ APROVADO + VIEW conveniência
+
+```sql
+-- Campo na table (decisão PM correta)
+-- View conveniência pra dashboards
+CREATE VIEW v_engagement_scores_valid AS
+  SELECT * FROM student_engagement_scores
+  WHERE data_quality_flag = 'valid';
+```
+
+UI default na view. Toggle "incluir incompletos" liga query direto na table.
+
+---
+
+## Adições arquiteturais (Aria value-add)
+
+### A. Statement timeout no worker
+
+```sql
+CREATE OR REPLACE FUNCTION recompute_engagement_scores()
+RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+  SET LOCAL statement_timeout = '120s';
+  SET LOCAL lock_timeout = '5s';
+  -- ... lógica recompute
+END $$;
+```
+
+Evita worker travar shared pool quando volume crescer. Falha rápida + retry > hang silent.
+
+### B. Health check function exposta
+
+```sql
+CREATE OR REPLACE FUNCTION engagement_engine_health()
+RETURNS jsonb LANGUAGE sql AS $$
+  SELECT jsonb_build_object(
+    'last_successful_compute', (SELECT MAX(computed_at) FROM student_engagement_scores),
+    'students_scored', (SELECT COUNT(*) FROM student_engagement_scores),
+    'students_dirty', (SELECT COUNT(*) FROM student_engagement_scores WHERE needs_recompute = true),
+    'signals_last_24h', (SELECT COUNT(*) FROM engagement_signals WHERE occurred_at > now() - interval '24 hours'),
+    'avg_processing_lag_seconds', (SELECT AVG(processing_lag_seconds) FROM student_engagement_scores),
+    'worker_jobs_active', (SELECT COUNT(*) FROM cron.job WHERE jobname LIKE 'epic020%' AND active = true)
+  );
+$$;
+```
+
+Endpoint `/cs/admin/engagement-health` chama. Self-diagnostics + Slack alert.
+
+### C. Alert se compute stale >25h
+
+Estende `alert_slack_if_unhealthy()` (EPIC-015):
+
+```sql
+IF (SELECT EXTRACT(EPOCH FROM now() - MAX(computed_at)) / 3600
+    FROM student_engagement_scores) > 25 THEN
+  PERFORM send_slack_alert(
+    'epic020_engine_stale',
+    '⚠️ Engagement engine sem recompute há >25h. Worker pg_cron pode ter falhado.'
+  );
+END IF;
+```
+
+### D. Materialized view at-risk dashboard
+
+```sql
+CREATE MATERIALIZED VIEW mv_at_risk_students AS
+SELECT
+  s.id, s.name, s.email,
+  c.name AS cohort_name,
+  ses.bucket, ses.prob_churn,
+  ses.signals_breakdown,
+  ses.last_engagement_at,
+  ses.days_silent,
+  ses.computed_at
+FROM students s
+JOIN student_engagement_scores ses ON ses.student_id = s.id
+JOIN cohorts c ON c.id = ses.cohort_id
+WHERE ses.bucket IN ('heavy_at_risk', 'disengaged')
+  AND ses.data_quality_flag = 'valid'
+ORDER BY ses.prob_churn DESC, ses.days_silent DESC;
+
+CREATE UNIQUE INDEX ON mv_at_risk_students (id);
+CREATE INDEX ON mv_at_risk_students (prob_churn DESC);
+
+-- Refresh 5min depois full recompute
+SELECT cron.schedule(
+  'epic020-refresh-at-risk-mv',
+  '5 3 * * *',
+  $$ REFRESH MATERIALIZED VIEW CONCURRENTLY mv_at_risk_students; $$
+);
+```
+
+Dashboard `SELECT * FROM mv_at_risk_students LIMIT 50` = sub-segundo.
+
+### E. `processing_lag_seconds` computed column
+
+```sql
+ALTER TABLE student_engagement_scores
+  ADD COLUMN computed_at timestamptz DEFAULT now(),
+  ADD COLUMN processing_lag_seconds int GENERATED ALWAYS AS (
+    EXTRACT(EPOCH FROM (computed_at - last_engagement_at))::int
+  ) STORED;
+```
+
+Permite query "alunos com score stale" + alerta operacional.
+
+### F. `prob_churn` mudança: STORED → plain numeric
+
+Race condition risk em STORED computed quando pesos mudam. Plain numeric column atualizado pela function = previsível, debugável.
+
+```sql
+-- Em vez de:
+prob_churn numeric GENERATED ALWAYS AS (...) STORED
+
+-- Usar:
+prob_churn numeric(4,3) NOT NULL  -- atualizado por recompute_engagement_scores()
+```
+
+### G. Cohort overlap handling
+
+Aluno pode aparecer em múltiplos cohorts (Daiana Duarte spike showed). Resolução:
+
+```sql
+-- Score key = (student_id, cohort_id) composto
+ALTER TABLE student_engagement_scores
+  DROP CONSTRAINT student_engagement_scores_pkey;
+
+ALTER TABLE student_engagement_scores
+  ADD PRIMARY KEY (student_id, cohort_id);
+```
+
+Dashboard mostra um row per (aluno, cohort) — operador vê context completo.
+
+### H. Trigger condicional (skip ruído `login_painel`)
+
+Já incluído na decisão #4. `login_painel` é signal fraco (login não significa estudo); não justifica recompute imediato.
+
+---
+
+## Riscos arquiteturais identificados
+
+| Risco | Severidade | Mitigação |
+|-------|-----------|-----------|
+| `pg_partman` extension não habilitada Supabase | M | Fallback: criar partitions manualmente, agendar `create_next_partition()` mensal via pg_cron |
+| Trigger AFTER INSERT em bursts (evento Zoom = 30 alunos simultâneos) | M | Trigger condicional já filtra signal_type; se persistir, batch insert sem trigger + manual mark dirty |
+| MV refresh CONCURRENTLY exige unique index | L | Garantido via `CREATE UNIQUE INDEX (id)` |
+| Cohort overlap cria 2x rows score per aluno | M | Resolução via composite PK `(student_id, cohort_id)` |
+| Worker falha silenciosa | H | Health check function + Slack alert se >25h stale |
+
+---
+
+## Sequência de implementação revisada (pra @sm)
+
+| Step | Story | O que entrega | Dependência |
+|------|-------|---------------|-------------|
+| 1 | 020.0 | Data quality cleanup | — |
+| 2 | 020.1a | Migration: tabelas + indexes + partitioning + RLS + config table | 020.0 |
+| 3 | 020.1b | Function: `engagement_decay_weight` + `recompute_engagement_scores()` (full) | 020.1a |
+| 4 | 020.1c | Migration: backfill signals 180d + initial compute | 020.1b |
+| 5 | 020.1d | Trigger + worker incremental + worker full + health check + Slack alert | 020.1c |
+| 6 | 020.2 | Zoom evidence confidence_score (refactor `student_attendance` source signal) | 020.1d |
+| 7 | 020.3 | Multi-source aggregator (popula signals via triggers em tabelas existentes) | 020.2 |
+| 8 | 020.4 | UI /admin/at-risk + /cs/at-risk (consome MV) | 020.3 |
+| 9 | 020.6 | Feedback button + table | 020.4 |
+| 10 | 020.7 | Bucket → automation rules integration | 020.4 |
+| 11 | 020.5 | Pulse check WhatsApp semanal | 020.4 |
+| 12 | 020.8 | UI manual attendance | 020.4 |
+| 13 | 020.9 | Calibration UI (engagement_config edits) | 020.4 |
+
+Story 020.1 quebrada em 4 sub-stories pra entrega incremental + rollback safety.
+
+---
+
+## Próximos passos
+
+1. ✅ ADR-017 atualizado (este documento)
+2. ➡️ Handoff @sm pra criar 13 story files
+3. ➡️ @po valida stories
+4. ➡️ @dev implementa Story 020.0 (foundation)
