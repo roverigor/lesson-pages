@@ -1,15 +1,59 @@
 // ═══════════════════════════════════════
-// AUTH
+// AUTH (EPIC-015 Story 15.1 — role-based redirect)
 // ═══════════════════════════════════════
+
+const CS_REDIRECT_URL = '/cs/';
+const ADMIN_REDIRECT_URL = '/admin/';
+
+function getUserRole(user) {
+  return user?.user_metadata?.role ?? null;
+}
+
+async function handleRoleRouting(user) {
+  const role = getUserRole(user);
+
+  // CS role → redirect para área CS
+  if (role === 'cs') {
+    const target = window.location.origin + CS_REDIRECT_URL;
+    if (window.location.pathname !== CS_REDIRECT_URL) {
+      window.location.replace(target);
+      return false;  // não continua admin app
+    }
+    return false;
+  }
+
+  // Admin role → permite acesso painel admin
+  if (role === 'admin') {
+    return true;
+  }
+
+  // Sem role válida — logout + erro
+  console.warn('[auth] role não autorizada:', role);
+  await sb.auth.signOut();
+  showLoginError('Acesso não autorizado. Contate o administrador.');
+  return false;
+}
+
+function showLoginError(msg) {
+  const errEl = document.getElementById('login-error');
+  if (errEl) {
+    errEl.textContent = msg;
+    errEl.classList.add('show');
+  }
+}
+
 async function checkAuth() {
   const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    showApp();
-    await loadClasses();
-    await loadOverrides();
-    await loadAttendance();
-    renderAll();
-  }
+  if (!session) return;
+
+  const ok = await handleRoleRouting(session.user);
+  if (!ok) return;
+
+  showApp();
+  await loadClasses();
+  await loadOverrides();
+  await loadAttendance();
+  renderAll();
 }
 
 async function handleLogin(e) {
@@ -27,6 +71,13 @@ async function handleLogin(e) {
     if (error) {
       errEl.textContent = error.message || 'Email ou senha incorretos';
       errEl.classList.add('show');
+      btn.disabled = false;
+      return;
+    }
+
+    // Story 15.1 — redirect role-based
+    const ok = await handleRoleRouting(data.user);
+    if (!ok) {
       btn.disabled = false;
       return;
     }

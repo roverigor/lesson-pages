@@ -444,6 +444,9 @@
       <button class="nav-item" data-view="schedules" onclick="switchView('schedules')">
         <i data-lucide="clock" class="nav-item-icon"></i> Agendamentos
       </button>
+      <button class="nav-item" data-view="holidays" onclick="switchView('holidays')">
+        <i data-lucide="calendar-x" class="nav-item-icon"></i> Feriados
+      </button>
 
       <div class="nav-section-label">Configurações</div>
       <button class="nav-item" data-view="staff" onclick="switchView('staff')">
@@ -758,6 +761,46 @@
         <div id="schedules-list"></div>
       </div>
 
+      <!-- ═══ HOLIDAYS VIEW ═══ -->
+      <div id="holidays-view" style="display:none">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Feriados</div>
+            <div class="page-sub">Datas que suprimem disparos automáticos (staff, mentores, hosts, professores).</div>
+          </div>
+        </div>
+
+        <div style="background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:20px">
+          <div style="font-size:14px;font-weight:700;color:#ddd;margin-bottom:16px">Adicionar feriado</div>
+          <div style="display:grid;grid-template-columns:160px 1fr 160px auto;gap:12px;align-items:end">
+            <div>
+              <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Data *</label>
+              <input class="login-field" style="margin:0;width:100%" type="date" id="holiday-date">
+            </div>
+            <div>
+              <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Nome *</label>
+              <input class="login-field" style="margin:0;width:100%" type="text" id="holiday-name" placeholder="Ex: Recesso de fim de ano">
+            </div>
+            <div>
+              <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Escopo *</label>
+              <select class="substitute-select" style="width:100%;padding:12px 10px" id="holiday-scope">
+                <option value="custom">Custom</option>
+                <option value="national">Nacional</option>
+                <option value="regional">Regional</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn-save" onclick="saveHoliday()">Salvar</button>
+            </div>
+          </div>
+          <div style="font-size:11px;color:#444;margin-top:10px">
+            Disparos suprimidos em feriado: lembretes diários (08h), reminder Slack (10h), reminder WhatsApp (10h), agendamentos de aula.
+          </div>
+        </div>
+
+        <div id="holidays-list"></div>
+      </div>
+
       <!-- ═══ ZOOM VIEW ═══ -->
       <div id="zoom-view" style="display:none">
         <div class="page-header">
@@ -877,6 +920,7 @@
 <script src="/js/admin/abstracts.js"></script>
 <script src="/js/admin/surveys.js"></script>
 <script src="/js/admin/automations.js"></script>
+<script src="/js/admin/holidays.js"></script>
 <script src="/js/admin/views.js"></script>
 <script src="/js/admin/init.js"></script>
 <script src="https://unpkg.com/lucide@0.469.0"></script>
@@ -965,7 +1009,7 @@ function _setupIframeResize(frame) {
 
 window.switchView = async function(view, skipPush) {
   const allViews = ['dashboard','calendar','turmas','report','staff','classes',
-                    'notify','schedules','zoom','abstracts','surveys','automations'];
+                    'notify','schedules','holidays','zoom','abstracts','surveys','automations'];
   const viewWrap   = document.getElementById('view-wrap') || document.querySelector('.view-wrap');
   const embedFrame = document.getElementById('embed-frame');
   const mobileNav  = document.getElementById('mobile-nav');
@@ -1012,6 +1056,7 @@ window.switchView = async function(view, skipPush) {
   if (view === 'classes')   loadClasses();
   if (view === 'notify')    loadNotifyView();
   if (view === 'schedules') loadSchedulesView();
+  if (view === 'holidays')  loadHolidaysView();
   if (view === 'zoom')      loadZoomMeetings();
   if (view === 'abstracts') loadAbstractsView();
   if (view === 'surveys')   loadSurveysView();
@@ -1091,15 +1136,28 @@ function _getInitialView() {
 }
 
 // Start on the correct view after login
+// EPIC-015 Story 15.1 — guard reverse: bloqueia CS users em /admin/
 const _origAuth = window.checkAuth;
 window.checkAuth = async function() {
   const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    showApp();
-    const initial = _getInitialView();
-    switchView(initial, true);
-    await loadClasses(); await loadOverrides(); await loadAttendance();
+  if (!session) return;
+
+  // Story 15.1 — se role='cs', redirect para /cs/ (proteção dupla)
+  const role = session.user?.user_metadata?.role;
+  if (role === 'cs') {
+    window.location.replace(window.location.origin + '/cs/');
+    return;
   }
+  if (role !== 'admin') {
+    console.warn('[admin] role não autorizada para painel:', role);
+    await sb.auth.signOut();
+    return;
+  }
+
+  showApp();
+  const initial = _getInitialView();
+  switchView(initial, true);
+  await loadClasses(); await loadOverrides(); await loadAttendance();
 };
 
 lucide.createIcons();
