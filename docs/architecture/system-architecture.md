@@ -375,5 +375,73 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 ---
 
+## 12. EPIC-015 — Área CS Dedicada (em desenvolvimento)
+
+**Status:** Wave 1 em implementação (2026-05-05)
+**Refs:** `docs/stories/EPIC-015-cs-area/spec/spec.md`, `docs/architecture/ADR-015`, `docs/architecture/ADR-016`
+
+### Schema EPIC-015 (Story 15.A)
+
+7 tabelas novas + 1 audit log + 1 throttle:
+
+| Tabela | Propósito | Story |
+|---|---|---|
+| `survey_versions` | Snapshots imutáveis de questionários (versionamento) | 15.A + 15.G |
+| `ac_purchase_events` | Webhooks AC com workflow (received/processing/processed/failed/duplicate) | 15.A + 15.B |
+| `pending_student_assignments` | Fila CS para alunos órfãos de cohort | 15.A + 15.F |
+| `ac_product_mappings` | Regras N:1 produto AC → cohort + survey + template | 15.A + 15.D |
+| `ac_dispatch_callbacks` | Confirmações outbound para AC com retry exp 3x | 15.A + 15.C |
+| `meta_templates` | Registry templates Meta WhatsApp aprovados | 15.A + 15.8 |
+| `student_audit_log` | Auditoria mudanças phone/email/cohort em students | 15.A + 15.3 |
+| `alert_history` | Throttle de alerts Slack (1/h por chave) | 15.A + 15.E |
+
+### Extensões em Tabelas Existentes
+
+| Tabela | Coluna | Propósito |
+|---|---|---|
+| `students` | `ac_contact_id TEXT UNIQUE` | Mapping com ActiveCampaign contact |
+| `survey_links` | `delivered_at`, `read_at` | Tracking 4 timestamps NFR-16 |
+| `survey_links` | `version_id` | Aponta para survey_version usada no envio |
+| `survey_links` | `meta_message_id TEXT UNIQUE sparse` | Correlação webhook Meta delivery |
+| `survey_links` | `cohort_snapshot_name TEXT` | Histórico imutável (NFR-19) |
+| `surveys` | `category` | nps/csat/onboarding/feedback/custom |
+| `surveys` | `current_version_id` | Aponta para versão ativa |
+
+### Helper SQL Functions
+
+- `is_cs_or_admin()` — STABLE função para RLS policies
+- `process_ac_purchase_events_batch()` — worker SECURITY DEFINER chamado por pg_cron 30s (ADR-016 §3)
+- `recently_alerted(key, within)` — throttle helper Story 15.E
+- `send_slack_alert(key, msg)` — placeholder Story 15.E
+- `alert_slack_if_unhealthy()` — placeholder Story 15.E
+
+### Views
+
+- `ac_integration_health` — métricas agregadas eventos AC últimas 24h por hora/status
+- `student_dispatch_timeline` — timeline aluno-centric com 4 timestamps + cohort_snapshot (FR-12/17)
+
+### pg_cron Jobs (4)
+
+| Job | Schedule | Função |
+|---|---|---|
+| `epic015-process-ac-events` | 30s | `process_ac_purchase_events_batch()` |
+| `epic015-warmup-edge-functions` | `*/4 * * * *` | HTTP GET warmup 3 edge functions |
+| `epic015-alert-ac-health` | `*/15 * * * *` | `alert_slack_if_unhealthy()` |
+| `epic015-purge-old-ac-events` | `0 3 * * *` | DELETE ac_purchase_events > 90d (LGPD) |
+
+### Edge Functions (Wave 3)
+
+3 novas edge functions Deno:
+- `ac-purchase-webhook` (15.B) — minimal-sync handler (HMAC + INSERT + 200)
+- `ac-report-dispatch` (15.C) — callback outbound AC com retry exp
+- `meta-delivery-webhook` (15.I) — receives messages.update do Meta
+
+### RLS Pattern
+
+Todas tabelas EPIC-015 usam `is_cs_or_admin()` helper. Service role bypass em `ac_purchase_events` (worker), `ac_dispatch_callbacks` (callback function), `student_audit_log` (DDL triggers).
+
+---
+
 *Documento gerado por @architect (Aria) — Synkra AIOX v2.0*
-*Próxima revisão recomendada: após conclusão do EPIC-003 ou em 2026-05-01*
+*Última atualização: 2026-05-05 — @data-engineer (Dara) Story 15.A*
+*Próxima revisão recomendada: após conclusão Wave 3 EPIC-015*
