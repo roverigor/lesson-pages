@@ -8,6 +8,11 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 import { sendDM } from "../_shared/slack.ts";
 import { verifyAdminOrCs } from "../_shared/auth.ts";
+import {
+  sendWhatsApp as metaSendText,
+  sendWhatsAppTemplate as metaSendTemplate,
+  type MetaSendResult,
+} from "../_shared/meta-whatsapp.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -189,6 +194,8 @@ serve(async (req: Request) => {
     limit?: number;
     use_template?: string;       // Meta template name (e.g. "pesquisa_csat_painel")
     template_cohort_name?: string; // Cohort display name for template body {{2}}
+    student_ids?: string[];       // EPIC-015 Story 15.4: lista explícita (alunos avulsos)
+    cohort_id?: string;           // EPIC-015 Story 15.4: override survey.cohort_id
   };
   try {
     body = await req.json();
@@ -229,19 +236,52 @@ serve(async (req: Request) => {
     });
   }
 
-  // 2. Fetch students
-  let students: { id: string; name: string; phone: string }[] = [];
+  // 2. Fetch students — EPIC-015 Story 15.4 — 3 modos:
+  //    (a) student_ids[] explícito (NOVO — modo avulso/misto)
+  //    (b) cohort_id explícito do body (NOVO — override)
+  //    (c) survey.cohort_id legacy (backward compat EPIC-004)
+  let students: {
+    id: string;
+    name: string;
+    phone: string;
+    ac_contact_id: string | null;
+  }[] = [];
 
-  if (survey.cohort_id) {
+  // EPIC-015 Story 15.4: cohort_id snapshot p/ history imutável (NFR-19)
+  let cohortSnapshotName: string | null = null;
+  const effectiveCohortId = body.cohort_id ?? survey.cohort_id;
+
+  if (effectiveCohortId) {
+    const { data: cohortData } = await client
+      .from("cohorts")
+      .select("name")
+      .eq("id", effectiveCohortId)
+      .single();
+    cohortSnapshotName = cohortData?.name ?? null;
+  }
+
+  if (body.student_ids && body.student_ids.length > 0) {
+    // Modo (a) — lista explícita avulsa
     const { data } = await client
       .from("students")
-      .select("id, name, phone")
-      .eq("cohort_id", survey.cohort_id)
+      .select("id, name, phone, ac_contact_id")
+      .in("id", body.student_ids)
+      .eq("active", true)
+      .eq("is_mentor", false)
+      .order("name");
+    students = data ?? [];
+  } else if (effectiveCohortId) {
+    // Modo (b)/(c) — por cohort
+    const { data } = await client
+      .from("students")
+      .select("id, name, phone, ac_contact_id")
+      .eq("cohort_id", effectiveCohortId)
       .eq("active", true)
       .eq("is_mentor", false)
       .order("name");
     students = data ?? [];
   } else if (survey.class_id) {
+    // Legacy — class via class_cohorts bridge
     const { data: bridges } = await client
       .from("class_cohorts")
       .select("cohort_id")
@@ -250,7 +290,7 @@ serve(async (req: Request) => {
     if (cohortIds.length > 0) {
       const { data } = await client
         .from("students")
-        .select("id, name, phone")
+        .select("id, name, phone, ac_contact_id")
         .in("cohort_id", cohortIds)
         .eq("active", true)
         .eq("is_mentor", false)
@@ -267,11 +307,14 @@ serve(async (req: Request) => {
   }
 
   // 3. Upsert survey_links (idempotent)
+  // EPIC-015 Story 15.4: inclui cohort_snapshot_name + version_id
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
   const linkInserts = students.map((s) => ({
     survey_id: survey.id,
     student_id: s.id,
     expires_at: expiresAt,
+    cohort_snapshot_name: cohortSnapshotName,
+    version_id: survey.current_version_id ?? null,
   }));
 
   await client
@@ -362,22 +405,18 @@ serve(async (req: Request) => {
     const rawName = (student.name || "").trim();
     const firstName = (!rawName || /^\d+$/.test(rawName) || rawName.startsWith("WA ")) ? "aluno" : rawName.split(" ")[0];
 
-    let sent: boolean;
+    // EPIC-015 Story 15.4 — usa shared meta-whatsapp.ts (retorna MetaSendResult com messageId)
+    let result: MetaSendResult;
 
     if (body.use_template) {
-      // Send via approved Meta template
-      // Template "pesquisa_csat_painel":
-      //   BODY {{1}} = firstName, {{2}} = cohort name
-      //   BUTTON URL {{1}} = token (appended to base URL in template)
-      const cohortName = body.template_cohort_name || survey.name || "sua turma";
-      sent = await sendWhatsAppTemplate(
+      const cohortName = body.template_cohort_name || cohortSnapshotName || survey.name || "sua turma";
+      result = await metaSendTemplate(
         student.phone,
         body.use_template,
-        [firstName, cohortName],  // body params
-        [pl.token],                // button URL params
+        [firstName, cohortName],
+        [pl.token],
       );
     } else {
-      // Legacy: plain text message
       const link = `${BASE_URL}/avaliacao/responder?token=${pl.token}`;
       let message: string;
       if (body.custom_message?.trim()) {
@@ -391,15 +430,40 @@ serve(async (req: Request) => {
           (intro ? `${intro}\n\n` : `Sua opinião é muito importante para nós.\n\n`) +
           `Responda em 1 minuto: ${link}\n\n_Academia Lendária_ 🚀`;
       }
-      sent = await sendWhatsApp(student.phone, message);
+      result = await metaSendText(student.phone, message);
     }
 
-    if (sent) {
+    if (result.success) {
+      // EPIC-015 Story 15.4 — captura meta_message_id para correlação 15.I delivery webhook
       await client
         .from("survey_links")
-        .update({ send_status: "sent", sent_at: new Date().toISOString() })
+        .update({
+          send_status: "sent",
+          sent_at: new Date().toISOString(),
+          meta_message_id: result.messageId,
+        })
         .eq("id", pl.id);
       dispatched++;
+
+      // EPIC-015 Story 15.4 — fire-and-forget callback ac-report-dispatch (NÃO aguarda)
+      if (student.ac_contact_id) {
+        const acCustomFieldId = Deno.env.get("AC_CUSTOM_FIELD_FORM_DISPATCHED") ?? "";
+        if (acCustomFieldId) {
+          fetch(`${SUPABASE_URL}/functions/v1/ac-report-dispatch`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              link_id: pl.id,
+              ac_contact_id: student.ac_contact_id,
+              custom_field_id: acCustomFieldId,
+              value: pl.token,
+            }),
+          }).catch((err) => console.error("[ac-callback] fire-and-forget failed:", err));
+        }
+      }
     } else {
       await client
         .from("survey_links")
