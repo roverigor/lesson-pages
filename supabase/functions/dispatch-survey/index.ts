@@ -410,10 +410,23 @@ serve(async (req: Request) => {
 
     if (body.use_template) {
       const cohortName = body.template_cohort_name || cohortSnapshotName || survey.name || "sua turma";
+
+      // Lookup body_params_count do template pra montar params dinamicamente
+      const { data: tpl } = await client
+        .from("meta_templates")
+        .select("body_params_count")
+        .eq("name", body.use_template)
+        .maybeSingle();
+      const paramsCount = tpl?.body_params_count ?? 2;
+
+      // Monta params até quantidade esperada pelo template
+      const allParams = [firstName, cohortName];
+      const bodyParams = allParams.slice(0, paramsCount);
+
       result = await metaSendTemplate(
         student.phone,
         body.use_template,
-        [firstName, cohortName],
+        bodyParams,
         [pl.token],
       );
     } else {
