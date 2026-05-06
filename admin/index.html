@@ -454,9 +454,9 @@
       </button>
 
       <div class="nav-section-label">Customer Success</div>
-      <a class="nav-item" href="/cs/" style="text-decoration:none">
+      <button class="nav-item" data-view="cs" onclick="switchView('cs')">
         <i data-lucide="heart-handshake" class="nav-item-icon"></i> Área CS
-      </a>
+      </button>
 
       <div class="nav-section-label">Configurações</div>
       <button class="nav-item" data-view="staff" onclick="switchView('staff')">
@@ -958,7 +958,7 @@ window.handleForgot = async function(e) {
 };
 
 // ─── PAINEL: override switchView ─────────────────────
-const IFRAME_ROUTES = { alunos: '/alunos/', presenca: '/presenca/', aulas: '/aulas/', relatorio: '/relatorio/' };
+const IFRAME_ROUTES = { alunos: '/alunos/', presenca: '/presenca/', aulas: '/aulas/', relatorio: '/relatorio/', cs: '/cs/' };
 let _embedObserver = null;
 
 function openInFrame(url) {
