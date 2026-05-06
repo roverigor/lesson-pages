@@ -355,6 +355,11 @@
     .spinner { width: 24px; height: 24px; border: 2px solid #1e1e1e; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.7s linear infinite; margin: 40px auto; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ─── CS FULLSCREEN MODE (UX fix Uma) ─────────── */
+    body.cs-fullscreen .sidebar { display: none !important; }
+    body.cs-fullscreen .app-shell { grid-template-columns: 1fr; }
+    body.cs-fullscreen .mobile-nav { display: none !important; }
+
     /* ─── MOBILE ─────────────────────────────────── */
     @media (max-width: 900px) {
       .app-shell { grid-template-columns: 1fr; }
@@ -1026,7 +1031,7 @@ window.switchView = async function(view, skipPush) {
   // URL tracking
   if (!skipPush) history.pushState({ view }, '', '?view=' + view);
 
-  // Iframe views (alunos, presenca, aulas, relatorio)
+  // Iframe views (alunos, presenca, aulas, relatorio, cs)
   if (IFRAME_ROUTES[view]) {
     if (viewWrap)   viewWrap.style.display = 'none';
     if (mobileNav)  mobileNav.style.display = 'none';
@@ -1035,11 +1040,15 @@ window.switchView = async function(view, skipPush) {
       embedFrame.style.display = '';
       _setupIframeResize(embedFrame);
     }
+    // UX fix: /cs/ ocupa fullscreen (sidebar admin escondida)
+    if (view === 'cs') document.body.classList.add('cs-fullscreen');
+    else document.body.classList.remove('cs-fullscreen');
     return;
   }
 
-  // Normal views — disconnect iframe observer, hide iframe
+  // Normal views — disconnect iframe observer, hide iframe + remove cs-fullscreen
   if (_embedObserver) { _embedObserver.disconnect(); _embedObserver = null; }
+  document.body.classList.remove('cs-fullscreen');
   if (viewWrap)   viewWrap.style.display = '';
   if (mobileNav)  mobileNav.style.display = '';
   if (embedFrame) { embedFrame.style.display = 'none'; embedFrame.src = ''; }
@@ -1146,6 +1155,13 @@ window.checkAuth = async function() {
 };
 
 lucide.createIcons();
+
+// UX fix Uma — escuta postMessage do iframe /cs/ pra "voltar ao admin"
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'back-to-admin') {
+    switchView('dashboard');
+  }
+});
 </script>
 </body>
 </html>
