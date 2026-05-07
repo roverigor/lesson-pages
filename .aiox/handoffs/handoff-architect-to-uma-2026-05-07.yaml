@@ -1,0 +1,74 @@
+handoff:
+  from_agent: architect
+  to_agent: ux-design-expert
+  timestamp: 2026-05-07T00:00:00-03:00
+  consumed: false
+
+  story_context:
+    epic_id: EPIC-018
+    epic_path: docs/stories/epics/EPIC-018-lifecycle-journey-orchestration.md
+    epic_status: ADR-018 V2 architecture aprovada por Aria
+    current_task: UX design /cs/approvals + visual editor jornadas
+    branch: feature/15.0-ac-discovery
+
+  decisions:
+    - "ADR-018 aprovado: approval queue model pra comm externa (NON-NEGOTIABLE)"
+    - "Visual editor: V1 YAML, V2 drag-drop nodes — Uma decide qual entregar agora"
+    - "8 jornadas pre-built já existem (todas inativas)"
+    - "Sidebar /cs/ reagrupada em 6 categorias"
+
+  files_modified:
+    - docs/architecture/ADR-018-journey-engine-v2.md (Aria)
+
+  blockers: []
+
+  next_action: |
+    Desenhar UX de 2 telas críticas:
+
+    ## 1. /cs/approvals — Queue de aprovações pendentes
+
+    Contexto: worker journey gera approvals em journey_pending_approvals table.
+    CS rep precisa revisar + aprovar antes da action externa (send_template/dispatch_survey)
+    rodar.
+
+    Requisitos UX:
+    - Lista ranqueada por urgência (created_at + step type)
+    - Preview action: template name + body renderizado com vars + target student info
+    - Botões: ✅ Aprovar | ❌ Rejeitar | ⏰ Snooze 24h
+    - Bulk actions (select multiple → aprovar batch)
+    - Filtros: action_type, journey, age (>1d, >3d), expiring soon (>5d)
+    - Auto-expire 7d default visivel
+    - Notificação badge sidebar quando há novos pendentes
+
+    ## 2. /cs/journeys/edit — Visual editor jornadas
+
+    Decisão Uma: V1 YAML editor OR V1 drag-drop?
+
+    Recomendação Aria: V1 YAML monaco-editor + V2 drag-drop ReactFlow.
+    YAML é rápido entregar (1 dia), CS power-users escrevem direto.
+    Drag-drop demanda 5+d.
+
+    Mas Uma decide UX final.
+
+    Requisitos comuns:
+    - Lista steps com day_offset, trigger, action, config
+    - Adicionar step (entre quaisquer dois)
+    - Reordenar steps
+    - Test mode (simular como aluno X passaria pela journey)
+    - Save draft / publish / pause journey
+    - Preview right panel: timeline visual horizontal mostrando steps
+
+  context_summary: |
+    EPIC-018 V2 architecture aprovada Aria. Próximo: UX critical pra 2 telas.
+
+    /cs/approvals é BLOQUEADOR — sem ela, worker journey não pode rodar
+    actions externas (regra NON-NEGOTIABLE comm externa).
+
+    Visual editor é P1 — pode esperar V1 YAML simples.
+
+    Restrições UX:
+    - Sidebar já reagrupada (não tocar)
+    - Mirror /cs/ obrigatório (admin não precisa /admin/approvals — é CS-only)
+    - Mobile-friendly (CS team atende celular)
+    - Confirmation modal pra approval (evitar mis-click)
+    - Preview real do que aluno verá (não código bruto)
