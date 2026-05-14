@@ -358,10 +358,28 @@ function fmtDateShort(iso) {
 // showToast provided by utils.js
 
 // ── AUTH ───────────────────────────────────────
+let _appBooted = false;
+async function showApp() {
+  if (_appBooted) return;
+  _appBooted = true;
+  document.getElementById('login-overlay').classList.add('hidden');
+  document.getElementById('app').style.display = '';
+  await loadData();
+}
 async function checkAuth() {
   const { data: { session } } = await sb.auth.getSession();
-  if (session) { document.getElementById('login-overlay').classList.add('hidden'); document.getElementById('app').style.display = ''; await loadData(); }
+  if (session) { await showApp(); return; }
+  // Retry após 300ms — captura refresh tardio quando iframe carrega antes da sessão propagar
+  setTimeout(async () => {
+    const { data: { session: s2 } } = await sb.auth.getSession();
+    if (s2) await showApp();
+  }, 300);
 }
+sb.auth.onAuthStateChange((event, session) => {
+  if (session && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION')) {
+    showApp();
+  }
+});
 
 async function handleLogin(e) {
   e.preventDefault();
@@ -377,9 +395,7 @@ async function handleLogin(e) {
     btn.disabled = false;
     return;
   }
-  document.getElementById('login-overlay').classList.add('hidden');
-  document.getElementById('app').style.display = '';
-  await loadData();
+  await showApp();
 }
 
 async function handleLogout() {
