@@ -339,8 +339,7 @@ let classMap       = {}; // id → { name }
 let classMentorMap = {}; // `${mentor_id}_${class_id}` → role
 let currentTab     = 'member';
 
-const MENTOR_COLORS = ['#6366f1','#10b981','#f59e0b','#ec4899','#06b6d4','#8b5cf6','#ef4444','#14b8a6','#f97316','#a855f7','#22c55e','#3b82f6'];
-function mentorColor(name) { let h=0; for(const c of name) h=(h*31+c.charCodeAt(0))%MENTOR_COLORS.length; return MENTOR_COLORS[h]; }
+// MENTOR_COLORS + mentorColor() vêm de templates/utils.js (evita redeclaração)
 function initials(name) { return name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
 
 const CLASS_COLORS = ['#6366f1','#10b981','#f59e0b','#ec4899','#06b6d4','#8b5cf6','#ef4444','#14b8a6'];
