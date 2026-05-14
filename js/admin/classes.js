@@ -418,6 +418,22 @@ async function saveClassV2() {
     classId = data.id;
   }
 
+  // Sync cohort com mesmo nome — garante aparecer em /turma/ (turmas com alunos)
+  const cohortPayload = { name, start_date, end_date, zoom_link, active: true };
+  const { data: cohort, error: cohortErr } = await sb
+    .from('cohorts')
+    .upsert(cohortPayload, { onConflict: 'name' })
+    .select()
+    .single();
+  if (cohortErr) {
+    showToast('Aviso: cohort não sincronizado — ' + cohortErr.message, 'error');
+  } else if (cohort) {
+    const { error: linkErr } = await sb
+      .from('class_cohorts')
+      .upsert({ class_id: classId, cohort_id: cohort.id }, { onConflict: 'class_id,cohort_id' });
+    if (linkErr) showToast('Aviso: vínculo class↔cohort falhou — ' + linkErr.message, 'error');
+  }
+
   // ── Diff granular: compara equipe atual (DB) com formulário ──
   const today = new Date().toISOString().split('T')[0];
   const mentorKey = (cm) => `${cm.mentor_id}|${cm.role}|${cm.weekday}`;
