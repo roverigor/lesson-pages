@@ -550,16 +550,18 @@ function updatePeriodLabel(start, end) {
 
 // ── SUMMARY ────────────────────────────────────
 function renderSummary() {
-  const total   = filtered.length;
+  const records = filtered.length;
+  const sessions = new Set(filtered.map(r => `${r.session_date}|${r.class_name}`)).size;
   const present = filtered.filter(r => r.status === 'present').length;
   const absent  = filtered.filter(r => r.status === 'absent').length;
-  const pct     = total > 0 ? Math.round((present / total) * 100) : 0;
+  const pct     = records > 0 ? Math.round((present / records) * 100) : 0;
   const members = new Set(filtered.map(r => r.mentor_name)).size;
 
-  document.getElementById('s-total').textContent   = total;
+  // s-total = aulas únicas (date|class), não soma de presenças
+  document.getElementById('s-total').textContent   = sessions;
   document.getElementById('s-present').textContent = present;
   document.getElementById('s-absent').textContent  = absent;
-  document.getElementById('s-pct').textContent     = total > 0 ? pct + '%' : '—';
+  document.getElementById('s-pct').textContent     = records > 0 ? pct + '%' : '—';
   document.getElementById('s-members').textContent = members;
 }
 
@@ -601,10 +603,11 @@ function renderMemberView() {
   const sortedMentors = Object.entries(byMentor).sort((a, b) => a[1].name.localeCompare(b[1].name));
 
   el.innerHTML = sortedMentors.map(([mentorId, data], idx) => {
-    const total   = data.records.length;
-    const present = data.records.filter(r => r.status === 'present').length;
-    const absent  = data.records.filter(r => r.status === 'absent').length;
-    const pct     = total > 0 ? Math.round((present / total) * 100) : 0;
+    const total    = data.records.length;
+    const sessions = new Set(data.records.map(r => `${r.session_date}|${r.class_name}`)).size;
+    const present  = data.records.filter(r => r.status === 'present').length;
+    const absent   = data.records.filter(r => r.status === 'absent').length;
+    const pct      = total > 0 ? Math.round((present / total) * 100) : 0;
     const pctColor = pct >= 80 ? '#4ade80' : pct >= 50 ? '#f59e0b' : '#f87171';
     const pctBg    = pct >= 80 ? 'rgba(34,197,94,0.12)' : pct >= 50 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)';
 
@@ -652,7 +655,7 @@ function renderMemberView() {
           <div class="member-avatar" style="background:${mentorColor(data.name)}">${initials(data.name)}</div>
           <div class="member-info">
             <div class="member-name">${escHtml(data.name)}${mentorId && !mentorId.startsWith('legacy_') ? ` <a href="/perfil/?id=${mentorId}&tipo=mentor" style="font-size:11px;color:#6366f1;text-decoration:none;font-weight:400;margin-left:6px" title="Ver perfil completo">↗ perfil</a>` : ''}</div>
-            <div class="member-meta">${escHtml(data.role)} · ${total} aula${total !== 1 ? 's' : ''} no período</div>
+            <div class="member-meta">${escHtml(data.role)} · ${sessions} aula${sessions !== 1 ? 's' : ''} no período</div>
             ${roleBreakdown ? `<div style="margin-top:4px">${roleBreakdown}</div>` : ''}
           </div>
           <div class="member-stats">
