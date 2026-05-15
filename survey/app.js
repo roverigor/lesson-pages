@@ -113,6 +113,23 @@ async function submitResponse(token) {
   }
 }
 
+function recordOpen(token) {
+  fetch(`${SUPABASE_URL}/rest/v1/rpc/record_link_open`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_ANON_KEY,
+      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify({
+      p_source: "nps_class_link",
+      p_token: token,
+      p_user_agent: navigator.userAgent.slice(0, 500),
+      p_referer: document.referrer || null,
+    }),
+  }).catch(() => {});
+}
+
 async function init() {
   showOnly("loading");
   const parsed = getToken();
@@ -133,6 +150,8 @@ async function init() {
     showOnly(meta?.expired ? "expired" : "invalid");
     return;
   }
+
+  recordOpen(parsed.token);
 
   renderNpsButtons();
 
