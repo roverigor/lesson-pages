@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Envios — Painel Admin</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+  <link rel="stylesheet" href="/templates/design-tokens-dark-premium.css">
+  <link rel="stylesheet" href="/templates/admin-shared.css">
+  <link rel="stylesheet" href="/templates/login-overlay.css">
+  <link rel="stylesheet" href="/admin/envios/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ─── LOGIN OVERLAY ─────────────────────────────────────────────── -->
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-box">
+      <div class="login-icon">📊</div>
+      <h1 class="login-title">Painel — Envios</h1>
+      <p class="login-subtitle">Acesso restrito a administradores</p>
+      <input id="login-email" class="login-field" type="email" placeholder="Email" autocomplete="email">
+      <input id="login-password" class="login-field" type="password" placeholder="Senha" autocomplete="current-password">
+      <button id="login-btn" class="login-btn">Entrar</button>
+      <p id="login-error" class="login-error hidden"></p>
+    </div>
+  </div>
+
+  <!-- ─── APP ─────────────────────────────────────────────────────────── -->
+  <main id="app" class="app hidden">
+
+    <!-- Header -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <a href="/admin/" class="brand-link">🏛️ Admin</a>
+        <span class="topbar-sep">›</span>
+        <span class="topbar-title">Envios</span>
+      </div>
+      <div class="topbar-right">
+        <button id="filter-toggle" class="btn-secondary">⚙️ Filtros</button>
+        <button id="refresh-btn" class="btn-secondary">↻ Atualizar</button>
+        <button id="export-csv-btn" class="btn-secondary">⬇ CSV</button>
+        <button id="logout-btn" class="btn-tertiary">Sair</button>
+      </div>
+    </header>
+
+    <!-- Active filter chips -->
+    <section id="active-filters" class="active-filters"></section>
+
+    <!-- Forbidden message (shown if user is not admin) -->
+    <section id="forbidden" class="card forbidden hidden">
+      <h2>🚫 Acesso negado</h2>
+      <p>Você precisa de permissão de administrador para acessar esta página.</p>
+    </section>
+
+    <!-- KPI cards -->
+    <section id="kpi-grid" class="kpi-grid">
+      <div class="kpi-card" data-kpi="total_sent">
+        <span class="kpi-label">Envios</span>
+        <span class="kpi-value">—</span>
+      </div>
+      <div class="kpi-card" data-kpi="delivered_pct">
+        <span class="kpi-label">Entrega</span>
+        <span class="kpi-value">—</span>
+      </div>
+      <div class="kpi-card" data-kpi="read_pct">
+        <span class="kpi-label">Leitura</span>
+        <span class="kpi-value">—</span>
+      </div>
+      <div class="kpi-card" data-kpi="total_cost_usd">
+        <span class="kpi-label">Custo (USD)</span>
+        <span class="kpi-value">—</span>
+      </div>
+    </section>
+
+    <!-- Charts: trend + funnel -->
+    <section class="chart-row">
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3>Tendência (30 dias)</h3>
+          <span class="muted small">envios · entregues · falhas · custo</span>
+        </div>
+        <canvas id="trend-chart"></canvas>
+      </div>
+      <div class="card chart-card chart-card-funnel">
+        <div class="card-header">
+          <h3>Funil de engajamento</h3>
+          <span class="muted small">enviado → entregue → lido → aberto → respondido</span>
+        </div>
+        <canvas id="funnel-chart"></canvas>
+      </div>
+    </section>
+
+    <!-- Tables: top + failures + channel -->
+    <section class="table-row">
+      <div class="card mini-card">
+        <h3>Top turmas</h3>
+        <table id="top-classes-table" class="mini-table"><tbody><tr><td class="muted">Carregando…</td></tr></tbody></table>
+      </div>
+      <div class="card mini-card">
+        <h3>Falhas (24h)</h3>
+        <table id="failures-table" class="mini-table"><tbody><tr><td class="muted">Carregando…</td></tr></tbody></table>
+      </div>
+      <div class="card mini-card">
+        <h3>Canais</h3>
+        <table id="channel-breakdown-table" class="mini-table"><tbody><tr><td class="muted">Carregando…</td></tr></tbody></table>
+      </div>
+    </section>
+
+    <!-- Main dispatch table -->
+    <section class="card dispatch-section">
+      <div class="card-header dispatch-header">
+        <h3>Envios <span id="envios-count" class="muted small">(0)</span></h3>
+        <div id="pagination-controls" class="pagination-controls"></div>
+      </div>
+      <div class="table-wrapper">
+        <table id="envios-table" class="data-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Canal</th>
+              <th>Para</th>
+              <th>Tipo</th>
+              <th>Status</th>
+              <th class="right">Custo</th>
+            </tr>
+          </thead>
+          <tbody id="envios-tbody">
+            <tr><td colspan="6" class="muted center">Carregando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- ─── FILTERS DRAWER ───────────────────────────────────────────── -->
+  <aside id="filters-drawer" class="drawer hidden">
+    <div class="drawer-header">
+      <h3>Filtros</h3>
+      <button id="filter-close" class="btn-icon">✕</button>
+    </div>
+    <div class="drawer-body">
+
+      <div class="filter-group">
+        <label>Período</label>
+        <div class="row gap">
+          <input id="filter-date-from" type="date">
+          <input id="filter-date-to" type="date">
+        </div>
+        <div class="chips">
+          <button class="chip preset" data-preset="7d">7 dias</button>
+          <button class="chip preset" data-preset="30d">30 dias</button>
+          <button class="chip preset" data-preset="90d">90 dias</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Canal</label>
+        <div class="chips" id="filter-channels">
+          <button class="chip toggle" data-value="meta_dm">Meta DM</button>
+          <button class="chip toggle" data-value="evolution_group">Evolution Grupo</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Status</label>
+        <div class="chips" id="filter-statuses">
+          <button class="chip toggle" data-value="pending">Pendente</button>
+          <button class="chip toggle" data-value="sent">Enviado</button>
+          <button class="chip toggle" data-value="delivered">Entregue</button>
+          <button class="chip toggle" data-value="read">Lido</button>
+          <button class="chip toggle" data-value="responded">Respondeu</button>
+          <button class="chip toggle" data-value="failed">Falhou</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Tipo de envio</label>
+        <div class="chips" id="filter-dispatch-types">
+          <button class="chip toggle" data-value="class_reminder">Lembrete aula</button>
+          <button class="chip toggle" data-value="survey">Survey</button>
+          <button class="chip toggle" data-value="nps">NPS</button>
+          <button class="chip toggle" data-value="mentor_individual">Mentor DM</button>
+          <button class="chip toggle" data-value="group_announcement">Anúncio</button>
+          <button class="chip toggle" data-value="custom">Custom</button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Aluno (nome ou telefone)</label>
+        <input id="filter-student-search" type="text" placeholder="ex: maria, +5511...">
+      </div>
+
+      <div class="filter-group">
+        <label>Template Meta</label>
+        <input id="filter-template-name" type="text" placeholder="ex: encerramento_fundamentals_v3">
+      </div>
+
+    </div>
+    <div class="drawer-footer">
+      <button id="filter-clear" class="btn-tertiary">Limpar</button>
+      <button id="filter-apply" class="btn-primary">Aplicar</button>
+    </div>
+  </aside>
+  <div id="drawer-backdrop" class="backdrop hidden"></div>
+
+  <!-- ─── DISPATCH MODAL (drilldown) ─────────────────────────────────── -->
+  <aside id="dispatch-modal" class="dispatch-modal hidden">
+    <div class="dispatch-modal-header">
+      <h3 id="dm-title">Detalhes do envio</h3>
+      <button id="dm-close" class="btn-icon">✕</button>
+    </div>
+    <div class="dispatch-modal-body">
+
+      <section class="dm-section">
+        <h4>Mensagem (como o destinatário viu)</h4>
+        <div id="dm-preview" class="whatsapp-frame">
+          <p class="muted small center">Carregando preview…</p>
+        </div>
+      </section>
+
+      <section class="dm-section">
+        <h4>Linha do tempo</h4>
+        <ul id="dm-timeline" class="timeline">
+          <li class="timeline-entry muted">—</li>
+        </ul>
+      </section>
+
+      <section class="dm-section">
+        <h4>Metadados</h4>
+        <table id="dm-metadata" class="meta-table"><tbody></tbody></table>
+      </section>
+
+      <section class="dm-section">
+        <button id="dm-retry-btn" class="btn-warning" disabled>↻ Reenviar (apenas falhas)</button>
+        <p id="dm-retry-hint" class="muted small">Reenvio só permitido pra envios com status=failed.</p>
+      </section>
+
+    </div>
+  </aside>
+  <div id="dispatch-modal-backdrop" class="backdrop hidden"></div>
+
+  <!-- ─── RETRY CONFIRM MODAL ────────────────────────────────────────── -->
+  <div id="retry-confirm-modal" class="confirm-modal hidden">
+    <div class="confirm-modal-content">
+      <h3>⚠️ Confirmar reenvio</h3>
+      <p class="muted">Esta ação envia uma mensagem real ao destinatário.</p>
+      <div class="confirm-recipient">
+        <strong>Para:</strong> <span id="rc-recipient">—</span>
+      </div>
+      <div class="confirm-message">
+        <strong>Mensagem:</strong>
+        <pre id="rc-message">—</pre>
+      </div>
+      <div class="confirm-token-info muted small">
+        Token expira em: <span id="rc-expires">—</span>
+      </div>
+      <div class="confirm-actions">
+        <button id="rc-cancel" class="btn-tertiary">Cancelar</button>
+        <button id="rc-confirm" class="btn-danger">Sim, reenviar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── DEPENDENCIES ────────────────────────────────────────────────── -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script src="/js/config.js"></script>
+  <script type="module" src="/admin/envios/app.js"></script>
+</body>
+</html>
