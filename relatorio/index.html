@@ -415,7 +415,7 @@ async function loadData() {
   ] = await Promise.all([
     sb.from('mentors').select('id, name, role').eq('active', true).order('name'),
     sb.from('classes').select('id, name').order('name'),
-    sb.from('class_mentors').select('mentor_id, class_id, role'),
+    sb.from('class_mentors').select('mentor_id, class_id, role, valid_until').is('valid_until', null),
     sb.from('mentor_attendance').select('*').order('session_date', { ascending: false }).limit(2000),
     sb.from('attendance').select('lesson_date, course, teacher_name, role, status, notes').order('lesson_date', { ascending: false }).limit(2000),
   ]);
@@ -592,15 +592,27 @@ function renderMemberView() {
     return;
   }
 
-  // Group by mentor — use name as fallback key for legacy records without mentor_id
+  // Set de mentor_ids escalados (qualquer entrada em class_mentors)
+  // Filtra aba Membros pra mostrar SÓ Professor/Host/Mentor escalados em Config. Turmas
+  const scheduledMentorIds = new Set(
+    Object.keys(classMentorMap).map(k => k.split('_')[0])
+  );
+
+  // Group by mentor — só mantém os escalados (drop legacy sem mentor_id + não-escalados)
   const byMentor = {};
   for (const r of filtered) {
-    const key = r.mentor_id ?? `name:${r.mentor_name}`;
+    if (!r.mentor_id || !scheduledMentorIds.has(r.mentor_id)) continue;
+    const key = r.mentor_id;
     if (!byMentor[key]) byMentor[key] = { name: r.mentor_name, role: r.mentor_role, records: [] };
     byMentor[key].records.push(r);
   }
 
   const sortedMentors = Object.entries(byMentor).sort((a, b) => a[1].name.localeCompare(b[1].name));
+
+  if (!sortedMentors.length) {
+    el.innerHTML = '<div class="empty-state">Nenhum membro escalado encontrado para os filtros selecionados.</div>';
+    return;
+  }
 
   el.innerHTML = sortedMentors.map(([mentorId, data], idx) => {
     const total    = data.records.length;
