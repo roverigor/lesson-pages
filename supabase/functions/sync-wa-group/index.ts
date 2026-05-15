@@ -227,13 +227,15 @@ serve(async (req: Request) => {
     }
   }
 
-  // ── Manual sync (existing behavior — requires admin) ──
-  const isAdmin = await verifyAdmin(req.headers.get("Authorization"));
-  if (!isAdmin) {
-    return new Response(JSON.stringify({ error: "unauthorized" }), {
-      status: 401,
-      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-    });
+  // ── Manual sync (existing behavior — requires admin, unless action=list_only) ──
+  if (body.action !== "list_only") {
+    const isAdmin = await verifyAdmin(req.headers.get("Authorization"));
+    if (!isAdmin) {
+      return new Response(JSON.stringify({ error: "unauthorized" }), {
+        status: 401,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
   }
 
   if (!body.cohort_id) {

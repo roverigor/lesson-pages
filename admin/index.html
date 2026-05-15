@@ -391,6 +391,14 @@
       <input class="login-field" type="password" id="login-password" placeholder="Senha" required autocomplete="current-password">
       <button class="login-btn" type="submit" id="login-btn">Entrar</button>
       <div class="login-error" id="login-error"></div>
+      <a href="#" id="forgot-link" onclick="toggleForgot(event)" style="display:block;margin-top:14px;font-size:12px;color:#6366f1;text-decoration:none;text-align:center">Esqueci minha senha</a>
+    </form>
+    <form id="forgot-form" onsubmit="handleForgot(event)" style="display:none">
+      <div class="login-subtitle" style="margin-bottom:18px">Informe seu email — enviaremos link de recuperação.</div>
+      <input class="login-field" type="email" id="forgot-email" placeholder="Email" required autocomplete="email">
+      <button class="login-btn" type="submit" id="forgot-btn">Enviar link</button>
+      <div class="login-error" id="forgot-error" style="color:#10b981"></div>
+      <a href="#" onclick="toggleForgot(event)" style="display:block;margin-top:14px;font-size:12px;color:#6366f1;text-decoration:none;text-align:center">← Voltar ao login</a>
     </form>
   </div>
 </div>
@@ -447,6 +455,11 @@
       <button class="nav-item" data-view="holidays" onclick="switchView('holidays')">
         <i data-lucide="calendar-x" class="nav-item-icon"></i> Feriados
       </button>
+
+      <div class="nav-section-label">Customer Success</div>
+      <a class="nav-item" href="/cs/" style="text-decoration:none">
+        <i data-lucide="heart-handshake" class="nav-item-icon"></i> Área CS
+      </a>
 
       <div class="nav-section-label">Configurações</div>
       <button class="nav-item" data-view="staff" onclick="switchView('staff')">
@@ -580,9 +593,15 @@
       <!-- ═══ TURMAS VIEW ═══ -->
       <div id="turmas-view" style="display:none">
         <div class="page-header">
-          <div>
-            <div class="page-title">Turmas</div>
-            <div class="page-sub">Clique em uma turma para ver alunos, presença e rankings</div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div>
+              <div class="page-title">Turmas</div>
+              <div class="page-sub">Clique em uma turma para ver alunos, presença e rankings</div>
+            </div>
+            <div style="display:flex;gap:4px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;padding:3px">
+              <button id="cohort-filter-active-btn" class="att-btn" onclick="setCohortFilter('active')" style="padding:4px 12px;font-size:11px;background:rgba(34,197,94,0.15);color:#4ade80;border-color:#22c55e40">Ativas</button>
+              <button id="cohort-filter-inactive-btn" class="att-btn" onclick="setCohortFilter('inactive')" style="padding:4px 12px;font-size:11px;background:transparent;color:#555;border-color:transparent">Inativas</button>
+            </div>
           </div>
         </div>
         <div id="turmas-list"><div class="spinner"></div></div>
@@ -958,6 +977,36 @@ window.handleLogout = async function() {
   document.getElementById('app-shell').classList.add('hidden');
 };
 
+window.toggleForgot = function(e) {
+  e.preventDefault();
+  const loginForm  = document.getElementById('login-form');
+  const forgotForm = document.getElementById('forgot-form');
+  const isForgot   = forgotForm.style.display !== 'none';
+  loginForm.style.display  = isForgot ? '' : 'none';
+  forgotForm.style.display = isForgot ? 'none' : '';
+  document.getElementById('forgot-error').textContent = '';
+};
+
+window.handleForgot = async function(e) {
+  e.preventDefault();
+  const btn   = document.getElementById('forgot-btn');
+  const errEl = document.getElementById('forgot-error');
+  const email = document.getElementById('forgot-email').value.trim();
+  btn.disabled = true;
+  errEl.style.color = '#10b981';
+  errEl.textContent = '';
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/admin/reset-password.html`
+  });
+  btn.disabled = false;
+  if (error) {
+    errEl.style.color = '#ef4444';
+    errEl.textContent = 'Erro ao enviar — verifique o email';
+    return;
+  }
+  errEl.textContent = '✓ Link enviado para ' + email + '. Confira sua caixa de entrada.';
+};
+
 // ─── PAINEL: override switchView ─────────────────────
 const IFRAME_ROUTES = { alunos: '/alunos/', presenca: '/presenca/', aulas: '/aulas/', relatorio: '/relatorio/' };
 let _embedObserver = null;
@@ -1098,18 +1147,36 @@ async function loadDashboard() {
 }
 
 // ─── TURMAS VIEW ──────────────────────────────────────
-async function loadTurmasView() {
+let cohortFilter = 'active';
+let _cohortsCache = null;
+let _cohortStudentsByC = null;
+
+function setCohortFilter(filter) {
+  cohortFilter = filter;
+  const activeBtn = document.getElementById('cohort-filter-active-btn');
+  const inactiveBtn = document.getElementById('cohort-filter-inactive-btn');
+  if (activeBtn && inactiveBtn) {
+    activeBtn.style.background = filter === 'active' ? 'rgba(34,197,94,0.15)' : 'transparent';
+    activeBtn.style.color = filter === 'active' ? '#4ade80' : '#555';
+    activeBtn.style.borderColor = filter === 'active' ? '#22c55e40' : 'transparent';
+    inactiveBtn.style.background = filter === 'inactive' ? 'rgba(239,68,68,0.12)' : 'transparent';
+    inactiveBtn.style.color = filter === 'inactive' ? '#f87171' : '#555';
+    inactiveBtn.style.borderColor = filter === 'inactive' ? '#ef444440' : 'transparent';
+  }
+  renderTurmasList();
+}
+
+function renderTurmasList() {
   const container = document.getElementById('turmas-list');
-  container.innerHTML = '<div class="spinner"></div>';
-
-  const { data: cohorts, error } = await sb.from('cohorts').select('id, name, active').order('name');
-  if (error || !cohorts) { container.innerHTML = '<div style="color:#444;text-align:center;padding:40px">Erro ao carregar turmas.</div>'; return; }
-
-  const { data: csvData } = await sb.from('student_imports').select('id, cohort_id');
-  const byC = {};
-  (csvData ?? []).forEach(s => { byC[s.cohort_id] = (byC[s.cohort_id] || 0) + 1; });
-
-  const html = cohorts.map(c => {
+  if (!_cohortsCache) return;
+  const filtered = _cohortsCache.filter(c => cohortFilter === 'active' ? c.active !== false : c.active === false);
+  if (!filtered.length) {
+    const msg = cohortFilter === 'active' ? 'Nenhuma turma ativa' : 'Nenhuma turma inativa';
+    container.innerHTML = `<div style="text-align:center;color:#333;padding:40px">${msg}</div>`;
+    return;
+  }
+  const byC = _cohortStudentsByC || {};
+  const html = filtered.map(c => {
     const total = byC[c.id] ?? 0;
     const active = c.active !== false;
     return `<a class="turma-card" href="#" onclick="openInFrame('/turma/detalhe.html?id=${c.id}');return false;">
@@ -1125,6 +1192,22 @@ async function loadTurmasView() {
     </a>`;
   }).join('');
   container.innerHTML = `<div class="turma-grid">${html}</div>`;
+}
+
+async function loadTurmasView() {
+  const container = document.getElementById('turmas-list');
+  container.innerHTML = '<div class="spinner"></div>';
+
+  const { data: cohorts, error } = await sb.from('cohorts').select('id, name, active').order('name');
+  if (error || !cohorts) { container.innerHTML = '<div style="color:#444;text-align:center;padding:40px">Erro ao carregar turmas.</div>'; return; }
+
+  const { data: csvData } = await sb.from('student_imports').select('id, cohort_id');
+  const byC = {};
+  (csvData ?? []).forEach(s => { byC[s.cohort_id] = (byC[s.cohort_id] || 0) + 1; });
+
+  _cohortsCache = cohorts;
+  _cohortStudentsByC = byC;
+  renderTurmasList();
 }
 
 function escHtml(s) { return (s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
