@@ -817,6 +817,52 @@ serve(async (req: Request) => {
     // Uses Zoom Reports API to discover all meetings for the host in a date range.
     // Does NOT require knowing the meeting_id in advance.
     // body: { action: "list_meetings", user_id: "me"|email, from: "YYYY-MM-DD", to: "YYYY-MM-DD" }
+    // ── ACTION: list_recordings_zoom ─────────────────────────────────
+    // Lista cloud recordings via /users/me/recordings (recording:read:list_user_recordings:admin)
+    // body: { action: "list_recordings_zoom", from?: "YYYY-MM-DD", to?: "YYYY-MM-DD" }
+    if (action === "list_recordings_zoom") {
+      const {
+        from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        to = new Date().toISOString().slice(0, 10),
+      } = body as { from?: string; to?: string };
+      const token = await getS2SToken();
+      const meetings: Array<Record<string, unknown>> = [];
+      let nextToken: string | undefined;
+      let pages = 0;
+      do {
+        const url = `/users/me/recordings?from=${from}&to=${to}&page_size=100${nextToken ? "&next_page_token=" + nextToken : ""}`;
+        const data = await zoomGet(token, url) as { meetings?: Array<Record<string, unknown>>; next_page_token?: string };
+        if (data?.meetings) meetings.push(...data.meetings);
+        nextToken = data?.next_page_token;
+        pages++;
+        if (pages > 10) break;
+      } while (nextToken);
+
+      const summary = meetings.map((m) => {
+        const files = (m.recording_files || []) as Array<{ file_type: string; download_url?: string; status?: string }>;
+        const hasTranscript = files.some((f) => f.file_type === "TRANSCRIPT");
+        const hasVideo = files.some((f) => f.file_type === "MP4" || f.file_type === "VIDEO");
+        const hasAudio = files.some((f) => f.file_type === "M4A" || f.file_type === "AUDIO");
+        return {
+          meeting_id: m.id,
+          uuid: m.uuid,
+          topic: m.topic,
+          start_time: m.start_time,
+          duration: m.duration,
+          total_size_mb: m.total_size ? Math.round((m.total_size as number) / 1024 / 1024) : 0,
+          file_count: files.length,
+          has_video: hasVideo,
+          has_audio: hasAudio,
+          has_transcript: hasTranscript,
+        };
+      });
+
+      return new Response(
+        JSON.stringify({ ok: true, from, to, total: summary.length, recordings: summary }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     if (action === "list_meetings") {
       const {
         user_id = "me",

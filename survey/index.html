@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avaliar aula — Academia Lendária</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/survey/styles.css">
+</head>
+<body>
+  <main class="container">
+
+    <header class="brand">
+      <div class="logo">🏛️</div>
+      <h1>Academia Lendária</h1>
+    </header>
+
+    <section id="loading" class="card">
+      <p class="muted">Carregando…</p>
+    </section>
+
+    <section id="invalid" class="card hidden">
+      <h2>Link inválido</h2>
+      <p class="muted">Este link não foi reconhecido. Verifique se você copiou a URL completa.</p>
+    </section>
+
+    <section id="expired" class="card hidden">
+      <h2>Link expirado</h2>
+      <p class="muted">O período de avaliação para esta aula encerrou. Obrigado pelo interesse!</p>
+    </section>
+
+    <section id="form" class="card hidden">
+      <h2 id="title">Avalie sua aula</h2>
+      <p class="subtitle" id="subtitle"></p>
+
+      <div class="field">
+        <label for="nps">De 0 a 10, o quanto você recomendaria esta aula a um amigo?</label>
+        <div id="nps" class="nps-grid" role="radiogroup" aria-label="Nota NPS">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="comment">O que motivou sua nota? <span class="muted">(opcional)</span></label>
+        <textarea id="comment" rows="3" maxlength="2000" placeholder="Conte mais…"></textarea>
+      </div>
+
+      <div class="field" id="name-field">
+        <label for="name">Nome <span class="muted">(opcional, se quiser identificação)</span></label>
+        <input id="name" type="text" maxlength="120" placeholder="Seu nome">
+      </div>
+
+      <button id="submit" type="button" class="primary" disabled>Enviar feedback</button>
+      <p id="error" class="error hidden" role="alert"></p>
+    </section>
+
+    <section id="thank-you" class="card hidden">
+      <div class="checkmark">✓</div>
+      <h2>Obrigado!</h2>
+      <p class="muted" id="thank-you-msg">Sua opinião é fundamental.</p>
+    </section>
+
+  </main>
+
+  <script type="module" src="/survey/app.js"></script>
+</body>
+</html>

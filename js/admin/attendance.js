@@ -165,7 +165,17 @@ function renderGrid(year, month1) {
 
     const eventsHTML = events.slice(0, 3).map(ev => {
       const cfg = getCfg(ev.course);
-      return `<div class="day-event" style="border-color:${cfg.color};color:${cfg.color};background:${cfg.bg}">${ev.course.replace('Aulas ','')}</div>`;
+      const isCancelled = ev.cancelled === true;
+      const isRescheduled = !!ev.rescheduled_from;
+      const label = ev.course.replace('Aulas ','');
+      if (isCancelled) {
+        const tooltip = ev.rescheduled_to ? `Remarcada para ${ev.rescheduled_to}` : 'Cancelada';
+        return `<div class="day-event" title="${tooltip}" style="border-color:#7f1d1d;color:#f87171;background:rgba(239,68,68,0.08);text-decoration:line-through;opacity:0.7">${label} <span style="font-size:9px;text-decoration:none">· Cancelada</span></div>`;
+      }
+      if (isRescheduled) {
+        return `<div class="day-event" title="Remarcada de ${ev.rescheduled_from}" style="border-color:${cfg.color};color:${cfg.color};background:${cfg.bg}">${label} <span style="font-size:9px">· ↻</span></div>`;
+      }
+      return `<div class="day-event" style="border-color:${cfg.color};color:${cfg.color};background:${cfg.bg}">${label}</div>`;
     }).join('') + (events.length > 3 ? `<div style="font-size:10px;color:#444">+${events.length-3} mais</div>` : '');
 
     html += `<div class="${classes}" onclick="openAttendance('${key}')">
@@ -293,11 +303,41 @@ function openAttendance(dateKey) {
         <button class="att-btn present" onclick="addToLesson('${dateKey}','${ev.course}')" style="padding:6px 10px;font-size:11px">+ Add</button>
       </div>`;
 
-    return `<div class="att-session" style="border-left-color:${cfg.color}">
-      <div class="att-session-course" style="color:${cfg.color}">${ev.course}</div>
-      ${mentorsHTML}
-      ${removedHTML}
-      ${addHTML}
+    const isCancelled = ev.cancelled === true;
+    const reschedTo   = ev.rescheduled_to;
+    const reschedFrom = ev.rescheduled_from;
+    const headerActions = `
+      <div style="display:flex;gap:6px;margin-left:auto">
+        ${isCancelled
+          ? `<button class="att-btn" onclick="restoreLesson('${dateKey}', ${JSON.stringify(ev.course).replace(/"/g, '&quot;')})"
+              style="padding:6px 10px;font-size:11px;color:#4ade80;border-color:#166534">↻ Reativar aula</button>`
+          : `<button class="att-btn" onclick="rescheduleLesson('${dateKey}', ${JSON.stringify(ev.course).replace(/"/g, '&quot;')})"
+              style="padding:6px 10px;font-size:11px;color:#f59e0b;border-color:#854d0e">↻ Reagendar aula</button>
+            <button class="att-btn" onclick="cancelLesson('${dateKey}', ${JSON.stringify(ev.course).replace(/"/g, '&quot;')})"
+              style="padding:6px 10px;font-size:11px;color:#f87171;border-color:#7f1d1d">✕ Cancelar aula</button>`
+        }
+      </div>`;
+    const cancelBanner = isCancelled
+      ? `<div style="background:rgba(239,68,68,0.08);border:1px solid #7f1d1d;color:#f87171;font-size:12px;padding:8px 12px;border-radius:6px;margin:8px 0">
+          <strong>Aula cancelada</strong>${reschedTo ? ` — remarcada para <strong>${reschedTo}</strong>` : ''}
+        </div>`
+      : '';
+    const reschedFromBanner = reschedFrom
+      ? `<div style="background:rgba(245,158,11,0.08);border:1px solid #854d0e;color:#facc15;font-size:12px;padding:8px 12px;border-radius:6px;margin:8px 0">
+          <strong>Aula remarcada de ${reschedFrom}</strong>
+        </div>`
+      : '';
+
+    return `<div class="att-session" style="border-left-color:${cfg.color}${isCancelled ? ';opacity:0.6' : ''}">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="att-session-course" style="color:${cfg.color};${isCancelled ? 'text-decoration:line-through' : ''}">${ev.course}</div>
+        ${headerActions}
+      </div>
+      ${cancelBanner}
+      ${reschedFromBanner}
+      ${isCancelled ? '' : mentorsHTML}
+      ${isCancelled ? '' : removedHTML}
+      ${isCancelled ? '' : addHTML}
     </div>`;
   }).join('');
 
@@ -416,6 +456,126 @@ async function undoAdd(dateKey, course, teacher) {
   if (error) { showToast('Erro: ' + error.message, 'error'); return; }
 
   showToast(`${teacher} removido`, 'success');
+  await loadOverrides();
+  renderAll();
+  openAttendance(dateKey);
+}
+
+// ═══════════════════════════════════════
+// CANCEL / RESCHEDULE / RESTORE — aula inteira
+// ═══════════════════════════════════════
+function _mentorsOfLesson(dateKey, course) {
+  const ev = EVENTS[dateKey]?.[course];
+  if (!ev || !ev.mentors) return [];
+  return ev.mentors.map(m => ({ name: m.name, role: m.role }));
+}
+
+async function cancelLesson(dateKey, course, rescheduledTo = null) {
+  const mentors = _mentorsOfLesson(dateKey, course);
+  if (!mentors.length) { showToast('Aula já está sem mentores', 'error'); return false; }
+
+  if (!rescheduledTo) {
+    if (!confirm(`Cancelar a aula "${course}" em ${dateKey}?\n\nTodos os mentores serão removidos desta data.`)) return false;
+  }
+
+  const rows = mentors.map(m => ({
+    lesson_date: dateKey,
+    course,
+    teacher_name: m.name,
+    role: m.role,
+    action: 'remove',
+    rescheduled_to: rescheduledTo,
+  }));
+
+  const { error } = await sb.from('schedule_overrides').insert(rows);
+  if (error) {
+    if (error.code === '23505') { showToast('Aula já cancelada', 'error'); return false; }
+    showToast('Erro: ' + error.message, 'error');
+    return false;
+  }
+
+  if (!rescheduledTo) {
+    showToast(`Aula "${course}" cancelada em ${dateKey}`, 'success');
+    await loadOverrides();
+    renderAll();
+    openAttendance(dateKey);
+  }
+  return true;
+}
+
+async function rescheduleLesson(dateKey, course) {
+  const mentors = _mentorsOfLesson(dateKey, course);
+  if (!mentors.length) { showToast('Aula sem mentores pra reagendar', 'error'); return; }
+
+  // Prompt nova data — formato esperado DD/MM
+  const input = prompt(`Reagendar "${course}" de ${dateKey} para qual data?\n\nFormato: DD/MM (ex: 28/05)`);
+  if (!input) return;
+  const trimmed = input.trim();
+  if (!/^\d{1,2}\/\d{1,2}$/.test(trimmed)) { showToast('Formato inválido. Use DD/MM', 'error'); return; }
+  const [dd, mm] = trimmed.split('/');
+  const newDate = `${dd.padStart(2,'0')}/${mm.padStart(2,'0')}`;
+  if (newDate === dateKey) { showToast('Nova data igual à original', 'error'); return; }
+
+  // 1) Cancela na data original com link pra nova
+  const cancelled = await cancelLesson(dateKey, course, newDate);
+  if (!cancelled) return;
+
+  // 2) Adiciona na nova data com link pra original
+  const rows = mentors.map(m => ({
+    lesson_date: newDate,
+    course,
+    teacher_name: m.name,
+    role: m.role,
+    action: 'add',
+    rescheduled_to: dateKey,
+  }));
+  const { error } = await sb.from('schedule_overrides').insert(rows);
+  if (error) {
+    showToast('Erro ao criar nova data: ' + error.message + '. Cancelamento da data original ficou aplicado.', 'error');
+    await loadOverrides();
+    renderAll();
+    return;
+  }
+
+  showToast(`Aula remarcada de ${dateKey} para ${newDate}`, 'success');
+  await loadOverrides();
+  renderAll();
+  openAttendance(dateKey);
+}
+
+async function restoreLesson(dateKey, course) {
+  // Acha registros de cancelamento da aula (action=remove) + adições na contraparte se houve reschedule
+  const cancelRows = overridesCache.filter(o =>
+    o.lesson_date === dateKey && o.course === course && o.action === 'remove'
+  );
+  if (!cancelRows.length) { showToast('Aula não está cancelada', 'error'); return; }
+
+  const rescheduledTo = cancelRows.find(r => r.rescheduled_to)?.rescheduled_to || null;
+  const confirmMsg = rescheduledTo
+    ? `Reativar a aula "${course}" em ${dateKey}?\n\nIsso também removerá a aula remarcada em ${rescheduledTo}.`
+    : `Reativar a aula "${course}" em ${dateKey}?`;
+  if (!confirm(confirmMsg)) return;
+
+  // Delete os 'remove' da data original
+  const { error: e1 } = await sb.from('schedule_overrides')
+    .delete()
+    .eq('lesson_date', dateKey)
+    .eq('course', course)
+    .eq('action', 'remove');
+  if (e1) { showToast('Erro: ' + e1.message, 'error'); return; }
+
+  // Se foi reschedule, delete os 'add' da nova data com link pra original
+  if (rescheduledTo) {
+    const { error: e2 } = await sb.from('schedule_overrides')
+      .delete()
+      .eq('lesson_date', rescheduledTo)
+      .eq('course', course)
+      .eq('action', 'add')
+      .eq('rescheduled_to', dateKey);
+    if (e2) { showToast('Aula reativada mas falhou remover destino: ' + e2.message, 'error'); }
+  }
+
+  showToast(`Aula "${course}" reativada em ${dateKey}`, 'success');
   await loadOverrides();
   renderAll();
   openAttendance(dateKey);
