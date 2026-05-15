@@ -352,11 +352,41 @@ npm run trace -- workflow-name
 - Keep README synchronized with actual behavior
 - Document breaking changes prominently
 
+## 🛑 Comunicação Externa — Aprovação Humana Obrigatória (NON-NEGOTIABLE)
+
+**NUNCA execute ação que envia mensagem real (WhatsApp/Email/SMS/Slack push externo a aluno/cliente/lead) sem autorização humana explícita no momento da execução.**
+
+Aplicável a:
+- Re-ativar cron jobs de dispatch (mesmo se previamente existentes/dormentes)
+- Disparar edge functions com action `send_*` direcionado a usuário externo
+- Executar SQL functions que chamam `net.http_post` pra endpoints de mensageria
+- Qualquer migration que reagende worker de envio
+- Wrapper functions que centralizam dispatch
+- Testes "rápidos" em produção que enviam pra usuários reais
+
+**Exceções permitidas (sem aprovação por mensagem):**
+- Implementação de NOVO código de envio (entregue pra revisão depois)
+- Slack alerts internos pra dev/admin (não atinge usuários finais)
+- Resposta a solicitação humana explícita "envie agora pra X"
+
+**Padrão obrigatório pra qualquer fluxo de envio:**
+- UI button explícito ("Disparar alertas agora") com **preview da lista + conteúdo** antes do envio
+- Confirmação modal com contagem total + amostra de destinatários
+- Audit log do quem-quando-quantos
+- Opção "modo dry-run" pra testar lógica sem disparar
+
+**Nunca presumir autorização** baseado em:
+- "Sistema construído mas dormente" → ativar = aprovação implícita ❌ ERRADO
+- "Quick win zero dev" → mexer infra = mexer comportamento ❌ ERRADO
+- "Cron já existia" → re-schedule sem revisão de conteúdo ❌ ERRADO
+
+Se em dúvida: **PARE e pergunte**.
+
 ## Epic Execution — Modo Autônomo
 
 - Quando um épico está em andamento, executar todas as stories em sequência **sem parar para pedir confirmação** entre elas
 - Ao concluir cada story: marcar checkboxes como Done, commit, push — e avançar imediatamente para a próxima
-- Só interromper para confirmação se: (a) houver bloqueador técnico real, (b) decisão arquitetural irreversível, ou (c) a story explicitamente exigir input do usuário (`elicit: true`)
+- Só interromper para confirmação se: (a) houver bloqueador técnico real, (b) decisão arquitetural irreversível, ou (c) a story explicitamente exigir input do usuário (`elicit: true`), ou **(d) qualquer ação que envie mensagem externa (ver regra acima — NON-NEGOTIABLE)**
 - Ao final do épico inteiro, apresentar resumo consolidado de tudo que foi feito
 
 ## VPS — lesson-pages (Contabo)

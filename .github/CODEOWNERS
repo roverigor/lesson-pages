@@ -1,0 +1,29 @@
+# ─────────────────────────────────────────────────────────
+# CODEOWNERS — lesson-pages
+# Created by Story 15.0 (CRIT-11)
+# Reference: docs/architecture/ADR-015 + ADR-016
+# ─────────────────────────────────────────────────────────
+#
+# Auto-assign rules force review by domain owners on every PR.
+# GitHub usernames precisam ser ajustados pelo owner real do repo.
+# ─────────────────────────────────────────────────────────
+
+# ─── DB Schema (CRITICAL — schema governance EPIC-015) ───
+# Toda mudança em migrations exige revisão @architect
+supabase/migrations/* @roverigor
+
+# ─── Architecture decisions ───
+docs/architecture/* @roverigor
+
+# ─── Edge Functions ───
+# Mudanças em edge functions impactam contratos públicos (webhooks, integrações)
+supabase/functions/* @roverigor
+
+# ─── EPIC-015 spec artifacts ───
+# Mudanças em spec exigem revisão @pm + @architect
+docs/stories/EPIC-015-cs-area/* @roverigor
+docs/stories/epics/EPIC-015-cs-area.md @roverigor
+
+# ─── Default fallback ───
+# Tudo mais cai no owner principal
+* @roverigor

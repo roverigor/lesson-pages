@@ -1,0 +1,272 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EPIC-015 Story 15.0 Research Output",
+  "type": "object",
+  "required": [
+    "storyId",
+    "completedAt",
+    "completedBy",
+    "stakeholders",
+    "oq1",
+    "oq2",
+    "oq3",
+    "oq4",
+    "oq5",
+    "oq6",
+    "oq7",
+    "oq8",
+    "oq9",
+    "oq10",
+    "oq11",
+    "oq12",
+    "oq13",
+    "provisioning",
+    "specChanges"
+  ],
+  "properties": {
+    "storyId": { "type": "string", "const": "15.0" },
+    "completedAt": { "type": "string", "format": "date-time" },
+    "completedBy": { "type": "string" },
+    "stakeholders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["role", "user"],
+        "properties": {
+          "role": { "type": "string" },
+          "user": { "type": "string" },
+          "contactedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "oq1": {
+      "type": "object",
+      "required": ["platform", "adminUrl", "plan", "validationEvidence"],
+      "properties": {
+        "platform": { "type": "string", "enum": ["ActiveCampaign", "ActiveMember360", "Custom", "Other"] },
+        "adminUrl": { "type": "string", "format": "uri" },
+        "plan": { "type": "string" },
+        "apiVersion": { "type": "string" },
+        "validationEvidence": { "type": "string" }
+      }
+    },
+    "oq2": {
+      "type": "object",
+      "required": ["payloadSample", "fields"],
+      "properties": {
+        "payloadSample": { "type": "object" },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type", "required"],
+            "properties": {
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "required": { "type": "boolean" },
+              "example": {}
+            }
+          }
+        },
+        "extras": { "type": "array", "items": { "type": "string" } },
+        "capturedVia": { "type": "string", "description": "webhook.site URL ou endpoint usado para capturar" }
+      }
+    },
+    "oq3": {
+      "type": "object",
+      "required": ["authMethod"],
+      "properties": {
+        "authMethod": { "type": "string", "enum": ["hmac", "url_token", "basic_auth", "none"] },
+        "header": { "type": "string" },
+        "algorithm": { "type": "string", "enum": ["sha256", "sha1", "sha512", "md5"] },
+        "secretLocation": { "type": "string" },
+        "fallbackStrategy": { "type": "string", "description": "Se authMethod=url_token, descreve mitigação (IP allowlist, etc.)" }
+      }
+    },
+    "oq4": {
+      "type": "object",
+      "required": ["supportsCustomField"],
+      "properties": {
+        "supportsCustomField": { "type": "boolean" },
+        "endpoint": { "type": "string" },
+        "method": { "type": "string", "enum": ["POST", "PUT", "PATCH"] },
+        "authMethod": { "type": "string" },
+        "samplePayload": { "type": "object" },
+        "fallback": { "type": "string", "enum": ["tag", "note", "contact_update", "none"] },
+        "fallbackJustification": { "type": "string" }
+      }
+    },
+    "oq5": {
+      "type": "object",
+      "required": ["strategy", "field"],
+      "properties": {
+        "strategy": { "type": "string", "enum": ["ac_event_id", "derived"] },
+        "field": { "type": "string", "description": "Campo do payload usado como chave OR fórmula derivada" },
+        "uniquenessGuarantee": { "type": "string" },
+        "collisionRisk": { "type": "string", "enum": ["none", "low", "medium", "high"] }
+      }
+    },
+    "oq6": {
+      "type": "object",
+      "required": ["webhookSupported", "messagesUpdateAvailable"],
+      "properties": {
+        "webhookSupported": { "type": "boolean" },
+        "messagesUpdateAvailable": { "type": "boolean" },
+        "deliveredReceipt": { "type": "boolean" },
+        "readReceipt": { "type": "boolean" },
+        "verifyToken": { "type": "string" },
+        "metaPlanTier": { "type": "string" },
+        "fallbackIfUnavailable": { "type": "string", "description": "Se NFR-17 vira best-effort, como rastrear" }
+      }
+    },
+    "oq7": {
+      "type": "object",
+      "required": ["volumePerDay"],
+      "properties": {
+        "volumePerDay": { "type": "integer", "minimum": 0 },
+        "peakHour": { "type": "string" },
+        "peakDayOfWeek": { "type": "string" },
+        "burstSize": { "type": "integer", "description": "Maior pico observado (msgs/min)" },
+        "source": { "type": "string", "description": "Como volume foi medido (logs, AC reports, estimativa PM)" }
+      }
+    },
+    "oq8": {
+      "type": "object",
+      "required": ["approvedTemplates"],
+      "properties": {
+        "approvedTemplates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "language", "category", "status"],
+            "properties": {
+              "name": { "type": "string" },
+              "language": { "type": "string", "default": "pt_BR" },
+              "category": { "type": "string", "enum": ["MARKETING", "UTILITY", "AUTHENTICATION"] },
+              "bodyParamsCount": { "type": "integer", "minimum": 0 },
+              "buttonCount": { "type": "integer", "minimum": 0 },
+              "status": { "type": "string", "enum": ["APPROVED", "PENDING", "REJECTED", "PAUSED"] },
+              "approvedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        "extractedAt": { "type": "string", "format": "date-time" },
+        "extractionMethod": { "type": "string", "enum": ["graph_api", "manual_console"] }
+      }
+    },
+    "oq9": {
+      "type": "object",
+      "required": ["retentionDays", "approvedBy"],
+      "properties": {
+        "retentionDays": { "type": "integer", "minimum": 1, "maximum": 365 },
+        "approvedBy": { "type": "string" },
+        "approvalDate": { "type": "string", "format": "date" },
+        "lgpdJustification": { "type": "string" }
+      }
+    },
+    "oq10": {
+      "type": "object",
+      "required": ["v1Heuristic"],
+      "properties": {
+        "v1Heuristic": { "type": "string", "enum": ["fuzzy_match_name", "exact_match_name", "skip"] },
+        "rationale": { "type": "string" },
+        "v2Plan": { "type": "string" }
+      }
+    },
+    "oq11": {
+      "type": "object",
+      "required": ["cardinality", "rationale"],
+      "properties": {
+        "cardinality": { "type": "string", "enum": ["1:1", "N:1", "N:N"] },
+        "rationale": { "type": "string" },
+        "schemaImpact": { "type": "string", "description": "Mudanças no ac_product_mappings se diferente de 1:1" }
+      }
+    },
+    "oq12": {
+      "type": "object",
+      "required": ["slaHours"],
+      "properties": {
+        "slaHours": { "type": "integer", "minimum": 1, "maximum": 168 },
+        "rationale": { "type": "string" },
+        "escalationChain": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "oq13": {
+      "type": "object",
+      "required": ["repoUrl", "csTeamMembers"],
+      "properties": {
+        "repoUrl": { "type": "string", "format": "uri" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "branchProtection": { "type": "boolean" },
+        "csTeamMembers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["email", "role"],
+            "properties": {
+              "email": { "type": "string", "format": "email" },
+              "githubUsername": { "type": "string" },
+              "role": { "type": "string", "enum": ["read", "write", "admin", "maintain"] }
+            }
+          }
+        }
+      }
+    },
+    "provisioning": {
+      "type": "object",
+      "required": ["csPortalRepo", "claudeAccounts", "metaTemplateRequest", "codeownersCommit"],
+      "properties": {
+        "csPortalRepo": {
+          "type": "object",
+          "properties": {
+            "url": { "type": "string", "format": "uri" },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "branchProtection": { "type": "boolean" },
+            "ciCdPipelineConfigured": { "type": "boolean" }
+          }
+        },
+        "claudeAccounts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["email", "status"],
+            "properties": {
+              "email": { "type": "string", "format": "email" },
+              "status": { "type": "string", "enum": ["active", "pending", "rejected"] },
+              "activatedAt": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        "metaTemplateRequest": {
+          "type": "object",
+          "required": ["name", "submittedAt", "status"],
+          "properties": {
+            "name": { "type": "string" },
+            "submittedAt": { "type": "string", "format": "date-time" },
+            "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+            "estimatedApprovalDate": { "type": "string", "format": "date" },
+            "templatePreview": { "type": "object" }
+          }
+        },
+        "codeownersCommit": {
+          "type": "string",
+          "description": "Git SHA do commit que adicionou .github/CODEOWNERS"
+        }
+      }
+    },
+    "specChanges": {
+      "type": "array",
+      "description": "Lista de mudanças aplicadas em spec/requirements/ADRs como resultado do discovery",
+      "items": {
+        "type": "object",
+        "required": ["file", "section", "change", "reason"],
+        "properties": {
+          "file": { "type": "string" },
+          "section": { "type": "string" },
+          "change": { "type": "string" },
+          "reason": { "type": "string", "description": "Qual OQ ou validação revelou necessidade" }
+        }
+      }
+    }
+  }
+}

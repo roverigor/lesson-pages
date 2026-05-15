@@ -457,6 +457,14 @@
       <button class="nav-item" data-view="schedules" onclick="switchView('schedules')">
         <i data-lucide="clock" class="nav-item-icon"></i> Agendamentos
       </button>
+      <button class="nav-item" data-view="holidays" onclick="switchView('holidays')">
+        <i data-lucide="calendar-x" class="nav-item-icon"></i> Feriados
+      </button>
+
+      <div class="nav-section-label">Customer Success</div>
+      <a class="nav-item" href="/cs/" style="text-decoration:none">
+        <i data-lucide="heart-handshake" class="nav-item-icon"></i> Área CS
+      </a>
 
       <div class="nav-section-label">Customer Success</div>
       <button class="nav-item" data-view="cs" onclick="switchView('cs')">
@@ -595,9 +603,15 @@
       <!-- ═══ TURMAS VIEW ═══ -->
       <div id="turmas-view" style="display:none">
         <div class="page-header">
-          <div>
-            <div class="page-title">Turmas</div>
-            <div class="page-sub">Clique em uma turma para ver alunos, presença e rankings</div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div>
+              <div class="page-title">Turmas</div>
+              <div class="page-sub">Clique em uma turma para ver alunos, presença e rankings</div>
+            </div>
+            <div style="display:flex;gap:4px;background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;padding:3px">
+              <button id="cohort-filter-active-btn" class="att-btn" onclick="setCohortFilter('active')" style="padding:4px 12px;font-size:11px;background:rgba(34,197,94,0.15);color:#4ade80;border-color:#22c55e40">Ativas</button>
+              <button id="cohort-filter-inactive-btn" class="att-btn" onclick="setCohortFilter('inactive')" style="padding:4px 12px;font-size:11px;background:transparent;color:#555;border-color:transparent">Inativas</button>
+            </div>
           </div>
         </div>
         <div id="turmas-list"><div class="spinner"></div></div>
@@ -776,6 +790,46 @@
         <div id="schedules-list"></div>
       </div>
 
+      <!-- ═══ HOLIDAYS VIEW ═══ -->
+      <div id="holidays-view" style="display:none">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Feriados</div>
+            <div class="page-sub">Datas que suprimem disparos automáticos (staff, mentores, hosts, professores).</div>
+          </div>
+        </div>
+
+        <div style="background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:20px">
+          <div style="font-size:14px;font-weight:700;color:#ddd;margin-bottom:16px">Adicionar feriado</div>
+          <div style="display:grid;grid-template-columns:160px 1fr 160px auto;gap:12px;align-items:end">
+            <div>
+              <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Data *</label>
+              <input class="login-field" style="margin:0;width:100%" type="date" id="holiday-date">
+            </div>
+            <div>
+              <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Nome *</label>
+              <input class="login-field" style="margin:0;width:100%" type="text" id="holiday-name" placeholder="Ex: Recesso de fim de ano">
+            </div>
+            <div>
+              <label style="font-size:11px;color:#555;display:block;margin-bottom:4px">Escopo *</label>
+              <select class="substitute-select" style="width:100%;padding:12px 10px" id="holiday-scope">
+                <option value="custom">Custom</option>
+                <option value="national">Nacional</option>
+                <option value="regional">Regional</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn-save" onclick="saveHoliday()">Salvar</button>
+            </div>
+          </div>
+          <div style="font-size:11px;color:#444;margin-top:10px">
+            Disparos suprimidos em feriado: lembretes diários (08h), reminder Slack (10h), reminder WhatsApp (10h), agendamentos de aula.
+          </div>
+        </div>
+
+        <div id="holidays-list"></div>
+      </div>
+
       <!-- ═══ ZOOM VIEW ═══ -->
       <div id="zoom-view" style="display:none">
         <div class="page-header">
@@ -895,6 +949,7 @@
 <script src="/js/admin/abstracts.js"></script>
 <script src="/js/admin/surveys.js"></script>
 <script src="/js/admin/automations.js"></script>
+<script src="/js/admin/holidays.js"></script>
 <script src="/js/admin/views.js"></script>
 <script src="/js/admin/init.js"></script>
 <script src="https://unpkg.com/lucide@0.469.0"></script>
@@ -1013,7 +1068,7 @@ function _setupIframeResize(frame) {
 
 window.switchView = async function(view, skipPush) {
   const allViews = ['dashboard','calendar','turmas','report','staff','classes',
-                    'notify','schedules','zoom','abstracts','surveys','automations'];
+                    'notify','schedules','holidays','zoom','abstracts','surveys','automations'];
   const viewWrap   = document.getElementById('view-wrap') || document.querySelector('.view-wrap');
   const embedFrame = document.getElementById('embed-frame');
   const mobileNav  = document.getElementById('mobile-nav');
@@ -1064,6 +1119,7 @@ window.switchView = async function(view, skipPush) {
   if (view === 'classes')   loadClasses();
   if (view === 'notify')    loadNotifyView();
   if (view === 'schedules') loadSchedulesView();
+  if (view === 'holidays')  loadHolidaysView();
   if (view === 'zoom')      loadZoomMeetings();
   if (view === 'abstracts') loadAbstractsView();
   if (view === 'surveys')   loadSurveysView();
@@ -1105,18 +1161,36 @@ async function loadDashboard() {
 }
 
 // ─── TURMAS VIEW ──────────────────────────────────────
-async function loadTurmasView() {
+let cohortFilter = 'active';
+let _cohortsCache = null;
+let _cohortStudentsByC = null;
+
+function setCohortFilter(filter) {
+  cohortFilter = filter;
+  const activeBtn = document.getElementById('cohort-filter-active-btn');
+  const inactiveBtn = document.getElementById('cohort-filter-inactive-btn');
+  if (activeBtn && inactiveBtn) {
+    activeBtn.style.background = filter === 'active' ? 'rgba(34,197,94,0.15)' : 'transparent';
+    activeBtn.style.color = filter === 'active' ? '#4ade80' : '#555';
+    activeBtn.style.borderColor = filter === 'active' ? '#22c55e40' : 'transparent';
+    inactiveBtn.style.background = filter === 'inactive' ? 'rgba(239,68,68,0.12)' : 'transparent';
+    inactiveBtn.style.color = filter === 'inactive' ? '#f87171' : '#555';
+    inactiveBtn.style.borderColor = filter === 'inactive' ? '#ef444440' : 'transparent';
+  }
+  renderTurmasList();
+}
+
+function renderTurmasList() {
   const container = document.getElementById('turmas-list');
-  container.innerHTML = '<div class="spinner"></div>';
-
-  const { data: cohorts, error } = await sb.from('cohorts').select('id, name, active').order('name');
-  if (error || !cohorts) { container.innerHTML = '<div style="color:#444;text-align:center;padding:40px">Erro ao carregar turmas.</div>'; return; }
-
-  const { data: csvData } = await sb.from('student_imports').select('id, cohort_id');
-  const byC = {};
-  (csvData ?? []).forEach(s => { byC[s.cohort_id] = (byC[s.cohort_id] || 0) + 1; });
-
-  const html = cohorts.map(c => {
+  if (!_cohortsCache) return;
+  const filtered = _cohortsCache.filter(c => cohortFilter === 'active' ? c.active !== false : c.active === false);
+  if (!filtered.length) {
+    const msg = cohortFilter === 'active' ? 'Nenhuma turma ativa' : 'Nenhuma turma inativa';
+    container.innerHTML = `<div style="text-align:center;color:#333;padding:40px">${msg}</div>`;
+    return;
+  }
+  const byC = _cohortStudentsByC || {};
+  const html = filtered.map(c => {
     const total = byC[c.id] ?? 0;
     const active = c.active !== false;
     return `<a class="turma-card" href="#" onclick="openInFrame('/turma/detalhe.html?id=${c.id}');return false;">
@@ -1134,6 +1208,22 @@ async function loadTurmasView() {
   container.innerHTML = `<div class="turma-grid">${html}</div>`;
 }
 
+async function loadTurmasView() {
+  const container = document.getElementById('turmas-list');
+  container.innerHTML = '<div class="spinner"></div>';
+
+  const { data: cohorts, error } = await sb.from('cohorts').select('id, name, active').order('name');
+  if (error || !cohorts) { container.innerHTML = '<div style="color:#444;text-align:center;padding:40px">Erro ao carregar turmas.</div>'; return; }
+
+  const { data: csvData } = await sb.from('student_imports').select('id, cohort_id');
+  const byC = {};
+  (csvData ?? []).forEach(s => { byC[s.cohort_id] = (byC[s.cohort_id] || 0) + 1; });
+
+  _cohortsCache = cohorts;
+  _cohortStudentsByC = byC;
+  renderTurmasList();
+}
+
 function escHtml(s) { return (s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // Determine initial view from URL params
@@ -1143,15 +1233,28 @@ function _getInitialView() {
 }
 
 // Start on the correct view after login
+// EPIC-015 Story 15.1 — guard reverse: bloqueia CS users em /admin/
 const _origAuth = window.checkAuth;
 window.checkAuth = async function() {
   const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    showApp();
-    const initial = _getInitialView();
-    switchView(initial, true);
-    await loadClasses(); await loadOverrides(); await loadAttendance();
+  if (!session) return;
+
+  // Story 15.1 — se role='cs', redirect para /cs/ (proteção dupla)
+  const role = session.user?.user_metadata?.role;
+  if (role === 'cs') {
+    window.location.replace(window.location.origin + '/cs/');
+    return;
   }
+  if (role !== 'admin') {
+    console.warn('[admin] role não autorizada para painel:', role);
+    await sb.auth.signOut();
+    return;
+  }
+
+  showApp();
+  const initial = _getInitialView();
+  switchView(initial, true);
+  await loadClasses(); await loadOverrides(); await loadAttendance();
 };
 
 lucide.createIcons();

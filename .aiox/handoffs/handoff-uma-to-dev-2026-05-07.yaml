@@ -1,0 +1,80 @@
+handoff:
+  from_agent: ux-design-expert
+  to_agent: dev
+  timestamp: 2026-05-07T00:30:00-03:00
+  consumed: false
+
+  story_context:
+    epic_id: EPIC-018
+    epic_path: docs/stories/epics/EPIC-018-lifecycle-journey-orchestration.md
+    epic_status: ADR-018 + UX deployed (/cs/approvals + /cs/journey-editor V1 + /cs/kanban V1)
+    current_task: Implementar worker engine + trigger ingestion (Stories 18.2b/c/d)
+    branch: feature/15.0-ac-discovery
+
+  decisions:
+    - "ADR-018 aprovado Aria: state machine PL/pgSQL + worker pg_cron 5min + event-driven trigger"
+    - "Approval queue model NON-NEGOTIABLE pra comm externa"
+    - "UX /cs/approvals + /cs/journey-editor + /cs/kanban deployed"
+    - "Backend tables journey_pending_approvals + journey_executions criadas + RLS"
+
+  files_modified:
+    - docs/architecture/ADR-018-journey-engine-v2.md (Aria spec)
+    - supabase/migrations/20260507100000_journey_approvals_executions.sql (Aria backend)
+    - cs-portal/src/pages/approvals.js (Uma UI)
+    - cs-portal/src/pages/journey-editor.js (Uma UI)
+    - cs-portal/src/pages/kanban.js (Uma UI V1)
+
+  blockers: []
+
+  next_action: |
+    Implementar 3 components backend (já speccados em ADR-018):
+
+    ## Story 18.2b — Worker function process_journey_states()
+    Per ADR-018 spec. Função PL/pgSQL que:
+    1. Loop em student_journey_states WHERE status='active' AND next_eval_at <= now() LIMIT 200 FOR UPDATE SKIP LOCKED
+    2. Pra cada state:
+       - Pega journey + step current
+       - Avalia trigger (purchase/time/inactivity/at_risk/manual)
+       - Action auto-fire (create_pending/slack_alert/tag_student) → executa direto
+       - Action externa (send_template/dispatch_survey) → INSERT journey_pending_approvals
+    3. Avança current_step + computa next_eval_at baseado em day_offset próximo
+    4. Log em journey_executions
+    5. statement_timeout = '120s'
+
+    Schedule pg_cron: */5 * * * *
+
+    ## Story 18.2c — Trigger enroll_student_in_journeys()
+    AFTER UPDATE em ac_purchase_events quando status mudou pra 'processed':
+    - Encontra journeys ativas linkadas ao cohort do mapping
+    - INSERT student_journey_states ON CONFLICT DO NOTHING
+    - Set next_eval_at = now() + 1min (worker pega imediato)
+
+    Requer: ALTER TABLE ac_product_mappings ADD COLUMN journey_id uuid REFERENCES journeys(id)
+
+    ## Story 18.2d — Anti-fatigue integration
+    Em process_journey_states(), antes de enfileirar action externa:
+    SELECT (allowed FROM can_dispatch_to_student(student_id))::boolean
+    Se false → skip step, mark needs retry, continua
+
+    Use frequency_capping function existente Story 17.7.
+
+    ## Story 18.2e — Approval execution worker
+    Quando approval status='approved':
+    - Trigger AFTER UPDATE chama execute_approved_journey_action()
+    - Function chama dispatch-survey OR create-meta-template baseado em action_type
+    - Updates journey_executions com result
+
+  context_summary: |
+    EPIC-018 Lifecycle Journey Orchestration — V2 implementação.
+
+    UX completa (Uma): /cs/approvals queue + /cs/journey-editor JSON V1 + /cs/kanban
+    read-only V1. Backend tables criadas.
+
+    Falta engine backend que processa state machine. ADR-018 specifica tudo —
+    Dex implementa direto baseado em spec.
+
+    Restrição CRÍTICA: worker NUNCA dispara comm externa direto.
+    SEMPRE INSERT em journey_pending_approvals, espera CS aprovar.
+
+    Test path: criar 1 journey ativa + 1 student com purchase recent → verifica
+    state criado → worker avança step → approval aparece em /cs/approvals.

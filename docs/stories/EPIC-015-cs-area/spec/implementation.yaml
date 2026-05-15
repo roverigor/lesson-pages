@@ -1,0 +1,596 @@
+storyId: EPIC-015-cs-area
+plannedAt: '2026-05-04T16:45:00Z'
+plannedBy: '@architect'
+specVersion: 1.1
+adrs:
+  - ADR-015-cs-portal-tech-stack.md
+  - ADR-016-async-dispatch-strategy.md
+
+decisionLog:
+  CRIT-1:
+    decision: 'Vanilla JS + esbuild + ES Modules + SortableJS'
+    rationale: 'Alinhamento total com lesson-pages atual; reuso direto design tokens; bundle ~45KB; curva aprendizado zero para CS team Claude Code; Article IV (No Invention) honrado.'
+    adr: ADR-015
+  CRIT-4:
+    decision: '5-phase migration: schema-additive → backfill → dual-write → dual-read → cleanup'
+    rationale: 'Backward-compatible, rollback-safe, sem downtime, sem perda de dados; cohort_id existing fica funcional durante shadow mode; novo código escolhe path via feature flag EPIC015_NEW_DISPATCH.'
+    detailedIn: 'implementation.yaml § migrationPlan'
+  CRIT-5:
+    decision: 'Hybrid B+A: minimal-sync handler + pg_cron worker + warm-up cron'
+    rationale: 'Webhook responde p95 < 500ms warm / < 2s cold (só HMAC + INSERT); processamento real em pg_cron worker a cada 30s com SKIP LOCKED; warm-up cron 4min como safety net; idempotência via UNIQUE constraint; latência event→dispatch ~30s aceitável para onboarding.'
+    adr: ADR-016
+
+# ─────────────────────────────────────────────────────────
+# Stories ordenadas + dependências
+# ─────────────────────────────────────────────────────────
+
+stories:
+  # ═══ WAVE 0 — DISCOVERY (BLOCKER) ═══
+  - id: 15.0
+    title: 'AC Discovery + validação 13 OQs + provisionamento contas'
+    repo: lesson-pages
+    size: S
+    estimatedHours: 8
+    wave: 0
+    dependsOn: []
+    preConditions: []
+    postConditions:
+      - 'OQ-1..13 respondidas em research.json'
+      - 'GitHub repo cs-portal criado com permissões CS team (CRIT-13)'
+      - 'Contas Anthropic Claude Code provisionadas (CRIT-13)'
+      - 'Meta template approval iniciado em paralelo (CRIT-6)'
+      - 'CODEOWNERS file commited em lesson-pages (CRIT-11)'
+    blocks: ['15.A', '15.J']
+    primaryAgent: '@analyst'
+    notes: 'BLOCKER absoluto. Sem isto nenhuma outra story executa.'
+
+  # ═══ WAVE 1 — FOUNDATION ═══
+  - id: 15.A
+    title: 'Schema migrations (7 tabelas + extensões + RLS + crons)'
+    repo: lesson-pages
+    size: M
+    estimatedHours: 16
+    wave: 1
+    dependsOn: ['15.0']
+    preConditions:
+      - 'OQ-1 (plataforma AC), OQ-2 (payload), OQ-5 (idempotency key) respondidas'
+    postConditions:
+      - '7 tabelas novas criadas com RLS + policies'
+      - '5 colunas adicionadas em survey_links'
+      - '1 coluna adicionada em students (ac_contact_id)'
+      - '2 colunas adicionadas em surveys (category, current_version_id)'
+      - '4 cron jobs ativos: process-ac-events, warmup-edge-functions, alert-ac-health, purge-old-events'
+      - 'View ac_integration_health funcional'
+    blocks: ['15.B', '15.C', '15.I', '15.L', '15.4', '15.G']
+    primaryAgent: '@data-engineer'
+    delegate: '@dev (assist)'
+    notes: 'Foundation story. Sem isto, nada funciona em backend.'
+
+  - id: 15.J
+    title: 'Bootstrap repo cs-portal + Docker + CI/CD'
+    repo: cs-portal
+    size: M
+    estimatedHours: 12
+    wave: 1
+    dependsOn: ['15.0']
+    preConditions:
+      - 'Repo GitHub cs-portal existe com permissões corretas'
+      - 'CS team com contas Anthropic'
+    postConditions:
+      - 'package.json + esbuild config funcional'
+      - 'Dockerfile build sem erros'
+      - 'GitHub Action deploy.yml passa em smoke test'
+      - 'CLAUDE.md repo cs-portal commited'
+      - 'README.md com setup instructions'
+      - 'Hash router minimal funcional'
+      - 'Auth guard skeleton (sem integração Supabase ainda)'
+    blocks: ['15.1', '15.5']
+    primaryAgent: '@dev'
+    delegate: '@devops (CI/CD config)'
+    notes: 'Pode rodar PARALELO com 15.A.'
+
+  # ═══ WAVE 2 — AUTH + WORKER FOUNDATION ═══
+  - id: 15.1
+    title: 'Role cs + auth + redirect role-based'
+    repo: shared
+    size: M
+    estimatedHours: 10
+    wave: 2
+    dependsOn: ['15.A', '15.J']
+    preConditions:
+      - 'Role cs documentado processo via Supabase dashboard (ASM-12)'
+      - 'cs-portal repo bootstrap completo'
+    postConditions:
+      - 'Login /admin/login redireciona role=cs → /cs/'
+      - 'Auth guard cs-portal valida role cs OR admin'
+      - 'Edge function dispatch-survey aceita cs OR admin'
+      - 'AC-1, AC-2, AC-3 passam'
+    blocks: ['15.2', '15.3', '15.4', '15.5', '15.6', '15.7', '15.D', '15.F']
+    primaryAgent: '@dev'
+
+  # Story 15.L ABSORVIDA em 15.A (decisão @sm 2026-05-05)
+  # Razão: 15.A AC-21..25 já cobrem worker SQL function + pg_cron jobs.
+  # Worker function process_ac_purchase_events_batch() criado na mesma migration de schema.
+  # Implementation.yaml originalmente listava 15.L como story separada por ADR-016, mas drafting
+  # confirmou redundância. Total stories ajustado: 20 → 19.
+
+  # ═══ WAVE 3 — EDGE FUNCTIONS ═══
+  - id: 15.B
+    title: 'Edge function ac-purchase-webhook (minimal-sync)'
+    repo: lesson-pages
+    size: M
+    estimatedHours: 12
+    wave: 3
+    dependsOn: ['15.A', '15.L']
+    preConditions:
+      - 'Schema + worker prontos'
+      - 'AC_WEBHOOK_SECRET configurado em Supabase secrets'
+    postConditions:
+      - 'Endpoint público /functions/v1/ac-purchase-webhook funcional'
+      - 'HMAC validation X-AC-Signature operante'
+      - 'Idempotência via UNIQUE constraint testada'
+      - 'Warm-up mode (?warmup=1) implementado'
+      - 'AC-4, AC-14, AC-15 passam'
+    blocks: ['15.D']
+    primaryAgent: '@dev'
+
+  - id: 15.C
+    title: 'Edge function ac-report-dispatch (callback)'
+    repo: lesson-pages
+    size: S
+    estimatedHours: 6
+    wave: 3
+    dependsOn: ['15.A']
+    preConditions:
+      - 'OQ-3, OQ-4 respondidas (AC API auth + custom_field write)'
+      - 'AC_API_KEY + AC_API_URL configurados'
+    postConditions:
+      - 'Function POST AC API com retry exp 3x'
+      - 'Persistência em ac_dispatch_callbacks'
+      - 'AC-12, AC-13 passam'
+    blocks: []
+    primaryAgent: '@dev'
+
+  - id: 15.I
+    title: 'Edge function meta-delivery-webhook'
+    repo: lesson-pages
+    size: M
+    estimatedHours: 10
+    wave: 3
+    dependsOn: ['15.A']
+    preConditions:
+      - 'OQ-6 confirma plano Meta suporta messages.update'
+      - 'Meta verify token configurado'
+    postConditions:
+      - 'Endpoint público recebe messages.update Meta'
+      - 'HMAC X-Hub-Signature-256 validado'
+      - 'UPSERT survey_links delivered_at + read_at via meta_message_id'
+      - 'AC-19 passa'
+      - 'EC-20 race condition tratado via UPSERT'
+    blocks: []
+    primaryAgent: '@dev'
+
+  - id: 15.4
+    title: 'Refactor dispatch-survey (aceitar student_ids) + UI dispatch'
+    repo: mixed
+    size: M
+    estimatedHours: 14
+    wave: 3
+    dependsOn: ['15.A', '15.J', '15.1']
+    preConditions:
+      - 'Schema com survey_recipients + survey_links extensions'
+      - 'Feature flag EPIC015_NEW_DISPATCH disponível em config'
+    postConditions:
+      - 'dispatch-survey aceita {survey_id, student_ids[]} explicitamente'
+      - 'sendWhatsAppTemplate extraída para _shared/meta-whatsapp.ts'
+      - 'UI cs-portal /cs/disparar funcional (cohort/individual/misto)'
+      - 'AC-8, AC-9 passam'
+      - 'Backward compat: dispatch antigo cohort_id continua funcionando atrás de feature flag'
+    blocks: []
+    primaryAgent: '@dev'
+
+  # ═══ WAVE 4 — UI CS-PORTAL ═══
+  - id: 15.5
+    title: 'Área CS standalone + sidebar 8 tabs + nginx'
+    repo: cs-portal
+    size: M
+    estimatedHours: 14
+    wave: 4
+    dependsOn: ['15.1', '15.J']
+    preConditions:
+      - 'Auth guard funcional'
+      - 'Hash router minimal pronto'
+    postConditions:
+      - 'cs-portal/index.html shell completo'
+      - 'Sidebar com 8 tabs (Dashboard, Cohorts, Alunos, Forms, Pendentes, Disparos, Histórico, Integrações)'
+      - 'Nginx VPS roteia /cs/* → :3081 (Story 15.K)'
+      - 'Smoke test: navega entre tabs sem reload'
+    blocks: ['15.2', '15.3', '15.6', '15.7', '15.D', '15.F']
+    primaryAgent: '@dev'
+
+  - id: 15.K
+    title: 'Nginx VPS routing + container cs-portal :3081 deploy'
+    repo: infra
+    size: S
+    estimatedHours: 4
+    wave: 4
+    dependsOn: ['15.J']
+    preConditions:
+      - 'Container cs-portal buildando'
+      - 'GitHub Action deploy.yml funcional'
+    postConditions:
+      - 'painel.igorrover.com.br/cs/ responde HTTPS 200'
+      - 'Nginx config commit em git infra ou docs'
+      - 'SSL via Let''s Encrypt validado'
+    blocks: ['15.5 production-ready']
+    primaryAgent: '@devops'
+
+  - id: 15.2
+    title: 'UI cohorts CRUD'
+    repo: cs-portal
+    size: M
+    estimatedHours: 10
+    wave: 4
+    dependsOn: ['15.5']
+    preConditions:
+      - 'Sidebar funcional'
+    postConditions:
+      - '/cs/#/cohorts lista + criar + editar + arquivar'
+      - 'Search + filtros active/archived'
+      - 'AC-9 (parte criar cohort) passa'
+    blocks: ['15.3']
+    primaryAgent: '@dev'
+
+  - id: 15.3
+    title: 'UI alunos por turma + bulk import CSV'
+    repo: cs-portal
+    size: M
+    estimatedHours: 12
+    wave: 4
+    dependsOn: ['15.2']
+    preConditions:
+      - 'Cohorts CRUD funcional'
+    postConditions:
+      - '/cs/#/students drawer por aluno'
+      - 'Add/remover/editar manual'
+      - 'Bulk import CSV com validação + dedup'
+      - 'AC-21 passa'
+      - 'EC-19 (phone update + audit) testado'
+      - 'EC-23 (CSV duplicates) testado'
+    blocks: []
+    primaryAgent: '@dev'
+
+  - id: 15.G
+    title: 'Versioning forms (schema + UI badge)'
+    repo: mixed
+    size: S
+    estimatedHours: 6
+    wave: 4
+    dependsOn: ['15.A']
+    preConditions:
+      - 'survey_versions tabela criada'
+    postConditions:
+      - 'Trigger SQL: INSERT survey_questions vira nova versão se survey já tem disparos'
+      - 'UI badge "X disparos usaram versão atual"'
+      - 'AC-10 passa'
+    blocks: ['15.6']
+    primaryAgent: '@dev'
+
+  # ═══ WAVE 5 — UI ADVANCED ═══
+  - id: 15.6
+    title: 'Form builder full (drag-drop 13 tipos + preview live)'
+    repo: cs-portal
+    size: L
+    estimatedHours: 24
+    wave: 5
+    dependsOn: ['15.5', '15.G']
+    preConditions:
+      - 'SortableJS instalado'
+      - 'Versioning schema pronto'
+    postConditions:
+      - '/cs/#/forms/new builder funcional'
+      - '13 tipos: nps, csat, text, textarea, choice, multi, scale, rating, date, email, phone, number, section_break'
+      - 'Preview live mobile/desktop toggle'
+      - 'Save → surveys + survey_versions v1 + survey_questions'
+      - 'Edit form ativo cria v2 automaticamente'
+      - 'AC-7, AC-10 passam'
+      - 'NFR-7 (drag <300ms) instrumentação medindo'
+    blocks: []
+    primaryAgent: '@dev'
+    notes: 'Story L mais pesada. Considerar split 15.6a/15.6b se time não comportar.'
+
+  - id: 15.F
+    title: 'Resolução cohort manual (UI pendentes)'
+    repo: cs-portal
+    size: M
+    estimatedHours: 12
+    wave: 5
+    dependsOn: ['15.5', '15.A']
+    preConditions:
+      - 'pending_student_assignments tabela populada'
+      - 'Sidebar com badge contador'
+    postConditions:
+      - '/cs/#/pending lista pendentes'
+      - 'Drawer com payload AC + suggested_cohort'
+      - 'Atribuir cohort + dispara form'
+      - 'Opção "criar mapping permanente"'
+      - 'AC-6 passa'
+    blocks: []
+    primaryAgent: '@dev'
+
+  - id: 15.D
+    title: 'UI mappings AC + lista eventos'
+    repo: cs-portal
+    size: M
+    estimatedHours: 10
+    wave: 5
+    dependsOn: ['15.B', '15.5']
+    preConditions:
+      - 'ac_product_mappings funcional'
+      - 'ac_purchase_events recebendo dados'
+    postConditions:
+      - '/cs/#/integrations CRUD mappings'
+      - 'Tab "Eventos AC" com filtros + drill-down'
+      - 'AC-22, AC-23 passam'
+    blocks: []
+    primaryAgent: '@dev'
+
+  - id: 15.7
+    title: 'Histórico/auditoria + drill-down aluno timeline'
+    repo: cs-portal
+    size: S
+    estimatedHours: 8
+    wave: 5
+    dependsOn: ['15.A', '15.5']
+    preConditions:
+      - 'Schema com 4 timestamps + cohort_snapshot_name'
+    postConditions:
+      - 'View student_dispatch_timeline em SQL'
+      - '/cs/#/history filtros + export CSV'
+      - 'Drawer aluno com timeline cronológica'
+      - 'AC-11, AC-16 passam'
+      - 'NFR-18 (<1s) medido'
+    blocks: []
+    primaryAgent: '@dev'
+
+  # ═══ WAVE 6 — OPS + POLISH ═══
+  - id: 15.8
+    title: 'Meta templates registry (tabela DB + UI)'
+    repo: mixed
+    size: S
+    estimatedHours: 6
+    wave: 6
+    dependsOn: ['15.A']
+    preConditions:
+      - 'meta_templates tabela criada'
+      - 'OQ-8 (templates aprovados) listados'
+    postConditions:
+      - 'Tabela meta_templates seedada com templates atuais'
+      - 'UI cs-portal seleção em mappings + dispatch'
+      - 'Refactor dispatch-survey valida template existe + ativo'
+    blocks: []
+    primaryAgent: '@dev'
+
+  - id: 15.E
+    title: 'Observabilidade + alertas Slack'
+    repo: lesson-pages
+    size: S
+    estimatedHours: 8
+    wave: 6
+    dependsOn: ['15.B', '15.C', '15.I', '15.L']
+    preConditions:
+      - 'Edge functions todas operantes'
+    postConditions:
+      - 'Função alert_slack_if_unhealthy() implementada'
+      - 'Cron 15min disparando alerts se thresholds excedidos'
+      - 'NFR-10 atendido (alert > 10% fail rate)'
+      - 'NFR-12 atendido (pendente > 24h alert)'
+    blocks: []
+    primaryAgent: '@dev'
+
+# ─────────────────────────────────────────────────────────
+# Wave Grouping para *execute-epic
+# ─────────────────────────────────────────────────────────
+
+waves:
+  - waveNumber: 0
+    name: 'Discovery'
+    parallel: false
+    stories: ['15.0']
+    estimatedHours: 8
+    blocks: 'all'
+
+  - waveNumber: 1
+    name: 'Foundation'
+    parallel: true
+    stories: ['15.A', '15.J']
+    estimatedHours: 16
+    description: 'Schema + bootstrap repo paralelos'
+
+  - waveNumber: 2
+    name: 'Auth + Worker Core'
+    parallel: true
+    stories: ['15.1', '15.L']
+    estimatedHours: 12
+
+  - waveNumber: 3
+    name: 'Edge Functions'
+    parallel: true
+    stories: ['15.B', '15.C', '15.I', '15.4']
+    estimatedHours: 14
+    description: '4 edge functions paralelas (workers diferentes)'
+
+  - waveNumber: 4
+    name: 'UI Foundation + Infra'
+    parallel: true
+    stories: ['15.5', '15.K', '15.2', '15.3', '15.G']
+    estimatedHours: 14
+    description: '15.5 e 15.K bloqueiam outras; 15.2 → 15.3 sequencial'
+
+  - waveNumber: 5
+    name: 'UI Advanced'
+    parallel: true
+    stories: ['15.6', '15.F', '15.D', '15.7']
+    estimatedHours: 24
+    description: 'Story 15.6 é a mais pesada — alocar dev senior'
+
+  - waveNumber: 6
+    name: 'Ops + Polish'
+    parallel: true
+    stories: ['15.8', '15.E']
+    estimatedHours: 8
+
+# ─────────────────────────────────────────────────────────
+# Estimativas Agregadas
+# ─────────────────────────────────────────────────────────
+
+totalStories: 19
+totalEstimatedHours: 222
+totalEstimatedSprints: 5.5
+estimatedTeamSize: '2-3 devs em paralelo (1 backend, 1 frontend, 1 fullstack opcional)'
+criticalPath:
+  - '15.0 (8h)'
+  - '15.A (16h)'
+  - '15.L (12h)'
+  - '15.B (12h)'
+  - '15.5 (14h)'
+  - '15.6 (24h)'
+  - '15.E (8h)'
+totalCriticalPathHours: 94
+parallelizationGain: '~58% (222h sequencial → 94h crítico)'
+
+# ─────────────────────────────────────────────────────────
+# Migration Plan EPIC-004 → EPIC-015
+# ─────────────────────────────────────────────────────────
+
+migrationPlan:
+  strategy: '5-phase additive migration (zero-downtime, rollback-safe)'
+  featureFlag: 'EPIC015_NEW_DISPATCH'
+
+  phases:
+    - phase: 0
+      name: 'Schema-Additive'
+      story: '15.A'
+      changes:
+        - 'CREATE TABLE survey_versions, ac_purchase_events, pending_student_assignments, ac_product_mappings, ac_dispatch_callbacks, meta_templates, survey_recipients (se decidido)'
+        - 'ALTER TABLE survey_links ADD COLUMN delivered_at, read_at, version_id NULLABLE, meta_message_id, cohort_snapshot_name'
+        - 'ALTER TABLE students ADD COLUMN ac_contact_id UNIQUE NULLABLE'
+        - 'ALTER TABLE surveys ADD COLUMN category, current_version_id'
+      breaking: false
+      reversible: true
+      validation: 'Smoke test: surveys legacy continuam funcionando'
+
+    - phase: 1
+      name: 'Backfill'
+      story: '15.A.bis'
+      changes:
+        - 'INSERT survey_versions: para cada survey existente, criar v1 com snapshot atual de survey_questions'
+        - 'UPDATE survey_links SET version_id = v1 para todos existentes'
+        - 'UPDATE survey_links SET cohort_snapshot_name = (SELECT name FROM cohorts WHERE id = surveys.cohort_id) para todos existentes via surveys join'
+        - 'UPDATE surveys SET current_version_id = v1.id'
+      breaking: false
+      reversible: true
+      validation: 'Query: SELECT COUNT(*) WHERE version_id IS NULL = 0'
+
+    - phase: 2
+      name: 'Dual-Write (feature flag OFF)'
+      story: '15.4'
+      changes:
+        - 'dispatch-survey detecta feature flag EPIC015_NEW_DISPATCH'
+        - 'IF flag=OFF: comportamento legacy (filtra por surveys.cohort_id)'
+        - 'IF flag=ON: usa survey_recipients explícito + grava version_id + cohort_snapshot_name'
+        - 'Default flag=OFF em prod até validation'
+      breaking: false
+      reversible: true
+      validation: 'Tests: ambos paths funcionam isoladamente'
+
+    - phase: 3
+      name: 'Shadow Mode (flag ON)'
+      story: '15.4 + 15.B'
+      changes:
+        - 'Liga EPIC015_NEW_DISPATCH=ON em prod'
+        - 'Novos surveys (criados pós-deploy) usam path novo'
+        - 'Surveys legacy ATIVOS continuam funcionando via fallback no dispatch-survey'
+        - 'Monitor: comparar latency, error rate, completeness entre paths'
+      duration: '1 sprint mínimo'
+      breaking: false
+      reversible: true
+      validation: 'Métricas: 0 regressão; novos disparos têm version_id + cohort_snapshot_name 100%'
+
+    - phase: 4
+      name: 'Cleanup Legacy Path'
+      story: '15.M (futura)'
+      changes:
+        - 'Remove fallback legacy de dispatch-survey'
+        - 'Migration: arquivar surveys ativos pré-migração que ainda não foram encerrados'
+        - 'Mantém dados históricos (não DELETE)'
+      breaking: true
+      reversible: false
+      validation: 'Smoke test: novos dispatches funcionam; histórico preservado'
+      blockedUntil: 'Phase 3 com 4 semanas de produção sem regressão'
+
+  rollbackPlan:
+    fromPhase3: 'Disable feature flag EPIC015_NEW_DISPATCH=OFF; legacy path retoma'
+    fromPhase2: 'Revert dispatch-survey commit; tabelas novas ficam vazias mas existem'
+    fromPhase1: 'TRUNCATE backfilled rows; ALTER COLUMN para NULLABLE'
+    fromPhase0: 'DROP TABLE novas; DROP COLUMN novas (perde dados)'
+
+# ─────────────────────────────────────────────────────────
+# Risk Assessment Atualizado
+# ─────────────────────────────────────────────────────────
+
+risks:
+  - id: R-Plan-1
+    description: 'Story 15.6 (form builder L=24h) pode estourar sprint'
+    severity: medium
+    mitigation: 'Split em 15.6a (core 6 tipos) + 15.6b (advanced 7 tipos) se sprint não comportar'
+
+  - id: R-Plan-2
+    description: 'Story 15.0 Discovery bloqueia tudo — se OQs não respondidas em prazo'
+    severity: high
+    mitigation: '@analyst paraleliza Meta template approval (CRIT-6); @devops paraleliza GitHub repo (CRIT-13)'
+
+  - id: R-Plan-3
+    description: 'Worker pg_cron pode acumular lag em pico (>50 events em 30s)'
+    severity: medium
+    mitigation: 'V1 single worker LIMIT 50; V2 escalar batch ou paralelizar com SKIP LOCKED'
+
+  - id: R-Plan-4
+    description: 'Migration phase 3 (shadow mode) pode revelar regressões em surveys ativos'
+    severity: medium
+    mitigation: 'Feature flag OFF default; rollout gradual %; monitoring estrito'
+
+# ─────────────────────────────────────────────────────────
+# Pre-Conditions Globais (antes de qualquer story)
+# ─────────────────────────────────────────────────────────
+
+globalPreConditions:
+  - 'Branch main estável (último commit 9940e9c)'
+  - 'Supabase project gpufcipkajppykmnmdeh acessível'
+  - 'VPS Contabo 194.163.179.68 ssh funcional'
+  - 'GitHub roverigor/lesson-pages e roverigor/cs-portal acessíveis'
+  - 'Slack workspace integrações configurado'
+  - 'Meta Business account com template aprovado pesquisa_csat_painel'
+  - 'ActiveCampaign account com permissões de webhook + API'
+
+# ─────────────────────────────────────────────────────────
+# Post-Conditions Globais (epic completo)
+# ─────────────────────────────────────────────────────────
+
+globalPostConditions:
+  - 'Time CS opera autonomamente em /cs/* (cs-portal)'
+  - 'Compras AC geram student + form disparado < 5min (auto-onboarding)'
+  - 'Pendentes resolvidos manualmente em ≤ 3 cliques'
+  - 'Tracking 4 timestamps cobertura > 80%'
+  - 'EPIC-004 surveys legacy continuam funcionando OR migrados'
+  - 'Observabilidade Slack alerts ativa'
+  - '0 HIGH issues CodeRabbit em código merged'
+  - 'Documentação cs-onboarding-guide.md publicada'
+
+# ─────────────────────────────────────────────────────────
+# Next Action
+# ─────────────────────────────────────────────────────────
+
+nextAction: 'Handoff para @po para validate-spec OR direto para @sm *draft Story 15.0'
+recommendedNext: '@sm *draft 15.0'
+reasoning: 'Spec estável + ADRs prontos + plan detalhado. @po validation pode rodar em paralelo com 15.0 drafting; não bloqueia.'

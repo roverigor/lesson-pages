@@ -1,0 +1,302 @@
+{
+  "$schema": "./research-schema.json",
+  "_metadata": {
+    "_status": "IN_PROGRESS — partial answers from user 2026-05-04",
+    "_createdAt": "2026-05-04T00:00:00Z",
+    "_createdBy": "@analyst (Atlas)",
+    "_lastUpdatedAt": "2026-05-04T17:00:00Z",
+    "_instructions": "Preencher cada bloco oqN com respostas validadas. Substituir _PENDING_ por valores reais. Validar contra research-schema.json antes de marcar Story 15.0 como Done."
+  },
+
+  "storyId": "15.0",
+  "completedAt": "_PENDING_",
+  "completedBy": "@analyst",
+
+  "stakeholders": [
+    {
+      "role": "AC admin",
+      "user": "_PENDING_email_or_name_",
+      "contactedAt": "_PENDING_"
+    },
+    {
+      "role": "Meta Business admin",
+      "user": "user (roverigor)",
+      "contactedAt": "2026-05-04"
+    },
+    {
+      "role": "GitHub org owner",
+      "user": "roverigor (confirmado pelo user)",
+      "contactedAt": "2026-05-04"
+    },
+    {
+      "role": "DPO / Legal",
+      "user": "user (próprio — sem DPO formal V1)",
+      "contactedAt": "2026-05-04"
+    },
+    {
+      "role": "Anthropic billing admin",
+      "user": "_PENDING_",
+      "contactedAt": "_PENDING_"
+    }
+  ],
+
+  "oq1": {
+    "platform": "ActiveCampaign",
+    "adminUrl": "_PENDING_https://___.activehosted.com_",
+    "plan": "_PENDING_user_will_check_",
+    "apiVersion": "v3 (assumido)",
+    "validationEvidence": "User confirmou plataforma 2026-05-04. Plan tier ainda não validado."
+  },
+
+  "oq2": {
+    "payloadSample": {
+      "_PENDING_": "Capturar payload real via webhook.site OR endpoint AC sandbox"
+    },
+    "fields": [],
+    "extras": [],
+    "capturedVia": "_PENDING_webhook.site_url_or_endpoint_"
+  },
+
+  "oq3": {
+    "authMethod": "_PENDING_hmac_or_url_token_",
+    "header": "_PENDING_X-AC-Signature_or_other_",
+    "algorithm": "_PENDING_sha256_",
+    "secretLocation": "Supabase secret AC_WEBHOOK_SECRET",
+    "fallbackStrategy": "Se url_token: IP allowlist + token rotation a cada 90d"
+  },
+
+  "oq4": {
+    "supportsCustomField": "_PENDING_true_or_false_",
+    "endpoint": "_PENDING_https://_account_.api-us1.com/api/3/contacts/_id_/fieldValues_",
+    "method": "POST",
+    "authMethod": "_PENDING_Api-Token_header_",
+    "samplePayload": {
+      "_PENDING_": "exemplo de payload write custom field"
+    },
+    "fallback": "_PENDING_tag_or_note_or_contact_update_or_none_",
+    "fallbackJustification": "_PENDING_se_supportsCustomField_false_descrever_alternativa_"
+  },
+
+  "oq5": {
+    "strategy": "_PENDING_ac_event_id_or_derived_",
+    "field": "_PENDING_event_id_or_${order_id}_${contact_id}_${product_id}_",
+    "uniquenessGuarantee": "_PENDING_descrever_garantia_unicidade_",
+    "collisionRisk": "_PENDING_none_low_medium_high_"
+  },
+
+  "oq6": {
+    "webhookSupported": "_PENDING_validar_em_console_meta_",
+    "messagesUpdateAvailable": "_PENDING_validar_em_console_meta_",
+    "deliveredReceipt": "_PENDING_",
+    "readReceipt": "_PENDING_",
+    "verifyToken": "configured (user provided 2026-05-04, valor SOMENTE em Supabase secrets — rotacionar recomendado)",
+    "metaPlanTier": "_PENDING_business_plan_check_",
+    "fallbackIfUnavailable": "Se messages.update não suportado: NFR-17 vira best-effort. Tracking limitado a sent_at (envio Meta API) + responded_at (aluno responde web). Sem delivered_at/read_at."
+  },
+
+  "oq7": {
+    "volumePerDay": 7,
+    "volumePerMonth": 200,
+    "peakHour": "_PENDING_",
+    "peakDayOfWeek": "_PENDING_",
+    "burstSize": "_PENDING_estimado_30/dia_em_campanha_",
+    "source": "user (high-ticket, 200 compras/mês confirmadas 2026-05-04)",
+    "_note": "Volume MUITO menor que ASM-13 (1000/dia). Arquitetura ADR-016 fica com folga grande. Atualizar NFR-9: 1000/dia → 30/dia pico."
+  },
+
+  "oq8": {
+    "approvedTemplates": [
+      {
+        "name": "pesquisa_csat_painel",
+        "language": "pt_BR",
+        "category": "MARKETING",
+        "bodyParamsCount": 2,
+        "buttonCount": 1,
+        "status": "APPROVED",
+        "approvedAt": "_PENDING_inferred_existing_in_dispatch-survey_code_"
+      }
+    ],
+    "extractedAt": "_PENDING_",
+    "extractionMethod": "_PENDING_graph_api_or_manual_console_",
+    "_note": "Inferido do código existente em dispatch-survey/index.ts L388-396. Lista completa pendente extração via Graph API ou console Meta."
+  },
+
+  "oq9": {
+    "retentionDays": 90,
+    "approvedBy": "user (sem DPO formal V1)",
+    "approvalDate": "2026-05-04",
+    "lgpdJustification": "User pediu 'retenção máxima' — interpretado como manter 90d default (já em CON-7 do spec). PII mínima necessária para audit + idempotência. Após 90d, delete preserva dados não-PII (ac_event_id, status) se necessário para análise histórica anônima.",
+    "_note": "User confirmou 'retenção máxima' = 90 dias do default. Caso DPO formal exija menos no futuro, ajustar via NFR-13 cron purge."
+  },
+
+  "oq10": {
+    "v1Heuristic": "fuzzy_match_name",
+    "rationale": "User confirmou: 'sim sugira o cohort se tiver nome ou alguma informação variável junta'. Implementação V1: Levenshtein/trigram match entre nome do produto AC e nome de cohort existentes. Se score > threshold (ex: 0.7), preencher suggested_cohort_id para CS revisar.",
+    "v2Plan": "ML-based suggestion via histórico de mappings + features adicionais (categoria, preço, data). V2 só após 100+ mappings em produção."
+  },
+
+  "oq11": {
+    "cardinality": "N:1",
+    "rationale": "User confirmou: 'pode ser vários produtos'. Múltiplos ac_product_id podem mapear para a mesma cohort + survey. Schema atual ac_product_mappings JÁ suporta naturalmente — basta UNIQUE em ac_product_id (cada produto único define seu destino). Cohort destino pode se repetir entre rows.",
+    "schemaImpact": "ZERO mudança de schema. UNIQUE constraint em ac_product_id permanece (cada produto único). cohort_id e survey_id podem repetir entre rows. Atualizar ASM-19 em requirements.json: 1:1 → N:1."
+  },
+
+  "oq12": {
+    "slaHours": 24,
+    "rationale": "User confirmou: 'pode ser 24 horas'. Pendentes não resolvidos em 24h disparam Slack alert escalation. Mantém NFR-12 default.",
+    "escalationChain": [
+      "_PENDING_email_CS_lead_",
+      "_PENDING_email_PM_"
+    ]
+  },
+
+  "oq13": {
+    "repoUrl": "https://github.com/roverigor/cs-portal",
+    "createdAt": "2026-05-04T20:59:30Z",
+    "branchProtection": false,
+    "visibility": "private",
+    "csTeamMembers": [
+      {
+        "email": "_PENDING_cs1@exemplo.com_",
+        "githubUsername": "_PENDING_username_",
+        "role": "write"
+      }
+    ],
+    "_note": "Repo criado via gh CLI (account roverigor) 2026-05-04. Branch protection + CS team access pendentes — aguarda user fornecer usernames CS."
+  },
+
+  "provisioning": {
+    "csPortalRepo": {
+      "url": "https://github.com/roverigor/cs-portal",
+      "createdAt": "2026-05-04T20:59:30Z",
+      "createdBy": "@analyst via gh CLI (auth roverigor)",
+      "branchProtection": false,
+      "branchProtectionTodo": "gh api -X PUT /repos/roverigor/cs-portal/branches/main/protection (após primeiro commit pelo time)",
+      "ciCdPipelineConfigured": false,
+      "visibility": "private",
+      "description": "CS Portal — Customer Success area for NPS/Onboarding forms + ActiveCampaign integration (EPIC-015)"
+    },
+    "claudeAccounts": [
+      {
+        "email": "_PENDING_cs1@exemplo.com_",
+        "status": "pending",
+        "activatedAt": "_PENDING_"
+      }
+    ],
+    "metaTemplateRequest": {
+      "name": "onboarding_aluno_painel",
+      "submittedAt": "_PENDING_",
+      "status": "pending",
+      "estimatedApprovalDate": "_PENDING_yyyy-mm-dd_",
+      "templatePreview": {
+        "_PENDING_": "Body + button placeholders + parâmetros — definir antes de submeter Meta"
+      }
+    },
+    "codeownersCommit": "_PENDING_after_commit_branch_feature_15.0_"
+  },
+
+  "metaConfigValidation": {
+    "validatedAt": "2026-05-04T17:00:00Z",
+    "validatedBy": "@analyst",
+    "metaBusinessNumber": "+55 48 8800-0116 (Inbox WP Suporte)",
+    "securityIncident": {
+      "occurredAt": "2026-05-04",
+      "description": "User colou META_API_KEY + META_WEBHOOK_VERIFY_TOKEN em chat. Ambos devem ser rotacionados antes de uso prod EPIC-015.",
+      "actionRequired": "Rotacionar API key no Meta Business Manager → System Users; gerar novo verify_token via openssl rand -hex 32; setar via supabase secrets set."
+    },
+    "currentlyConfigured": [
+      {
+        "secret": "META_PHONE_NUMBER_ID",
+        "status": "configured (in use por dispatch-survey, send-whatsapp, send-whatsapp-reminder, zoom-attendance)",
+        "evidence": "supabase/functions/dispatch-survey/index.ts:16, send-whatsapp/index.ts:16",
+        "valueLength": 15
+      },
+      {
+        "secret": "META_API_KEY",
+        "status": "configured (rotacionar urgente — exposto em chat 2026-05-04)",
+        "evidence": "Bearer auth para POST graph.facebook.com/v21.0/{phone_id}/messages",
+        "rotationRequired": true
+      },
+      {
+        "secret": "META_WABA_ID",
+        "status": "received from user 2026-05-04 — setar via supabase secrets set (não persistido aqui)",
+        "purpose": "WhatsApp Business Account ID para Graph API GET /{WABA_ID}/message_templates (Story 15.8)",
+        "valueLength": 15
+      },
+      {
+        "secret": "META_WEBHOOK_VERIFY_TOKEN",
+        "status": "received from user 2026-05-04 — rotacionar (exposto em chat) + setar via supabase secrets set",
+        "purpose": "Verify subscription Meta webhook (challenge GET hub.verify_token)",
+        "rotationRequired": true
+      }
+    ],
+    "missingForEpic015": [
+      {
+        "secret": "META_WEBHOOK_URL",
+        "purpose": "URL pública do edge function meta-delivery-webhook para registrar no Meta App",
+        "howToObtain": "Após deploy de Story 15.I: https://gpufcipkajppykmnmdeh.supabase.co/functions/v1/meta-delivery-webhook",
+        "blocks": "Story 15.I production setup (passo Meta App Webhooks subscription)",
+        "severity": "HIGH (registro no Meta exige URL pública)",
+        "status": "deferred_until_15.I_deploy"
+      }
+    ],
+    "notRequiredV1": [
+      {
+        "secret": "META_APP_SECRET",
+        "rationale": "Decisão user 2026-05-04: pattern atual de produção (4 edge functions Meta funcionando) NÃO usa APP_SECRET. Stack outbound autenticada via META_API_KEY (Bearer); webhook delivery V1 valida via META_WEBHOOK_VERIFY_TOKEN (subscription) + idempotência meta_message_id + URL secrecy. Adicionar HMAC é opção futura sem refactor.",
+        "v1Mitigations": [
+          "META_WEBHOOK_VERIFY_TOKEN valida subscription Meta",
+          "UNIQUE meta_message_id constraint deduplica replay",
+          "Schema validation rejeita payloads malformados",
+          "Reject meta_message_id sem matching survey_link existente",
+          "Rate limit edge function (100/min/IP)",
+          "Slack alert se taxa anômala (>10x normal)"
+        ],
+        "acceptedRisk": "Atacante que descubra URL pública pode tentar marcar delivered_at/read_at incorretos. Zero perda de dados, zero comprometimento credentials. Volume baixo (200/mês) reduz superfície ataque."
+      }
+    ],
+    "envExampleGap": {
+      "issue": ".env.example NÃO documenta META_PHONE_NUMBER_ID nem META_API_KEY (apesar de estarem em uso em 4 edge functions)",
+      "recommendation": "Adicionar seção 'WhatsApp / Meta Cloud API' em .env.example com todos secrets atuais + futuros. Ação: incluir em Story 15.0 T6.x ou 15.A."
+    },
+    "permissionsToVerify": [
+      "Meta App tem permissões whatsapp_business_messaging + whatsapp_business_management",
+      "Meta App tem subscription de webhook fields: messages, message_status (= messages.update)",
+      "WABA tem phone number verificado e ativo",
+      "Plano Meta suporta delivery + read receipts (Conversations Tier)"
+    ]
+  },
+
+  "specChanges": [
+    {
+      "file": "requirements.json",
+      "section": "ASM-19",
+      "change": "Cardinalidade ac_product_mappings: 1:1 → N:1",
+      "reason": "OQ-11 user confirmou múltiplos produtos podem apontar para mesma cohort"
+    },
+    {
+      "file": "requirements.json",
+      "section": "ASM-1",
+      "change": "validation_needed: true → false",
+      "reason": "OQ-1 user confirmou ActiveCampaign"
+    },
+    {
+      "file": "requirements.json",
+      "section": "ASM-8",
+      "change": "validation_needed: false (já default) — confirmar registro 90d explícito",
+      "reason": "OQ-9 user pediu retenção máxima = 90d default mantido"
+    },
+    {
+      "file": "requirements.json",
+      "section": "ASM-13 + NFR-9",
+      "change": "Volume 1000/dia → 200/mês (~7-30/dia em campanhas). Reduzir NFR-9 throughput target.",
+      "reason": "OQ-7 user confirmou high-ticket business com volume baixo"
+    },
+    {
+      "file": ".env.example",
+      "section": "WhatsApp / Meta Cloud API (NOVA seção)",
+      "change": "Adicionar variáveis META_PHONE_NUMBER_ID, META_API_KEY (atuais), META_WABA_ID, META_WEBHOOK_VERIFY_TOKEN, META_APP_SECRET (novas para EPIC-015)",
+      "reason": "Documentar gap descoberto na validação Meta config"
+    }
+  ]
+}

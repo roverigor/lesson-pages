@@ -1,0 +1,71 @@
+handoff:
+  from_agent: ux-design-expert
+  to_agent: architect
+  timestamp: 2026-05-06T19:30:00-03:00
+  consumed: false
+
+  story_context:
+    epic_id: EPIC-018
+    epic_path: docs/stories/epics/EPIC-018-lifecycle-journey-orchestration.md
+    epic_status: V1 foundation entregue (schema + 8 templates inativos + UI lista)
+    current_task: Desenhar ADR-018 — Journey Engine V2 (worker + visual editor + kanban)
+    branch: feature/15.0-ac-discovery
+
+  decisions:
+    - "V1 entregue: 8 jornadas pre-built (todas inativas), tabelas journeys + student_journey_states"
+    - "Sidebar /cs/ reagrupada em 6 categorias (UX fix Uma)"
+    - "/cs/kanban V1 read-only (cards alunos por step)"
+    - "Aria deve desenhar ADR completo Journey Engine V2"
+
+  files_modified:
+    - public/index.html (sidebar reagrupada)
+    - public/assets/cs-shared.css (group labels)
+    - src/pages/kanban.js (V1 read-only)
+    - supabase/migrations/20260506180000_more_journeys.sql (5 jornadas extras)
+
+  blockers: []
+
+  next_action: |
+    Desenhar ADR-018 — Journey Engine V2.
+
+    Pontos pra Aria decidir:
+
+    1. **State machine engine**: custom SQL functions OR XState lib OR n8n adapter?
+    2. **Worker pg_cron cadence**: 5min OR 1min OR event-driven trigger?
+    3. **Triggers ingestion**:
+       - Compra (já temos via ac/hotmart-purchase-webhook)
+       - Tempo decorrido (day_offset desde started_at)
+       - Inatividade X dias (cruza com engagement_signals)
+       - Módulo concluído (precisa webhook do LMS — qual?)
+       - At-risk detected (cruza com student_engagement_scores)
+       - Manual (CS rep avança step manualmente)
+    4. **Branching**: linear V1 OR if/else conditions desde início?
+    5. **Anti-fatigue**: integra com frequency_capping (Story 17.7) global?
+    6. **Pause/resume per student**: paused_reason field — quando auto-pause vs manual?
+    7. **Anti-loop**: aluno pode estar em N journeys simultâneas? Limit?
+    8. **Visual editor (UX scope Uma)**: nodes drag-drop OR YAML editor OR ambos?
+    9. **Performance scale**: 865 alunos × 8 journeys = 7K rows state. OK até 10K. Acima?
+    10. **Trigger 'send_template' action**: REQUER aprovação humana inline (regra NON-NEGOTIABLE) — como modelar?
+
+    Estado atual:
+    - journeys table com 8 templates inativos
+    - student_journey_states table existe mas vazia
+    - Worker pg_cron NÃO existe ainda
+    - UI kanban V1 read-only deployed
+
+  context_summary: |
+    EPIC-018 Lifecycle Journey Orchestration. V1 foundation entregue: schema +
+    8 templates pré-built + UI kanban read-only. Falta engine completo:
+    - Worker pg_cron processa student_journey_states avaliando next_eval_at
+    - Trigger sources (compra, tempo, módulo, at-risk, manual)
+    - Visual editor pra CS team criar/editar jornadas custom
+    - Anti-fatigue + pause/resume + escalation
+
+    Restrições:
+    - Comm externa REQUER aprovação humana inline (regra NON-NEGOTIABLE CLAUDE.md)
+    - Auto-dispatch send_template/dispatch_survey só com human-in-loop
+    - Mirror /cs/ obrigatório em UI changes
+
+    Aria deve desenhar arquitetura completa V2 considerando integração com
+    EPIC-016 (automation_rules), EPIC-017 (frequency capping, AI sentiment),
+    EPIC-019 (rich data — health_score), EPIC-020 (engagement engine).

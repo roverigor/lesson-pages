@@ -1,0 +1,243 @@
+{
+  "storyId": "EPIC-015-cs-area",
+  "critiquedAt": "2026-05-04T16:30:00Z",
+  "critiquedBy": "@qa",
+  "specVersion": 1,
+
+  "verdict": "NEEDS_REVISION",
+  "verdictReason": "Spec é fundamentalmente sólido com elicitation 9/9 completa, traceability forte FR↔AC↔EC, e arquitetura coerente reusando EPIC-004. Verdict NEEDS_REVISION devido a 6 issues MEDIUM corrigíveis (tech stack cs-portal indefinido, ACs ausentes para FR-3/14/15, lista de arquivos novos/modificados não enumerada, backward compat EPIC-004 sem plano de migração, NFR-6 cold start Edge Function não mitigado, ASM-6 prazo Meta template fora do controle). Sem issues HIGH bloqueantes — corrigir em revisão curta de spec.md ou deferir explicitamente para Story 15.0 Discovery + @architect ADR.",
+
+  "scores": {
+    "accuracy": 4.0,
+    "completeness": 3.5,
+    "consistency": 4.5,
+    "feasibility": 4.0,
+    "alignment": 3.5,
+    "average": 3.9
+  },
+
+  "issues": [
+    {
+      "id": "CRIT-1",
+      "severity": "MEDIUM",
+      "category": "alignment",
+      "description": "Tech stack frontend do repo cs-portal NÃO definido. Spec menciona 'frontend CS' genérico mas não decide entre vanilla JS (alinhado com lesson-pages atual), Vue, React ou outro framework. Decisão impacta Story 15.J (bootstrap), 15.5 (sidebar), 15.6 (form builder drag-drop) significativamente.",
+      "location": "spec.md#4.1 Topologia + #6 Stories 15.J/15.5/15.6",
+      "suggestion": "Adicionar seção '4.6 Frontend Stack Decision' OR explicitamente deferir para Story 15.J com nota '@architect ADR antes de implementar'. Recomendação técnica: vanilla JS + esbuild (alinha com /admin atual e simplifica reuso de admin-shared.css + design-tokens-dark-premium.css existentes).",
+      "autoFixable": false
+    },
+    {
+      "id": "CRIT-2",
+      "severity": "MEDIUM",
+      "category": "completeness",
+      "description": "FR-3 (gerencia alunos), FR-14 (dashboard observabilidade), FR-15 (mappings AC CRUD) NÃO têm ACs Given/When/Then explícitos em §5. Trace table §3 marca 'AC: —' para FR-3 e FR-14. FR-15 referenciado em INT-5 mas sem AC formal.",
+      "location": "spec.md#3 (trace table) + #5 (Acceptance Criteria)",
+      "suggestion": "Adicionar AC-21 (CRUD alunos básico CRUD), AC-22 (mappings CRUD), AC-23 (dashboard métricas mínimas: count eventos AC últimos 30d, fail rate, drill-down evento). Cada AC com Given/When/Then mensurável.",
+      "autoFixable": true
+    },
+    {
+      "id": "CRIT-3",
+      "severity": "MEDIUM",
+      "category": "completeness",
+      "description": "Spec NÃO contém lista enumerada de arquivos novos a criar e arquivos existentes a modificar. Section §4.4 lista edge functions mas não migrations específicas, frontend pages, ou módulos JS. Essencial para rastreabilidade dev e estimativa precisa.",
+      "location": "spec.md (seção ausente)",
+      "suggestion": "Adicionar §4.7 'File Manifest' com tabela: caminho | ação (create|modify|delete) | story | propósito. Ex: supabase/migrations/20260505100000_epic015_schema.sql | create | 15.A | tabelas novas + extensões.",
+      "autoFixable": true
+    },
+    {
+      "id": "CRIT-4",
+      "severity": "MEDIUM",
+      "category": "alignment",
+      "description": "Backward compatibility com EPIC-004 (surveys.cohort_id direto + dispatch-survey filtra por cohort) NÃO detalhada. Refactor para 'form vincula a aluno, não a cohort' (FR-16/17) requer migração de dados existentes E refactor da Edge Function preservando comportamento atual. Sem plano de migração explícito.",
+      "location": "spec.md#4.5 (linha 'Refatorar dispatch-survey' apenas)",
+      "suggestion": "Adicionar §4.8 'Migration Plan EPIC-004 → EPIC-015': 1) backfill survey_recipients/survey_links a partir de surveys com cohort_id existente; 2) feature flag p/ rollback dispatch-survey legacy; 3) shadow mode rodando ambos durante 1 sprint; 4) cutover gradual.",
+      "autoFixable": false
+    },
+    {
+      "id": "CRIT-5",
+      "severity": "MEDIUM",
+      "category": "feasibility",
+      "description": "NFR-6 (webhook AC < 2s p95) factibilidade questionável devido a cold start de Supabase Edge Functions Deno (~500-1500ms cold start observado). Combinado com validação HMAC + INSERT + lookup mappings + dispatch enqueue, p95 pode estourar 2s em horários de baixo tráfego.",
+      "location": "spec.md#4.4 + requirements.json#NFR-6",
+      "suggestion": "Mitigações: (a) warm-up cron pg_cron a cada 4 minutos chama webhook com payload synthetic; (b) reduzir trabalho síncrono — só validar HMAC + INSERT raw event + 200, processar resto em pg_cron worker; (c) considerar mover para Cloudflare Worker (cold start ~5ms). Atualizar NFR-6 para p95 < 5s realista OR aplicar mitigação (a)/(b).",
+      "autoFixable": false
+    },
+    {
+      "id": "CRIT-6",
+      "severity": "MEDIUM",
+      "category": "feasibility",
+      "description": "ASM-6 (Meta template approval < 48h) é fora do controle. Aprovação real Meta varia 24h-7d e pode ser rejeitada por motivos arbitrários. Bloqueio externo crítico para go-live de FR-7/FR-8 (onboarding automático).",
+      "location": "requirements.json#ASM-6 + spec.md#7 R10",
+      "suggestion": "(a) Story 15.0 Discovery DEVE iniciar template approval em paralelo (não sequencial); (b) ter template fallback genérico já aprovado para casos que não precisem de placeholders específicos; (c) Risk R10 elevar para Critical com mitigação 'paralelizar approval com Discovery'.",
+      "autoFixable": false
+    },
+    {
+      "id": "CRIT-7",
+      "severity": "LOW",
+      "category": "feasibility",
+      "description": "Story 15.6 (form builder full com 13 tipos drag-drop + preview live + versioning UI) classificada como tamanho L. Análise indica scope realista é XL — risco de não caber em 1 sprint.",
+      "location": "spec.md#6 + epic.md#Stories",
+      "suggestion": "Split em 15.6a (builder core com 6 tipos primários: nps, csat, text, choice, multi, rating + save/load) e 15.6b (tipos avançados: scale, date, email, phone, number, section_break, textarea + preview live + versioning UI badge).",
+      "autoFixable": true
+    },
+    {
+      "id": "CRIT-8",
+      "severity": "LOW",
+      "category": "completeness",
+      "description": "NFR-7 (form builder drag-drop < 300ms) sem método de medição definido. 'Lighthouse interactivity score > 90' citado como métrica mas Lighthouse não mede latência de drag em si.",
+      "location": "requirements.json#NFR-7",
+      "suggestion": "Substituir métrica por 'Performance.now() telemetry: tempo entre dragstart e drop < 300ms p95 medido via instrumentação no próprio builder' OR 'Playwright E2E test mede tempo via DOM mutation observer'.",
+      "autoFixable": true
+    },
+    {
+      "id": "CRIT-9",
+      "severity": "LOW",
+      "category": "consistency",
+      "description": "ACs (AC-1..AC-20) descritos em spec.md §5 mas requirements.json#functional[].acceptance arrays apenas referenciam IDs sem o texto Given/When/Then completo. Risco: spec.md como única fonte de verdade dos ACs.",
+      "location": "requirements.json#functional + spec.md#5",
+      "suggestion": "Opção A: adicionar campo 'acceptanceDetails' em requirements.json com texto GWT completo. Opção B: aceitar spec.md como source of truth e adicionar nota no schema. Recomendo Opção B (menos duplicação).",
+      "autoFixable": true
+    },
+    {
+      "id": "CRIT-10",
+      "severity": "LOW",
+      "category": "completeness",
+      "description": "Dependências externas (Supabase, Meta Cloud API, AC, Slack) listadas em epic.md#Dependências mas SEM versões pinned. Ex: Supabase JS SDK version, Meta API graph version (já em uso v21.0 mas não documentado como pin), Deno std lib version.",
+      "location": "epic.md#Dependências + spec.md#4 implícito",
+      "suggestion": "Adicionar §4.9 'Dependency Versions': Supabase JS @2.39.0, Deno std@0.177.0, Meta Graph API v21.0, AC API v3 (validar OQ-1).",
+      "autoFixable": true
+    },
+    {
+      "id": "CRIT-11",
+      "severity": "LOW",
+      "category": "alignment",
+      "description": "CON-14 (migrations centralizadas em lesson-pages, CS abre PR) menciona governance mas processo não detalhado. Sem CODEOWNERS, sem template de PR para schema changes, sem checklist obrigatório para @architect review.",
+      "location": "spec.md#4.5 + requirements.json#CON-14",
+      "suggestion": "Adicionar §4.10 'Governance DB Schema': (a) CODEOWNERS auto-assign @architect em supabase/migrations/*; (b) PR template com checklist (RLS, idempotência, rollback plan); (c) gate CI valida que migrations só vêm de PRs com aprovação @architect.",
+      "autoFixable": false
+    },
+    {
+      "id": "CRIT-12",
+      "severity": "LOW",
+      "category": "completeness",
+      "description": "EC-26 (RLS impede CS ler aluno fora escopo) tem decisão registrada ('CS vê TODOS') mas não mapeia para AC testável. Decisão é importante para teste de regressão.",
+      "location": "requirements.json#EC-26 + spec.md#5",
+      "suggestion": "Adicionar AC-24: GIVEN CS user logado WHEN abre lista alunos THEN vê todos os alunos ativos do sistema (sem filtro por cohort_assignment).",
+      "autoFixable": true
+    },
+    {
+      "id": "CRIT-13",
+      "severity": "LOW",
+      "category": "feasibility",
+      "description": "ASM-21 (CS team tem GitHub access próprio + conta Anthropic Claude Code) é validation_needed=true mas spec assume já está disponível. Bloqueia Story 15.J go-live se contas não provisionadas.",
+      "location": "requirements.json#ASM-21",
+      "suggestion": "Story 15.0 Discovery DEVE incluir task explícita 'Provisionar contas Anthropic + GitHub repo cs-portal + permissões CS team'. Sem isso, autonomia descrita em CON-13/NFR-20 não é entregável.",
+      "autoFixable": false
+    }
+  ],
+
+  "summary": {
+    "highIssues": 0,
+    "mediumIssues": 6,
+    "lowIssues": 7,
+    "autoFixable": 7,
+    "totalIssues": 13
+  },
+
+  "strengths": [
+    "Elicitation 9/9 categorias completa (FR/NFR/CON/ASM/AC/DM/INT/EC/TERM)",
+    "Traceability forte — tabela §3 cruza FR ↔ AC ↔ EC",
+    "Reuso explícito EPIC-004 (~70%) — Article IV (No Invention) respeitado",
+    "Decisões arquiteturais documentadas com rationale explícito",
+    "Risk analysis 13 riscos + mitigações específicas",
+    "Open Questions (13) bem categorizadas com owner + blocking flag",
+    "Domain model 12 entidades com relationships claros",
+    "Edge cases 28 cenários cobrindo critical/high/medium/low",
+    "Glossário 25 termos previne ambiguidade (cohort vs class vs user)",
+    "Constitution compliance check explícito (§9)",
+    "Estrutura repo separado bem justificada (autonomia CS)",
+    "Migration governance reconhecida (CON-14)"
+  ],
+
+  "blockingForImplementation": false,
+
+  "nextAction": "Aplicar 6 MEDIUM fixes em spec.md (tech stack decision OR defer note, ACs FR-3/14/15, file manifest, migration plan EPIC-004→015, NFR-6 mitigation, Meta template parallelization). 7 LOW podem ser deferidos para revisão pós-Discovery 15.0. Após fixes MEDIUM, verdict deve subir para APPROVED. Pode também proceder direto para @architect *plan se MEDIUM forem documentadas como decisões de fase plan.",
+
+  "autoFixes": [
+    {
+      "issueId": "CRIT-2",
+      "location": "spec.md#5",
+      "original": "(seção §5 termina em AC-20)",
+      "suggested": "Adicionar AC-21 CRUD alunos, AC-22 mappings CRUD, AC-23 dashboard observabilidade — todos com Given/When/Then."
+    },
+    {
+      "issueId": "CRIT-3",
+      "location": "spec.md (after #4.6)",
+      "original": "(ausente)",
+      "suggested": "Adicionar §4.7 'File Manifest' com tabela completa de arquivos novos/modificados por story."
+    },
+    {
+      "issueId": "CRIT-7",
+      "location": "spec.md#6 (Story 15.6) + epic.md",
+      "original": "15.6 Form builder full (13 tipos) — Tamanho L",
+      "suggested": "15.6a Form builder core (6 tipos) M + 15.6b Form builder advanced + versioning UI M"
+    },
+    {
+      "issueId": "CRIT-8",
+      "location": "requirements.json#NFR-7",
+      "original": "Lighthouse interactivity score > 90",
+      "suggested": "Performance.now() telemetry instrumentado: tempo dragstart→drop < 300ms p95 (10 medições)"
+    },
+    {
+      "issueId": "CRIT-9",
+      "location": "requirements.json (header)",
+      "original": "(sem nota)",
+      "suggested": "Adicionar nota: 'Source of truth para acceptance criteria detalhados (Given/When/Then) é spec.md §5. Este JSON contém apenas IDs de referência.'"
+    },
+    {
+      "issueId": "CRIT-10",
+      "location": "spec.md (after #4.8)",
+      "original": "(ausente)",
+      "suggested": "Adicionar §4.9 'Dependency Versions' com lista pinned."
+    },
+    {
+      "issueId": "CRIT-12",
+      "location": "spec.md#5",
+      "original": "(AC ausente para EC-26)",
+      "suggested": "AC-24: GIVEN CS user logado WHEN abre /cs/alunos THEN vê todos alunos ativos (sem filtro de escopo)."
+    }
+  ],
+
+  "deferredToPhases": [
+    {
+      "issueId": "CRIT-1",
+      "deferTo": "@architect *plan (próxima fase)",
+      "reason": "Tech stack decision é decisão arquitetural — natural na fase plan, não na fase critique."
+    },
+    {
+      "issueId": "CRIT-4",
+      "deferTo": "@architect *plan",
+      "reason": "Migration plan detalhado é responsabilidade ADR @architect."
+    },
+    {
+      "issueId": "CRIT-5",
+      "deferTo": "@architect *plan",
+      "reason": "Decisão de mitigação cold start (warm-up cron vs Cloudflare Worker) é arquitetural."
+    },
+    {
+      "issueId": "CRIT-6",
+      "deferTo": "Story 15.0 Discovery",
+      "reason": "Iniciar Meta template approval em paralelo é task operacional."
+    },
+    {
+      "issueId": "CRIT-11",
+      "deferTo": "@devops Story 15.0 ou pós-15.J",
+      "reason": "CODEOWNERS + PR template + CI gate são infra DevOps."
+    },
+    {
+      "issueId": "CRIT-13",
+      "deferTo": "Story 15.0 Discovery",
+      "reason": "Provisionamento de contas é task operacional inicial."
+    }
+  ]
+}

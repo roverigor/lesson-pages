@@ -1,0 +1,760 @@
+{
+  "storyId": "EPIC-015-cs-area",
+  "epicId": "EPIC-015",
+  "title": "Área CS Dedicada — NPS/Onboarding/Forms + Integração ActiveCampaign",
+  "gatheredAt": "2026-05-04T00:00:00Z",
+  "source": "user",
+  "gatheredBy": "@pm",
+  "elicitationVersion": "2.0",
+
+  "functional": [
+    {
+      "id": "FR-1",
+      "description": "Login compartilhado em /admin/login com redirect role-based: usuários com user_metadata.role='cs' são redirecionados para /cs/, role='admin' para /admin/. Admin tem super-acesso a /cs/*.",
+      "priority": "P0",
+      "rationale": "Time CS precisa área isolada sem misturar com painel admin, mas reusando autenticação Supabase existente.",
+      "acceptance": ["AC-1", "AC-2", "AC-3"]
+    },
+    {
+      "id": "FR-2",
+      "description": "CS gerencia cohorts (CRUD completo: criar, editar, arquivar, listar com busca e filtros). Cohort agrupa alunos mas NÃO vincula formulário permanentemente.",
+      "priority": "P0",
+      "rationale": "CS precisa manter registro de turmas para reuso em disparos. Form é independente — vincula ao aluno, não à cohort.",
+      "acceptance": ["AC-9"]
+    },
+    {
+      "id": "FR-3",
+      "description": "CS gerencia alunos por cohort (add manual, remover soft, importar CSV em massa, busca por nome/phone/email).",
+      "priority": "P0",
+      "rationale": "Operação central CS: manter base atualizada de quem recebe forms.",
+      "acceptance": []
+    },
+    {
+      "id": "FR-4",
+      "description": "CS cria formulários com autonomia total via builder drag-drop suportando todos os tipos: nps, csat, text, textarea, choice, multi, scale, rating, date, email, phone, number, section_break.",
+      "priority": "P0",
+      "rationale": "CS não fica dependente de admin/dev para criar novos forms. Autonomia total no builder.",
+      "acceptance": ["AC-7"]
+    },
+    {
+      "id": "FR-5",
+      "description": "CS dispara form para cohort inteira via Meta Cloud API template aprovado, com throttle 10s/msg e progress tracking.",
+      "priority": "P0",
+      "rationale": "Caso uso primário CS para pesquisas em massa.",
+      "acceptance": ["AC-9"]
+    },
+    {
+      "id": "FR-6",
+      "description": "CS dispara form para alunos avulsos via multi-select search (lista solta independente de cohort). Suporta modo misto: cohort + adicionar/remover indivíduos antes do envio.",
+      "priority": "P0",
+      "rationale": "Flexibilidade para casos pontuais sem precisar criar cohort temporária.",
+      "acceptance": ["AC-8"]
+    },
+    {
+      "id": "FR-7",
+      "description": "Edge function inbound recebe webhook ActiveCampaign com evento de compra (POST /functions/v1/ac-purchase-webhook), valida HMAC, dedupa por ac_event_id, persiste em ac_purchase_events.",
+      "priority": "P0",
+      "rationale": "Trigger automático onboarding pós-compra. Active Campaign é a fonte canônica de novas compras.",
+      "acceptance": ["AC-4", "AC-14", "AC-15"]
+    },
+    {
+      "id": "FR-8",
+      "description": "Auto-criar Student e auto-vincular cohort quando ac_product_mappings tem entrada para o produto recebido. Disparo de form é enfileirado de forma assíncrona (resposta webhook < 2s).",
+      "priority": "P0",
+      "rationale": "AC tem timeout 10s; precisamos responder rápido e processar em background.",
+      "acceptance": ["AC-4"]
+    },
+    {
+      "id": "FR-9",
+      "description": "Quando produto AC não tem mapping, criar student SEM cohort e registrar em pending_student_assignments com reason='unknown_product' ou 'missing_product_mapping'. Disparo NÃO ocorre até CS resolver.",
+      "priority": "P0",
+      "rationale": "Sem cohort não sabemos qual form/template usar. Aguarda decisão humana.",
+      "acceptance": ["AC-5"]
+    },
+    {
+      "id": "FR-10",
+      "description": "CS resolve pendência manualmente em /cs/pendentes: seleciona cohort + survey, sistema vincula student_cohorts, dispara form configurado, marca resolved_at/resolved_by/resolved_cohort_id. Opção secundária: criar mapping permanente para próximas compras do mesmo produto.",
+      "priority": "P0",
+      "rationale": "Fallback humano essencial — nem todo produto AC vem mapeado.",
+      "acceptance": ["AC-6"]
+    },
+    {
+      "id": "FR-11",
+      "description": "Após dispatch concluído com sucesso, edge function executa callback outbound POST AC API com contact_id + custom field 'form_dispatched' + token+timestamp. Persiste resultado em ac_dispatch_callbacks.",
+      "priority": "P0",
+      "rationale": "AC precisa registrar no contact que disparo foi feito (para automações posteriores no AC).",
+      "acceptance": ["AC-12", "AC-13"]
+    },
+    {
+      "id": "FR-12",
+      "description": "Histórico de disparos por aluno acessível via drill-down drawer em /cs/alunos. Mostra timeline cronológica com survey, cohort_snapshot_name, sent_at, delivered_at, read_at, responded_at.",
+      "priority": "P1",
+      "rationale": "Auditoria CS. Saber exatamente o que cada aluno recebeu e quando.",
+      "acceptance": ["AC-11", "AC-16"]
+    },
+    {
+      "id": "FR-13",
+      "description": "Versionamento de forms: editar survey ativo cria nova survey_version. Alunos com link da versão antiga continuam respondendo a versão original; novos disparos usam versão mais recente.",
+      "priority": "P1",
+      "rationale": "CS pode iterar form sem invalidar dados já coletados.",
+      "acceptance": ["AC-10"]
+    },
+    {
+      "id": "FR-14",
+      "description": "Dashboard de observabilidade em /cs/integracoes: mostra eventos AC recebidos últimos 30d, taxa sucesso webhooks, taxa sucesso callbacks, falhas Meta, com filtros e drill-down por evento.",
+      "priority": "P1",
+      "rationale": "CS precisa identificar problemas de integração rapidamente.",
+      "acceptance": []
+    },
+    {
+      "id": "FR-15",
+      "description": "CS gerencia ac_product_mappings (CRUD): para cada ac_product_id define cohort destino + survey padrão + Meta template. Active boolean controla se mapping está em uso.",
+      "priority": "P0",
+      "rationale": "Configuração que destrava o auto-onboarding. Precisa ser autônoma.",
+      "acceptance": []
+    },
+    {
+      "id": "FR-16",
+      "description": "Rastreabilidade aluno-centric obrigatória: para cada disparo, registrar student_id, survey_id, version_id, sent_at, delivered_at (Meta callback), read_at (Meta callback), responded_at, token, meta_message_id, cohort_snapshot_name. Auditoria 100%: zero disparos sem sent_at.",
+      "priority": "P0",
+      "rationale": "Requisito explícito do usuário: saber exatamente o que aluno recebeu, quando foi enviado, quando respondeu — independente de cohort.",
+      "acceptance": ["AC-11", "AC-19", "AC-20"]
+    },
+    {
+      "id": "FR-17",
+      "description": "Timeline aluno-centric independente de cohort atual: aluno trocou de cohort A → B continua com histórico completo de ambas (cohort_snapshot_name preserva nome no momento do envio).",
+      "priority": "P1",
+      "rationale": "Aluno pode estar em múltiplas cohorts ou ter trocado; histórico não deve quebrar.",
+      "acceptance": ["AC-16"]
+    }
+  ],
+
+  "nonFunctional": [
+    {
+      "id": "NFR-1",
+      "category": "security",
+      "description": "Auth role-based: rotas /cs/* exigem role='cs' OR role='admin' no JWT user_metadata. Falha → 401/403.",
+      "metric": "0 acessos não-autorizados confirmados em audit log"
+    },
+    {
+      "id": "NFR-2",
+      "category": "security",
+      "description": "Edge function ac-purchase-webhook valida assinatura HMAC do header X-AC-Signature usando secret AC_WEBHOOK_SECRET. Edge function meta-delivery-webhook valida via META_WEBHOOK_VERIFY_TOKEN (subscription) + idempotência por meta_message_id + schema validation; HMAC X-Hub-Signature-256 não usado V1 (alinhado com pattern atual de produção que opera 4 edge functions Meta apenas com META_PHONE_NUMBER_ID + META_API_KEY).",
+      "metric": "AC: Reject 401 se header HMAC inválido. Meta: Verify token validado em subscription; payload malformado rejeitado; UNIQUE meta_message_id deduplica replay attacks; rate limit 100/min/IP."
+    },
+    {
+      "id": "NFR-3",
+      "category": "security",
+      "description": "Edge functions admin-scoped validam JWT role check antes de qualquer operação.",
+      "metric": "401 em testes E2E com token inválido"
+    },
+    {
+      "id": "NFR-4",
+      "category": "reliability",
+      "description": "Idempotência webhook AC garantida via constraint UNIQUE em ac_purchase_events.ac_event_id.",
+      "metric": "Reenvio do mesmo evento → 200 + log 'duplicate', sem efeito colateral"
+    },
+    {
+      "id": "NFR-5",
+      "category": "reliability",
+      "description": "Retry callback AC com backoff exponencial: 3 tentativas (1s/4s/16s), DLQ em ac_dispatch_callbacks após exausto.",
+      "metric": "100% callbacks falhos têm retries=3 antes de DLQ"
+    },
+    {
+      "id": "NFR-6",
+      "category": "performance",
+      "description": "Webhook ac-purchase-webhook responde < 2s p95.",
+      "metric": "p95 < 2s em logs Supabase"
+    },
+    {
+      "id": "NFR-7",
+      "category": "performance",
+      "description": "Form builder UI: drag-drop responsivo < 300ms entre interações.",
+      "metric": "Lighthouse interactivity score > 90"
+    },
+    {
+      "id": "NFR-8",
+      "category": "usability",
+      "description": "CS resolve pendência em ≤ 3 cliques (abrir tab → selecionar aluno → atribuir cohort).",
+      "metric": "UX teste com CS team valida fluxo"
+    },
+    {
+      "id": "NFR-9",
+      "category": "scalability",
+      "description": "Sistema suporta 1000 disparos/dia via Meta Cloud API sem ban (com throttle 10s/msg).",
+      "metric": "Sustained throughput em teste de carga"
+    },
+    {
+      "id": "NFR-10",
+      "category": "reliability",
+      "description": "Slack alert automático se webhook fail rate > 10% em janela 24h.",
+      "metric": "Alert dispara em teste de simulação de falhas"
+    },
+    {
+      "id": "NFR-11",
+      "category": "security",
+      "description": "RLS Supabase ativada em TODAS tabelas novas (ac_purchase_events, pending_student_assignments, ac_product_mappings, ac_dispatch_callbacks, meta_templates, survey_versions).",
+      "metric": "Audit por tabela: ENABLE RLS + policies por role"
+    },
+    {
+      "id": "NFR-12",
+      "category": "reliability",
+      "description": "Pendentes > 24h sem resolved_at disparam Slack escalation diária.",
+      "metric": "Cron pg_cron + alert testado"
+    },
+    {
+      "id": "NFR-13",
+      "category": "security",
+      "description": "LGPD: ac_purchase_events purge automático para registros > 90 dias via pg_cron.",
+      "metric": "Job cron rodando + zero rows > 90d em prod"
+    },
+    {
+      "id": "NFR-14",
+      "category": "usability",
+      "description": "Histórico filtrável por aluno, cohort, intervalo de data, status (sent/delivered/read/responded).",
+      "metric": "Filtros funcionais e responsivos < 500ms"
+    },
+    {
+      "id": "NFR-15",
+      "category": "reliability",
+      "description": "Form versionado: editar form ativo cria nova versão automaticamente; links da versão antiga continuam válidos.",
+      "metric": "Test E2E: edit form → links antigos respondem v1, novos respondem v2"
+    },
+    {
+      "id": "NFR-16",
+      "category": "reliability",
+      "description": "Tracking 100% completo: para todo disparo bem-sucedido, garantir registros sent_at, delivered_at (se Meta confirmar), read_at (se Meta confirmar), responded_at (se aluno responder).",
+      "metric": "Audit SQL: 0 disparos com send_status='sent' sem sent_at"
+    },
+    {
+      "id": "NFR-17",
+      "category": "reliability",
+      "description": "Edge function meta-delivery-webhook recebe messages.update do Meta e correlaciona via meta_message_id, atualizando survey_links.delivered_at e read_at.",
+      "metric": "Cobertura > 80% de mensagens com delivered_at preenchido em produção"
+    },
+    {
+      "id": "NFR-18",
+      "category": "usability",
+      "description": "Drill-down aluno: drawer mostra timeline em < 1s com 1 query SQL via view student_dispatch_timeline.",
+      "metric": "Query latency < 500ms para alunos com até 50 disparos históricos"
+    },
+    {
+      "id": "NFR-19",
+      "category": "reliability",
+      "description": "Cohort do aluno pode mudar sem afetar histórico: survey_links.student_id imutável + cohort_snapshot_name campo TEXT preserva nome no momento do envio.",
+      "metric": "Test: aluno muda cohort → histórico preservado intacto"
+    },
+    {
+      "id": "NFR-20",
+      "category": "reliability",
+      "description": "Repo cs-portal independente permite CS team usar Claude Code próprio sem acesso ao painel principal lesson-pages. Migrations DB centralizadas em lesson-pages (CS abre PR).",
+      "metric": "CS team consegue clonar, rodar local e abrir PR sem acesso a lesson-pages"
+    }
+  ],
+
+  "constraints": [
+    {
+      "id": "CON-1",
+      "type": "technical",
+      "description": "Disparo WhatsApp DEVE usar Meta Cloud API com template aprovado. Meta API já integrada em dispatch-survey, send-whatsapp, send-whatsapp-reminder.",
+      "impact": "Reuso direto da função sendWhatsAppTemplate; templates novos requerem aprovação Meta (24-48h)"
+    },
+    {
+      "id": "CON-2",
+      "type": "technical",
+      "description": "Webhook ActiveCampaign tem timeout < 10s. Dispatch deve ser assíncrono (não bloquear resposta HTTP).",
+      "impact": "Edge function ac-purchase-webhook responde 200 imediato após persistir evento; processamento real em worker/cron"
+    },
+    {
+      "id": "CON-3",
+      "type": "technical",
+      "description": "Throttle obrigatório 10s entre mensagens Meta para evitar ban (regra anti-spam Meta Cloud API).",
+      "impact": "Disparos chunked; volume máximo prático ~360 msg/hora por número Meta"
+    },
+    {
+      "id": "CON-4",
+      "type": "technical",
+      "description": "Reuso obrigatório da Edge Function dispatch-survey existente. Refatorar para receber lista explícita de student_ids (não filtrar por cohort_id internamente).",
+      "impact": "Story 15.4 inclui refactor + backward compat com dispatches por cohort"
+    },
+    {
+      "id": "CON-5",
+      "type": "business",
+      "description": "Time CS NÃO acessa rotas/dados administrativos exclusivos (zoom, mentores, escala, automações).",
+      "impact": "Sidebar CS contém apenas tabs CS; auth guard bloqueia /admin/*"
+    },
+    {
+      "id": "CON-7",
+      "type": "regulatory",
+      "description": "LGPD: PII em ac_purchase_events.payload (email, phone, nome) tem retenção máxima 90 dias.",
+      "impact": "Job pg_cron diário deleta registros > 90d; campos sensíveis em colunas separadas se necessário"
+    },
+    {
+      "id": "CON-9",
+      "type": "business",
+      "description": "Aluno sem cohort vinculada NÃO recebe form automaticamente. Aguarda resolução manual em /cs/pendentes.",
+      "impact": "Sem fallback genérico; CS team precisa monitorar fila pendentes"
+    },
+    {
+      "id": "CON-10",
+      "type": "technical",
+      "description": "Função sendWhatsAppTemplate de dispatch-survey deve ser extraída para _shared/meta-whatsapp.ts e reusada em ac-purchase-webhook + meta-delivery-webhook.",
+      "impact": "Story 15.A inclui refactor de shared utility"
+    },
+    {
+      "id": "CON-11",
+      "type": "business",
+      "description": "Apenas admin cria/desativa users CS via Supabase dashboard (sem UI dedicada V1).",
+      "impact": "Documentar processo no docs/guides/; revisar em V2"
+    },
+    {
+      "id": "CON-12",
+      "type": "technical",
+      "description": "Idempotência webhook AC obrigatória via constraint UNIQUE em ac_purchase_events.ac_event_id.",
+      "impact": "Schema migration garante ON CONFLICT DO NOTHING no INSERT"
+    },
+    {
+      "id": "CON-13",
+      "type": "technical",
+      "description": "Repositório separado cs-portal (https://github.com/roverigor/cs-portal) com Dockerfile próprio, GitHub Actions deploy independente, container rodando porta 3081 na mesma VPS Contabo.",
+      "impact": "Time CS tem autonomia repo + Claude Code próprio; coordenação só em mudanças DB"
+    },
+    {
+      "id": "CON-14",
+      "type": "technical",
+      "description": "Migrations DB ficam exclusivamente em lesson-pages/supabase/migrations/. CS abre PR pedindo schema changes.",
+      "impact": "@architect revisa schema drift; governance via code review"
+    }
+  ],
+
+  "assumptions": [
+    {
+      "id": "ASM-1",
+      "description": "Plataforma de origem das compras é ActiveCampaign (não outro sistema com nome similar como ActiveMember360 ou custom).",
+      "risk_if_wrong": "Refazer integração inteira",
+      "validation_needed": false,
+      "validatedAt": "2026-05-04",
+      "validatedBy": "user (confirmação direta)",
+      "validationEvidence": "research.json#oq1"
+    },
+    {
+      "id": "ASM-2",
+      "description": "ActiveCampaign suporta webhooks customizados outbound (envio para nosso endpoint) com payload JSON.",
+      "risk_if_wrong": "Arquitetura precisa polling AC API ao invés de push webhook",
+      "validation_needed": true
+    },
+    {
+      "id": "ASM-3",
+      "description": "ActiveCampaign permite escrever custom field por contact via API (para guardar status do disparo).",
+      "risk_if_wrong": "Solução de callback diferente — talvez tag ou nota",
+      "validation_needed": true
+    },
+    {
+      "id": "ASM-4",
+      "description": "Email do contact no ActiveCampaign coincide com email do students (chave merge primária).",
+      "risk_if_wrong": "Dedup falha; duplicidade massiva de students",
+      "validation_needed": true
+    },
+    {
+      "id": "ASM-5",
+      "description": "AC envia ac_event_id único OU podemos derivar via order_id+contact_id como chave de idempotência.",
+      "risk_if_wrong": "Idempotência impossível sem chave estável",
+      "validation_needed": true
+    },
+    {
+      "id": "ASM-6",
+      "description": "Templates Meta novos podem ser aprovados em < 48h pela Meta Business.",
+      "risk_if_wrong": "Bloqueio go-live até aprovação",
+      "validation_needed": false
+    },
+    {
+      "id": "ASM-7",
+      "description": "Volume webhooks AC ≤ 100/min (sem necessidade de queue dedicada Redis V1).",
+      "risk_if_wrong": "Saturação edge function; precisa Redis/PgBoss",
+      "validation_needed": true
+    },
+    {
+      "id": "ASM-8",
+      "description": "LGPD aceita retenção 90 dias para ac_purchase_events.",
+      "risk_if_wrong": "Ajustar política para 30d ou data minimization",
+      "validation_needed": false
+    },
+    {
+      "id": "ASM-9",
+      "description": "Time CS terá ≤ 10 usuários (login simples basta, sem SSO/MFA V1).",
+      "risk_if_wrong": "Adicionar MFA/SSO em V2",
+      "validation_needed": false
+    },
+    {
+      "id": "ASM-10",
+      "description": "Form builder MVP sem lógica condicional (mostrar Q3 só se Q1=sim). Adicionar em V2.",
+      "risk_if_wrong": "Escopo MVP cresce ~20%",
+      "validation_needed": false
+    },
+    {
+      "id": "ASM-11",
+      "description": "Admin tem super-acesso a /cs/* (default Caminho A escolhido).",
+      "risk_if_wrong": "Bloquear admin via auth guard",
+      "validation_needed": false
+    },
+    {
+      "id": "ASM-12",
+      "description": "CS users criados via Supabase dashboard (sem UI dedicada V1).",
+      "risk_if_wrong": "Adicionar story 15.L UI gestão users CS",
+      "validation_needed": false
+    },
+    {
+      "id": "ASM-13",
+      "description": "Volume disparos esperado: 200/mês (~7/dia média, picos ~30/dia em campanhas). Confirmado pelo user 2026-05-04 (high-ticket business). Atualização de ASM-13 anterior (1000/dia errado).",
+      "risk_if_wrong": "N/A — validado",
+      "validation_needed": false,
+      "validatedAt": "2026-05-04",
+      "validatedBy": "user (OQ-7 response)",
+      "validationEvidence": "research.json#oq7",
+      "architectureImpact": "Volume baixo simplifica decisão ADR-016: pg_cron worker batches=50 a cada 30s tem folga gigantesca (max ~1 batch/dia em pico). Sem necessidade de paralelizar workers V1."
+    },
+    {
+      "id": "ASM-14",
+      "description": "Plano Meta Business contratado suporta webhook messages.update (delivery + read receipts).",
+      "risk_if_wrong": "Sem delivered_at/read_at preenchidos automaticamente",
+      "validation_needed": true
+    },
+    {
+      "id": "ASM-15",
+      "description": "Meta API retorna meta_message_id na resposta de envio que correlaciona com webhook delivery.",
+      "risk_if_wrong": "Tracking parcial; sem matching",
+      "validation_needed": true
+    },
+    {
+      "id": "ASM-16",
+      "description": "cohort_snapshot_name como campo TEXT em survey_links é suficiente (sem necessidade de tabela cohort_snapshots).",
+      "risk_if_wrong": "Mudanças no cohort (descrição, etc.) perdem contexto histórico",
+      "validation_needed": false
+    },
+    {
+      "id": "ASM-17",
+      "description": "Payload AC contém minimamente: email, phone, product_id, contact_id, order_id, purchased_at, full_name.",
+      "risk_if_wrong": "Mapping incompleto; sem nome → onboarding sem personalização",
+      "validation_needed": true
+    },
+    {
+      "id": "ASM-18",
+      "description": "Form respondido fora janela 24h Meta funciona via template (link tokenizado abre web direto).",
+      "risk_if_wrong": "Aluno não recebe lembrete fora janela 24h",
+      "validation_needed": false
+    },
+    {
+      "id": "ASM-19",
+      "description": "ac_product_mappings é N:1 (vários produtos AC podem mapear para a mesma cohort + survey, mas cada produto é único — UNIQUE em ac_product_id). Confirmado pelo user em 2026-05-04 OQ-11.",
+      "risk_if_wrong": "N/A — validado",
+      "validation_needed": false,
+      "validatedAt": "2026-05-04",
+      "validatedBy": "user (OQ-11 response)",
+      "validationEvidence": "research.json#oq11",
+      "schemaImpact": "ZERO mudança — UNIQUE em ac_product_id permanece; cohort_id/survey_id podem repetir entre rows"
+    },
+    {
+      "id": "ASM-20",
+      "description": "Reuso direto da função sendWhatsAppTemplate em dispatch-survey via extração para _shared/meta-whatsapp.ts.",
+      "risk_if_wrong": "Refactor maior das 3 edge functions WhatsApp",
+      "validation_needed": false
+    },
+    {
+      "id": "ASM-21",
+      "description": "Time CS tem GitHub access próprio + conta Anthropic Claude Code para repo cs-portal.",
+      "risk_if_wrong": "Bloqueia entrega autonomia; usar OneDrive/SSH compartilhado em V1",
+      "validation_needed": true
+    }
+  ],
+
+  "domainModel": [
+    {
+      "id": "DM-1",
+      "entity": "Survey",
+      "description": "Formulário criado pelo CS. Independente de cohort — vincula via SurveyLink ao Student.",
+      "attributes": ["id", "name", "category (nps|csat|onboarding|feedback|custom)", "current_version_id", "status (draft|active|closed)", "created_by", "created_at"],
+      "relationships": ["has_many SurveyVersion", "has_many SurveyLink"]
+    },
+    {
+      "id": "DM-2",
+      "entity": "SurveyVersion",
+      "description": "Snapshot imutável das perguntas. Permite editar form sem invalidar links já enviados.",
+      "attributes": ["id", "survey_id", "version_number", "created_at"],
+      "relationships": ["belongs_to Survey", "has_many SurveyQuestion"]
+    },
+    {
+      "id": "DM-3",
+      "entity": "SurveyQuestion",
+      "description": "Pergunta individual de uma versão de survey.",
+      "attributes": ["id", "version_id", "position", "type", "label", "required", "options", "scale_max", "placeholder"],
+      "relationships": ["belongs_to SurveyVersion"]
+    },
+    {
+      "id": "DM-4",
+      "entity": "SurveyLink",
+      "description": "Token único por (survey, student, version). Centro do tracking aluno-centric.",
+      "attributes": ["id", "survey_id", "student_id", "version_id", "token (UUID UNIQUE)", "cohort_snapshot_name (TEXT)", "meta_message_id (TEXT)", "send_status (pending|sent|delivered|read|failed|skipped)", "sent_at", "delivered_at", "read_at", "used_at", "created_at"],
+      "relationships": ["belongs_to Survey", "belongs_to Student", "belongs_to SurveyVersion", "has_one SurveyResponse"]
+    },
+    {
+      "id": "DM-5",
+      "entity": "SurveyResponse",
+      "description": "Submissão completa de um aluno a um SurveyLink.",
+      "attributes": ["id", "survey_id", "link_id", "student_id", "submitted_at"],
+      "relationships": ["belongs_to SurveyLink", "has_many SurveyAnswer"]
+    },
+    {
+      "id": "DM-6",
+      "entity": "Cohort",
+      "description": "Turma de matrícula. Agrupa alunos para conveniência de seleção em disparos. NÃO vincula form.",
+      "attributes": ["id", "name", "description", "active"],
+      "relationships": ["has_many StudentCohort", "has_many ACProductMapping"]
+    },
+    {
+      "id": "DM-7",
+      "entity": "Student",
+      "description": "Pessoa que recebe forms. Pode estar em múltiplas cohorts ao longo do tempo.",
+      "attributes": ["id", "name", "email", "phone", "ac_contact_id (UNIQUE NULLABLE)", "active", "is_mentor"],
+      "relationships": ["has_many StudentCohort", "has_many SurveyLink"]
+    },
+    {
+      "id": "DM-8",
+      "entity": "ACPurchaseEvent",
+      "description": "Evento de compra recebido via webhook ActiveCampaign. Fonte audit + idempotência.",
+      "attributes": ["id", "ac_event_id (UNIQUE)", "payload (JSONB)", "status (received|processed|failed)", "processed_at", "error_message", "created_at"],
+      "relationships": ["creates Student (potentially)", "creates PendingStudentAssignment (if no mapping)"]
+    },
+    {
+      "id": "DM-9",
+      "entity": "PendingStudentAssignment",
+      "description": "Aluno órfão de cohort aguardando resolução manual pelo CS.",
+      "attributes": ["id", "student_id", "ac_event_id (FK NULLABLE)", "reason", "ac_payload (JSONB)", "suggested_cohort_id (NULLABLE)", "resolved_at", "resolved_by", "resolved_cohort_id", "created_at"],
+      "relationships": ["belongs_to Student", "belongs_to_optional ACPurchaseEvent"]
+    },
+    {
+      "id": "DM-10",
+      "entity": "ACProductMapping",
+      "description": "Regra: produto AC → cohort + survey + Meta template.",
+      "attributes": ["id", "ac_product_id (UNIQUE)", "cohort_id", "survey_id", "template_name", "active", "created_at"],
+      "relationships": ["belongs_to Cohort", "belongs_to Survey"]
+    },
+    {
+      "id": "DM-11",
+      "entity": "ACDispatchCallback",
+      "description": "Confirmação de disparo enviada de volta ao ActiveCampaign.",
+      "attributes": ["id", "link_id", "ac_contact_id", "status (pending|ok|failed)", "retries", "last_attempt_at", "error_message", "acknowledged_by_ac"],
+      "relationships": ["belongs_to SurveyLink"]
+    },
+    {
+      "id": "DM-12",
+      "entity": "MetaTemplate",
+      "description": "Registry de templates Meta WhatsApp aprovados (CS edita sem deploy).",
+      "attributes": ["id", "name (UNIQUE)", "language (default pt_BR)", "body_params_count", "button_count", "category (marketing|utility|auth)", "approved_at", "status (active|paused|rejected)"],
+      "relationships": []
+    }
+  ],
+
+  "interactions": [
+    {
+      "id": "INT-1",
+      "trigger": "ActiveCampaign envia webhook de compra com produto MAPEADO",
+      "flow": [
+        "POST /functions/v1/ac-purchase-webhook (HMAC X-AC-Signature)",
+        "Edge function valida assinatura",
+        "Dedup ac_event_id (UNIQUE)",
+        "INSERT ac_purchase_events status='received'",
+        "Resolve student (find by email | create new com ac_contact_id)",
+        "Lookup ac_product_mappings(ac_product_id) → HIT",
+        "INSERT/UPDATE student_cohorts vinculando ao cohort destino",
+        "Cria SurveyLink com cohort_snapshot_name + version_id atual",
+        "Enfileira dispatch async (resposta 200 < 2s)",
+        "Worker async chama dispatch-survey",
+        "Render Meta template (firstName, link tokenizado)",
+        "POST graph.facebook.com (10s throttle)",
+        "UPDATE survey_links sent_at + meta_message_id",
+        "POST AC API custom_field 'form_dispatched' (3 retries backoff)",
+        "Meta envia messages.update → meta-delivery-webhook → UPDATE delivered_at",
+        "Aluno clica link → submit-survey → INSERT survey_responses + UPDATE used_at"
+      ],
+      "states": {
+        "loading": "Webhook async; processing flag em ac_purchase_events",
+        "error": "status='failed' + Slack alert + retry queue",
+        "empty": "N/A"
+      }
+    },
+    {
+      "id": "INT-2",
+      "trigger": "ActiveCampaign envia webhook com produto SEM mapping",
+      "flow": [
+        "Webhook valida HMAC + dedup",
+        "INSERT ac_purchase_events",
+        "Cria Student (sem cohort_id, mas com ac_contact_id)",
+        "INSERT pending_student_assignments(reason='unknown_product', ac_payload=snapshot)",
+        "Aplica heurística suggested_cohort_id (fuzzy match opcional)",
+        "Slack alert canal CS team",
+        "Resposta 200 imediata",
+        "CS abre /cs/pendentes (badge contador no menu)",
+        "CS clica aluno → drawer com payload AC + suggested cohort",
+        "CS escolhe cohort + survey → 'Atribuir'",
+        "UPDATE student_cohorts + INSERT SurveyLink + dispara",
+        "Marca resolved_at, resolved_by, resolved_cohort_id",
+        "Opcional: 'Criar mapping permanente' → INSERT ac_product_mappings"
+      ],
+      "states": {
+        "loading": "Lista pendentes loading skeleton",
+        "error": "Toast + retry",
+        "empty": "🎉 Nenhum pendente!"
+      }
+    },
+    {
+      "id": "INT-3",
+      "trigger": "CS dispara form manualmente (cohort ou avulso)",
+      "flow": [
+        "CS em /cs/disparar",
+        "Seleciona survey existente",
+        "Modo: cohort inteira | alunos avulsos | misto",
+        "Preview lista alunos final + telefones válidos",
+        "Seleciona Meta template (dropdown ativos)",
+        "Confirma 'Disparar N alunos'",
+        "Cria N SurveyLinks (cada com cohort_snapshot_name + version_id)",
+        "Progress bar chunked (10s/msg)",
+        "Resultado: X enviados, Y skipped (sem phone), Z failed"
+      ],
+      "states": {
+        "loading": "Progress bar X/Y enviados",
+        "error": "Bloco erro inline + retry",
+        "empty": "Bloqueio + 'cohort sem alunos ativos'"
+      }
+    },
+    {
+      "id": "INT-4",
+      "trigger": "CS cria novo formulário",
+      "flow": [
+        "/cs/forms/new",
+        "Campo nome + categoria",
+        "Canvas drag-drop com palette tipos",
+        "Arrasta tipo → pergunta criada → edita inline",
+        "Preview live painel direito (mobile/desktop toggle)",
+        "Salva → INSERT surveys + survey_versions v1 + survey_questions",
+        "Status='draft'",
+        "Ação 'Publicar' → status='active'",
+        "Editar form ativo → cria automaticamente survey_versions v2"
+      ],
+      "states": {
+        "loading": "Spinner save",
+        "error": "Toast erro + manter rascunho local",
+        "empty": "Arraste pergunta da palette →"
+      }
+    },
+    {
+      "id": "INT-5",
+      "trigger": "CS configura mapping AC novo",
+      "flow": [
+        "/cs/integracoes → tab 'Mappings AC'",
+        "'Novo mapping'",
+        "ac_product_id (text input)",
+        "Cohort destino (select)",
+        "Survey padrão (select)",
+        "Meta template (select de meta_templates ativos)",
+        "active=true → salva",
+        "Próximas compras desse produto auto-resolvem"
+      ],
+      "states": {
+        "loading": "Spinner",
+        "error": "Toast + manter form preenchido",
+        "empty": "Sem mappings — nova compra cai em pendentes"
+      }
+    },
+    {
+      "id": "INT-6",
+      "trigger": "CS visualiza timeline de aluno (drill-down)",
+      "flow": [
+        "/cs/alunos → busca aluno",
+        "Click aluno → drawer 'Timeline'",
+        "Lista cronológica DESC: data, sent_at → delivered_at → read_at → used_at, survey nome, cohort_snapshot_name, status",
+        "Filtros: data, status, cohort",
+        "Export CSV"
+      ],
+      "states": {
+        "loading": "Spinner drawer",
+        "error": "Toast",
+        "empty": "Aluno não recebeu forms ainda"
+      }
+    }
+  ],
+
+  "edgeCases": [
+    {"id": "EC-1", "scenario": "AC reenvia mesmo evento (network retry)", "handling": "Dedup ac_event_id UNIQUE → 200 + log 'duplicate'", "severity": "critical"},
+    {"id": "EC-2", "scenario": "Aluno já existe (email match)", "handling": "UPDATE em vez de INSERT, audit log mudança", "severity": "high"},
+    {"id": "EC-3", "scenario": "Meta API offline", "handling": "send_status='failed', retry queue, alert > 5min", "severity": "high"},
+    {"id": "EC-4", "scenario": "Webhook AC sem HMAC válido", "handling": "401 + log security + Slack alert", "severity": "critical"},
+    {"id": "EC-5", "scenario": "Form editado durante envio em massa", "handling": "Versioning isola; novos disparos usam nova versão", "severity": "medium"},
+    {"id": "EC-6", "scenario": "Aluno sem phone", "handling": "send_status='skipped' + relatório CS", "severity": "medium"},
+    {"id": "EC-7", "scenario": "Cohort deletado com surveys ativas", "handling": "ON DELETE SET NULL + cohort_snapshot_name preserva histórico", "severity": "high"},
+    {"id": "EC-8", "scenario": "Pendente > 24h não resolvido", "handling": "Slack escalation diária", "severity": "medium"},
+    {"id": "EC-9", "scenario": "CS user removido durante sessão ativa", "handling": "Próximo request 401 → logout forçado", "severity": "low"},
+    {"id": "EC-10", "scenario": "Network timeout callback AC", "handling": "Retry exp 3x → DLQ + alert", "severity": "high"},
+    {"id": "EC-11", "scenario": "Template Meta rejeitado/pausado", "handling": "Block dispatch + alert CS + permite trocar template no mapping", "severity": "critical"},
+    {"id": "EC-12", "scenario": "AC contact sem email", "handling": "Reject webhook 400 + log 'invalid_payload'", "severity": "high"},
+    {"id": "EC-13", "scenario": "Aluno responde com token expirado (>7d)", "handling": "Tela 'link expirado' + opção pedir novo (CS reenvia)", "severity": "medium"},
+    {"id": "EC-14", "scenario": "Aluno responde 2x mesmo token", "handling": "used_at já preenchido → tela 'já respondido'", "severity": "low"},
+    {"id": "EC-15", "scenario": "Aluno acessa link fora janela 24h Meta", "handling": "OK — link tokenizado abre web direto (Meta só p/ envio inicial)", "severity": "low"},
+    {"id": "EC-16", "scenario": "Cohort renomeada após disparo", "handling": "cohort_snapshot_name preserva nome original", "severity": "low"},
+    {"id": "EC-17", "scenario": "AC envia produto válido mas cohort do mapping deletado", "handling": "INSERT pending_student_assignments(reason='cohort_deleted')", "severity": "high"},
+    {"id": "EC-18", "scenario": "Form deletado com links ativos", "handling": "ON DELETE RESTRICT → bloqueia delete; só 'arquivar' (status='archived')", "severity": "high"},
+    {"id": "EC-19", "scenario": "AC envia phone diferente do existente", "handling": "UPDATE student.phone + audit log entry (recomendação seguida)", "severity": "medium"},
+    {"id": "EC-20", "scenario": "Meta delivery webhook chega antes do sent_at registrar (race)", "handling": "UPSERT por meta_message_id; cria registro parcial se falta", "severity": "medium"},
+    {"id": "EC-21", "scenario": "Aluno clica link mas survey já encerrada", "handling": "Tela 'pesquisa encerrada, obrigado pelo interesse'", "severity": "low"},
+    {"id": "EC-22", "scenario": "CS dispara cohort vazia (0 alunos)", "handling": "Bloqueia + mensagem 'cohort sem alunos ativos'", "severity": "low"},
+    {"id": "EC-23", "scenario": "Bulk import CSV com phones duplicados", "handling": "Dedup automático + relatório de duplicatas", "severity": "medium"},
+    {"id": "EC-24", "scenario": "AC contact tem múltiplos products na mesma compra", "handling": "Loop por product → 1 student → N forms enfileirados (1 por produto mapeado)", "severity": "high"},
+    {"id": "EC-25", "scenario": "Edge function dispatch-survey timeout (>2min)", "handling": "Chunked já existe; resume manual ou cron", "severity": "medium"},
+    {"id": "EC-26", "scenario": "RLS impede CS ler aluno fora escopo", "handling": "DECISÃO: CS vê TODOS cohorts (sem escopo restrito)", "severity": "medium"},
+    {"id": "EC-27", "scenario": "Meta envia delivery de mensagem desconhecida", "handling": "Log + ignore (não é nosso meta_message_id)", "severity": "low"},
+    {"id": "EC-28", "scenario": "LGPD purge ac_purchase_events deletando registro com dispatch ainda rodando", "handling": "Soft delete + flag; purge só após dispatch concluir", "severity": "medium"}
+  ],
+
+  "terminology": [
+    {"term": "Cohort", "definition": "Turma de matrícula (ex: PS-2026-Q2). Agrupa alunos. NÃO vincula form.", "synonyms": ["Turma"], "avoid": ["Class", "Group"]},
+    {"term": "Class", "definition": "Sessão de aula individual com data + horário", "synonyms": ["Aula"], "avoid": ["Cohort"]},
+    {"term": "Student", "definition": "Pessoa cadastrada que recebe forms", "synonyms": ["Aluno"], "avoid": ["User", "Customer"]},
+    {"term": "Survey", "definition": "Form criado pelo CS (qualquer categoria)", "synonyms": ["Formulário", "Pesquisa"], "avoid": ["Quiz", "Questionnaire"]},
+    {"term": "SurveyVersion", "definition": "Snapshot imutável das perguntas no momento do disparo", "synonyms": ["Versão do form"], "avoid": []},
+    {"term": "SurveyLink", "definition": "Token único por (survey, student, version)", "synonyms": ["Link de resposta"], "avoid": ["Invite"]},
+    {"term": "Onboarding", "definition": "Categoria de form disparado pós-compra AC", "synonyms": ["Boas-vindas"], "avoid": ["Welcome flow"]},
+    {"term": "Dispatch", "definition": "Ação de enviar form a conjunto de students", "synonyms": ["Disparo", "Envio"], "avoid": ["Send"]},
+    {"term": "CS", "definition": "Customer Success team (role 'cs')", "synonyms": [], "avoid": ["Suporte", "Atendimento"]},
+    {"term": "Admin", "definition": "Role com super-acesso (admin + CS routes)", "synonyms": [], "avoid": ["Owner", "Root"]},
+    {"term": "Meta Template", "definition": "Template WhatsApp aprovado Meta Cloud API", "synonyms": ["Template"], "avoid": ["Mensagem", "Modelo"]},
+    {"term": "Pending Assignment", "definition": "Aluno órfão de cohort aguardando resolução manual", "synonyms": ["Pendente"], "avoid": ["Limbo", "Órfão"]},
+    {"term": "AC Event", "definition": "Evento webhook recebido do ActiveCampaign", "synonyms": ["Evento AC"], "avoid": ["Webhook"]},
+    {"term": "AC Mapping", "definition": "Regra ac_product_id → cohort + survey + template", "synonyms": ["Mapeamento"], "avoid": ["Rule"]},
+    {"term": "AC Contact", "definition": "Pessoa cadastrada no ActiveCampaign (com ac_contact_id)", "synonyms": ["Contact"], "avoid": ["Lead"]},
+    {"term": "Cohort Snapshot", "definition": "Nome cohort no momento do disparo (campo TEXT)", "synonyms": [], "avoid": ["Frozen cohort"]},
+    {"term": "Sent / Delivered / Read / Responded", "definition": "4 estágios timeline aluno: enviado → entregue (Meta) → lido (Meta) → respondeu", "synonyms": [], "avoid": ["Submitted=responded only"]},
+    {"term": "Skipped", "definition": "Aluno pulado (sem phone, opt-out)", "synonyms": [], "avoid": ["Failed"]},
+    {"term": "Failed", "definition": "Erro técnico envio (Meta error, network)", "synonyms": [], "avoid": ["Skipped"]},
+    {"term": "Token", "definition": "UUID único em SurveyLink p/ aluno acessar resposta", "synonyms": [], "avoid": ["Hash", "Code"]},
+    {"term": "Builder", "definition": "UI drag-drop criação de forms", "synonyms": ["Form builder"], "avoid": ["Editor"]},
+    {"term": "Resolution / Resolve", "definition": "Ação CS atribuir cohort a aluno pendente", "synonyms": [], "avoid": ["Assign"]},
+    {"term": "Callback", "definition": "POST nosso → AC API confirmando dispatch", "synonyms": [], "avoid": ["Webhook"]},
+    {"term": "HMAC Signature", "definition": "Hash auth do webhook AC (header X-AC-Signature)", "synonyms": [], "avoid": ["API key"]},
+    {"term": "DLQ", "definition": "Dead Letter Queue — fila de eventos que falharam todos retries", "synonyms": [], "avoid": ["Trash"]}
+  ],
+
+  "openQuestions": [
+    {"id": "OQ-1", "question": "Plataforma é ActiveCampaign mesmo? Confirmar URL admin + plano contratado", "blocking": true, "assignedTo": "@analyst"},
+    {"id": "OQ-2", "question": "Anexar payload exemplo do webhook AC (campos exatos)", "blocking": true, "assignedTo": "@architect"},
+    {"id": "OQ-3", "question": "AC suporta HMAC signature header ou só URL com token?", "blocking": true, "assignedTo": "@architect"},
+    {"id": "OQ-4", "question": "AC permite escrever custom_field via API (para callback)?", "blocking": true, "assignedTo": "@analyst"},
+    {"id": "OQ-5", "question": "AC envia ac_event_id único OR derivamos de order_id+contact_id?", "blocking": true, "assignedTo": "@architect"},
+    {"id": "OQ-6", "question": "Meta plano contratado suporta webhook messages.update (delivery + read)?", "blocking": true, "assignedTo": "@devops"},
+    {"id": "OQ-7", "question": "Volume real disparos/dia esperado (1000 confirma ou ajusta)?", "blocking": false, "assignedTo": "@pm"},
+    {"id": "OQ-8", "question": "Lista de templates Meta atualmente aprovados (catálogo inicial)", "blocking": true, "assignedTo": "@devops"},
+    {"id": "OQ-9", "question": "LGPD retenção 90d ac_purchase_events ok ou outro valor?", "blocking": false, "assignedTo": "@analyst"},
+    {"id": "OQ-10", "question": "Heurística suggested_cohort: implementar V1 (fuzzy match nome produto) ou só V2?", "blocking": false, "assignedTo": "@architect"},
+    {"id": "OQ-11", "question": "ac_product_mappings 1:1 confirmado ou pode ser N:1 (múltiplos produtos → mesmo cohort)?", "blocking": true, "assignedTo": "@pm"},
+    {"id": "OQ-12", "question": "SLA pendente 24h ok ou mais agressivo (4h, 8h)?", "blocking": false, "assignedTo": "@pm"},
+    {"id": "OQ-13", "question": "GitHub org + access para repo cs-portal (permissões CS team)", "blocking": true, "assignedTo": "@devops"}
+  ]
+}
