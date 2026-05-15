@@ -45,6 +45,9 @@
     .stat-label { font-size: 10px; color: #444; margin-top: 2px; }
     .turma-footer { margin-top: 14px; font-size: 11px; color: #444; display: flex; align-items: center; gap: 6px; }
     .turma-footer span { color: #6366f1; font-weight: 600; }
+    .wa-group-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 8px 12px; background: #064e3b; color: #6ee7b7; border-radius: 8px; font-size: 12px; font-weight: 600; text-decoration: none; transition: background .15s; border: 1px solid #047857; }
+    .wa-group-btn:hover { background: #047857; color: #fff; }
+    .wa-group-btn-empty { background: #422006; color: #fcd34d; border-color: #b45309; cursor: not-allowed; }
 
     /* LOADING */
     .spinner { width: 28px; height: 28px; border: 3px solid #1e1e1e; border-top-color: #6366f1; border-radius: 50%; animation: spin .7s linear infinite; margin: 60px auto; }
@@ -121,7 +124,7 @@
   async function loadTurmas() {
     const { data: cohorts, error } = await sb
       .from('cohorts')
-      .select('id, name, active')
+      .select('id, name, active, whatsapp_group_link, whatsapp_group_name')
       .order('name');
 
     if (error || !cohorts) {
@@ -149,6 +152,11 @@
     const html = cohorts.map(c => {
       const total = studentsByCohort[c.id] ?? 0;
       const active = c.active !== false;
+      const waLink = c.whatsapp_group_link;
+      const waName = c.whatsapp_group_name || 'Grupo WhatsApp';
+      const waButton = waLink
+        ? `<a class="wa-group-btn" href="${escHtml(waLink)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${escHtml(waName)}">📱 Abrir grupo WhatsApp</a>`
+        : `<span class="wa-group-btn wa-group-btn-empty" onclick="event.stopPropagation();event.preventDefault()">⚠️ Sem grupo</span>`;
       return `
         <a class="turma-card" href="detalhe.html?id=${c.id}">
           <div class="turma-header">
@@ -165,6 +173,7 @@
               <div class="stat-label">Ver detalhe</div>
             </div>
           </div>
+          ${waButton}
           <div class="turma-footer">Clique para ver alunos, presença e rankings <span>→</span></div>
         </a>`;
     }).join('');

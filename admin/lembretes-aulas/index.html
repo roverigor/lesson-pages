@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lembretes de Aulas — Admin</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
+  <link rel="stylesheet" href="../../templates/design-tokens-dark-premium.css">
+  <link rel="stylesheet" href="../../templates/admin-shared.css">
+  <link rel="stylesheet" href="../../templates/login-overlay.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-sans, 'Inter', sans-serif); background: #080808; color: #888; min-height: 100vh; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    h1 { color: #fff; font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+    .subtitle { color: #666; font-size: 13px; margin-bottom: 24px; }
+    .card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+    input[type=date], select { background: #0d0d0d; border: 1px solid #1e1e1e; color: #ddd; padding: 10px 12px; border-radius: 8px; font-family: inherit; font-size: 14px; }
+    button { background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; font-family: inherit; font-size: 13px; }
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button.secondary { background: #1e1e1e; color: #ccc; }
+    button.success { background: linear-gradient(135deg, #10b981, #059669); }
+    button.danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .badge.preview { background: #1e293b; color: #94a3b8; }
+    .badge.approved { background: #064e3b; color: #6ee7b7; }
+    .badge.sent { background: #1e3a8a; color: #93c5fd; }
+    .badge.cancelled { background: #450a0a; color: #fca5a5; }
+    .badge.pending { background: #422006; color: #fcd34d; }
+    .badge.failed { background: #450a0a; color: #fca5a5; }
+    .badge.skipped { background: #292524; color: #a8a29e; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px; color: #888; font-weight: 600; border-bottom: 1px solid #222; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 10px; color: #ccc; border-bottom: 1px solid #1a1a1a; vertical-align: top; }
+    .msg-preview { font-size: 12px; color: #777; max-width: 400px; white-space: pre-wrap; max-height: 80px; overflow: hidden; }
+    .msg-preview:hover { max-height: none; }
+    .empty { text-align: center; color: #555; padding: 40px; }
+    .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; }
+    .alert.warn { background: #422006; color: #fcd34d; border: 1px solid #b45309; }
+    .alert.info { background: #1e3a5c; color: #93c5fd; border: 1px solid #1e40af; }
+    .alert.success { background: #064e3b; color: #6ee7b7; border: 1px solid #047857; }
+    .alert.error { background: #450a0a; color: #fca5a5; border: 1px solid #b91c1c; }
+    .group-tag { display: inline-block; padding: 2px 8px; background: #1e293b; border-radius: 4px; font-size: 11px; color: #94a3b8; margin: 2px; }
+    .meta-row { display: flex; gap: 16px; margin-bottom: 12px; font-size: 13px; color: #888; }
+    .meta-row strong { color: #ddd; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-icon">🔔</div>
+    <div class="login-title">Lembretes de Aulas</div>
+    <div class="login-subtitle">Preview + aprovação de avisos WhatsApp</div>
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <input class="login-field" type="email" id="login-email" placeholder="Email" required autocomplete="email">
+      <input class="login-field" type="password" id="login-password" placeholder="Senha" required autocomplete="current-password">
+      <button class="login-btn" type="submit" id="login-btn">Entrar</button>
+      <div class="login-error" id="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container" id="main" style="display:none">
+  <h1>🔔 Lembretes de Aulas</h1>
+  <div class="subtitle">Preview, aprovação e disparo de avisos WhatsApp pros grupos das turmas. Dispara <strong>1h antes</strong> e <strong>no horário</strong> da aula. Em feriados, mensagem específica 1x no horário normal.</div>
+
+  <!-- AULAS / ATIVAÇÃO -->
+  <div class="card">
+    <h3 style="color:#fff;font-size:16px;margin-bottom:12px">Aulas ativas no sistema</h3>
+    <div style="color:#888;font-size:12px;margin-bottom:12px">Reminders só disparam pra aulas com <strong style="color:#6ee7b7">ATIVADO</strong>. Toggle pra ligar/desligar dispatch automático por aula.</div>
+    <div id="classes-list">Carregando…</div>
+  </div>
+
+  <!-- GERAR PREVIEW -->
+  <div class="card">
+    <h3 style="color:#fff;font-size:16px;margin-bottom:12px">Gerar preview do dia</h3>
+    <div class="row">
+      <label style="color:#888;font-size:13px">Data alvo:</label>
+      <input type="date" id="target-date">
+      <button onclick="gerarPreview()">Gerar preview</button>
+      <button class="secondary" onclick="gerarPreview(true)">Forçar (recria existente)</button>
+    </div>
+    <div id="preview-result"></div>
+  </div>
+
+  <!-- BATCHES RECENTES -->
+  <div class="card">
+    <h3 style="color:#fff;font-size:16px;margin-bottom:12px">Batches recentes</h3>
+    <div id="batches-list">Carregando…</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
+<script src="/js/config.js"></script>
+<script src="/js/admin/supabase-client.js"></script>
+<script>
+const loginOverlay = document.getElementById('login-overlay');
+const mainEl = document.getElementById('main');
+const todayBRT = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+document.getElementById('target-date').value = todayBRT;
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-error');
+  btn.disabled = true; btn.textContent = 'Entrando…';
+  err.classList.remove('show');
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) {
+    err.textContent = error.message;
+    err.classList.add('show');
+    btn.disabled = false; btn.textContent = 'Entrar';
+    return;
+  }
+  showApp();
+}
+
+function showApp() {
+  loginOverlay.classList.add('hidden');
+  mainEl.style.display = 'block';
+  loadClasses();
+  loadBatches();
+}
+
+const wdNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sab'];
+
+async function loadClasses() {
+  const div = document.getElementById('classes-list');
+  const { data, error } = await sb
+    .from('classes')
+    .select('id, name, weekday, time_start, time_end, start_date, end_date, reminder_enabled, zoom_link')
+    .eq('active', true)
+    .order('weekday')
+    .order('time_start');
+  if (error) { div.innerHTML = `<div class="alert error">${error.message}</div>`; return; }
+  if (!data || data.length === 0) { div.innerHTML = '<div class="empty">Nenhuma aula ativa.</div>'; return; }
+  let html = '<table><thead><tr><th>Dia</th><th>Horário</th><th>Aula</th><th>Período</th><th>Zoom</th><th>Status</th><th></th></tr></thead><tbody>';
+  for (const c of data) {
+    const zoom = c.zoom_link ? '✓' : '✗';
+    const enabled = c.reminder_enabled;
+    const statusBadge = enabled
+      ? '<span class="badge approved">ATIVADO</span>'
+      : '<span class="badge pending">DESATIVADO</span>';
+    const btnLabel = enabled ? 'Desativar' : 'Ativar';
+    const btnClass = enabled ? 'danger' : 'success';
+    html += `
+      <tr>
+        <td><strong>${wdNames[c.weekday]}</strong></td>
+        <td>${c.time_start}-${c.time_end||''}</td>
+        <td>${c.name}</td>
+        <td><small>${c.start_date} → ${c.end_date}</small></td>
+        <td>${zoom}</td>
+        <td>${statusBadge}</td>
+        <td><button class="${btnClass}" onclick="toggleClassReminder('${c.id}', ${enabled})">${btnLabel}</button></td>
+      </tr>
+    `;
+  }
+  html += '</tbody></table>';
+  div.innerHTML = html;
+}
+
+async function toggleClassReminder(classId, currentlyEnabled) {
+  const newVal = !currentlyEnabled;
+  const action = newVal ? 'ATIVAR' : 'desativar';
+  if (!confirm(`Confirma ${action} dispatch automático pra essa aula?`)) return;
+  const { error } = await sb
+    .from('classes')
+    .update({ reminder_enabled: newVal })
+    .eq('id', classId);
+  if (error) { alert('Erro: ' + error.message); return; }
+  loadClasses();
+}
+
+async function gerarPreview(force = false) {
+  const date = document.getElementById('target-date').value;
+  const resultDiv = document.getElementById('preview-result');
+  resultDiv.innerHTML = '<div class="alert info">Gerando preview…</div>';
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { resultDiv.innerHTML = '<div class="alert error">Sessão expirada — recarregue.</div>'; return; }
+
+  try {
+    const res = await fetch(`${window.SUPABASE_CONFIG.url}/functions/v1/prepare-class-reminders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+      body: JSON.stringify({ target_date: date, force })
+    });
+    const data = await res.json();
+
+    if (!data.success) {
+      if (data.error === 'batch_already_exists') {
+        resultDiv.innerHTML = `<div class="alert warn">Já existe batch <strong>${data.status}</strong> pra ${date}. Use "Forçar" pra recriar.</div>`;
+        loadBatches();
+        return;
+      }
+      resultDiv.innerHTML = `<div class="alert error">Erro: ${data.error}</div>`;
+      return;
+    }
+
+    if (!data.batch_id || data.total_sends === 0) {
+      resultDiv.innerHTML = `<div class="alert warn">Sem aulas ativas em ${date} (${data.message || 'nenhum envio gerado'}).</div>`;
+      return;
+    }
+
+    renderBatchPreview(resultDiv, data);
+    loadBatches();
+  } catch (e) {
+    resultDiv.innerHTML = `<div class="alert error">Falha: ${e.message}</div>`;
+  }
+}
+
+function renderBatchPreview(container, data) {
+  const isHoliday = data.is_holiday;
+  let html = `
+    <div class="meta-row" style="margin-top:16px">
+      <span><strong>Batch ID:</strong> <code style="color:#94a3b8">${data.batch_id}</code></span>
+      <span><strong>Data:</strong> ${data.target_date}</span>
+      <span><strong>Total pending:</strong> ${data.total_pending}</span>
+      ${isHoliday ? `<span style="color:#fcd34d"><strong>🎉 FERIADO:</strong> ${data.holiday_name}</span>` : ''}
+    </div>
+    <table>
+      <thead><tr><th>Horário</th><th>Aula</th><th>Grupo</th><th>Tipo</th><th>Mensagem</th><th>Status</th></tr></thead>
+      <tbody>
+  `;
+  for (const s of data.sends) {
+    const time = new Date(s.scheduled_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
+    html += `
+      <tr>
+        <td>${time}</td>
+        <td>${s.class_id ? '<small style="color:#666">' + s.class_id.slice(0,8) + '</small>' : '—'}</td>
+        <td><span class="group-tag">${s.group_name || '(sem nome)'}</span></td>
+        <td><span class="badge ${s.reminder_type==='holiday'?'cancelled':s.reminder_type==='1h_before'?'preview':'approved'}">${s.reminder_type}</span></td>
+        <td><div class="msg-preview">${s.message_preview}</div></td>
+        <td><span class="badge ${s.send_status}">${s.send_status}</span>${s.error_detail?'<br><small style="color:#f87171">'+s.error_detail+'</small>':''}</td>
+      </tr>
+    `;
+  }
+  html += '</tbody></table>';
+  if (data.total_pending > 0) {
+    html += `
+      <div class="row" style="margin-top:16px;justify-content:flex-end">
+        <button class="danger" onclick="cancelarBatch('${data.batch_id}')">Cancelar batch</button>
+        <button class="success" onclick="aprovarBatch('${data.batch_id}')">✓ Aprovar e disparar quando devido</button>
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+}
+
+async function aprovarBatch(batchId) {
+  if (!confirm('Aprovar o batch? Mensagens serão disparadas conforme horário agendado pelo cron.')) return;
+  const { data: { user } } = await sb.auth.getUser();
+  const { error } = await sb
+    .from('class_reminder_batches')
+    .update({ status: 'approved', approved_by: user.id, approved_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .eq('id', batchId);
+  if (error) { alert('Erro: ' + error.message); return; }
+  alert('Aprovado. Cron */5min vai disparar conforme scheduled_at.');
+  loadBatches();
+  document.getElementById('preview-result').innerHTML = '';
+}
+
+async function cancelarBatch(batchId) {
+  if (!confirm('Cancelar batch?')) return;
+  await sb.from('class_reminder_sends').update({ send_status: 'cancelled' }).eq('batch_id', batchId).eq('send_status', 'pending');
+  await sb.from('class_reminder_batches').update({ status: 'cancelled', updated_at: new Date().toISOString() }).eq('id', batchId);
+  alert('Cancelado.');
+  loadBatches();
+  document.getElementById('preview-result').innerHTML = '';
+}
+
+async function loadBatches() {
+  const div = document.getElementById('batches-list');
+  const { data, error } = await sb
+    .from('class_reminder_batches')
+    .select('id, target_date, status, total_sends, created_at, approved_at, notes')
+    .order('target_date', { ascending: false })
+    .limit(15);
+  if (error) { div.innerHTML = `<div class="alert error">${error.message}</div>`; return; }
+  if (!data || data.length === 0) { div.innerHTML = '<div class="empty">Nenhum batch ainda.</div>'; return; }
+  let html = '<table><thead><tr><th>Data</th><th>Status</th><th>Total</th><th>Criado</th><th>Aprovado</th><th>Notes</th><th></th></tr></thead><tbody>';
+  for (const b of data) {
+    html += `
+      <tr>
+        <td><strong>${b.target_date}</strong></td>
+        <td><span class="badge ${b.status}">${b.status}</span></td>
+        <td>${b.total_sends}</td>
+        <td><small>${new Date(b.created_at).toLocaleString('pt-BR')}</small></td>
+        <td><small>${b.approved_at ? new Date(b.approved_at).toLocaleString('pt-BR') : '—'}</small></td>
+        <td><small>${b.notes || ''}</small></td>
+        <td><button class="secondary" onclick="loadBatchDetail('${b.id}')">Ver</button></td>
+      </tr>
+    `;
+  }
+  html += '</tbody></table>';
+  div.innerHTML = html;
+}
+
+async function loadBatchDetail(batchId) {
+  const resultDiv = document.getElementById('preview-result');
+  resultDiv.innerHTML = '<div class="alert info">Carregando…</div>';
+  const { data: batch } = await sb.from('class_reminder_batches').select('*').eq('id', batchId).single();
+  const { data: sends } = await sb
+    .from('class_reminder_sends')
+    .select('class_id, cohort_id, group_jid, group_name, reminder_type, scheduled_at, message_preview, send_status, error_detail, sent_at')
+    .eq('batch_id', batchId)
+    .order('scheduled_at');
+  renderBatchPreview(resultDiv, {
+    batch_id: batchId,
+    target_date: batch.target_date,
+    total_pending: sends.filter(s => s.send_status === 'pending').length,
+    is_holiday: (batch.notes || '').startsWith('Feriado'),
+    holiday_name: batch.notes,
+    sends: sends ?? [],
+  });
+}
+
+// boot
+sb.auth.getSession().then(({ data }) => {
+  if (data.session) showApp();
+});
+sb.auth.onAuthStateChange((event, session) => {
+  if (session) showApp();
+});
+</script>
+</body>
+</html>

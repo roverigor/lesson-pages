@@ -155,6 +155,72 @@ serve(async (req) => {
     return new Response(JSON.stringify({ ok: true }));
   }
 
+  // ─── Handle class reminder actions ───
+  if (actionId === "activate_class") {
+    const classId = actionValue;
+    const { data: cls } = await supabase
+      .from("classes").select("name, reminder_enabled").eq("id", classId).maybeSingle();
+    if (!cls) {
+      await sendMessage(channel, `:warning: Aula não encontrada (id=${classId}).`);
+      return new Response(JSON.stringify({ ok: true }));
+    }
+    if (cls.reminder_enabled) {
+      await sendMessage(channel, `Aula *${cls.name}* já estava ativada.`);
+      return new Response(JSON.stringify({ ok: true }));
+    }
+    await supabase.from("classes").update({ reminder_enabled: true }).eq("id", classId);
+    await sendMessage(channel, `:white_check_mark: *${cls.name}* ativada por ${userName}. Dispatch automático começa na próxima ocorrência.`);
+    return new Response(JSON.stringify({ ok: true }));
+  }
+
+  if (actionId === "skip_holiday") {
+    const targetDate = actionValue;
+    // Cancel any preview/approved batch for that date
+    const { data: batches } = await supabase
+      .from("class_reminder_batches")
+      .select("id").eq("target_date", targetDate).in("status", ["preview","approved"]);
+    if (batches && batches.length > 0) {
+      const ids = batches.map((b: { id: string }) => b.id);
+      await supabase.from("class_reminder_sends")
+        .update({ send_status: "cancelled" }).in("batch_id", ids).eq("send_status", "pending");
+      await supabase.from("class_reminder_batches")
+        .update({ status: "cancelled", updated_at: new Date().toISOString() }).in("id", ids);
+    }
+    await sendMessage(channel, `:no_entry: Feriado *${targetDate}* — todas mensagens canceladas por ${userName}.`);
+    return new Response(JSON.stringify({ ok: true }));
+  }
+
+  if (actionId === "confirm_holiday_send") {
+    const targetDate = actionValue;
+    // Find or create preview batch + approve
+    const { data: existing } = await supabase
+      .from("class_reminder_batches")
+      .select("id, status").eq("target_date", targetDate).maybeSingle();
+    if (existing && existing.status === "approved") {
+      await sendMessage(channel, `Feriado *${targetDate}* já aprovado.`);
+      return new Response(JSON.stringify({ ok: true }));
+    }
+    if (existing && existing.status === "preview") {
+      await supabase.from("class_reminder_batches")
+        .update({ status: "approved", approved_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .eq("id", existing.id);
+      await sendMessage(channel, `:white_check_mark: Mensagens de feriado aprovadas pra *${targetDate}* por ${userName}.`);
+      return new Response(JSON.stringify({ ok: true }));
+    }
+    await sendMessage(channel, `Sem batch pra *${targetDate}* — gere preview primeiro no painel.`);
+    return new Response(JSON.stringify({ ok: true }));
+  }
+
+  if (actionId === "approve_batch_today") {
+    const batchId = actionValue;
+    await supabase
+      .from("class_reminder_batches")
+      .update({ status: "approved", approved_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .eq("id", batchId);
+    await sendMessage(channel, `:white_check_mark: Batch *${batchId.slice(0,8)}* aprovado por ${userName}. Cron dispara conforme horário.`);
+    return new Response(JSON.stringify({ ok: true }));
+  }
+
   // ─── Handle notification queue approvals ───
   const notificationId = actionValue;
 
