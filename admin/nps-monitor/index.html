@@ -144,6 +144,24 @@
       </div>
     </section>
 
+    <!-- ─── ZOOM × CLASS × COHORT MAP ──────────────────────────────── -->
+    <section class="card">
+      <h2 class="card-title">🎬 Mapa Zoom × Aula × Turma</h2>
+      <p class="card-subtitle">
+        Como o trigger sabe disparar NPS: <strong>fim do Zoom</strong> → <em>classes.zoom_meeting_id</em> bate
+        → resolve cohorts via <em>class_cohort_access</em> → 1 job por cohort com presença.
+        Status indica se cadeia está pronta pra cada aula.
+      </p>
+      <div class="zoom-map-legend">
+        <span class="status-pill sent">✓ pronto</span>
+        <span class="status-pill partial">⚠ falta cohort verificado</span>
+        <span class="status-pill failed">✕ falta zoom_meeting_id</span>
+      </div>
+      <div id="zoom-map-body" class="zoom-map">
+        <div class="loading-placeholder">Carregando...</div>
+      </div>
+    </section>
+
     <!-- ─── GROUP VERIFICATION ─────────────────────────────────────── -->
     <section class="card">
       <h2 class="card-title">🛡️ Grupos Verificados</h2>

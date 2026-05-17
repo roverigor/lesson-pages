@@ -34,6 +34,7 @@ const REFRESH_MS = 30000;
 const state = {
   data: null,
   groups: [],
+  zoomMap: [],
   autoRefresh: true,
   refreshTimer: null,
   inflight: 0,
@@ -142,6 +143,49 @@ const MOCK_DATA = {
   fetched_at: new Date().toISOString(),
 };
 
+const MOCK_ZOOM_MAP = [
+  {
+    class_id: "aaa", class_name: "PS Advanced", class_active: true,
+    zoom_meeting_id: "85211223344", has_zoom_binding: true,
+    cohorts: [
+      { cohort_id: "bbb", cohort_name: "PS Advanced T3", has_group_jid: true, group_jid_valid: true, group_verified: true, group_link: "https://chat.whatsapp.com/MOCK_INVITE_ADVANCED_T3", active_students: 42 },
+      { cohort_id: "bbb2", cohort_name: "PS Advanced T4", has_group_jid: true, group_jid_valid: true, group_verified: false, group_link: null, active_students: 28 },
+    ],
+    last_zoom_session: { start_time: "2026-05-16T19:00:00Z", processed: true, zoom_meeting_id: "85211223344" },
+  },
+  {
+    class_id: "ccc", class_name: "Aula 12 — Casos clínicos", class_active: true,
+    zoom_meeting_id: "85299887766", has_zoom_binding: true,
+    cohorts: [
+      { cohort_id: "ddd", cohort_name: "Fundamentals T4", has_group_jid: true, group_jid_valid: true, group_verified: true, group_link: "https://chat.whatsapp.com/MOCK_INVITE_FUND_T4", active_students: 18 },
+    ],
+    last_zoom_session: { start_time: "2026-05-17T19:00:00Z", processed: false, zoom_meeting_id: "85299887766" },
+  },
+  {
+    class_id: "eee", class_name: "PS Fundamentals", class_active: true,
+    zoom_meeting_id: "85277665544", has_zoom_binding: true,
+    cohorts: [
+      { cohort_id: "fff", cohort_name: "PS Fundamentals T2", has_group_jid: true, group_jid_valid: true, group_verified: false, group_link: null, active_students: 67 },
+      { cohort_id: "fff2", cohort_name: "PS Fundamentals T3", has_group_jid: false, group_jid_valid: false, group_verified: false, group_link: null, active_students: 31 },
+    ],
+    last_zoom_session: { start_time: "2026-05-15T19:00:00Z", processed: true, zoom_meeting_id: "85277665544" },
+  },
+  {
+    class_id: "hhh", class_name: "Aula reposição", class_active: true,
+    zoom_meeting_id: null, has_zoom_binding: false,
+    cohorts: [
+      { cohort_id: "ggg", cohort_name: "Fundamentals T3 — legado", has_group_jid: true, group_jid_valid: false, group_verified: false, group_link: null, active_students: 8 },
+    ],
+    last_zoom_session: null,
+  },
+  {
+    class_id: "iii", class_name: "Aula extra sem cohort", class_active: true,
+    zoom_meeting_id: "85200000000", has_zoom_binding: true,
+    cohorts: [],
+    last_zoom_session: null,
+  },
+];
+
 const MOCK_GROUPS = [
   {
     cohort_id: "bbb", cohort_name: "PS Advanced T3",
@@ -192,6 +236,20 @@ async function mockRpc(name, args) {
   }
   if (name === "nps_admin_list_cohort_groups") {
     return MOCK_GROUPS;
+  }
+  if (name === "nps_admin_zoom_class_map") {
+    return MOCK_ZOOM_MAP;
+  }
+  if (name === "nps_resolve_eligible_students") {
+    // Generate fake students for the requested cohort
+    const fakeNames = ["Ana Silva", "Bruno Costa", "Carla Mendes", "Daniel Lima", "Eduarda Souza", "Fernando Alves", "Gabriela Rocha", "Henrique Tavares", "Isabela Castro", "João Pereira", "Larissa Vieira", "Mateus Almeida"];
+    const cohort = MOCK_ZOOM_MAP.flatMap((r) => r.cohorts).find((c) => c.cohort_id === args.p_cohort_id);
+    const count = Math.min(cohort?.active_students ?? 5, 10);
+    return Array.from({ length: count }, (_, i) => ({
+      student_id: `mock-${args.p_cohort_id}-${i}`,
+      name: fakeNames[i % fakeNames.length],
+      phone: `+5511 9${String(20000000 + i * 137).padStart(8, "0")}`,
+    }));
   }
   if (name === "nps_admin_refresh_group_invite") {
     const g = MOCK_GROUPS.find((x) => x.cohort_id === args.p_cohort_id);
@@ -299,12 +357,14 @@ async function logout() {
 // ─── Dashboard fetch + render ──────────────────────────────────────────
 async function refreshDashboard() {
   try {
-    const [data, groups] = await Promise.all([
+    const [data, groups, zoomMap] = await Promise.all([
       rpc("nps_admin_dashboard"),
       rpc("nps_admin_list_cohort_groups").catch(() => []),
+      rpc("nps_admin_zoom_class_map").catch(() => []),
     ]);
     state.data = data;
     state.groups = groups || [];
+    state.zoomMap = zoomMap || [];
     renderAll();
     hideError();
     $("last-fetched").textContent = `atualizado ${fmtDateTime(data?.fetched_at)}`;
@@ -330,10 +390,150 @@ function renderAll() {
   renderMasterSwitch();
   renderKpis();
   renderConfig();
+  renderZoomMap();
   renderGroups();
   renderVariants();
   renderPendingJobs();
   renderRecentJobs();
+}
+
+// ─── Zoom × Class × Cohort map ────────────────────────────────────────
+function renderZoomMap() {
+  const body = $("zoom-map-body");
+  const rows = state.zoomMap ?? [];
+  if (!rows.length) {
+    body.innerHTML = `<div class="loading-placeholder">Nenhuma aula ativa cadastrada.</div>`;
+    return;
+  }
+  body.innerHTML = rows.map((r) => {
+    const hasZoom = !!r.has_zoom_binding;
+    const cohorts = r.cohorts ?? [];
+    const anyVerified = cohorts.some((c) => c.group_verified);
+    const allVerified = cohorts.length > 0 && cohorts.every((c) => c.group_verified || !c.has_group_jid);
+    const totalStudents = cohorts.reduce((sum, c) => sum + (c.active_students ?? 0), 0);
+
+    let statusClass, statusLabel, statusPill;
+    if (!hasZoom) {
+      statusClass = "no-zoom";
+      statusLabel = "Aula sem zoom_meeting_id — trigger nunca dispara";
+      statusPill = `<span class="status-pill failed">✕ sem zoom</span>`;
+    } else if (!cohorts.length) {
+      statusClass = "no-zoom";
+      statusLabel = "Aula sem cohort vinculado em class_cohort_access";
+      statusPill = `<span class="status-pill failed">✕ sem cohort</span>`;
+    } else if (!anyVerified) {
+      statusClass = "partial";
+      statusLabel = "Trigger dispara, mas grupo não envia (cohort precisa verificação)";
+      statusPill = `<span class="status-pill partial">⚠ não verificado</span>`;
+    } else {
+      statusClass = "ready";
+      statusLabel = `Pronto — dispara para ${totalStudents} alunos no fim do zoom`;
+      statusPill = `<span class="status-pill sent">✓ pronto</span>`;
+    }
+
+    const lastSession = r.last_zoom_session;
+    const lastSessionTxt = lastSession?.start_time
+      ? `Última sessão Zoom: ${fmtDateTime(lastSession.start_time)} (processed=${lastSession.processed})`
+      : "Nenhuma sessão Zoom registrada ainda";
+
+    return `
+      <div class="zoom-map-row ${statusClass}">
+        <div class="zoom-map-class">
+          <span class="zoom-map-class-name">${escapeHtml(r.class_name ?? "—")}</span>
+          <span class="zoom-map-zoom-id ${hasZoom ? "ok" : "missing"}">
+            ${hasZoom ? `🎬 ${escapeHtml(r.zoom_meeting_id)}` : "🚫 zoom_meeting_id não configurado"}
+          </span>
+          ${hasZoom ? `<span class="zoom-map-last-session">${escapeHtml(lastSessionTxt)}</span>` : ""}
+        </div>
+        <div class="zoom-map-cohorts">
+          ${cohorts.length === 0
+            ? '<span style="color:#888;font-size:11px">— nenhum cohort vinculado —</span>'
+            : cohorts.map((c) => renderCohortInline(c)).join("")}
+        </div>
+        <div class="zoom-map-status-cell">
+          ${statusPill}
+          <span style="color:#666;font-size:10px">${escapeHtml(statusLabel)}</span>
+          ${cohorts.length > 0 ? `
+            <button class="btn-secondary btn-sm" data-preview-eligible="${escapeHtml(r.class_id)}" title="Ver alunos elegíveis">
+              👥 Ver ${totalStudents} aluno${totalStudents !== 1 ? "s" : ""}
+            </button>
+          ` : ""}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderCohortInline(c) {
+  let badge;
+  if (!c.has_group_jid) badge = '<span class="badge-mini no-jid">sem grupo</span>';
+  else if (!c.group_jid_valid) badge = '<span class="badge-mini invalid">JID inválido</span>';
+  else if (c.group_verified) badge = '<span class="badge-mini verified">verificado</span>';
+  else badge = '<span class="badge-mini unverified">não verificado</span>';
+
+  const linkPart = c.group_link
+    ? `<a href="${escapeHtml(c.group_link)}" target="_blank" rel="noopener noreferrer" class="jid-link" style="font-size:11px">↗ abrir</a>`
+    : "";
+
+  return `
+    <div class="zoom-map-cohort">
+      <span>👥 ${escapeHtml(c.cohort_name)}</span>
+      <span style="color:#666;font-size:10px">(${c.active_students} alunos)</span>
+      ${badge}
+      ${linkPart}
+    </div>
+  `;
+}
+
+async function openEligiblePreview(classId) {
+  const row = state.zoomMap.find((r) => r.class_id === classId);
+  if (!row) return;
+
+  $("modal-job-detail-title").textContent = `Alunos elegíveis — ${row.class_name}`;
+  $("modal-job-detail-body").innerHTML = `<em>Carregando lista por cohort...</em>`;
+  showModal($("modal-job-detail"));
+
+  try {
+    const cohortStudents = await Promise.all(
+      (row.cohorts ?? []).map(async (c) => {
+        const students = await rpc("nps_resolve_eligible_students", {
+          p_class_id: classId,
+          p_cohort_id: c.cohort_id,
+          p_session_date: new Date().toISOString().slice(0, 10),
+        }).catch(() => []);
+        return { cohort: c, students: students || [] };
+      })
+    );
+
+    const html = cohortStudents.map(({ cohort, students }) => {
+      const studentsRows = students.length === 0
+        ? '<em style="color:#666">— nenhum aluno elegível pra essa data —</em>'
+        : `<table class="data-table" style="margin-top:8px">
+            <thead><tr><th>Nome</th><th>Telefone</th></tr></thead>
+            <tbody>${students.map((s) => `<tr><td>${escapeHtml(s.name)}</td><td><span class="jid-mono">${escapeHtml(s.phone ?? "—")}</span></td></tr>`).join("")}</tbody>
+          </table>`;
+      return `
+        <div style="margin-bottom:18px">
+          <strong style="color:#eee">👥 ${escapeHtml(cohort.cohort_name)}</strong>
+          <span style="color:#888;font-size:11px"> — ${students.length} elegível(eis) hoje</span>
+          ${studentsRows}
+        </div>
+      `;
+    }).join("");
+
+    const explainer = `
+      <div style="background:#131319;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:11px;color:#aaa;border:1px solid #2a2a32">
+        <strong>Tabelas envolvidas:</strong><br>
+        • <code>students</code> — nome, telefone, cohort_id, active, is_mentor<br>
+        • <code>student_attendance</code> — se há row pra (cohort_id, class_date), filtra só presentes; senão envia pra todos elegíveis do cohort<br>
+        • <code>nps_resolve_eligible_students(class_id, cohort_id, date)</code> RPC — aplicada agora pra essa data
+      </div>
+    `;
+
+    $("modal-job-detail-body").innerHTML = explainer + html;
+  } catch (e) {
+    $("modal-job-detail-body").innerHTML = `<span style="color:#f87171">Erro: ${escapeHtml(e?.message ?? String(e))}</span>`;
+  }
 }
 
 // ─── Master Switch ─────────────────────────────────────────────────────
@@ -832,6 +1032,11 @@ function wireEvents() {
     const refreshBtn = e.target.closest("[data-refresh-invite]");
     if (refreshBtn) {
       refreshGroupInvite(refreshBtn.dataset.refreshInvite);
+      return;
+    }
+    const previewBtn = e.target.closest("[data-preview-eligible]");
+    if (previewBtn) {
+      openEligiblePreview(previewBtn.dataset.previewEligible);
       return;
     }
     const actionBtn = e.target.closest("[data-action]");

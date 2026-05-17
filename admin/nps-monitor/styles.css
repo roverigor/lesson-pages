@@ -340,6 +340,94 @@ body {
 .variant-status-pill.active { background: #07332a; color: #4ade80; }
 .variant-status-pill.inactive { background: #2a1a0a; color: #fbbf24; }
 
+/* ─── Zoom × Class × Cohort map ──────────────────────────────── */
+.zoom-map-legend {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: 11px;
+  flex-wrap: wrap;
+}
+.zoom-map {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.zoom-map-row {
+  background: #131319;
+  border: 1px solid #2a2a32;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 18px;
+  align-items: start;
+}
+.zoom-map-row.ready { border-color: #15803d; }
+.zoom-map-row.partial { border-color: #5b4a1e; background: rgba(251,191,36,0.04); }
+.zoom-map-row.no-zoom { border-color: #5b1e1e; background: rgba(248,113,113,0.04); }
+
+.zoom-map-class {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.zoom-map-class-name {
+  font-weight: 600;
+  color: #eee;
+  font-size: 14px;
+}
+.zoom-map-zoom-id {
+  font-family: monospace;
+  font-size: 11px;
+  color: #888;
+}
+.zoom-map-zoom-id.ok { color: #4ade80; }
+.zoom-map-zoom-id.missing { color: #f87171; }
+.zoom-map-last-session {
+  font-size: 10px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.zoom-map-cohorts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.zoom-map-cohort {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: #ccc;
+}
+.zoom-map-cohort .badge-mini {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.badge-mini.verified { background: #07332a; color: #4ade80; }
+.badge-mini.unverified { background: #2a1a0a; color: #fbbf24; }
+.badge-mini.no-jid { background: #1a1a20; color: #666; }
+.badge-mini.invalid { background: #2a0e0e; color: #f87171; }
+
+.zoom-map-status-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+  text-align: right;
+  font-size: 11px;
+}
+
+@media (max-width: 720px) {
+  .zoom-map-row { grid-template-columns: 1fr; }
+  .zoom-map-status-cell { align-items: flex-start; text-align: left; }
+}
+
 /* ─── Vars explainer ──────────────────────────────────────────── */
 .vars-explainer {
   background: #131319;
