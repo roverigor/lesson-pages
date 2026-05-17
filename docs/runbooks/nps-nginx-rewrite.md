@@ -14,7 +14,7 @@ ssh -i ~/.ssh/contabo root@194.163.179.68
 sudo nano /etc/nginx/sites-available/painel-lesson-pages
 ```
 
-Inside the `server { ... }` block for `painel.igorrover.com.br`, **before** any existing `location /` block, add:
+Inside the `server { ... }` block for `painel.academialendaria.ai`, **before** any existing `location /` block, add:
 
 ```nginx
 # NPS public landing — rewrite token paths to static index.html
@@ -51,14 +51,14 @@ sudo systemctl reload nginx
 
 ```bash
 # Token URL serves the form (HTTP 200, HTML body)
-curl -sI 'https://painel.igorrover.com.br/survey/grupo/test_token_xyz' | head -1
+curl -sI 'https://painel.academialendaria.ai/survey/grupo/test_token_xyz' | head -1
 # Expected: HTTP/2 200
 
-curl -s 'https://painel.igorrover.com.br/survey/grupo/test_token_xyz' | grep -o '<title>.*</title>'
+curl -s 'https://painel.academialendaria.ai/survey/grupo/test_token_xyz' | grep -o '<title>.*</title>'
 # Expected: <title>Avaliar aula — Academia Lendária</title>
 
 # Static asset (CSS) loads
-curl -sI 'https://painel.igorrover.com.br/survey/styles.css' | head -1
+curl -sI 'https://painel.academialendaria.ai/survey/styles.css' | head -1
 # Expected: HTTP/2 200
 ```
 

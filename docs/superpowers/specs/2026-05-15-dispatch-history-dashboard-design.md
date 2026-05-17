@@ -42,7 +42,7 @@ This sub-project is internal (admin-only) and read-mostly. The single write oper
   - Side-modal drilldown with WhatsApp-style rendered preview + status timeline + retry (failed only)
 - CSV export of currently filtered rows.
 - `meta_pricing` table for Meta API cost estimation, seeded with current BR prices.
-- All URLs use `painel.academialendaria.ai` as canonical (env var `PAINEL_BASE_URL`); `painel.igorrover.com.br` keeps working as DR fallback.
+- All URLs use `painel.academialendaria.ai` as canonical (env var `PAINEL_BASE_URL`); `painel.academialendaria.ai` keeps working as DR fallback.
 
 ### Non-Goals (deferred)
 
@@ -513,7 +513,7 @@ survey/app.js                                         -- updated to call record_
 12. Non-admin user opening URL gets 403 from RPCs (UI shows access denied message).
 13. P2 landing page (`survey/app.js`) instruments link opens → rows appear in `dispatch_link_opens`.
 14. Dashboard's funnel "Aberto link" stage uses `open_count > 0` from VIEW.
-15. All hardcoded `painel.igorrover.com.br` URLs replaced with `painel.academialendaria.ai` (or env-driven base URL).
+15. All hardcoded `painel.academialendaria.ai` URLs replaced with `painel.academialendaria.ai` (or env-driven base URL).
 
 ---
 

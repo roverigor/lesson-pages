@@ -3,7 +3,7 @@
 > **Data:** 2026-04-13
 > **Agente:** @architect (Aria)
 > **Projeto:** lesson-pages — Painel Educacional Academia Lendaria
-> **Dominio:** https://painel.igorrover.com.br
+> **Dominio:** https://painel.academialendaria.ai
 
 ---
 
@@ -194,7 +194,7 @@ git push main → GitHub Actions → SSH VPS → git pull → docker build → d
 - VPS: Contabo 194.163.179.68
 - Container: lesson-pages:latest (Nginx 1.27 Alpine)
 - Build: Node 20 (minify JS) → Nginx (serve estaticos)
-- Dominio: painel.igorrover.com.br (Nginx reverse proxy)
+- Dominio: painel.academialendaria.ai (Nginx reverse proxy)
 
 ---
 

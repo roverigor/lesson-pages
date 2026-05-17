@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
   blocks.push({
     type: "context",
     elements: [
-      { type: "mrkdwn", text: `<https://painel.igorrover.com.br/admin/lembretes-aulas/|Painel completo>` },
+      { type: "mrkdwn", text: `<https://painel.academialendaria.ai/admin/lembretes-aulas/|Painel completo>` },
     ],
   });
 

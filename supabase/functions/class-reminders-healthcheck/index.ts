@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
 
   blocks.push({
     type: "context",
-    elements: [{ type: "mrkdwn", text: "<https://painel.igorrover.com.br/admin/lembretes-aulas/|Painel>" }],
+    elements: [{ type: "mrkdwn", text: "<https://painel.academialendaria.ai/admin/lembretes-aulas/|Painel>" }],
   });
 
   const summary = `Health: ${todayClasses?.length ?? 0} aulas hoje, ${batchToday?.status ?? 'sem batch'}, ${upcomingSends?.length ?? 0} envios próximos 7d`;

@@ -308,7 +308,7 @@ VALUES (
   'CLASS_UUID', 'COHORT_UUID', CURRENT_DATE, 'group',
   CURRENT_DATE + interval '14 days', 'admin-manual'
 )
-RETURNING token, 'https://painel.igorrover.com.br/survey/grupo/' || token AS url;
+RETURNING token, 'https://painel.academialendaria.ai/survey/grupo/' || token AS url;
 ```
 
 No UI page required for P2 — SQL snippet in `docs/runbooks/nps-test-tokens.md` is enough.
@@ -339,7 +339,7 @@ No UI page required for P2 — SQL snippet in `docs/runbooks/nps-test-tokens.md`
 
 ### Integration / E2E (manual or Playwright)
 - Generate test token via SQL helper.
-- Open `https://painel.igorrover.com.br/survey/grupo/{token}` in browser.
+- Open `https://painel.academialendaria.ai/survey/grupo/{token}` in browser.
 - Verify class_name + cohort_name render correctly.
 - Submit score=9 + comment.
 - Confirm row in `class_nps_responses`.

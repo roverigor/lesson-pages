@@ -1,5 +1,5 @@
 -- Relatórios — Queries de validação 2026-05-15
--- Cruza UI (painel.igorrover.com.br) com fonte de verdade no DB
+-- Cruza UI (painel.academialendaria.ai) com fonte de verdade no DB
 -- Rodar via: supabase db remote query --file <este arquivo>
 --   ou via: psql "$DATABASE_URL" -f <este arquivo>
 

@@ -1185,7 +1185,7 @@ ssh -i ~/.ssh/contabo root@194.163.179.68
 sudo nano /etc/nginx/sites-available/painel-lesson-pages
 ```
 
-Inside the `server { ... }` block for `painel.igorrover.com.br`, **before** any existing `location /` block, add:
+Inside the `server { ... }` block for `painel.academialendaria.ai`, **before** any existing `location /` block, add:
 
 ```nginx
 # NPS public landing — rewrite token paths to static index.html
@@ -1221,14 +1221,14 @@ sudo systemctl reload nginx
 
 ```bash
 # Token URL serves the form (HTTP 200, HTML body)
-curl -sI 'https://painel.igorrover.com.br/survey/grupo/test_token_xyz' | head -1
+curl -sI 'https://painel.academialendaria.ai/survey/grupo/test_token_xyz' | head -1
 # Expected: HTTP/2 200
 
-curl -s 'https://painel.igorrover.com.br/survey/grupo/test_token_xyz' | grep -o '<title>.*</title>'
+curl -s 'https://painel.academialendaria.ai/survey/grupo/test_token_xyz' | grep -o '<title>.*</title>'
 # Expected: <title>Avaliar aula — Academia Lendária</title>
 
 # Static asset (CSS) loads
-curl -sI 'https://painel.igorrover.com.br/survey/styles.css' | head -1
+curl -sI 'https://painel.academialendaria.ai/survey/styles.css' | head -1
 # Expected: HTTP/2 200
 ```
 ```
@@ -1240,7 +1240,7 @@ Follow the runbook on the VPS. This is a manual step — does NOT happen via Git
 - [ ] **Step 3: Verify path works on production**
 
 ```bash
-curl -sI 'https://painel.igorrover.com.br/survey/grupo/whatever_token' | head -3
+curl -sI 'https://painel.academialendaria.ai/survey/grupo/whatever_token' | head -3
 # Expected: HTTP/2 200, content-type text/html
 ```
 
@@ -1289,7 +1289,7 @@ WHERE cc.class_id = '<CLASS_UUID>'
   AND cc.cohort_id = '<COHORT_UUID>'
 RETURNING
   token,
-  'https://painel.igorrover.com.br/survey/grupo/' || token AS url;
+  'https://painel.academialendaria.ai/survey/grupo/' || token AS url;
 ```
 
 Replace `<CLASS_UUID>` and `<COHORT_UUID>` with real IDs.
@@ -1313,7 +1313,7 @@ SELECT
   'qa-manual'
 RETURNING
   token,
-  'https://painel.igorrover.com.br/survey/aluno/' || token AS url;
+  'https://painel.academialendaria.ai/survey/aluno/' || token AS url;
 ```
 
 ## Inspect responses
@@ -1405,10 +1405,10 @@ Expected: `submit-survey-group` listed as deployed.
 - [ ] **Step 3: Confirm Nginx rewrite applied**
 
 ```bash
-curl -sI 'https://painel.igorrover.com.br/survey/grupo/foo' | head -1
+curl -sI 'https://painel.academialendaria.ai/survey/grupo/foo' | head -1
 # Expected: HTTP/2 200
 
-curl -s 'https://painel.igorrover.com.br/survey/grupo/foo' | grep -o '<title>[^<]*</title>'
+curl -s 'https://painel.academialendaria.ai/survey/grupo/foo' | grep -o '<title>[^<]*</title>'
 # Expected: <title>Avaliar aula — Academia Lendária</title>
 ```
 
@@ -1428,7 +1428,7 @@ SELECT
   CURRENT_DATE, 'group', CURRENT_DATE + interval '7 days', 'qa-e2e'
 RETURNING
   token,
-  'https://painel.igorrover.com.br/survey/grupo/' || token AS url;
+  'https://painel.academialendaria.ai/survey/grupo/' || token AS url;
 ```
 
 Copy the URL.

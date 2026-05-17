@@ -23,7 +23,7 @@ WHERE cc.class_id = '<CLASS_UUID>'
   AND cc.cohort_id = '<COHORT_UUID>'
 RETURNING
   token,
-  'https://painel.igorrover.com.br/survey/grupo/' || token AS url;
+  'https://painel.academialendaria.ai/survey/grupo/' || token AS url;
 ```
 
 Replace `<CLASS_UUID>` and `<COHORT_UUID>` with real IDs.
@@ -47,7 +47,7 @@ SELECT
   'qa-manual'
 RETURNING
   token,
-  'https://painel.igorrover.com.br/survey/aluno/' || token AS url;
+  'https://painel.academialendaria.ai/survey/aluno/' || token AS url;
 ```
 
 ## Inspect responses
