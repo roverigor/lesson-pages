@@ -107,6 +107,23 @@ body {
   font-size: 16px;
 }
 
+/* ─── Mock banner ──────────────────────────────────────────────── */
+.mock-banner {
+  background: #2a2310;
+  border: 1px solid #5b4a1e;
+  color: #fbbf24;
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.mock-banner a { color: #fbbf24; text-decoration: underline; }
+
 /* ─── Master Switch ────────────────────────────────────────────── */
 .master-switch-card {
   background: linear-gradient(180deg, #0e0e12 0%, #131319 100%);
@@ -461,6 +478,46 @@ body {
   color: #ccc;
   font-size: 13px;
 }
+
+.modal-warn {
+  background: #2a1a0a;
+  border: 1px solid #5b4a1e;
+  color: #fbbf24;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin: 0 0 14px;
+}
+
+.jid-mono {
+  font-family: monospace;
+  font-size: 11px;
+  color: #aaa;
+}
+.jid-valid { color: #4ade80; }
+.jid-invalid { color: #f87171; }
+
+.toggle-mini {
+  width: 40px;
+  height: 22px;
+  background: #2a2a32;
+  border: 1px solid #3a3a42;
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+}
+.toggle-mini[aria-checked="true"] { background: #15803d; border-color: #15803d; }
+.toggle-mini::after {
+  content: "";
+  position: absolute;
+  top: 1px; left: 1px;
+  width: 18px; height: 18px;
+  background: #f4f4f4;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+.toggle-mini[aria-checked="true"]::after { transform: translateX(18px); }
 
 .modal-detail-body {
   background: #16161b;

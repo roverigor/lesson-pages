@@ -30,6 +30,12 @@
   <!-- ─── APP ─────────────────────────────────────────────────────────── -->
   <main id="app" class="app hidden">
 
+    <!-- Mock banner -->
+    <div id="mock-banner" class="mock-banner hidden">
+      🧪 PREVIEW MODE — dados fake, nada persiste, nada é enviado.
+      <a href="/admin/nps-monitor/">Sair do mock</a>
+    </div>
+
     <!-- Header -->
     <header class="topbar">
       <div class="topbar-left">
@@ -135,6 +141,33 @@
           </div>
           <span class="config-help">Min 1000ms. Meta best practice: 10000ms.</span>
         </div>
+      </div>
+    </section>
+
+    <!-- ─── GROUP VERIFICATION ─────────────────────────────────────── -->
+    <section class="card">
+      <h2 class="card-title">🛡️ Grupos Verificados</h2>
+      <p class="card-subtitle">
+        Dispatcher só envia em grupos com flag verificado. Confira <strong>cohort × JID × nome</strong> antes de ativar.
+        JID inválido (não termina em <code>@g.us</code>) bloqueia envio mesmo se verificado.
+      </p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Cohort</th>
+              <th>WhatsApp JID</th>
+              <th>Label</th>
+              <th>Alunos ativos</th>
+              <th>Formato JID</th>
+              <th>Verificado</th>
+              <th>Por / Quando</th>
+            </tr>
+          </thead>
+          <tbody id="groups-body">
+            <tr><td colspan="7" class="loading-placeholder">Carregando...</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
@@ -246,6 +279,30 @@
       <div class="modal-actions">
         <button id="modal-variant-cancel" class="btn-secondary">Cancelar</button>
         <button id="modal-variant-save" class="btn-primary">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MODAL: verify group ────────────────────────────────────── -->
+  <div id="modal-group-verify" class="modal-overlay hidden">
+    <div class="modal-card modal-card-wide">
+      <h3 id="modal-group-title">Verificar grupo</h3>
+      <p class="modal-msg" id="modal-group-msg"></p>
+      <div class="form-group">
+        <label for="group-label-input">Label (opcional, visível só pra você)</label>
+        <input id="group-label-input" type="text" class="modal-textarea" placeholder="Ex: WA Fundamentals T4 — admin Igor">
+      </div>
+      <p class="modal-warn">
+        ⚠️ Ao verificar, você confirma que este JID corresponde ao grupo correto.
+        Dispatcher passará a enviar NPS pós-aula automaticamente aqui.
+      </p>
+      <label class="modal-checkbox">
+        <input type="checkbox" id="modal-group-accept">
+        <span>Confirmo que verifiquei o grupo correspondente.</span>
+      </label>
+      <div class="modal-actions">
+        <button id="modal-group-cancel" class="btn-secondary">Cancelar</button>
+        <button id="modal-group-confirm-btn" class="btn-primary" disabled>Marcar verificado</button>
       </div>
     </div>
   </div>

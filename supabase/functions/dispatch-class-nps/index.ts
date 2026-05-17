@@ -96,6 +96,28 @@ function renderTemplate(template: string, vars: Record<string, string>): string 
   return out;
 }
 
+// V4: Hour-of-day contextual greeting in BR timezone — prepended only when
+// template has explicit {{greeting}} slot (backward compat — older variants ignore).
+function hourGreeting(): string {
+  const utcHour = new Date().getUTCHours();
+  // BRT = UTC-3
+  const brHour = (utcHour - 3 + 24) % 24;
+  if (brHour < 12) return "Bom dia";
+  if (brHour < 18) return "Boa tarde";
+  return "Boa noite";
+}
+
+// V6: Anti-burst jitter — random ms in [-jitterMs, +jitterMs]
+function jitter(baseMs: number, jitterMs: number): number {
+  return Math.max(1000, baseMs + Math.floor((Math.random() * 2 - 1) * jitterMs));
+}
+
+// L1 safety: validate group JID format before send
+function isValidGroupJid(jid: string | null | undefined): boolean {
+  if (!jid) return false;
+  return /^[0-9A-Za-z._-]+@g\.us$/.test(jid) && jid.length >= 12 && jid.length <= 64;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
@@ -192,9 +214,13 @@ async function processJob(
   };
 
   try {
-    // 1. Cohort + class metadata
+    // 1. Cohort + class metadata (incl. L2 safety: verified flag)
     const [{ data: cohort }, { data: klass }] = await Promise.all([
-      client.from("cohorts").select("name, whatsapp_group_jid").eq("id", job.cohort_id).maybeSingle(),
+      client
+        .from("cohorts")
+        .select("name, whatsapp_group_jid, whatsapp_group_verified, whatsapp_group_label")
+        .eq("id", job.cohort_id)
+        .maybeSingle(),
       job.class_id
         ? client.from("classes").select("name").eq("id", job.class_id).maybeSingle()
         : Promise.resolve({ data: { name: null } }),
@@ -228,7 +254,14 @@ async function processJob(
     let groupLinkId: string | null = null;
     let groupToken: string | null = null;
 
-    if (cohort.whatsapp_group_jid && groupVar) {
+    // L1+L2 safety: group send requires verified flag AND valid JID format
+    const groupAllowed = !!(
+      cohort.whatsapp_group_jid &&
+      cohort.whatsapp_group_verified === true &&
+      isValidGroupJid(cohort.whatsapp_group_jid)
+    );
+
+    if (groupAllowed && groupVar) {
       const { data: groupLink } = await client
         .from("nps_class_links")
         .insert({
@@ -286,15 +319,16 @@ async function processJob(
       return baseResult;
     }
 
-    // 6. Send group via Evolution
-    if (cohort.whatsapp_group_jid && groupVar && groupToken) {
+    // 6. Send group via Evolution (gated by L1+L2 safety)
+    if (groupAllowed && groupVar && groupToken) {
       const groupLink = `${BASE_URL}/survey/grupo/${groupToken}`;
       const groupMsg = renderTemplate(groupVar.body_template, {
         class_name: className,
         cohort_name: cohortName,
         link: groupLink,
+        greeting: hourGreeting(),
       });
-      const r = await sendEvolutionGroupText(cohort.whatsapp_group_jid, groupMsg);
+      const r = await sendEvolutionGroupText(cohort.whatsapp_group_jid!, groupMsg);
       if (r.success) {
         baseResult.group.sent = true;
         await client.from("nps_class_links").update({
@@ -310,16 +344,22 @@ async function processJob(
         }).eq("id", groupLinkId!);
       }
     } else {
-      baseResult.group.error = cohort.whatsapp_group_jid ? "no_variant" : "no_group_jid";
+      // Determine skip reason for telemetry
+      if (!cohort.whatsapp_group_jid) baseResult.group.error = "no_group_jid";
+      else if (!cohort.whatsapp_group_verified) baseResult.group.error = "group_not_verified";
+      else if (!isValidGroupJid(cohort.whatsapp_group_jid)) baseResult.group.error = "invalid_jid_format";
+      else if (!groupVar) baseResult.group.error = "no_variant";
+      else baseResult.group.error = "blocked";
     }
 
-    // 7. DM loop (capped at maxDmPerRun per tick)
+    // 7. DM loop (capped at maxDmPerRun per tick) — V6 jitter ±30s
+    const JITTER_MS = 30_000;
     if (dmVar?.meta_template_name) {
       const batch = dmLinks.slice(0, opts.maxDmPerRun);
       for (let i = 0; i < batch.length; i++) {
         const link = batch[i];
-        const dmLink = `${BASE_URL}/survey/aluno/${link.token}`;
-        const bodyParams = [link.name.split(" ")[0], className]; // template: {{1}}=first_name, {{2}}=class
+        const firstName = (link.name || "aluno").trim().split(/\s+/)[0] || "aluno";
+        const bodyParams = [firstName, className]; // template: {{1}}=first_name, {{2}}=class_name
         const buttonParam = link.token;
 
         const r = await sendWhatsAppTemplate(
@@ -344,24 +384,32 @@ async function processJob(
           }).eq("id", link.id);
         }
 
-        if (i < batch.length - 1) await sleep(opts.throttleMs);
+        // V6: jitter the throttle to avoid robotic cadence
+        if (i < batch.length - 1) await sleep(jitter(opts.throttleMs, JITTER_MS));
       }
       baseResult.dm.skipped = dmLinks.length - batch.length;
     } else {
       baseResult.dm.skipped = dmLinks.length;
     }
 
-    // 8. Final status
-    const isGroupOk = baseResult.group.sent || !cohort.whatsapp_group_jid;
+    // 8. Final status — group skip (not_verified / no_jid / invalid_jid) is not a "failure"
+    const groupIntentional = baseResult.group.sent || !groupAllowed;
     const isDmOk = baseResult.dm.failed === 0 && baseResult.dm.skipped === 0;
-    const isPartial = (baseResult.dm.sent > 0 || baseResult.group.sent) && (!isGroupOk || !isDmOk);
-    const finalStatus = isGroupOk && isDmOk ? "sent" : (isPartial ? "partial" : "failed");
+    const isPartial = (baseResult.dm.sent > 0 || baseResult.group.sent) && (!groupIntentional || !isDmOk);
+    const finalStatus = groupIntentional && isDmOk ? "sent" : (isPartial ? "partial" : "failed");
+
+    let groupSendStatus: string;
+    if (baseResult.group.sent) groupSendStatus = "sent";
+    else if (!cohort.whatsapp_group_jid) groupSendStatus = "not_applicable";
+    else if (!cohort.whatsapp_group_verified) groupSendStatus = "skipped";
+    else if (!isValidGroupJid(cohort.whatsapp_group_jid)) groupSendStatus = "skipped";
+    else groupSendStatus = "failed";
 
     await finishJob(client, job.id, finalStatus, {
       total_eligible_students: students.length,
       variant_group_id: groupVar?.variant_id ?? null,
       variant_dm_id: dmVar?.variant_id ?? null,
-      group_send_status: baseResult.group.sent ? "sent" : (cohort.whatsapp_group_jid ? "failed" : "not_applicable"),
+      group_send_status: groupSendStatus,
       group_send_error: baseResult.group.error ?? null,
       dm_sent_count: baseResult.dm.sent,
       dm_failed_count: baseResult.dm.failed,

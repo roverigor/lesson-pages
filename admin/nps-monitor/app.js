@@ -14,13 +14,17 @@
 const SUPABASE_URL = window.SUPABASE_CONFIG?.url;
 const SUPABASE_ANON_KEY = window.SUPABASE_CONFIG?.anonKey;
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+const MOCK = new URLSearchParams(location.search).get("mock") === "1";
+
+if (!MOCK && (!SUPABASE_URL || !SUPABASE_ANON_KEY)) {
   console.error("Missing SUPABASE_CONFIG. Page will not work.");
 }
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true },
-});
+const sb = !MOCK && window.supabase
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true },
+    })
+  : null;
 
 const $ = (id) => document.getElementById(id);
 const show = (el) => el.classList.remove("hidden");
@@ -29,6 +33,7 @@ const REFRESH_MS = 30000;
 
 const state = {
   data: null,
+  groups: [],
   autoRefresh: true,
   refreshTimer: null,
   inflight: 0,
@@ -36,6 +41,7 @@ const state = {
   pendingMasterFlip: null,
   pendingJobAction: null,
   editingVariant: null,
+  pendingGroupVerify: null,
 };
 
 // ─── Utilities ─────────────────────────────────────────────────────────
@@ -72,6 +78,7 @@ function toast(msg, kind = "info") {
 async function rpc(name, args = {}) {
   state.inflight++;
   try {
+    if (MOCK) return await mockRpc(name, args);
     const { data, error } = await sb.rpc(name, args);
     if (error) throw error;
     return data;
@@ -80,8 +87,122 @@ async function rpc(name, args = {}) {
   }
 }
 
+// ─── MOCK LAYER (preview mode via ?mock=1) ──────────────────────────────
+const MOCK_DATA = {
+  config: {
+    nps_dispatch_enabled: "false",
+    nps_cohort_cooldown_hours: "12",
+    nps_dispatch_delay_minutes: "5",
+    nps_dispatch_max_dm_per_run: "50",
+    nps_dispatch_dm_throttle_ms: "10000",
+  },
+  variants: {
+    group: [
+      {
+        id: "group_v1", channel: "group",
+        body_template: "Pessoal, obrigado pela presença em *{{class_name}}* hoje! 💜\n\nQueremos saber como foi pra vocês.\nResponde rapidinho aqui (anônimo, opção de colocar nome): {{link}}",
+        meta_template_name: null, active: true, weight: 1, created_at: "2026-05-17T12:00:00Z",
+      },
+      {
+        id: "group_v2", channel: "group",
+        body_template: "Galera, fechamos *{{class_name}}* agora! 🚀\n\nUma pergunta rápida pra gente continuar evoluindo o conteúdo: {{link}}\n\nLeva 30s, podem responder sem se identificar.",
+        meta_template_name: null, active: true, weight: 1, created_at: "2026-05-17T12:00:00Z",
+      },
+      {
+        id: "group_v3", channel: "group",
+        body_template: "Time {{cohort_name}}! 👋\n\nFeedback express da aula de hoje (*{{class_name}}*) — sua opinião direciona os próximos encontros:\n{{link}}",
+        meta_template_name: null, active: true, weight: 1, created_at: "2026-05-17T12:00:00Z",
+      },
+    ],
+    dm: [
+      { id: "dm_v1", channel: "dm", body_template: "NPS pós-aula individual — variant 1", meta_template_name: "nps_post_class_v1", active: false, weight: 1, created_at: "2026-05-17T12:00:00Z" },
+      { id: "dm_v2", channel: "dm", body_template: "NPS pós-aula individual — variant 2", meta_template_name: "nps_post_class_v2", active: false, weight: 1, created_at: "2026-05-17T12:00:00Z" },
+      { id: "dm_v3", channel: "dm", body_template: "NPS pós-aula individual — variant 3", meta_template_name: "nps_post_class_v3", active: false, weight: 1, created_at: "2026-05-17T12:00:00Z" },
+    ],
+  },
+  rotation: {
+    group: { last_variant_id: "group_v2", rotation_count: 47, updated_at: "2026-05-17T20:14:00Z" },
+    dm: { last_variant_id: null, rotation_count: 0, updated_at: "2026-05-17T12:00:00Z" },
+  },
+  pending_jobs: [
+    { id: "11111111-1111-1111-1111-111111111111", class_id: "aaa", cohort_id: "bbb", cohort_name: "PS Advanced T3", class_name: "PS Advanced", session_date: "2026-05-17", status: "pending", scheduled_at: "2026-05-17T21:35:00Z", started_at: null, total_eligible_students: 42, dm_sent_count: 0, dm_failed_count: 0, group_send_status: null },
+    { id: "22222222-2222-2222-2222-222222222222", class_id: "ccc", cohort_id: "ddd", cohort_name: "Fundamentals T4", class_name: "Aula 12 — Casos clínicos", session_date: "2026-05-17", status: "pending", scheduled_at: "2026-05-17T22:05:00Z", started_at: null, total_eligible_students: 18, dm_sent_count: 0, dm_failed_count: 0, group_send_status: null },
+    { id: "33333333-3333-3333-3333-333333333333", class_id: "eee", cohort_id: "fff", cohort_name: "PS Fundamentals T2", class_name: "PS Fundamentals", session_date: "2026-05-17", status: "in_progress", scheduled_at: "2026-05-17T19:30:00Z", started_at: "2026-05-17T19:35:00Z", total_eligible_students: 67, dm_sent_count: 32, dm_failed_count: 1, group_send_status: "sent" },
+  ],
+  recent_jobs: [
+    { id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", cohort_name: "Fundamentals T4", class_name: "Aula 11 — Análise estrutural", session_date: "2026-05-16", status: "sent", finished_at: "2026-05-16T22:18:00Z", dm_sent_count: 18, dm_failed_count: 0, group_send_status: "sent", error_detail: null },
+    { id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", cohort_name: "PS Advanced T3", class_name: "PS Advanced", session_date: "2026-05-16", status: "partial", finished_at: "2026-05-16T21:50:00Z", dm_sent_count: 38, dm_failed_count: 4, group_send_status: "sent", error_detail: "4 DMs failed: meta_template_pending" },
+    { id: "cccccccc-cccc-cccc-cccc-cccccccccccc", cohort_name: "Fundamentals T3", class_name: "Aula 14 — Casos atípicos", session_date: "2026-05-15", status: "failed", finished_at: "2026-05-15T22:30:00Z", dm_sent_count: 0, dm_failed_count: 12, group_send_status: "failed", error_detail: "evolution_http_503: instance disconnected" },
+    { id: "dddddddd-dddd-dddd-dddd-dddddddddddd", cohort_name: "PS Fundamentals T2", class_name: "PS Fundamentals", session_date: "2026-05-15", status: "skipped", finished_at: "2026-05-15T20:00:00Z", dm_sent_count: 0, dm_failed_count: 0, group_send_status: "not_applicable", error_detail: "cooldown_active" },
+  ],
+  stats: {
+    jobs_24h: 7, jobs_sent_24h: 4, jobs_partial_24h: 1, jobs_failed_24h: 1,
+    dm_sent_24h: 124, dm_failed_24h: 5, opens_24h: 73, responses_24h: 28,
+  },
+  fetched_at: new Date().toISOString(),
+};
+
+const MOCK_GROUPS = [
+  { cohort_id: "bbb", cohort_name: "PS Advanced T3", whatsapp_group_jid: "120363042000000111@g.us", jid_valid_format: true, verified: true, verified_at: "2026-05-16T14:30:00Z", verified_by: "admin", label: "PS Advanced T3 — WA oficial", active_students_count: 42 },
+  { cohort_id: "ddd", cohort_name: "Fundamentals T4", whatsapp_group_jid: "120363042000000222@g.us", jid_valid_format: true, verified: true, verified_at: "2026-05-15T18:00:00Z", verified_by: "admin", label: null, active_students_count: 18 },
+  { cohort_id: "fff", cohort_name: "PS Fundamentals T2", whatsapp_group_jid: "120363042000000333@g.us", jid_valid_format: true, verified: false, verified_at: null, verified_by: null, label: null, active_students_count: 67 },
+  { cohort_id: "ggg", cohort_name: "Fundamentals T3 — legado", whatsapp_group_jid: "invalido-sem-sufixo", jid_valid_format: false, verified: false, verified_at: null, verified_by: null, label: null, active_students_count: 8 },
+];
+
+async function mockRpc(name, args) {
+  await new Promise((r) => setTimeout(r, 200));
+  if (name === "nps_admin_dashboard") {
+    return { ...MOCK_DATA, fetched_at: new Date().toISOString() };
+  }
+  if (name === "nps_admin_list_cohort_groups") {
+    return MOCK_GROUPS;
+  }
+  if (name === "nps_admin_set_cohort_group_verified") {
+    const g = MOCK_GROUPS.find((x) => x.cohort_id === args.p_cohort_id);
+    if (g) {
+      g.verified = args.p_verified;
+      g.verified_at = args.p_verified ? new Date().toISOString() : null;
+      g.verified_by = args.p_verified ? "you" : null;
+      if (args.p_label !== undefined && args.p_label !== null) g.label = args.p_label;
+    }
+    return { ok: true };
+  }
+  if (name === "nps_admin_set_config") {
+    MOCK_DATA.config[args.p_key] = args.p_value;
+    return { ok: true, key: args.p_key, value: args.p_value };
+  }
+  if (name === "nps_admin_update_variant") {
+    const all = [...MOCK_DATA.variants.group, ...MOCK_DATA.variants.dm];
+    const v = all.find((x) => x.id === args.p_variant_id);
+    if (v) { v.body_template = args.p_body_template; v.active = args.p_active; }
+    return { ok: true, variant_id: args.p_variant_id };
+  }
+  if (name === "nps_admin_skip_job") {
+    const j = MOCK_DATA.pending_jobs.find((x) => x.id === args.p_job_id);
+    if (j) {
+      j.status = "skipped"; j.finished_at = new Date().toISOString();
+      j.error_detail = args.p_reason ?? "manual";
+      MOCK_DATA.recent_jobs.unshift(j);
+      MOCK_DATA.pending_jobs = MOCK_DATA.pending_jobs.filter((x) => x.id !== args.p_job_id);
+    }
+    return { ok: true };
+  }
+  if (name === "nps_admin_force_job_now") {
+    const j = MOCK_DATA.pending_jobs.find((x) => x.id === args.p_job_id);
+    if (j) j.scheduled_at = new Date().toISOString();
+    return { ok: true };
+  }
+  if (name === "nps_admin_reset_stuck_job") {
+    const j = MOCK_DATA.pending_jobs.find((x) => x.id === args.p_job_id);
+    if (j) { j.status = "pending"; j.started_at = null; }
+    return { ok: true };
+  }
+  throw new Error(`mock: unknown RPC ${name}`);
+}
+
 // ─── Auth ──────────────────────────────────────────────────────────────
 async function ensureAdmin() {
+  if (MOCK) return true;
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return null;
   const role = session.user?.user_metadata?.role;
@@ -127,6 +248,7 @@ function enterApp() {
 }
 
 async function logout() {
+  if (MOCK) { location.reload(); return; }
   await sb.auth.signOut();
   location.reload();
 }
@@ -134,8 +256,12 @@ async function logout() {
 // ─── Dashboard fetch + render ──────────────────────────────────────────
 async function refreshDashboard() {
   try {
-    const data = await rpc("nps_admin_dashboard");
+    const [data, groups] = await Promise.all([
+      rpc("nps_admin_dashboard"),
+      rpc("nps_admin_list_cohort_groups").catch(() => []),
+    ]);
     state.data = data;
+    state.groups = groups || [];
     renderAll();
     hideError();
     $("last-fetched").textContent = `atualizado ${fmtDateTime(data?.fetched_at)}`;
@@ -161,6 +287,7 @@ function renderAll() {
   renderMasterSwitch();
   renderKpis();
   renderConfig();
+  renderGroups();
   renderVariants();
   renderPendingJobs();
   renderRecentJobs();
@@ -244,6 +371,82 @@ async function saveConfig(key) {
   try {
     await rpc("nps_admin_set_config", { p_key: key, p_value: value });
     toast(`${key} salvo: ${value}`, "success");
+    await refreshDashboard();
+  } catch (e) {
+    toast(`Erro: ${e?.message ?? e}`, "error");
+  }
+}
+
+// ─── Group verification ───────────────────────────────────────────────
+function renderGroups() {
+  const body = $("groups-body");
+  const groups = state.groups ?? [];
+  if (!groups.length) {
+    body.innerHTML = `<tr><td colspan="7" class="loading-placeholder">Nenhum cohort com WhatsApp JID cadastrado.</td></tr>`;
+    return;
+  }
+  body.innerHTML = groups.map((g) => {
+    const validClass = g.jid_valid_format ? "jid-valid" : "jid-invalid";
+    const validIcon = g.jid_valid_format ? "✓" : "✕";
+    const verifiedByLine = g.verified_at
+      ? `<div style="font-size:10px;color:#666">${fmtDateTime(g.verified_at)}</div>`
+      : "—";
+    return `
+      <tr>
+        <td>${escapeHtml(g.cohort_name ?? "—")}</td>
+        <td><span class="jid-mono">${escapeHtml(g.whatsapp_group_jid ?? "—")}</span></td>
+        <td>${escapeHtml(g.label ?? "—")}</td>
+        <td>${g.active_students_count ?? 0}</td>
+        <td class="${validClass}">${validIcon} ${g.jid_valid_format ? "ok" : "inválido"}</td>
+        <td>
+          <button class="toggle-mini" role="switch"
+                  aria-checked="${g.verified ? "true" : "false"}"
+                  data-group-toggle="${g.cohort_id}"
+                  ${!g.jid_valid_format && !g.verified ? "disabled style='opacity:0.4;cursor:not-allowed'" : ""}
+                  title="${g.verified ? "Clique pra desverificar" : "Clique pra verificar"}"></button>
+        </td>
+        <td>${verifiedByLine}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function openGroupVerifyModal(cohortId) {
+  const g = state.groups.find((x) => x.cohort_id === cohortId);
+  if (!g) return;
+  const willVerify = !g.verified;
+  state.pendingGroupVerify = { cohort_id: cohortId, verify: willVerify, current: g };
+
+  $("modal-group-title").textContent = willVerify
+    ? `Verificar grupo de ${g.cohort_name}`
+    : `Desverificar grupo de ${g.cohort_name}`;
+  $("modal-group-msg").innerHTML = `
+    <strong>Cohort:</strong> ${escapeHtml(g.cohort_name)}<br>
+    <strong>JID:</strong> <code>${escapeHtml(g.whatsapp_group_jid)}</code><br>
+    <strong>Alunos ativos:</strong> ${g.active_students_count}
+  `;
+  $("group-label-input").value = g.label ?? "";
+  $("group-label-input").disabled = !willVerify;
+  $("modal-group-accept").checked = false;
+  $("modal-group-confirm-btn").disabled = true;
+  $("modal-group-confirm-btn").textContent = willVerify ? "Marcar verificado" : "Desverificar";
+  $("modal-group-confirm-btn").className = willVerify ? "btn-primary" : "btn-danger";
+  showModal($("modal-group-verify"));
+}
+
+async function confirmGroupVerify() {
+  if (!state.pendingGroupVerify) return;
+  const { cohort_id, verify } = state.pendingGroupVerify;
+  const label = verify ? $("group-label-input").value.trim() || null : null;
+  try {
+    await rpc("nps_admin_set_cohort_group_verified", {
+      p_cohort_id: cohort_id,
+      p_verified: verify,
+      p_label: label,
+    });
+    toast(verify ? "Grupo verificado." : "Grupo desverificado.", "success");
+    closeModals();
+    state.pendingGroupVerify = null;
     await refreshDashboard();
   } catch (e) {
     toast(`Erro: ${e?.message ?? e}`, "error");
@@ -495,6 +698,11 @@ function wireEvents() {
       openVariantEdit(editBtn.dataset.editVariant);
       return;
     }
+    const groupToggle = e.target.closest("[data-group-toggle]");
+    if (groupToggle && !groupToggle.disabled) {
+      openGroupVerifyModal(groupToggle.dataset.groupToggle);
+      return;
+    }
     const actionBtn = e.target.closest("[data-action]");
     if (actionBtn) {
       const action = actionBtn.dataset.action;
@@ -504,6 +712,12 @@ function wireEvents() {
       return;
     }
   });
+
+  $("modal-group-cancel").addEventListener("click", () => { state.pendingGroupVerify = null; closeModals(); });
+  $("modal-group-accept").addEventListener("change", (e) => {
+    $("modal-group-confirm-btn").disabled = !e.target.checked;
+  });
+  $("modal-group-confirm-btn").addEventListener("click", confirmGroupVerify);
 
   $("modal-variant-cancel").addEventListener("click", () => { state.editingVariant = null; closeModals(); });
   $("modal-variant-save").addEventListener("click", saveVariant);
@@ -531,6 +745,13 @@ async function init() {
 
 async function boot() {
   wireEvents();
+  if (MOCK) {
+    hide($("login-overlay"));
+    show($("app"));
+    show($("mock-banner"));
+    init();
+    return;
+  }
   const isAdmin = await ensureAdmin();
   if (isAdmin === true) {
     enterApp();
