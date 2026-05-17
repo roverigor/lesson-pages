@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NPS Monitor — Painel Admin</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+  <link rel="stylesheet" href="/templates/design-tokens-dark-premium.css">
+  <link rel="stylesheet" href="/templates/admin-shared.css">
+  <link rel="stylesheet" href="/templates/login-overlay.css">
+  <link rel="stylesheet" href="/admin/nps-monitor/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ─── LOGIN OVERLAY ─────────────────────────────────────────────── -->
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-box">
+      <div class="login-icon">📡</div>
+      <h1 class="login-title">NPS Monitor</h1>
+      <p class="login-subtitle">Acesso restrito a administradores</p>
+      <input id="login-email" class="login-field" type="email" placeholder="Email" autocomplete="email">
+      <input id="login-password" class="login-field" type="password" placeholder="Senha" autocomplete="current-password">
+      <button id="login-btn" class="login-btn">Entrar</button>
+      <p id="login-error" class="login-error hidden"></p>
+    </div>
+  </div>
+
+  <!-- ─── APP ─────────────────────────────────────────────────────────── -->
+  <main id="app" class="app hidden">
+
+    <!-- Header -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <a href="/admin/" class="brand-link">🏛️ Admin</a>
+        <span class="topbar-sep">›</span>
+        <span class="topbar-title">NPS Monitor</span>
+        <span id="last-fetched" class="last-fetched"></span>
+      </div>
+      <div class="topbar-right">
+        <a href="/admin/envios/" class="btn-secondary">📊 Histórico envios</a>
+        <button id="auto-refresh-btn" class="btn-secondary" title="Alternar auto-refresh">⏸️ Pausar</button>
+        <button id="refresh-btn" class="btn-secondary">↻ Atualizar</button>
+        <button id="logout-btn" class="btn-tertiary">Sair</button>
+      </div>
+    </header>
+
+    <!-- Forbidden -->
+    <section id="forbidden" class="card forbidden hidden">
+      <h2>🚫 Acesso negado</h2>
+      <p>Você precisa de permissão de administrador para acessar esta página.</p>
+    </section>
+
+    <!-- Banner de erro -->
+    <section id="error-banner" class="error-banner hidden">
+      <span id="error-banner-text"></span>
+      <button id="error-banner-dismiss" type="button" class="error-banner-dismiss">✕</button>
+    </section>
+
+    <!-- ─── MASTER SWITCH ──────────────────────────────────────────── -->
+    <section class="card master-switch-card">
+      <div class="master-switch-header">
+        <div>
+          <h2 class="card-title">⚡ Master Switch</h2>
+          <p class="card-subtitle">Habilita disparo automático de NPS pós-aula. Quando desabilitado, jobs ficam em fila mas nada sai.</p>
+        </div>
+        <div class="master-switch-wrap">
+          <span id="master-state-label" class="master-state-label">—</span>
+          <button id="master-toggle" class="toggle-switch" role="switch" aria-checked="false" aria-label="Habilitar dispatcher NPS">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── KPI STATS 24h ──────────────────────────────────────────── -->
+    <section id="kpi-grid" class="kpi-grid">
+      <div class="kpi-card">
+        <span class="kpi-label">Jobs 24h</span>
+        <span class="kpi-value" data-kpi="jobs_24h">—</span>
+        <span class="kpi-subline" data-kpi-sub="jobs_split">—</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">DMs enviados</span>
+        <span class="kpi-value" data-kpi="dm_sent_24h">—</span>
+        <span class="kpi-subline" data-kpi-sub="dm_failed">—</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Aberturas</span>
+        <span class="kpi-value" data-kpi="opens_24h">—</span>
+        <span class="kpi-subline">↗ últimas 24h</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Respostas</span>
+        <span class="kpi-value" data-kpi="responses_24h">—</span>
+        <span class="kpi-subline">📋 últimas 24h</span>
+      </div>
+    </section>
+
+    <!-- ─── CONFIG TUNABLES ────────────────────────────────────────── -->
+    <section class="card">
+      <h2 class="card-title">⚙️ Configurações</h2>
+      <p class="card-subtitle">Editáveis enquanto dispatcher estiver desabilitado. Mudanças são imediatas.</p>
+      <div class="config-grid">
+        <div class="config-item">
+          <label for="cfg-cooldown">Cooldown por cohort (horas)</label>
+          <div class="config-input-row">
+            <input id="cfg-cooldown" type="number" min="0" max="168" step="1" data-key="nps_cohort_cooldown_hours">
+            <button class="btn-primary btn-sm" data-save-config="nps_cohort_cooldown_hours">Salvar</button>
+          </div>
+          <span class="config-help">Min entre 2 disparos pro mesmo cohort. 0 = sem cooldown.</span>
+        </div>
+        <div class="config-item">
+          <label for="cfg-delay">Delay pós-aula (min)</label>
+          <div class="config-input-row">
+            <input id="cfg-delay" type="number" min="0" max="60" step="1" data-key="nps_dispatch_delay_minutes">
+            <button class="btn-primary btn-sm" data-save-config="nps_dispatch_delay_minutes">Salvar</button>
+          </div>
+          <span class="config-help">Espera entre fim da aula e envio NPS.</span>
+        </div>
+        <div class="config-item">
+          <label for="cfg-maxdm">Max DMs por run</label>
+          <div class="config-input-row">
+            <input id="cfg-maxdm" type="number" min="1" max="200" step="1" data-key="nps_dispatch_max_dm_per_run">
+            <button class="btn-primary btn-sm" data-save-config="nps_dispatch_max_dm_per_run">Salvar</button>
+          </div>
+          <span class="config-help">Cap por execução do cron. Job grande continua em ticks seguintes.</span>
+        </div>
+        <div class="config-item">
+          <label for="cfg-throttle">Throttle entre DMs (ms)</label>
+          <div class="config-input-row">
+            <input id="cfg-throttle" type="number" min="1000" max="60000" step="500" data-key="nps_dispatch_dm_throttle_ms">
+            <button class="btn-primary btn-sm" data-save-config="nps_dispatch_dm_throttle_ms">Salvar</button>
+          </div>
+          <span class="config-help">Min 1000ms. Meta best practice: 10000ms.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── VARIANTS ROUTER ────────────────────────────────────────── -->
+    <section class="card">
+      <h2 class="card-title">📨 Router de Mensagens</h2>
+      <p class="card-subtitle">Variantes rotacionam round-robin por canal. Indicador 🔄 marca última usada.</p>
+      <div class="variants-grid">
+        <div class="variants-column">
+          <h3 class="variants-channel-title">📢 Grupo (Evolution)</h3>
+          <div id="variants-group" class="variants-list">
+            <div class="loading-placeholder">Carregando...</div>
+          </div>
+        </div>
+        <div class="variants-column">
+          <h3 class="variants-channel-title">💬 DM (Meta template)</h3>
+          <div id="variants-dm" class="variants-list">
+            <div class="loading-placeholder">Carregando...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── PENDING JOBS ───────────────────────────────────────────── -->
+    <section class="card">
+      <h2 class="card-title">⏳ Jobs Pendentes</h2>
+      <p class="card-subtitle">Próximos 20 jobs aguardando disparo ou em execução.</p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Cohort</th>
+              <th>Aula</th>
+              <th>Data</th>
+              <th>Status</th>
+              <th>Scheduled</th>
+              <th>Elegíveis</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="pending-jobs-body">
+            <tr><td colspan="7" class="loading-placeholder">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ─── RECENT JOBS ────────────────────────────────────────────── -->
+    <section class="card">
+      <h2 class="card-title">📋 Jobs Recentes</h2>
+      <p class="card-subtitle">Últimos 20 jobs finalizados (sent / partial / failed / skipped).</p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Cohort</th>
+              <th>Aula</th>
+              <th>Data</th>
+              <th>Status</th>
+              <th>Finished</th>
+              <th>DMs</th>
+              <th>Grupo</th>
+              <th>Detalhe</th>
+            </tr>
+          </thead>
+          <tbody id="recent-jobs-body">
+            <tr><td colspan="8" class="loading-placeholder">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ─── MODAL: confirm master switch ───────────────────────────── -->
+  <div id="modal-master-confirm" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h3 id="modal-master-title">Confirmar mudança</h3>
+      <p id="modal-master-msg" class="modal-msg"></p>
+      <label class="modal-checkbox">
+        <input type="checkbox" id="modal-master-accept">
+        <span>Entendo que isso afeta envios reais a alunos.</span>
+      </label>
+      <div class="modal-actions">
+        <button id="modal-master-cancel" class="btn-secondary">Cancelar</button>
+        <button id="modal-master-confirm-btn" class="btn-danger" disabled>Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MODAL: edit variant ────────────────────────────────────── -->
+  <div id="modal-variant-edit" class="modal-overlay hidden">
+    <div class="modal-card modal-card-wide">
+      <h3 id="modal-variant-title">Editar variant</h3>
+      <p class="modal-msg">
+        Variáveis: <code>{{class_name}}</code>, <code>{{cohort_name}}</code>, <code>{{link}}</code>.
+        DM templates Meta não permitem edit do body (use Meta Business Manager) — só toggle active.
+      </p>
+      <div class="form-group">
+        <label for="variant-body-textarea">Corpo da mensagem</label>
+        <textarea id="variant-body-textarea" rows="8" class="modal-textarea"></textarea>
+      </div>
+      <div class="form-group form-group-row">
+        <label class="toggle-label">
+          <input type="checkbox" id="variant-active-toggle">
+          <span>Variant ativa (entra na rotação)</span>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button id="modal-variant-cancel" class="btn-secondary">Cancelar</button>
+        <button id="modal-variant-save" class="btn-primary">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MODAL: confirm job action ──────────────────────────────── -->
+  <div id="modal-job-confirm" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h3 id="modal-job-title">Confirmar ação</h3>
+      <p id="modal-job-msg" class="modal-msg"></p>
+      <div class="modal-actions">
+        <button id="modal-job-cancel" class="btn-secondary">Cancelar</button>
+        <button id="modal-job-confirm-btn" class="btn-primary">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MODAL: job detail ──────────────────────────────────────── -->
+  <div id="modal-job-detail" class="modal-overlay hidden">
+    <div class="modal-card modal-card-wide">
+      <h3 id="modal-job-detail-title">Detalhe do job</h3>
+      <div id="modal-job-detail-body" class="modal-detail-body"></div>
+      <div class="modal-actions">
+        <button id="modal-job-detail-close" class="btn-secondary">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TOASTS ─────────────────────────────────────────────────── -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Deps -->
+  <script src="/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/admin/nps-monitor/app.js"></script>
+</body>
+</html>
