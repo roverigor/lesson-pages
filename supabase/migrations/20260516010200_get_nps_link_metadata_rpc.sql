@@ -39,7 +39,7 @@ BEGIN
       true,
       false,
       v_link.mode,
-      c.title,
+      c.name,
       coh.name,
       CASE WHEN v_link.mode = 'dm' THEN s.name ELSE NULL END
     FROM classes c

@@ -8,6 +8,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { verifyServiceRole } from "../_shared/auth.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -26,6 +27,11 @@ function json(body: unknown, status = 200): Response {
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+
+  // ─── Service-role auth gate (NPS.D.3) ───
+  if (!verifyServiceRole(req)) {
+    return json({ error: "unauthorized" }, 401);
+  }
 
   let body: { source?: string; dispatch_id?: string; audit_id?: string; retried_by?: string };
   try {

@@ -5,16 +5,18 @@
 
 ## Pre-activation Checklist
 
-- [ ] Migrations deployed: `supabase db push` (7 P3 files: `20260517010000..20260517010500`).
+- [ ] Migrations deployed: `supabase db push` (8 P3 files: `20260517010000..20260517010500` + `20260517020000_nps_admin_rpcs.sql` + `20260517020100_*` admin RPC fix).
 - [ ] Edge function deployed: `supabase functions deploy dispatch-class-nps --no-verify-jwt`.
-- [ ] Cron registered: `SELECT jobname FROM cron.job WHERE jobname='dispatch-class-nps-tick';` returns 1 row.
-- [ ] Meta templates approved + active:
+- [ ] Edge function deployed: `supabase functions deploy dispatch-retry --no-verify-jwt`.
+- [ ] **Cron NOT yet registered** — registration moved to Step 6 below per NPS.D.5 (CLAUDE.md gate).
+- [ ] Meta templates approved + active (`UTILITY` category, not `MARKETING`):
   - `nps_post_class_v1` (body: 2 vars + URL button)
   - `nps_post_class_v2`
   - `nps_post_class_v3`
   - Confirm via `SELECT name, status FROM meta_templates WHERE name LIKE 'nps_post_class%';`.
-- [ ] After approval, flip DM variants active: `UPDATE nps_message_variants SET active=true WHERE channel='dm';`
+- [ ] After Meta approval, flip DM variants active: `UPDATE nps_message_variants SET active=true WHERE channel='dm';`
 - [ ] `app_config.supabase_service_key` set (cron auth) — `SELECT * FROM app_config WHERE key='supabase_service_key';`.
+- [ ] Edge function env vars verified: `SUPABASE_SERVICE_ROLE_KEY`, `META_API_KEY`, `META_PHONE_NUMBER_ID`, `EVOLUTION_API_URL`, `EVOLUTION_API_KEY`, `EVOLUTION_INSTANCE`.
 - [ ] Slack webhook env var `SLACK_DEV_ALERTS_WEBHOOK` set on edge function (optional but recommended).
 - [ ] Test cohort identified (small group, internal mentors first).
 
@@ -50,24 +52,68 @@ SELECT mode, send_status, token, student_id FROM nps_class_links WHERE dispatch_
 
 ## Activation Sequence
 
-1. **Verify all pre-checks above passed.**
-2. Flip flag for live test on 1 cohort:
+1. **Verify all pre-checks above passed.** GO/NO-GO gate — if any checkbox is empty, STOP.
+2. Smoke test via dry-run (section above) — confirm tokens generate, no msgs sent.
+3. Flip master flag:
    ```sql
    UPDATE nps_dispatch_config SET value='true' WHERE key='nps_dispatch_enabled';
    ```
-3. Wait for next class to end. Observe:
-   - Zoom webhook → `zoom_meetings.processed=true` → trigger fires.
-   - Cron tick within 5 min picks job.
-   - Slack alert posts in `#dev-alerts`.
-   - Verify msgs in WA group + DMs.
-4. If issues: flip OFF, debug.
+4. Manually enqueue 1 job for a controlled cohort:
    ```sql
-   UPDATE nps_dispatch_config SET value='false' WHERE key='nps_dispatch_enabled';
+   SELECT public.enqueue_nps_class_dispatch('TEST_CLASS_UUID', 'TEST_COHORT_UUID', CURRENT_DATE, NULL);
    ```
+5. Manually invoke dispatcher ONCE (without cron yet):
+   ```sql
+   SELECT net.http_post(
+     url := 'https://gpufcipkajppykmnmdeh.supabase.co/functions/v1/dispatch-class-nps',
+     body := '{}'::jsonb,
+     headers := jsonb_build_object('Authorization', 'Bearer ' || (SELECT value FROM app_config WHERE key='supabase_service_key'), 'Content-Type', 'application/json')
+   );
+   ```
+   Observe: msg arrives in WA group + DM. Slack alert in `#dev-alerts`.
+
+6. **Step 6 (NPS.D.5) — Register cron schedule** (only AFTER step 5 succeeds and you accept the worker armed):
+   ```sql
+   SELECT cron.schedule(
+     'dispatch-class-nps-tick',
+     '*/5 * * * *',
+     $cron$
+     DO $inner$
+     DECLARE
+       fn_url  TEXT;
+       svc_key TEXT;
+     BEGIN
+       SELECT value INTO fn_url  FROM public.app_config WHERE key = 'dispatch_class_nps_url';
+       SELECT value INTO svc_key FROM public.app_config WHERE key = 'supabase_service_key';
+       IF fn_url IS NOT NULL AND svc_key IS NOT NULL THEN
+         PERFORM net.http_post(
+           url     := fn_url,
+           body    := '{}'::jsonb,
+           headers := json_build_object(
+             'Authorization', 'Bearer ' || svc_key,
+             'Content-Type',  'application/json'
+           )::jsonb
+         );
+       END IF;
+     END;
+     $inner$;
+     $cron$
+   );
+   ```
+   Verify: `SELECT jobname FROM cron.job WHERE jobname='dispatch-class-nps-tick';` returns 1 row.
+
+7. Monitor for 24h via Slack + monitoring queries (below). Broaden cohort scope only after green run.
 
 ## Rollback
 
-- Flip flag OFF — pending jobs stay `pending`, in-progress jobs finish naturally.
+- Flip flag OFF — pending jobs stay `pending`, in-progress jobs finish naturally:
+  ```sql
+  UPDATE nps_dispatch_config SET value='false' WHERE key='nps_dispatch_enabled';
+  ```
+- Unschedule cron (stops new ticks):
+  ```sql
+  SELECT cron.unschedule('dispatch-class-nps-tick');
+  ```
 - To purge unsent jobs:
   ```sql
   UPDATE nps_class_dispatch_jobs SET status='skipped', error_detail='manual_rollback'

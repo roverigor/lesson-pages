@@ -53,7 +53,7 @@ BEGIN
     SELECT v.*,
            s.name AS s_student_name,
            s.phone AS s_student_phone,
-           c.title AS c_class_title,
+           c.name AS c_class_title,
            co.name AS co_cohort_name,
            COALESCE(estimate_dispatch_cost_usd(v.template_category, 'BR', v.sent_at::date), 0) AS cost_usd
     FROM dispatch_history_unified v

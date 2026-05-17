@@ -18,13 +18,13 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
   IF NOT is_dashboard_admin() THEN RAISE EXCEPTION 'forbidden' USING ERRCODE='42501'; END IF;
   RETURN QUERY
-  SELECT v.class_id, c.title, COUNT(*) AS total_sent
+  SELECT v.class_id, c.name AS class_title, COUNT(*) AS total_sent
   FROM dispatch_history_unified v
   JOIN classes c ON c.id = v.class_id
   WHERE v.class_id IS NOT NULL
     AND (p_filters->>'date_from' IS NULL OR v.sent_at >= (p_filters->>'date_from')::timestamptz)
     AND (p_filters->>'date_to'   IS NULL OR v.sent_at <  (p_filters->>'date_to')::timestamptz)
-  GROUP BY v.class_id, c.title
+  GROUP BY v.class_id, c.name
   ORDER BY total_sent DESC
   LIMIT LEAST(GREATEST(p_limit, 1), 50);
 END;

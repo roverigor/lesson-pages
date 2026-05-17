@@ -24,6 +24,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 import { sendEvolutionGroupText } from "../_shared/evolution-group.ts";
 import { sendWhatsAppTemplate } from "../_shared/meta-whatsapp.ts";
+import { verifyServiceRole } from "../_shared/auth.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -97,6 +98,14 @@ function renderTemplate(template: string, vars: Record<string, string>): string 
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+
+  // ─── Service-role auth gate (NPS.D.3) ───
+  if (!verifyServiceRole(req)) {
+    return new Response(
+      JSON.stringify({ error: "unauthorized" }),
+      { status: 401, headers: { ...CORS, "Content-Type": "application/json" } },
+    );
+  }
 
   const client = sb();
 
