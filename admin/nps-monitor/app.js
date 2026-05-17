@@ -125,15 +125,15 @@ const MOCK_DATA = {
     dm: { last_variant_id: null, rotation_count: 0, updated_at: "2026-05-17T12:00:00Z" },
   },
   pending_jobs: [
-    { id: "11111111-1111-1111-1111-111111111111", class_id: "aaa", cohort_id: "bbb", cohort_name: "PS Advanced T3", class_name: "PS Advanced", session_date: "2026-05-17", status: "pending", scheduled_at: "2026-05-17T21:35:00Z", started_at: null, total_eligible_students: 42, dm_sent_count: 0, dm_failed_count: 0, group_send_status: null },
-    { id: "22222222-2222-2222-2222-222222222222", class_id: "ccc", cohort_id: "ddd", cohort_name: "Fundamentals T4", class_name: "Aula 12 — Casos clínicos", session_date: "2026-05-17", status: "pending", scheduled_at: "2026-05-17T22:05:00Z", started_at: null, total_eligible_students: 18, dm_sent_count: 0, dm_failed_count: 0, group_send_status: null },
-    { id: "33333333-3333-3333-3333-333333333333", class_id: "eee", cohort_id: "fff", cohort_name: "PS Fundamentals T2", class_name: "PS Fundamentals", session_date: "2026-05-17", status: "in_progress", scheduled_at: "2026-05-17T19:30:00Z", started_at: "2026-05-17T19:35:00Z", total_eligible_students: 67, dm_sent_count: 32, dm_failed_count: 1, group_send_status: "sent" },
+    { id: "11111111-1111-1111-1111-111111111111", class_id: "aaa", cohort_id: "bbb", cohort_name: "PS Advanced T3", class_name: "PS Advanced", class_zoom_meeting_id: "85211223344", job_zoom_meeting_id: "85211223344", cohort_group_verified: true, session_date: "2026-05-17", status: "pending", scheduled_at: "2026-05-17T21:35:00Z", started_at: null, total_eligible_students: 42, dm_sent_count: 0, dm_failed_count: 0, group_send_status: null },
+    { id: "22222222-2222-2222-2222-222222222222", class_id: "ccc", cohort_id: "ddd", cohort_name: "Fundamentals T4", class_name: "Aula 12 — Casos clínicos", class_zoom_meeting_id: "85299887766", job_zoom_meeting_id: "85299887766", cohort_group_verified: true, session_date: "2026-05-17", status: "pending", scheduled_at: "2026-05-17T22:05:00Z", started_at: null, total_eligible_students: 18, dm_sent_count: 0, dm_failed_count: 0, group_send_status: null },
+    { id: "33333333-3333-3333-3333-333333333333", class_id: "eee", cohort_id: "fff", cohort_name: "PS Fundamentals T2", class_name: "PS Fundamentals", class_zoom_meeting_id: "85277665544", job_zoom_meeting_id: "85277665544", cohort_group_verified: false, session_date: "2026-05-17", status: "in_progress", scheduled_at: "2026-05-17T19:30:00Z", started_at: "2026-05-17T19:35:00Z", total_eligible_students: 67, dm_sent_count: 32, dm_failed_count: 1, group_send_status: "skipped" },
   ],
   recent_jobs: [
-    { id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", cohort_name: "Fundamentals T4", class_name: "Aula 11 — Análise estrutural", session_date: "2026-05-16", status: "sent", finished_at: "2026-05-16T22:18:00Z", dm_sent_count: 18, dm_failed_count: 0, group_send_status: "sent", error_detail: null },
-    { id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", cohort_name: "PS Advanced T3", class_name: "PS Advanced", session_date: "2026-05-16", status: "partial", finished_at: "2026-05-16T21:50:00Z", dm_sent_count: 38, dm_failed_count: 4, group_send_status: "sent", error_detail: "4 DMs failed: meta_template_pending" },
-    { id: "cccccccc-cccc-cccc-cccc-cccccccccccc", cohort_name: "Fundamentals T3", class_name: "Aula 14 — Casos atípicos", session_date: "2026-05-15", status: "failed", finished_at: "2026-05-15T22:30:00Z", dm_sent_count: 0, dm_failed_count: 12, group_send_status: "failed", error_detail: "evolution_http_503: instance disconnected" },
-    { id: "dddddddd-dddd-dddd-dddd-dddddddddddd", cohort_name: "PS Fundamentals T2", class_name: "PS Fundamentals", session_date: "2026-05-15", status: "skipped", finished_at: "2026-05-15T20:00:00Z", dm_sent_count: 0, dm_failed_count: 0, group_send_status: "not_applicable", error_detail: "cooldown_active" },
+    { id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", cohort_name: "Fundamentals T4", class_name: "Aula 11 — Análise estrutural", session_date: "2026-05-16", status: "sent", finished_at: "2026-05-16T22:18:00Z", dm_sent_count: 18, dm_failed_count: 0, group_send_status: "sent", error_detail: null, variant_group_id: "group_v4", variant_dm_id: "dm_v1" },
+    { id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", cohort_name: "PS Advanced T3", class_name: "PS Advanced", session_date: "2026-05-16", status: "partial", finished_at: "2026-05-16T21:50:00Z", dm_sent_count: 38, dm_failed_count: 4, group_send_status: "sent", error_detail: "4 DMs failed: meta_template_pending", variant_group_id: "group_v7", variant_dm_id: "dm_v2" },
+    { id: "cccccccc-cccc-cccc-cccc-cccccccccccc", cohort_name: "Fundamentals T3", class_name: "Aula 14 — Casos atípicos", session_date: "2026-05-15", status: "failed", finished_at: "2026-05-15T22:30:00Z", dm_sent_count: 0, dm_failed_count: 12, group_send_status: "failed", error_detail: "evolution_http_503: instance disconnected", variant_group_id: "group_v2", variant_dm_id: null },
+    { id: "dddddddd-dddd-dddd-dddd-dddddddddddd", cohort_name: "PS Fundamentals T2", class_name: "PS Fundamentals", session_date: "2026-05-15", status: "skipped", finished_at: "2026-05-15T20:00:00Z", dm_sent_count: 0, dm_failed_count: 0, group_send_status: "not_applicable", error_detail: "cooldown_active", variant_group_id: null, variant_dm_id: null },
   ],
   stats: {
     jobs_24h: 7, jobs_sent_24h: 4, jobs_partial_24h: 1, jobs_failed_24h: 1,
@@ -143,10 +143,46 @@ const MOCK_DATA = {
 };
 
 const MOCK_GROUPS = [
-  { cohort_id: "bbb", cohort_name: "PS Advanced T3", whatsapp_group_jid: "120363042000000111@g.us", jid_valid_format: true, verified: true, verified_at: "2026-05-16T14:30:00Z", verified_by: "admin", label: "PS Advanced T3 — WA oficial", active_students_count: 42 },
-  { cohort_id: "ddd", cohort_name: "Fundamentals T4", whatsapp_group_jid: "120363042000000222@g.us", jid_valid_format: true, verified: true, verified_at: "2026-05-15T18:00:00Z", verified_by: "admin", label: null, active_students_count: 18 },
-  { cohort_id: "fff", cohort_name: "PS Fundamentals T2", whatsapp_group_jid: "120363042000000333@g.us", jid_valid_format: true, verified: false, verified_at: null, verified_by: null, label: null, active_students_count: 67 },
-  { cohort_id: "ggg", cohort_name: "Fundamentals T3 — legado", whatsapp_group_jid: "invalido-sem-sufixo", jid_valid_format: false, verified: false, verified_at: null, verified_by: null, label: null, active_students_count: 8 },
+  {
+    cohort_id: "bbb", cohort_name: "PS Advanced T3",
+    whatsapp_group_jid: "120363042000000111@g.us",
+    whatsapp_group_link: "https://chat.whatsapp.com/MOCK_INVITE_ADVANCED_T3",
+    jid_valid_format: true, verified: true, verified_at: "2026-05-16T14:30:00Z", verified_by: "admin",
+    label: "PS Advanced T3 — WA oficial", active_students_count: 42,
+    classes_bound: [
+      { class_id: "aaa", class_name: "PS Advanced", zoom_meeting_id: "85211223344" },
+    ],
+  },
+  {
+    cohort_id: "ddd", cohort_name: "Fundamentals T4",
+    whatsapp_group_jid: "120363042000000222@g.us",
+    whatsapp_group_link: "https://chat.whatsapp.com/MOCK_INVITE_FUND_T4",
+    jid_valid_format: true, verified: true, verified_at: "2026-05-15T18:00:00Z", verified_by: "admin",
+    label: null, active_students_count: 18,
+    classes_bound: [
+      { class_id: "ccc", class_name: "Aula 12 — Casos clínicos", zoom_meeting_id: "85299887766" },
+    ],
+  },
+  {
+    cohort_id: "fff", cohort_name: "PS Fundamentals T2",
+    whatsapp_group_jid: "120363042000000333@g.us",
+    whatsapp_group_link: null,
+    jid_valid_format: true, verified: false, verified_at: null, verified_by: null,
+    label: null, active_students_count: 67,
+    classes_bound: [
+      { class_id: "eee", class_name: "PS Fundamentals", zoom_meeting_id: "85277665544" },
+    ],
+  },
+  {
+    cohort_id: "ggg", cohort_name: "Fundamentals T3 — legado",
+    whatsapp_group_jid: "invalido-sem-sufixo",
+    whatsapp_group_link: null,
+    jid_valid_format: false, verified: false, verified_at: null, verified_by: null,
+    label: null, active_students_count: 8,
+    classes_bound: [
+      { class_id: "hhh", class_name: "Aula reposição", zoom_meeting_id: null },
+    ],
+  },
 ];
 
 async function mockRpc(name, args) {
@@ -156,6 +192,13 @@ async function mockRpc(name, args) {
   }
   if (name === "nps_admin_list_cohort_groups") {
     return MOCK_GROUPS;
+  }
+  if (name === "nps_admin_refresh_group_invite") {
+    const g = MOCK_GROUPS.find((x) => x.cohort_id === args.p_cohort_id);
+    if (g && !g.whatsapp_group_link) {
+      g.whatsapp_group_link = `https://chat.whatsapp.com/MOCK_FETCHED_${Date.now()}`;
+    }
+    return { ok: true, queued: true, message: "mock invite refreshed" };
   }
   if (name === "nps_admin_set_cohort_group_verified") {
     const g = MOCK_GROUPS.find((x) => x.cohort_id === args.p_cohort_id);
@@ -388,15 +431,15 @@ function renderGroups() {
   body.innerHTML = groups.map((g) => {
     const validClass = g.jid_valid_format ? "jid-valid" : "jid-invalid";
     const validIcon = g.jid_valid_format ? "✓" : "✕";
-    const verifiedByLine = g.verified_at
-      ? `<div style="font-size:10px;color:#666">${fmtDateTime(g.verified_at)}</div>`
-      : "—";
+    const jidCell = renderJidCell(g);
+    const classesCell = renderClassesBound(g.classes_bound ?? []);
     return `
       <tr>
         <td>${escapeHtml(g.cohort_name ?? "—")}</td>
-        <td><span class="jid-mono">${escapeHtml(g.whatsapp_group_jid ?? "—")}</span></td>
+        <td>${jidCell}</td>
         <td>${escapeHtml(g.label ?? "—")}</td>
         <td>${g.active_students_count ?? 0}</td>
+        <td>${classesCell}</td>
         <td class="${validClass}">${validIcon} ${g.jid_valid_format ? "ok" : "inválido"}</td>
         <td>
           <button class="toggle-mini" role="switch"
@@ -404,11 +447,69 @@ function renderGroups() {
                   data-group-toggle="${g.cohort_id}"
                   ${!g.jid_valid_format && !g.verified ? "disabled style='opacity:0.4;cursor:not-allowed'" : ""}
                   title="${g.verified ? "Clique pra desverificar" : "Clique pra verificar"}"></button>
+          ${g.verified_at ? `<div style="font-size:10px;color:#666;margin-top:4px">${fmtDateTime(g.verified_at)}</div>` : ""}
         </td>
-        <td>${verifiedByLine}</td>
       </tr>
     `;
   }).join("");
+}
+
+function renderJidCell(g) {
+  const jid = g.whatsapp_group_jid ?? "";
+  const link = g.whatsapp_group_link;
+  const jidShort = jid.length > 26 ? jid.slice(0, 22) + "…" : jid;
+
+  const linkPart = link
+    ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="jid-link" title="Abrir grupo no WhatsApp">↗ Abrir no WhatsApp</a>`
+    : `<button class="copy-btn" data-refresh-invite="${escapeHtml(g.cohort_id)}" title="Buscar link de convite via Evolution API">⤒ buscar invite</button>`;
+
+  return `
+    <div class="jid-cell">
+      <div class="jid-actions">
+        <span class="jid-mono" title="${escapeHtml(jid)}">${escapeHtml(jidShort)}</span>
+        <button class="copy-btn" data-copy="${escapeHtml(jid)}" title="Copiar JID">⎘ copiar</button>
+      </div>
+      <div>${linkPart}</div>
+    </div>
+  `;
+}
+
+function renderClassesBound(classes) {
+  if (!classes.length) return `<span class="binding-missing">⚠ nenhuma</span>`;
+  return classes.map((c) => {
+    const hasZoom = !!c.zoom_meeting_id;
+    return `
+      <div class="binding-cell">
+        <span class="${hasZoom ? "binding-match" : "binding-missing"}">
+          ${hasZoom ? "✓" : "✕"} ${escapeHtml(c.class_name ?? "—")}
+        </span>
+        ${hasZoom ? `<span class="binding-zoom-id">zoom: ${escapeHtml(c.zoom_meeting_id)}</span>` : '<span class="binding-zoom-id">sem zoom_meeting_id — trigger não dispara</span>'}
+      </div>
+    `;
+  }).join("");
+}
+
+async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(`Copiado: ${text.slice(0, 40)}`, "info");
+  } catch (e) {
+    toast("Falha ao copiar.", "error");
+  }
+}
+
+async function refreshGroupInvite(cohortId) {
+  if (MOCK) {
+    toast("Mock: fetch invite simulado (nada real).", "info");
+    return;
+  }
+  try {
+    await rpc("nps_admin_refresh_group_invite", { p_cohort_id: cohortId });
+    toast("Refresh enfileirado. Aguarda ~10s + reload.", "success");
+    setTimeout(refreshDashboard, 10000);
+  } catch (e) {
+    toast(`Erro: ${e?.message ?? e}`, "error");
+  }
 }
 
 function openGroupVerifyModal(cohortId) {
@@ -539,16 +640,21 @@ function renderPendingJobs() {
   const jobs = state.data.pending_jobs ?? [];
   const body = $("pending-jobs-body");
   if (!jobs.length) {
-    body.innerHTML = `<tr><td colspan="7" class="loading-placeholder">Nenhum job pendente.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="8" class="loading-placeholder">Nenhum job pendente.</td></tr>`;
     return;
   }
   body.innerHTML = jobs.map((j) => {
     const stuck = j.status === "in_progress" && j.started_at &&
       (Date.now() - new Date(j.started_at).getTime()) > 15 * 60 * 1000;
+
+    const bindingCell = renderJobBinding(j);
+    const rowClass = j.cohort_group_verified === false ? "row-unverified" : "";
+
     return `
-      <tr>
-        <td>${escapeHtml(j.cohort_name ?? "—")}</td>
+      <tr class="${rowClass}">
+        <td>${escapeHtml(j.cohort_name ?? "—")}${j.cohort_group_verified === false ? ' <span style="color:#fbbf24;font-size:10px">⚠ não verificado</span>' : ""}</td>
         <td>${escapeHtml(j.class_name ?? "—")}</td>
+        <td>${bindingCell}</td>
         <td>${fmtDate(j.session_date)}</td>
         <td><span class="status-pill ${j.status}">${j.status}</span></td>
         <td>${fmtDateTime(j.scheduled_at)}</td>
@@ -563,6 +669,21 @@ function renderPendingJobs() {
       </tr>
     `;
   }).join("");
+}
+
+function renderJobBinding(j) {
+  const cz = j.class_zoom_meeting_id;
+  const jz = j.job_zoom_meeting_id;
+  if (!cz && !jz) return `<span class="binding-missing">✕ sem binding zoom</span>`;
+  const match = cz && jz && cz === jz;
+  return `
+    <div class="binding-cell">
+      <span class="${match ? "binding-match" : "binding-missing"}">
+        ${match ? "✓" : "⚠"} ${escapeHtml(cz ?? "—")}
+      </span>
+      ${jz && jz !== cz ? `<span class="binding-zoom-id">job: ${escapeHtml(jz)}</span>` : ""}
+    </div>
+  `;
 }
 
 function openJobActionConfirm(action, jobId) {
@@ -701,6 +822,16 @@ function wireEvents() {
     const groupToggle = e.target.closest("[data-group-toggle]");
     if (groupToggle && !groupToggle.disabled) {
       openGroupVerifyModal(groupToggle.dataset.groupToggle);
+      return;
+    }
+    const copyBtn = e.target.closest("[data-copy]");
+    if (copyBtn) {
+      copyToClipboard(copyBtn.dataset.copy);
+      return;
+    }
+    const refreshBtn = e.target.closest("[data-refresh-invite]");
+    if (refreshBtn) {
+      refreshGroupInvite(refreshBtn.dataset.refreshInvite);
       return;
     }
     const actionBtn = e.target.closest("[data-action]");

@@ -148,20 +148,20 @@
     <section class="card">
       <h2 class="card-title">🛡️ Grupos Verificados</h2>
       <p class="card-subtitle">
-        Dispatcher só envia em grupos com flag verificado. Confira <strong>cohort × JID × nome</strong> antes de ativar.
-        JID inválido (não termina em <code>@g.us</code>) bloqueia envio mesmo se verificado.
+        Dispatcher só envia em grupos com flag verificado. Confira <strong>cohort × JID × aulas vinculadas</strong> antes de ativar.
+        Clique no JID/link pra abrir grupo no WhatsApp e validar visualmente.
       </p>
       <div class="table-wrap">
         <table class="data-table">
           <thead>
             <tr>
               <th>Cohort</th>
-              <th>WhatsApp JID</th>
+              <th>WhatsApp</th>
               <th>Label</th>
-              <th>Alunos ativos</th>
-              <th>Formato JID</th>
+              <th>Alunos</th>
+              <th>Aulas vinculadas</th>
+              <th>Formato</th>
               <th>Verificado</th>
-              <th>Por / Quando</th>
             </tr>
           </thead>
           <tbody id="groups-body">
@@ -174,7 +174,25 @@
     <!-- ─── VARIANTS ROUTER ────────────────────────────────────────── -->
     <section class="card">
       <h2 class="card-title">📨 Router de Mensagens</h2>
-      <p class="card-subtitle">Variantes rotacionam round-robin por canal. Indicador 🔄 marca última usada.</p>
+      <p class="card-subtitle">
+        Variantes rotacionam <strong>random ponderado</strong> por canal.
+        Indicador 🔄 marca última usada (telemetria).
+      </p>
+      <details class="vars-explainer">
+        <summary>📖 Como funcionam as variáveis</summary>
+        <div class="vars-explainer-body">
+          <p>Cada disparo renderiza o body do variant substituindo:</p>
+          <ul>
+            <li><code>{{class_name}}</code> — nome da aula vinda de <code>classes.name</code> (resolvida pela bridge <code>class_cohort_access</code> + <code>zoom_meeting_id</code>).</li>
+            <li><code>{{cohort_name}}</code> — nome do cohort vinda de <code>cohorts.name</code>.</li>
+            <li><code>{{link}}</code> — URL única <code>painel.academialendaria.ai/survey/grupo/&lt;token&gt;</code> gerada na hora da inserção em <code>nps_class_links</code>.</li>
+            <li><code>{{greeting}}</code> — saudação contextual (Bom dia / Boa tarde / Boa noite) calculada no momento do envio em BRT.</li>
+          </ul>
+          <p class="vars-explainer-note">
+            Body de DM (variants <code>dm_v*</code>) é controlado pela Meta — só dá pra editar via Meta Business Manager. Aqui só toggle ativo/inativo + ver template_name.
+          </p>
+        </div>
+      </details>
       <div class="variants-grid">
         <div class="variants-column">
           <h3 class="variants-channel-title">📢 Grupo (Evolution)</h3>
@@ -194,13 +212,17 @@
     <!-- ─── PENDING JOBS ───────────────────────────────────────────── -->
     <section class="card">
       <h2 class="card-title">⏳ Jobs Pendentes</h2>
-      <p class="card-subtitle">Próximos 20 jobs aguardando disparo ou em execução.</p>
+      <p class="card-subtitle">
+        Próximos 20 jobs aguardando disparo. Coluna <strong>Vínculo</strong> mostra binding zoom_meeting_id (origem do trigger).
+        Cor amarela = grupo não verificado (DM ainda envia se variants ativos).
+      </p>
       <div class="table-wrap">
         <table class="data-table">
           <thead>
             <tr>
               <th>Cohort</th>
               <th>Aula</th>
+              <th>Vínculo</th>
               <th>Data</th>
               <th>Status</th>
               <th>Scheduled</th>
@@ -209,7 +231,7 @@
             </tr>
           </thead>
           <tbody id="pending-jobs-body">
-            <tr><td colspan="7" class="loading-placeholder">Carregando...</td></tr>
+            <tr><td colspan="8" class="loading-placeholder">Carregando...</td></tr>
           </tbody>
         </table>
       </div>
