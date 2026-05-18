@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PS RSVP — Painel Admin</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+  <link rel="stylesheet" href="/templates/design-tokens-dark-premium.css">
+  <link rel="stylesheet" href="/templates/admin-shared.css">
+  <link rel="stylesheet" href="/templates/login-overlay.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    .kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:20px; }
+    .kpi-card { background:#0a0a0a; border:1px solid #1a1a1a; border-radius:10px; padding:14px; text-align:center; }
+    .kpi-val { font-size:28px; font-weight:800; color:#fff; line-height:1; }
+    .kpi-lbl { font-size:11px; color:#666; margin-top:6px; text-transform:uppercase; letter-spacing:.05em; }
+    .filters-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+    .filters-row label { display:flex; align-items:center; gap:6px; font-size:12px; color:#888; }
+    .filters-row select, .filters-row input { padding:8px 10px; background:#111; border:1px solid #222; border-radius:6px; color:#fff; font-size:13px; }
+    .doubts-cell { max-width:380px; white-space:pre-wrap; font-size:12px; color:#ccc; }
+    .phase-cell { font-size:11px; color:#888; font-style:italic; }
+    .attend-chip { padding:3px 10px; border-radius:12px; font-size:11px; font-weight:700; display:inline-block; }
+    .attend-chip.yes { background:rgba(74,222,128,.15); color:#4ade80; }
+    .attend-chip.no { background:rgba(248,113,113,.15); color:#f87171; }
+    .attend-chip.maybe { background:rgba(251,191,36,.15); color:#fbbf24; }
+    .empty { padding:40px; text-align:center; color:#444; font-size:13px; }
+    .data-table th { font-size:11px; color:#666; text-align:left; padding:10px 8px; border-bottom:1px solid #1a1a1a; }
+    .data-table td { padding:10px 8px; border-bottom:1px solid #111; font-size:13px; vertical-align:top; }
+    .data-table tr:hover { background:#0a0a0a; }
+    .name-cell { color:#fff; font-weight:600; }
+    .phone-cell { font-family:monospace; font-size:11px; color:#666; }
+    .time-cell { font-size:11px; color:#555; white-space:nowrap; }
+    .export-btn { padding:6px 12px; background:#1a1a1a; border:1px solid #333; border-radius:6px; color:#ccc; font-size:12px; cursor:pointer; }
+    .export-btn:hover { background:#222; }
+  </style>
+</head>
+<body>
+
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-box">
+      <div class="login-icon">🎯</div>
+      <h1 class="login-title">PS RSVP</h1>
+      <p class="login-subtitle">Acesso restrito a administradores</p>
+      <input id="login-email" class="login-field" type="email" placeholder="Email" autocomplete="email">
+      <input id="login-password" class="login-field" type="password" placeholder="Senha" autocomplete="current-password">
+      <button id="login-btn" class="login-btn">Entrar</button>
+      <p id="login-error" class="login-error hidden"></p>
+    </div>
+  </div>
+
+  <main id="app" class="app hidden">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <a href="/admin/" class="brand-link">🏛️ Admin</a>
+        <span class="topbar-sep">›</span>
+        <span class="topbar-title">PS RSVP</span>
+      </div>
+      <div class="topbar-right">
+        <a href="/admin/nps-monitor/" class="btn-secondary">📡 NPS Monitor</a>
+        <a href="/admin/envios/" class="btn-secondary">📊 Envios</a>
+        <button id="refresh-btn" class="btn-secondary">↻ Atualizar</button>
+        <button id="logout-btn" class="btn-tertiary">Sair</button>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="filters-row">
+        <label>Data:
+          <select id="filter-date">
+            <option value="today">Hoje</option>
+            <option value="all">Próximas 7 sessões</option>
+          </select>
+        </label>
+        <label>Classe:
+          <select id="filter-class">
+            <option value="">— todas —</option>
+          </select>
+        </label>
+        <label>Status:
+          <select id="filter-attend">
+            <option value="">— todos —</option>
+            <option value="yes">Vai participar</option>
+            <option value="maybe">Talvez</option>
+            <option value="no">Não vai</option>
+          </select>
+        </label>
+        <label>
+          <input type="checkbox" id="only-with-doubts" style="margin-right:4px">
+          Só com dúvidas
+        </label>
+        <button id="export-csv-btn" class="export-btn">⬇ CSV</button>
+        <button id="export-md-btn" class="export-btn">⬇ MD pra mentor</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="kpi-row" id="kpi-row">
+        <div class="kpi-card"><div class="kpi-val" id="kpi-total">0</div><div class="kpi-lbl">Respostas</div></div>
+        <div class="kpi-card"><div class="kpi-val" id="kpi-yes">0</div><div class="kpi-lbl">Vão participar</div></div>
+        <div class="kpi-card"><div class="kpi-val" id="kpi-maybe">0</div><div class="kpi-lbl">Talvez</div></div>
+        <div class="kpi-card"><div class="kpi-val" id="kpi-no">0</div><div class="kpi-lbl">Não vão</div></div>
+        <div class="kpi-card"><div class="kpi-val" id="kpi-doubts">0</div><div class="kpi-lbl">Trouxeram dúvidas</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">📋 Respostas</h2>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Aluno</th>
+              <th>Classe</th>
+              <th>Dúvidas / desafios</th>
+              <th>Fase projeto</th>
+              <th>Quando</th>
+            </tr>
+          </thead>
+          <tbody id="responses-body">
+            <tr><td colspan="6" class="empty">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">📨 Envios pendentes (sem resposta ainda)</h2>
+      <div id="pending-count" style="font-size:13px;color:#888;margin-bottom:12px">—</div>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr><th>Aluno</th><th>Classe</th><th>Telefone</th><th>Status envio</th><th>Quando enviado</th></tr>
+          </thead>
+          <tbody id="pending-body">
+            <tr><td colspan="5" class="empty">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/admin/ps-rsvp/app.js"></script>
+</body>
+</html>
