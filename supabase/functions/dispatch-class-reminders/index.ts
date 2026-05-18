@@ -15,6 +15,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendEvolutionGroupText } from "../_shared/evolution-group.ts";
+import { sendBlockMessage } from "../_shared/slack.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -23,8 +24,16 @@ const CORS = {
 
 const THROTTLE_MS = 3000;
 const MAX_SENDS_PER_RUN = 50;
+const SLACK_CHANNEL = Deno.env.get("SLACK_CHANNEL_DEV_ALERTS") ?? Deno.env.get("SLACK_CHANNEL_DETRACTORS") ?? "";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function slackNotify(text: string, blocks?: Array<Record<string, unknown>>) {
+  if (!SLACK_CHANNEL) return;
+  try {
+    await sendBlockMessage(SLACK_CHANNEL, text, blocks ?? [{ type: "section", text: { type: "mrkdwn", text } }]);
+  } catch (e) { console.error("[slack-notify]", e instanceof Error ? e.message : e); }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
@@ -142,6 +151,21 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Slack notify only when actual sends occurred (avoid empty-tick noise)
+    if (!dryRun && dispatched > 0) {
+      const breakdown = results
+        .filter((r) => r.status === "sent")
+        .map((r) => `• *${r.group}*`)
+        .slice(0, 10)
+        .join("\n");
+      await slackNotify(
+        `✅ class-reminders sent — ${dispatched} ok · ${skipped} fail`,
+        [
+          { type: "section", text: { type: "mrkdwn", text: `*✅ class-reminders dispatch*\n*Enviados:* ${dispatched}\n*Falhas:* ${skipped}\n*Total:* ${sends.length}\n\n${breakdown}${results.filter(r=>r.status==='sent').length > 10 ? `\n+${results.filter(r=>r.status==='sent').length - 10} mais` : ''}` } },
+        ],
+      );
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -155,6 +179,7 @@ Deno.serve(async (req) => {
     );
   } catch (e) {
     console.error("[dispatch-class-reminders]", e);
+    await slackNotify(`❌ dispatch-class-reminders FAILED — \`${e instanceof Error ? e.message : String(e)}\``);
     return new Response(
       JSON.stringify({ success: false, error: e instanceof Error ? e.message : String(e) }),
       { status: 500, headers: { ...CORS, "Content-Type": "application/json" } },

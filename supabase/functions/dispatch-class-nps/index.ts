@@ -25,6 +25,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 import { sendEvolutionGroupText } from "../_shared/evolution-group.ts";
 import { sendWhatsAppTemplate } from "../_shared/meta-whatsapp.ts";
 import { verifyServiceRole } from "../_shared/auth.ts";
+import { sendBlockMessage } from "../_shared/slack.ts";
+
+const SLACK_CHANNEL = Deno.env.get("SLACK_CHANNEL_DEV_ALERTS") ?? Deno.env.get("SLACK_CHANNEL_DETRACTORS") ?? "";
+async function slackNotify(text: string, blocks?: Array<Record<string, unknown>>) {
+  if (!SLACK_CHANNEL) return;
+  try {
+    await sendBlockMessage(SLACK_CHANNEL, text, blocks ?? [{ type: "section", text: { type: "mrkdwn", text } }]);
+  } catch (e) { console.error("[slack-notify]", e instanceof Error ? e.message : e); }
+}
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -205,6 +214,25 @@ Deno.serve(async (req) => {
   for (const job of jobs as JobRow[]) {
     const result = await processJob(client, job, { dryRun, maxDmPerRun, throttleMs, testMode });
     results.push(result);
+  }
+
+  // Slack notify when actual job processed (avoid empty-tick noise)
+  if (!dryRun && results.length > 0) {
+    const totals = results.reduce((acc, r) => {
+      acc.dmSent += r.dm?.sent ?? 0;
+      acc.dmFailed += r.dm?.failed ?? 0;
+      acc.groupSent += r.group?.sent ? 1 : 0;
+      return acc;
+    }, { dmSent: 0, dmFailed: 0, groupSent: 0 });
+    const detail = results.map((r) =>
+      `• Job *${(r.job_id ?? "?").slice(0, 8)}* — DM ${r.dm?.sent ?? 0}/${(r.dm?.sent ?? 0) + (r.dm?.failed ?? 0)} · Grupo ${r.group?.sent ? "✓" : "✗"} · Status: ${r.status ?? "?"}`
+    ).join("\n");
+    await slackNotify(
+      `✅ dispatch-class-nps processed ${results.length} job(s) — DM:${totals.dmSent} Grupo:${totals.groupSent}`,
+      [
+        { type: "section", text: { type: "mrkdwn", text: `*✅ dispatch-class-nps*\n*Jobs processados:* ${results.length}\n*DMs:* ${totals.dmSent} sent · ${totals.dmFailed} failed\n*Grupos:* ${totals.groupSent}\n\n${detail}` } },
+      ],
+    );
   }
 
   return new Response(
