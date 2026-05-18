@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Avaliação Lendária · Academia Lendária</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+  <style>
+    :root { --accent: #6366f1; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #080808; color: #ddd; font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 16px; }
+    .container { width: 100%; max-width: 520px; }
+    .progress-bar { height: 3px; background: #1a1a1a; border-radius: 2px; margin-bottom: 32px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .4s ease; }
+    .card { background: #0f0f0f; border: 1px solid #1e1e1e; border-radius: 20px; padding: 36px 32px; }
+    .brand { font-size: 11px; color: #333; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; margin-bottom: 24px; }
+    .q-counter { font-size: 11px; color: #444; margin-bottom: 10px; font-weight: 600; }
+    .question { font-size: 22px; font-weight: 800; color: #fff; line-height: 1.35; margin-bottom: 32px; }
+    .intro-title { font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 10px; }
+    .intro-sub { font-size: 14px; color: #888; line-height: 1.7; margin-bottom: 28px; }
+
+    /* NPS */
+    .nps-grid { display: grid; grid-template-columns: repeat(11, 1fr); gap: 5px; margin-bottom: 8px; }
+    .nps-btn { aspect-ratio: 1; border: 1px solid #222; border-radius: 8px; background: #0d0d0d; color: #666; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; font-family: inherit; }
+    .nps-btn:hover { border-color: var(--accent); color: #fff; }
+    .nps-btn.det.selected { background: #ef4444; border-color: #ef4444; color: #fff; }
+    .nps-btn.neu.selected { background: #f59e0b; border-color: #f59e0b; color: #fff; }
+    .nps-btn.pro.selected { background: #22c55e; border-color: #22c55e; color: #fff; }
+    .nps-labels { display: flex; justify-content: space-between; font-size: 10px; color: #444; margin-bottom: 28px; }
+
+    /* Choice */
+    .options-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+    .option-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 10px; cursor: pointer; transition: border-color .15s, background .15s; font-size: 14px; color: #ccc; user-select: none; }
+    .option-item:hover { border-color: #333; }
+    .option-item.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); color: #fff; }
+    .option-dot { width: 18px; height: 18px; border: 2px solid #333; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color .15s, background .15s; }
+    .option-item.selected .option-dot { border-color: var(--accent); background: var(--accent); }
+    .option-item.selected .option-dot::after { content: ''; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
+
+    /* Text */
+    .text-input { width: 100%; background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 10px; padding: 12px 14px; color: #ddd; font-size: 14px; font-family: inherit; resize: none; min-height: 100px; transition: border-color .15s; margin-bottom: 20px; }
+    .text-input:focus { outline: none; border-color: var(--accent); }
+    .name-input { min-height: auto; height: 48px; font-size: 15px; }
+    .label-sm { font-size: 11px; color: #666; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+    .field-error { color: #ef4444; font-size: 12px; margin-top: -10px; margin-bottom: 12px; min-height: 16px; }
+
+    /* CTA */
+    .cta-btn { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 8px; transition: background .15s, opacity .15s; }
+    .cta-btn:hover:not(:disabled) { background: #4f52d4; }
+    .cta-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-back { background: none; border: none; color: #555; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; padding: 0; margin-bottom: 18px; transition: color .15s; }
+    .btn-back:hover { color: #aaa; }
+    .btn-restart { background: transparent; color: #6366f1; border: 1px solid #6366f1; border-radius: 10px; padding: 10px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 14px; width: 100%; }
+    .btn-restart:hover { background: rgba(99,102,241,.08); }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Thanks */
+    .thanks-icon { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; background: rgba(34,197,94,.12); border: 2px solid rgba(34,197,94,.3); }
+    .thanks-icon.detractor { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.3); }
+    .thanks-icon.passive { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.3); }
+    .thanks-title { font-size: 24px; font-weight: 800; color: #fff; text-align: center; margin-bottom: 8px; }
+    .thanks-sub { font-size: 14px; color: #aaa; text-align: center; line-height: 1.5; }
+
+    /* Error */
+    .error-icon { font-size: 36px; text-align: center; margin-bottom: 16px; }
+    .error-title { font-size: 18px; font-weight: 700; color: #fff; text-align: center; margin-bottom: 8px; }
+    .error-msg { font-size: 13px; color: #888; text-align: center; }
+
+    .spinner { width: 32px; height: 32px; border: 3px solid #1e1e1e; border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; margin: 32px auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 480px) { .card { padding: 28px 20px; } .question { font-size: 18px; } .nps-btn { font-size: 11px; } }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+
+  <div class="card">
+    <div class="screen active" id="screen-loading"><div class="spinner"></div></div>
+
+    <div class="screen" id="screen-error">
+      <div class="error-icon">😔</div>
+      <div class="error-title" id="error-title">Algo deu errado</div>
+      <div class="error-msg" id="error-msg">Tente recarregar a página.</div>
+    </div>
+
+    <!-- Intro com nome required -->
+    <div class="screen" id="screen-intro">
+      <div class="brand">Academia Lendária</div>
+      <div class="intro-title">Fala Lendário! 🚀</div>
+      <div class="intro-sub" id="intro-sub">Bora calibrar essa turma juntos antes da aula 1.</div>
+
+      <div class="label-sm">Seu nome <span style="color:#ef4444">*</span></div>
+      <input id="name-input" type="text" class="text-input name-input" placeholder="Como você quer ser chamado(a)?" maxlength="80" required>
+      <div id="name-error" class="field-error"></div>
+
+      <button class="cta-btn" id="btn-start">Começar →</button>
+    </div>
+
+    <!-- Question screen (dynamic content) -->
+    <div class="screen" id="screen-question">
+      <button id="btn-back" class="btn-back" style="display:none">← Voltar</button>
+      <div class="brand">Academia Lendária</div>
+      <div class="q-counter" id="q-counter"></div>
+      <div class="question" id="question-text"></div>
+      <div id="q-widget"></div>
+      <button class="cta-btn" id="btn-next" disabled>Continuar →</button>
+    </div>
+
+    <!-- Thanks -->
+    <div class="screen" id="screen-thanks">
+      <div class="thanks-icon" id="thanks-icon">✓</div>
+      <div class="thanks-title" id="thanks-title">Obrigado!</div>
+      <div class="thanks-sub" id="thanks-sub"></div>
+      <button class="btn-restart" id="btn-restart">Outro Lendário responder →</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/config.js"></script>
+<script>
+  const SUPABASE_URL = window.SUPABASE_CONFIG?.url ?? "https://gpufcipkajppykmnmdeh.supabase.co";
+  const SUPABASE_KEY = window.SUPABASE_CONFIG?.anonKey ?? "";
+
+  const state = {
+    surveyId: null,
+    survey: null,
+    questions: [],
+    currentIdx: 0,
+    name: "",
+    answers: [], // {question_id, value_text, value_number, value_options}
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const SCREENS = ["screen-loading","screen-error","screen-intro","screen-question","screen-thanks"];
+  function showOnly(id) { SCREENS.forEach((s) => $(s).classList.toggle("active", s === id)); }
+  function setProgress(pct) { $("progress").style.width = pct + "%"; }
+  function showError(title, msg) { $("error-title").textContent = title; $("error-msg").textContent = msg; showOnly("screen-error"); }
+
+  async function rpc(url, body) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
+  async function loadSurvey() {
+    const url = `${SUPABASE_URL}/rest/v1/surveys?id=eq.${state.surveyId}&select=id,name,status,type,intro_text,follow_up,accent_color,survey_questions(*)`;
+    const res = await fetch(url, { headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` } });
+    if (!res.ok) throw new Error("survey_load_failed");
+    const arr = await res.json();
+    if (!arr.length) throw new Error("survey_not_found");
+    return arr[0];
+  }
+
+  function renderIntro() {
+    if (state.survey.accent_color) document.documentElement.style.setProperty('--accent', state.survey.accent_color);
+    if (state.survey.intro_text) $("intro-sub").textContent = state.survey.intro_text;
+    showOnly("screen-intro");
+    setProgress(5);
+  }
+
+  function renderQuestion() {
+    const q = state.questions[state.currentIdx];
+    if (!q) return submit();
+
+    $("btn-back").style.display = state.currentIdx > 0 ? "block" : "none";
+    $("q-counter").textContent = `Pergunta ${state.currentIdx + 1} de ${state.questions.length} — ${state.name}`;
+    $("question-text").textContent = q.label;
+    $("btn-next").disabled = true;
+
+    const widget = $("q-widget");
+    widget.innerHTML = "";
+
+    if (q.type === "nps") {
+      const grid = document.createElement("div");
+      grid.className = "nps-grid";
+      for (let i = 0; i <= 10; i++) {
+        const btn = document.createElement("button");
+        btn.className = "nps-btn " + (i <= 6 ? "det" : i <= 8 ? "neu" : "pro");
+        btn.textContent = i;
+        btn.addEventListener("click", () => {
+          grid.querySelectorAll(".nps-btn").forEach((b) => b.classList.remove("selected"));
+          btn.classList.add("selected");
+          state.answers[state.currentIdx] = { question_id: q.id, value_number: i };
+          $("btn-next").disabled = false;
+        });
+        grid.appendChild(btn);
+      }
+      widget.appendChild(grid);
+      const labels = document.createElement("div");
+      labels.className = "nps-labels";
+      labels.innerHTML = `<span>Pouca confiança</span><span>Confiança total</span>`;
+      widget.appendChild(labels);
+    } else if (q.type === "choice") {
+      const list = document.createElement("div");
+      list.className = "options-list";
+      (q.options || []).forEach((opt) => {
+        const item = document.createElement("div");
+        item.className = "option-item";
+        item.innerHTML = `<div class="option-dot"></div><span></span>`;
+        item.querySelector("span").textContent = opt;
+        item.addEventListener("click", () => {
+          list.querySelectorAll(".option-item").forEach((x) => x.classList.remove("selected"));
+          item.classList.add("selected");
+          state.answers[state.currentIdx] = { question_id: q.id, value_options: [opt] };
+          $("btn-next").disabled = false;
+        });
+        list.appendChild(item);
+      });
+      widget.appendChild(list);
+    } else if (q.type === "text") {
+      const ta = document.createElement("textarea");
+      ta.className = "text-input";
+      ta.placeholder = "Sua resposta...";
+      ta.addEventListener("input", () => {
+        const v = ta.value.trim();
+        state.answers[state.currentIdx] = { question_id: q.id, value_text: v };
+        $("btn-next").disabled = !(q.required ? v.length >= 3 : true);
+      });
+      widget.appendChild(ta);
+    }
+
+    showOnly("screen-question");
+    setProgress(10 + ((state.currentIdx + 1) / state.questions.length) * 80);
+  }
+
+  async function submit() {
+    setProgress(95);
+    try {
+      const data = await rpc(`${SUPABASE_URL}/functions/v1/submit-open-survey`, {
+        survey_id: state.surveyId,
+        name: state.name,
+        answers: state.answers.filter(Boolean),
+      });
+      setProgress(100);
+      const bucket = data.bucket ?? "promoter";
+      const iconEl = $("thanks-icon");
+      if (bucket === "detractor") { iconEl.className = "thanks-icon detractor"; iconEl.textContent = "🙏"; $("thanks-title").textContent = "Obrigado pelo feedback"; }
+      else if (bucket === "passive") { iconEl.className = "thanks-icon passive"; iconEl.textContent = "💛"; $("thanks-title").textContent = "Valeu pela nota!"; }
+      else { iconEl.className = "thanks-icon"; iconEl.textContent = "🚀"; $("thanks-title").textContent = "Bora ser lendário!"; }
+      $("thanks-sub").innerHTML = (data.thank_you || "Resposta registrada.").replace(/\n/g, "<br>");
+      showOnly("screen-thanks");
+    } catch (e) {
+      showError("Erro ao enviar", e.message?.includes("429") ? "Sua resposta já foi registrada. Obrigado!" : "Tente novamente em alguns segundos.");
+    }
+  }
+
+  function restart() {
+    state.name = "";
+    state.currentIdx = 0;
+    state.answers = [];
+    $("name-input").value = "";
+    $("name-error").textContent = "";
+    setProgress(5);
+    showOnly("screen-intro");
+  }
+
+  async function init() {
+    showOnly("screen-loading");
+    setProgress(10);
+    const params = new URLSearchParams(location.search);
+    state.surveyId = params.get("survey");
+    if (!state.surveyId) return showError("Link inválido", "Survey ID ausente na URL.");
+
+    try {
+      state.survey = await loadSurvey();
+    } catch (e) {
+      return showError("Survey não encontrado", "Verifique o link.");
+    }
+    if (state.survey.status !== "active") {
+      return showError("Survey encerrada", "Esta avaliação não está mais disponível.");
+    }
+    state.questions = (state.survey.survey_questions || []).sort((a, b) => a.position - b.position);
+    if (!state.questions.length) return showError("Sem perguntas", "Survey ainda não configurada.");
+
+    renderIntro();
+
+    $("btn-start").addEventListener("click", () => {
+      const n = $("name-input").value.trim();
+      if (n.length < 2) { $("name-error").textContent = "Por favor, informe seu nome."; return; }
+      state.name = n;
+      state.currentIdx = 0;
+      state.answers = [];
+      renderQuestion();
+    });
+    $("btn-next").addEventListener("click", () => { state.currentIdx++; renderQuestion(); });
+    $("btn-back").addEventListener("click", () => { state.currentIdx = Math.max(0, state.currentIdx - 1); renderQuestion(); });
+    $("btn-restart").addEventListener("click", restart);
+  }
+
+  init();
+</script>
+</body>
+</html>
