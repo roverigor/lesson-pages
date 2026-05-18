@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>PS — RSVP Academia Lendária</title>
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+  html,body { margin:0; padding:0; min-height:100vh; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background:#000; color:#fff; min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    padding:20px; line-height:1.5;
+  }
+  .card { max-width:480px; width:100%; background:#0a0a0a; border:1px solid #1a1a1a; border-radius:16px; padding:28px; }
+  .brand { font-size:12px; color:#666; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:24px; }
+  .q-counter { font-size:11px; color:#444; font-weight:600; margin-bottom:8px; text-transform:uppercase; letter-spacing:.05em; }
+  .question { font-size:20px; font-weight:800; color:#fff; line-height:1.35; margin-bottom:24px; }
+  .sub-context { font-size:13px; color:#888; margin-bottom:20px; }
+  .options-list { display:flex; flex-direction:column; gap:12px; margin-bottom:24px; }
+  .option-item {
+    display:flex; align-items:center; gap:12px; padding:14px 16px;
+    background:#111; border:1px solid #222; border-radius:10px; cursor:pointer;
+    transition:all .15s; user-select:none;
+  }
+  .option-item:hover { border-color:#444; background:#161616; }
+  .option-item.selected { border-color:#6366f1; background:rgba(99,102,241,.08); }
+  .option-dot { width:20px; height:20px; border-radius:50%; border:2px solid #444; flex-shrink:0; transition:.15s; }
+  .option-item.selected .option-dot { border-color:#6366f1; background:#6366f1; box-shadow:inset 0 0 0 3px #0a0a0a; }
+  .option-item span { font-size:14px; font-weight:500; }
+  .text-input {
+    width:100%; padding:14px; background:#111; border:1px solid #222; border-radius:10px;
+    color:#fff; font-size:14px; font-family:inherit; resize:vertical; min-height:90px; transition:.15s;
+  }
+  .text-input:focus { outline:none; border-color:#6366f1; }
+  textarea.text-input { min-height:120px; }
+  .cta-btn {
+    width:100%; padding:16px; background:#6366f1; color:#fff; border:none; border-radius:10px;
+    font-size:15px; font-weight:700; cursor:pointer; transition:.15s; margin-top:8px;
+  }
+  .cta-btn:hover:not(:disabled) { background:#4f46e5; }
+  .cta-btn:disabled { opacity:.4; cursor:not-allowed; }
+  .btn-back { background:none; border:none; color:#666; font-size:13px; cursor:pointer; padding:0; margin-bottom:16px; }
+  .btn-back:hover { color:#aaa; }
+  .screen { display:none; }
+  .screen.active { display:block; }
+  .spinner { width:40px; height:40px; border:3px solid #222; border-top-color:#6366f1; border-radius:50%; animation:spin .8s linear infinite; margin:40px auto; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .error-icon,.thanks-icon { font-size:48px; text-align:center; margin-bottom:16px; }
+  .error-title,.thanks-title { font-size:22px; font-weight:800; text-align:center; margin-bottom:8px; }
+  .error-msg,.thanks-sub { font-size:14px; color:#888; text-align:center; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="screen active" id="screen-loading"><div class="spinner"></div></div>
+
+  <div class="screen" id="screen-error">
+    <div class="error-icon">😔</div>
+    <div class="error-title" id="error-title">Link inválido</div>
+    <div class="error-msg" id="error-msg">Este link é inválido ou expirou.</div>
+  </div>
+
+  <!-- Q1: vai participar? -->
+  <div class="screen" id="screen-1">
+    <div class="brand">Academia Lendária — PS</div>
+    <div class="q-counter" id="q-counter-1">Pergunta 1 de 3</div>
+    <div class="question" id="q1-text">Você vai participar do PS de hoje, 18:30?</div>
+    <div class="sub-context" id="sub-context"></div>
+    <div class="options-list">
+      <div class="option-item" data-attend="yes"><div class="option-dot"></div><span>Sim</span></div>
+      <div class="option-item" data-attend="no"><div class="option-dot"></div><span>Não posso hoje</span></div>
+      <div class="option-item" data-attend="maybe"><div class="option-dot"></div><span>Talvez</span></div>
+    </div>
+    <button class="cta-btn" id="btn-next-1" disabled>Continuar →</button>
+  </div>
+
+  <!-- Q2: dúvidas (só se yes/maybe) -->
+  <div class="screen" id="screen-2">
+    <button class="btn-back" data-back="1">← Voltar</button>
+    <div class="brand">Academia Lendária — PS</div>
+    <div class="q-counter">Pergunta 2 de 3</div>
+    <div class="question">Quais dúvidas ou desafios que precisa de ajuda hoje?</div>
+    <textarea id="doubts-input" class="text-input" placeholder="Conta o que tá travando ou precisando trabalhar..."></textarea>
+    <button class="cta-btn" id="btn-next-2">Continuar →</button>
+  </div>
+
+  <!-- Q3: project phase (opcional) -->
+  <div class="screen" id="screen-3">
+    <button class="btn-back" data-back="2">← Voltar</button>
+    <div class="brand">Academia Lendária — PS</div>
+    <div class="q-counter">Pergunta 3 de 3 (opcional)</div>
+    <div class="question">Em que fase do seu projeto/AIOX você está?</div>
+    <input id="phase-input" type="text" class="text-input" style="min-height:auto" placeholder="ex: começando setup, integrando agents, lançamento próximo...">
+    <button class="cta-btn" id="btn-submit">Enviar ✓</button>
+  </div>
+
+  <!-- Thanks -->
+  <div class="screen" id="screen-thanks">
+    <div class="thanks-icon" id="thanks-icon">✓</div>
+    <div class="thanks-title" id="thanks-title">Recebido!</div>
+    <div class="thanks-sub" id="thanks-sub">Seu retorno chega aos mentores antes do PS.</div>
+  </div>
+</div>
+
+<script src="/js/config.js"></script>
+<script>
+  const URL_BASE = window.SUPABASE_CONFIG?.url ?? "https://gpufcipkajppykmnmdeh.supabase.co";
+  const KEY = window.SUPABASE_CONFIG?.anonKey ?? "";
+
+  const state = { token: null, willAttend: null, doubts: "", phase: "" };
+  const $ = (id) => document.getElementById(id);
+  const SCREENS = ["screen-loading","screen-error","screen-1","screen-2","screen-3","screen-thanks"];
+  function showOnly(id) { SCREENS.forEach((s) => $(s).classList.toggle("active", s === id)); }
+  function showError(t, m) { $("error-title").textContent = t; $("error-msg").textContent = m; showOnly("screen-error"); }
+
+  function getToken() {
+    const m = location.pathname.match(/^\/ps-rsvp\/([^/]+)$/);
+    if (m) return m[1];
+    return new URLSearchParams(location.search).get("token");
+  }
+
+  async function fetchMeta(token) {
+    const res = await fetch(`${URL_BASE}/rest/v1/rpc/get_ps_rsvp_metadata`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": KEY, "Authorization": `Bearer ${KEY}` },
+      body: JSON.stringify({ p_token: token }),
+    });
+    if (!res.ok) throw new Error(`meta_${res.status}`);
+    const rows = await res.json();
+    return Array.isArray(rows) ? rows[0] : rows;
+  }
+
+  async function submit() {
+    $("btn-submit").disabled = true;
+    $("btn-submit").textContent = "Enviando...";
+    state.doubts = $("doubts-input").value.trim();
+    state.phase = $("phase-input").value.trim();
+    try {
+      const res = await fetch(`${URL_BASE}/functions/v1/submit-ps-rsvp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: state.token,
+          will_attend: state.willAttend,
+          doubts_text: state.doubts || undefined,
+          project_phase: state.phase || undefined,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        if (state.willAttend === "no") {
+          $("thanks-icon").textContent = "👋";
+          $("thanks-title").textContent = "Até a próxima!";
+          $("thanks-sub").textContent = "Foi anotado. Nos vemos no próximo PS.";
+        } else {
+          $("thanks-icon").textContent = "🎯";
+          $("thanks-title").textContent = "Tudo certo!";
+          $("thanks-sub").textContent = state.doubts ? "Mentor vai chegar preparado pras suas dúvidas." : "Recebido. Te vemos lá às 18:30!";
+        }
+        showOnly("screen-thanks");
+        return;
+      }
+      showError("Erro", "Não foi possível enviar. Tente novamente.");
+    } catch (e) { showError("Erro de conexão", "Verifique sua internet."); }
+  }
+
+  function wire() {
+    document.querySelectorAll(".option-item[data-attend]").forEach((el) => {
+      el.addEventListener("click", () => {
+        document.querySelectorAll(".option-item[data-attend]").forEach((x) => x.classList.remove("selected"));
+        el.classList.add("selected");
+        state.willAttend = el.dataset.attend;
+        $("btn-next-1").disabled = false;
+      });
+    });
+    $("btn-next-1").addEventListener("click", () => {
+      if (state.willAttend === "no") {
+        submit();
+      } else {
+        showOnly("screen-2");
+      }
+    });
+    $("btn-next-2").addEventListener("click", () => showOnly("screen-3"));
+    $("btn-submit").addEventListener("click", submit);
+    document.querySelectorAll(".btn-back").forEach((b) => {
+      b.addEventListener("click", () => showOnly("screen-" + b.dataset.back));
+    });
+  }
+
+  async function init() {
+    showOnly("screen-loading");
+    const token = getToken();
+    if (!token) { showError("Link inválido", "Token não encontrado na URL."); return; }
+    state.token = token;
+    let meta;
+    try { meta = await fetchMeta(token); }
+    catch (e) { showError("Erro", "Não consegui validar o link."); return; }
+    if (!meta || !meta.valid) {
+      if (meta?.expired) showError("Link expirado", "Este link já expirou.");
+      else showError("Link inválido", "Este link não foi reconhecido.");
+      return;
+    }
+    if (meta.already_answered) {
+      $("thanks-icon").textContent = "✓";
+      $("thanks-title").textContent = "Já respondido";
+      $("thanks-sub").textContent = "Obrigado! Seu retorno já foi computado.";
+      showOnly("screen-thanks");
+      return;
+    }
+    const firstName = (meta.student_name || "").split(/\s+/)[0];
+    if (firstName) $("q-counter-1").textContent = `Olá, ${firstName}! 👋 — Pergunta 1 de 3`;
+    $("sub-context").textContent = `${meta.class_name} hoje (${meta.session_date})`;
+    wire();
+    showOnly("screen-1");
+  }
+
+  init();
+</script>
+</body>
+</html>

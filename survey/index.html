@@ -130,15 +130,57 @@
       <div class="error-msg" id="error-msg">Este link é inválido, expirou ou já foi usado.</div>
     </div>
 
-    <!-- Step 1: CSAT -->
+    <!-- PS Step A: trouxe dúvidas? -->
+    <div class="screen" id="screen-ps-doubts">
+      <div class="brand">Academia Lendária</div>
+      <div class="q-counter" id="step-counter-ps-doubts">Pergunta 1 de 6</div>
+      <div class="question">Você trouxe dúvidas pro PS hoje?</div>
+      <div class="sub-context" id="sub-context-ps-doubts"></div>
+      <div class="options-list">
+        <div class="option-item" data-ps-brought="true"><div class="option-dot"></div><span>Sim, trouxe</span></div>
+        <div class="option-item" data-ps-brought="false"><div class="option-dot"></div><span>Vim só ouvir</span></div>
+      </div>
+      <button class="cta-btn" id="btn-next-ps-doubts" disabled>Continuar →</button>
+    </div>
+
+    <!-- PS Step B: dúvidas resolvidas? -->
+    <div class="screen" id="screen-ps-resolved">
+      <button class="btn-back" data-back="ps-doubts">← Voltar</button>
+      <div class="brand">Academia Lendária</div>
+      <div class="q-counter">Pergunta 2 de 6</div>
+      <div class="question">Suas dúvidas foram resolvidas?</div>
+      <div class="options-list">
+        <div class="option-item" data-ps-resolved="all"><div class="option-dot"></div><span>Sim, todas</span></div>
+        <div class="option-item" data-ps-resolved="partial"><div class="option-dot"></div><span>Parcialmente</span></div>
+        <div class="option-item" data-ps-resolved="no"><div class="option-dot"></div><span>Não</span></div>
+        <div class="option-item" data-ps-resolved="none"><div class="option-dot"></div><span>Não trouxe dúvidas</span></div>
+      </div>
+      <button class="cta-btn" id="btn-next-ps-resolved" disabled>Continuar →</button>
+    </div>
+
+    <!-- Step 1: CSAT (mentores in PS) -->
     <div class="screen" id="screen-1">
       <div class="brand">Academia Lendária</div>
       <div class="q-counter" id="step-counter-1">Pergunta 1 de 4</div>
-      <div class="question">Como você avalia a aula de hoje?</div>
+      <div class="question" id="question-1">Como você avalia a aula de hoje?</div>
       <div class="sub-context" id="sub-context-1"></div>
       <div class="stars-row" id="stars-row"></div>
       <div class="stars-label" id="stars-label">Toque numa estrela</div>
       <button class="cta-btn" id="btn-next-1" disabled>Continuar →</button>
+    </div>
+
+    <!-- PS Step D: destravou? -->
+    <div class="screen" id="screen-ps-unblocked">
+      <button class="btn-back" data-back="1">← Voltar</button>
+      <div class="brand">Academia Lendária</div>
+      <div class="q-counter">Pergunta 4 de 6</div>
+      <div class="question">O PS de hoje destravou algo prático no seu projeto?</div>
+      <div class="options-list">
+        <div class="option-item" data-ps-unblocked="yes"><div class="option-dot"></div><span>Sim</span></div>
+        <div class="option-item" data-ps-unblocked="no"><div class="option-dot"></div><span>Não</span></div>
+        <div class="option-item" data-ps-unblocked="nothing_specific"><div class="option-dot"></div><span>Não trouxe nada específico</span></div>
+      </div>
+      <button class="cta-btn" id="btn-next-ps-unblocked" disabled>Continuar →</button>
     </div>
 
     <!-- Step 2: Choice -->
@@ -218,16 +260,20 @@
     token: null,
     mode: null,
     meta: null,
+    isPS: false,
     csat: null,
     tooTechnical: null,
     improvement: "",
     nps: null,
     name: "",
     detractorFollowup: "",
+    psBroughtDoubts: null,
+    psDoubtsResolved: null,
+    psUnblocked: null,
   };
 
   const $ = (id) => document.getElementById(id);
-  const SCREENS = ["screen-loading","screen-error","screen-1","screen-2","screen-3","screen-4","screen-5","screen-thanks"];
+  const SCREENS = ["screen-loading","screen-error","screen-ps-doubts","screen-ps-resolved","screen-1","screen-ps-unblocked","screen-2","screen-3","screen-4","screen-5","screen-thanks"];
 
   function showOnly(id) {
     SCREENS.forEach((s) => $(s).classList.toggle("active", s === id));
@@ -321,9 +367,15 @@
 
   function goto(step) {
     showOnly("screen-" + step);
-    const pcts = { 1: 25, 2: 50, 3: 65, 4: 85, 5: 95 };
+    const pcts = state.isPS
+      ? { "ps-doubts": 14, "ps-resolved": 28, 1: 42, "ps-unblocked": 57, 3: 71, 4: 85, 5: 95 }
+      : { 1: 25, 2: 50, 3: 65, 4: 85, 5: 95 };
     setProgress(pcts[step] ?? 100);
   }
+
+  function nextAfterPSResolved() { goto(1); }
+  function nextAfterCSAT() { return state.isPS ? goto("ps-unblocked") : goto(2); }
+  function nextAfterTechOrUnblocked() { goto(3); }
 
   async function submit() {
     $("btn-submit").disabled = true;
@@ -347,6 +399,9 @@
           comment: undefined,
           name_provided: state.name || undefined,
           detractor_followup_text: state.detractorFollowup || undefined,
+          ps_brought_doubts: state.psBroughtDoubts,
+          ps_doubts_resolved: state.psDoubtsResolved,
+          ps_unblocked: state.psUnblocked,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -387,7 +442,40 @@
     renderStars();
     renderNps();
 
-    $("btn-next-1").addEventListener("click", () => goto(2));
+    // PS-only: Q1 trouxe dúvidas?
+    document.querySelectorAll(".option-item[data-ps-brought]").forEach((el) => {
+      el.addEventListener("click", () => {
+        document.querySelectorAll(".option-item[data-ps-brought]").forEach((x) => x.classList.remove("selected"));
+        el.classList.add("selected");
+        state.psBroughtDoubts = el.dataset.psBrought === "true";
+        $("btn-next-ps-doubts").disabled = false;
+      });
+    });
+    $("btn-next-ps-doubts")?.addEventListener("click", () => goto("ps-resolved"));
+
+    // PS-only: Q2 resolvidas?
+    document.querySelectorAll(".option-item[data-ps-resolved]").forEach((el) => {
+      el.addEventListener("click", () => {
+        document.querySelectorAll(".option-item[data-ps-resolved]").forEach((x) => x.classList.remove("selected"));
+        el.classList.add("selected");
+        state.psDoubtsResolved = el.dataset.psResolved;
+        $("btn-next-ps-resolved").disabled = false;
+      });
+    });
+    $("btn-next-ps-resolved")?.addEventListener("click", () => nextAfterPSResolved());
+
+    // PS-only: Q4 destravou?
+    document.querySelectorAll(".option-item[data-ps-unblocked]").forEach((el) => {
+      el.addEventListener("click", () => {
+        document.querySelectorAll(".option-item[data-ps-unblocked]").forEach((x) => x.classList.remove("selected"));
+        el.classList.add("selected");
+        state.psUnblocked = el.dataset.psUnblocked;
+        $("btn-next-ps-unblocked").disabled = false;
+      });
+    });
+    $("btn-next-ps-unblocked")?.addEventListener("click", () => nextAfterTechOrUnblocked());
+
+    $("btn-next-1").addEventListener("click", () => nextAfterCSAT());
 
     document.querySelectorAll(".option-item[data-tech]").forEach((el) => {
       el.addEventListener("click", () => {
@@ -402,7 +490,6 @@
     $("btn-next-3").addEventListener("click", () => goto(4));
 
     $("btn-next-4").addEventListener("click", () => {
-      // Branch: if NPS <= 6 → detractor screen 5, else submit
       if (state.nps != null && state.nps <= 6) {
         goto(5);
       } else {
@@ -413,7 +500,11 @@
     $("btn-submit").addEventListener("click", submit);
 
     document.querySelectorAll(".btn-back").forEach((b) => {
-      b.addEventListener("click", () => goto(parseInt(b.dataset.back, 10)));
+      b.addEventListener("click", () => {
+        const back = b.dataset.back;
+        const parsed = Number(back);
+        goto(isNaN(parsed) ? back : parsed);
+      });
     });
   }
 
@@ -441,18 +532,36 @@
     }
 
     state.meta = meta;
+    state.isPS = meta.class_kind === "ps";
     recordOpen(state.token);
 
+    const totalQ = state.isPS ? 6 : 4;
     if (meta.mode === "dm" && meta.student_name) {
       const first = meta.student_name.split(/\s+/)[0];
-      $("step-counter-1").textContent = `Olá, ${first}! 👋 — Pergunta 1 de 4`;
+      if (state.isPS) {
+        $("step-counter-ps-doubts").textContent = `Olá, ${first}! 👋 — Pergunta 1 de ${totalQ}`;
+      } else {
+        $("step-counter-1").textContent = `Olá, ${first}! 👋 — Pergunta 1 de ${totalQ}`;
+      }
     }
     $("sub-context-1").textContent = `${meta.class_name} — ${meta.cohort_name}`;
+    if (state.isPS) {
+      $("sub-context-ps-doubts").textContent = `${meta.class_name} — ${meta.cohort_name}`;
+      $("question-1").textContent = "Como avalia o atendimento dos mentores no PS?";
+      $("step-counter-1").textContent = `Pergunta 3 de ${totalQ}`;
+      $("q-counter-4").textContent = `Pergunta 6 de ${totalQ}`;
+      const npsQ = document.querySelector("#screen-4 .question");
+      if (npsQ) npsQ.textContent = "De 0 a 10, recomendaria o PS pra outro Lendário do cohort?";
+      const improvementQ = document.querySelector("#screen-3 .question");
+      if (improvementQ) improvementQ.textContent = "Algo que poderia melhorar nos PSs?";
+      const improvementInput = $("improvement-input");
+      if (improvementInput) improvementInput.placeholder = "Opcional — sugestões, ajustes…";
+    }
 
     if (meta.mode === "group") $("name-field-wrap").style.display = "block";
 
     wire();
-    goto(1);
+    goto(state.isPS ? "ps-doubts" : 1);
   }
 
   init();
