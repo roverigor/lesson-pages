@@ -152,6 +152,28 @@ body {
 .master-state-label.off { background: #2a0e0e; color: #f87171; }
 .master-state-label.loading { background: #1a1a20; color: #888; }
 
+/* Cron status row */
+.cron-status-row {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #1e1e26;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+.cron-status-pill {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.cron-status-pill.ok { background: #07332a; color: #4ade80; }
+.cron-status-pill.warn { background: #2a1a0a; color: #fbbf24; }
+.cron-status-pill.err { background: #2a0e0e; color: #f87171; }
+.cron-status-pill.loading { background: #1a1a20; color: #888; }
+
 /* Toggle switch */
 .toggle-switch {
   width: 64px;
@@ -696,6 +718,53 @@ body {
   transition: transform 0.2s;
 }
 .toggle-mini[aria-checked="true"]::after { transform: translateX(18px); }
+
+.modal-preview-body {
+  max-height: 500px;
+  overflow-y: auto;
+  margin-bottom: 18px;
+}
+.preview-variant-card {
+  background: #16161b;
+  border: 1px solid #2a2a32;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.preview-variant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.preview-variant-id {
+  font-family: monospace;
+  color: #93c5fd;
+}
+.preview-wa-bubble {
+  background: #003e2c;
+  color: #f4f4f4;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  position: relative;
+  font-family: inherit;
+  max-width: 92%;
+}
+.preview-wa-bubble::after {
+  content: "✓✓";
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
+  font-size: 10px;
+  color: #4ade80;
+}
 
 .modal-detail-body {
   background: #16161b;

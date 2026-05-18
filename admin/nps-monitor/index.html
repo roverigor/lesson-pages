@@ -78,6 +78,11 @@
           </button>
         </div>
       </div>
+      <div id="cron-status-row" class="cron-status-row">
+        <div id="cron-status-pill" class="cron-status-pill loading">⏳ verificando cron...</div>
+        <button id="cron-register-btn" class="btn-secondary btn-sm hidden">▶ Registrar cron</button>
+        <button id="cron-unregister-btn" class="btn-secondary btn-sm hidden">⏹ Desregistrar</button>
+      </div>
     </section>
 
     <!-- ─── KPI STATS 24h ──────────────────────────────────────────── -->
@@ -319,6 +324,21 @@
       <div class="modal-actions">
         <button id="modal-variant-cancel" class="btn-secondary">Cancelar</button>
         <button id="modal-variant-save" class="btn-primary">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MODAL: render preview per cohort ───────────────────────── -->
+  <div id="modal-preview" class="modal-overlay hidden">
+    <div class="modal-card modal-card-wide">
+      <h3 id="modal-preview-title">Preview mensagens</h3>
+      <p class="modal-msg">
+        Pré-visualização exata do que sai pra <strong>esse cohort + essa aula</strong> quando dispatcher
+        disparar. Variant é escolhida random ponderado na hora — todas as ativas estão abaixo.
+      </p>
+      <div id="modal-preview-body" class="modal-preview-body"></div>
+      <div class="modal-actions">
+        <button id="modal-preview-close" class="btn-secondary">Fechar</button>
       </div>
     </div>
   </div>

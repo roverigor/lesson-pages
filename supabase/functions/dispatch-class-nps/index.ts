@@ -118,6 +118,13 @@ function isValidGroupJid(jid: string | null | undefined): boolean {
   return /^[0-9A-Za-z._-]+@g\.us$/.test(jid) && jid.length >= 12 && jid.length <= 64;
 }
 
+// P.10: sanitize WhatsApp markdown chars in user-controlled strings
+// WA interprets *bold*, _italic_, ~strike~, `mono` — stray chars break formatting.
+function sanitizeForWA(text: string | null | undefined): string {
+  if (!text) return "";
+  return String(text).replace(/[*_~`]/g, "").trim();
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
@@ -232,8 +239,10 @@ async function processJob(
       return baseResult;
     }
 
-    const cohortName = cohort.name ?? "Turma";
-    const className = (klass as { name?: string } | null)?.name ?? cohortName;
+    // P.10: sanitize names that flow into templates (WA markdown safety)
+    const cohortName = sanitizeForWA(cohort.name) || "Turma";
+    const rawClassName = (klass as { name?: string } | null)?.name ?? cohortName;
+    const className = sanitizeForWA(rawClassName) || cohortName;
 
     // 2. Eligible students
     const { data: studentsData } = await client.rpc("nps_resolve_eligible_students", {
@@ -353,12 +362,22 @@ async function processJob(
     }
 
     // 7. DM loop (capped at maxDmPerRun per tick) — V6 jitter ±30s
+    // P.9: skip DM entirely when student name is missing (premium — no "Olá, aluno!")
     const JITTER_MS = 30_000;
     if (dmVar?.meta_template_name) {
       const batch = dmLinks.slice(0, opts.maxDmPerRun);
       for (let i = 0; i < batch.length; i++) {
         const link = batch[i];
-        const firstName = (link.name || "aluno").trim().split(/\s+/)[0] || "aluno";
+        const rawName = (link.name || "").trim();
+        if (!rawName) {
+          baseResult.dm.skipped++;
+          await client.from("nps_class_links").update({
+            send_status: "skipped",
+            error_detail: "missing_name_premium_skip",
+          }).eq("id", link.id);
+          continue;
+        }
+        const firstName = sanitizeForWA(rawName.split(/\s+/)[0]);
         const bodyParams = [firstName, className]; // template: {{1}}=first_name, {{2}}=class_name
         const buttonParam = link.token;
 
@@ -418,12 +437,15 @@ async function processJob(
 
     baseResult.status = finalStatus;
 
-    // 9. Slack summary
-    await postSlack(
-      `📊 *NPS post-class* [${finalStatus}] cohort=*${cohortName}* class=*${className}* date=${job.session_date}\n` +
-      `   group: ${baseResult.group.sent ? "✅" : "❌"} ${baseResult.group.error ?? ""}\n` +
-      `   dm: sent=${baseResult.dm.sent} failed=${baseResult.dm.failed} skipped=${baseResult.dm.skipped}/${baseResult.dm.total}`,
-    );
+    // 9. Slack summary — P.9 digest mode: only post on partial/failed (success = silent)
+    if (finalStatus === "partial" || finalStatus === "failed") {
+      await postSlack(
+        `🚨 *NPS post-class* [${finalStatus}] cohort=*${cohortName}* class=*${className}* date=${job.session_date}\n` +
+        `   group: ${baseResult.group.sent ? "✅" : "❌"} ${baseResult.group.error ?? ""}\n` +
+        `   dm: sent=${baseResult.dm.sent} failed=${baseResult.dm.failed} skipped=${baseResult.dm.skipped}/${baseResult.dm.total}` +
+        (baseResult.dm.failed > 0 ? `\n   ⚠️ Verificar dispatch dashboard pra detalhes` : ""),
+      );
+    }
 
     return baseResult;
   } catch (e) {

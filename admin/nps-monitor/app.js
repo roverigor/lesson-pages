@@ -99,21 +99,14 @@ const MOCK_DATA = {
   },
   variants: {
     group: [
-      {
-        id: "group_v1", channel: "group",
-        body_template: "Pessoal, obrigado pela presença em *{{class_name}}* hoje! 💜\n\nQueremos saber como foi pra vocês.\nResponde rapidinho aqui (anônimo, opção de colocar nome): {{link}}",
-        meta_template_name: null, active: true, weight: 1, created_at: "2026-05-17T12:00:00Z",
-      },
-      {
-        id: "group_v2", channel: "group",
-        body_template: "Galera, fechamos *{{class_name}}* agora! 🚀\n\nUma pergunta rápida pra gente continuar evoluindo o conteúdo: {{link}}\n\nLeva 30s, podem responder sem se identificar.",
-        meta_template_name: null, active: true, weight: 1, created_at: "2026-05-17T12:00:00Z",
-      },
-      {
-        id: "group_v3", channel: "group",
-        body_template: "Time {{cohort_name}}! 👋\n\nFeedback express da aula de hoje (*{{class_name}}*) — sua opinião direciona os próximos encontros:\n{{link}}",
-        meta_template_name: null, active: true, weight: 1, created_at: "2026-05-17T12:00:00Z",
-      },
+      { id: "group_v1", channel: "group", body_template: "Pessoal, obrigado pela presença em *{{class_name}}* hoje! 💜\n\nComo foi pra vocês? (30s, anônimo se preferir)\n{{link}}", meta_template_name: null, active: true, weight: 1, created_at: "2026-05-17T12:00:00Z" },
+      { id: "group_v2", channel: "group", body_template: "Pessoal, fechamos *{{class_name}}* agora! 🚀\n\nUma pergunta rápida pra continuar evoluindo o conteúdo:\n{{link}}\n\nLeva 30s — pode responder anônimo, se preferir.", meta_template_name: null, active: true, weight: 1, created_at: "2026-05-17T12:00:00Z" },
+      { id: "group_v3", channel: "group", body_template: "Time {{cohort_name}}! 👋\n\nFeedback express da aula de hoje (*{{class_name}}*) — sua opinião direciona os próximos encontros:\n{{link}}", meta_template_name: null, active: true, weight: 1, created_at: "2026-05-17T12:00:00Z" },
+      { id: "group_v4", channel: "group", body_template: "Pessoal, valeu pela energia em *{{class_name}}*! ✨\n\nPra fechar com chave de ouro, dá uma nota rapidinho — ajuda demais:\n{{link}}\n\n_(anônimo, 30s)_", meta_template_name: null, active: true, weight: 1, created_at: "2026-05-17T12:00:00Z" },
+      { id: "group_v5", channel: "group", body_template: "Time {{cohort_name}} 🎯\n\nFeedback rápido sobre *{{class_name}}*?\n{{link}}\n\nSua nota orienta o próximo encontro.", meta_template_name: null, active: true, weight: 1, created_at: "2026-05-17T12:00:00Z" },
+      { id: "group_v6", channel: "group", body_template: "Pessoal, encerramos *{{class_name}}* agora há pouco. 👇\n\nSe tiver 30 segundos, agradeceríamos muito a nota:\n{{link}}\n\nObrigado pela presença e dedicação. 🙏", meta_template_name: null, active: true, weight: 1, created_at: "2026-05-17T12:00:00Z" },
+      { id: "group_v7", channel: "group", body_template: "{{greeting}}, pessoal! Como foi a aula *{{class_name}}*?\n\nAvaliação rápida aqui (anônimo se preferir):\n{{link}}\n\nSua opinião direciona evolução do conteúdo. 💜", meta_template_name: null, active: true, weight: 1, created_at: "2026-05-17T12:00:00Z" },
+      { id: "group_v8", channel: "group", body_template: "Time {{cohort_name}}!\n\nObrigado pela presença em *{{class_name}}* hoje. Pra continuarmos refinando cada encontro, nota rápida aqui:\n\n{{link}}", meta_template_name: null, active: true, weight: 1, created_at: "2026-05-17T12:00:00Z" },
     ],
     dm: [
       { id: "dm_v1", channel: "dm", body_template: "NPS pós-aula individual — variant 1", meta_template_name: "nps_post_class_v1", active: false, weight: 1, created_at: "2026-05-17T12:00:00Z" },
@@ -240,6 +233,22 @@ async function mockRpc(name, args) {
   if (name === "nps_admin_zoom_class_map") {
     return MOCK_ZOOM_MAP;
   }
+  if (name === "nps_admin_cron_status") {
+    return {
+      registered: true,
+      jobname: "dispatch-class-nps-tick",
+      schedule: "*/5 * * * *",
+      active: true,
+      last_run: {
+        start_time: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+        end_time: new Date(Date.now() - 2 * 60 * 1000 + 1500).toISOString(),
+        status: "succeeded",
+        return_message: "OK",
+      },
+    };
+  }
+  if (name === "nps_admin_register_cron") return { ok: true, registered: true };
+  if (name === "nps_admin_unregister_cron") return { ok: true, unregistered: true };
   if (name === "nps_resolve_eligible_students") {
     // Generate fake students for the requested cohort
     const fakeNames = ["Ana Silva", "Bruno Costa", "Carla Mendes", "Daniel Lima", "Eduarda Souza", "Fernando Alves", "Gabriela Rocha", "Henrique Tavares", "Isabela Castro", "João Pereira", "Larissa Vieira", "Mateus Almeida"];
@@ -357,14 +366,16 @@ async function logout() {
 // ─── Dashboard fetch + render ──────────────────────────────────────────
 async function refreshDashboard() {
   try {
-    const [data, groups, zoomMap] = await Promise.all([
+    const [data, groups, zoomMap, cron] = await Promise.all([
       rpc("nps_admin_dashboard"),
       rpc("nps_admin_list_cohort_groups").catch(() => []),
       rpc("nps_admin_zoom_class_map").catch(() => []),
+      rpc("nps_admin_cron_status").catch(() => null),
     ]);
     state.data = data;
     state.groups = groups || [];
     state.zoomMap = zoomMap || [];
+    state.cron = cron;
     renderAll();
     hideError();
     $("last-fetched").textContent = `atualizado ${fmtDateTime(data?.fetched_at)}`;
@@ -388,6 +399,7 @@ function hideError() { hide($("error-banner")); }
 function renderAll() {
   if (!state.data) return;
   renderMasterSwitch();
+  renderCronStatus();
   renderKpis();
   renderConfig();
   renderZoomMap();
@@ -395,6 +407,65 @@ function renderAll() {
   renderVariants();
   renderPendingJobs();
   renderRecentJobs();
+}
+
+// ─── Cron status tile ─────────────────────────────────────────────────
+function renderCronStatus() {
+  const c = state.cron;
+  const pill = $("cron-status-pill");
+  const regBtn = $("cron-register-btn");
+  const unregBtn = $("cron-unregister-btn");
+
+  if (!c) {
+    pill.textContent = "⏳ status indisponível";
+    pill.className = "cron-status-pill loading";
+    hide(regBtn); hide(unregBtn);
+    return;
+  }
+
+  if (!c.registered) {
+    pill.textContent = "🔴 Cron não registrado — dispatcher nunca acorda";
+    pill.className = "cron-status-pill err";
+    show(regBtn); hide(unregBtn);
+    return;
+  }
+
+  const last = c.last_run;
+  if (!last) {
+    pill.textContent = `🟡 Cron registrado (${c.schedule}) — nenhuma execução ainda`;
+    pill.className = "cron-status-pill warn";
+  } else {
+    const minsAgo = Math.round((Date.now() - new Date(last.start_time).getTime()) / 60000);
+    const success = last.status === "succeeded";
+    pill.textContent = success
+      ? `🟢 Cron ativo (${c.schedule}) — última execução ${minsAgo}min atrás`
+      : `🔴 Cron com falha — última: ${last.status} (${minsAgo}min)`;
+    pill.className = success ? "cron-status-pill ok" : "cron-status-pill err";
+  }
+
+  hide(regBtn); show(unregBtn);
+}
+
+async function registerCron() {
+  if (!confirm("Registrar cron dispatch-class-nps-tick (*/5 min)? Worker passa a tickar a cada 5min — só envia se master switch ON.")) return;
+  try {
+    await rpc("nps_admin_register_cron");
+    toast("Cron registrado.", "success");
+    await refreshDashboard();
+  } catch (e) {
+    toast(`Erro: ${e?.message ?? e}`, "error");
+  }
+}
+
+async function unregisterCron() {
+  if (!confirm("Desregistrar cron? Worker para imediatamente. Jobs pendentes ficam parados até reativar.")) return;
+  try {
+    await rpc("nps_admin_unregister_cron");
+    toast("Cron desregistrado.", "success");
+    await refreshDashboard();
+  } catch (e) {
+    toast(`Erro: ${e?.message ?? e}`, "error");
+  }
 }
 
 // ─── Zoom × Class × Cohort map ────────────────────────────────────────
@@ -448,7 +519,7 @@ function renderZoomMap() {
         <div class="zoom-map-cohorts">
           ${cohorts.length === 0
             ? '<span style="color:#888;font-size:11px">— nenhum cohort vinculado —</span>'
-            : cohorts.map((c) => renderCohortInline(c)).join("")}
+            : cohorts.map((c) => renderCohortInline(c, r.class_id)).join("")}
         </div>
         <div class="zoom-map-status-cell">
           ${statusPill}
@@ -464,7 +535,7 @@ function renderZoomMap() {
   }).join("");
 }
 
-function renderCohortInline(c) {
+function renderCohortInline(c, classId) {
   let badge;
   if (!c.has_group_jid) badge = '<span class="badge-mini no-jid">sem grupo</span>';
   else if (!c.group_jid_valid) badge = '<span class="badge-mini invalid">JID inválido</span>';
@@ -481,8 +552,78 @@ function renderCohortInline(c) {
       <span style="color:#666;font-size:10px">(${c.active_students} alunos)</span>
       ${badge}
       ${linkPart}
+      <button class="copy-btn" data-preview-render="${escapeHtml(classId)}|${escapeHtml(c.cohort_id)}" title="Ver msg renderizada">👁 preview</button>
     </div>
   `;
+}
+
+// ─── P.1: render preview msg per cohort ─────────────────────────────
+function brHourGreeting() {
+  const h = (new Date().getUTCHours() - 3 + 24) % 24;
+  if (h < 12) return "Bom dia";
+  if (h < 18) return "Boa tarde";
+  return "Boa noite";
+}
+
+function sanitizeWA(s) {
+  return String(s ?? "").replace(/[*_~`]/g, "").trim();
+}
+
+function renderGroupTemplate(body, cohortName, className) {
+  return body
+    .replace(/{{\s*class_name\s*}}/g, sanitizeWA(className) || "—")
+    .replace(/{{\s*cohort_name\s*}}/g, sanitizeWA(cohortName) || "—")
+    .replace(/{{\s*greeting\s*}}/g, brHourGreeting())
+    .replace(/{{\s*link\s*}}/g, "https://painel.academialendaria.ai/survey/grupo/<token-gerado>");
+}
+
+function openRenderPreview(classId, cohortId) {
+  const klass = state.zoomMap.find((r) => r.class_id === classId);
+  if (!klass) return;
+  const cohort = klass.cohorts.find((c) => c.cohort_id === cohortId);
+  if (!cohort) return;
+
+  $("modal-preview-title").textContent = `Preview — ${cohort.cohort_name} · ${klass.class_name}`;
+
+  const groupVariants = state.data?.variants?.group?.filter((v) => v.active) ?? [];
+  const dmVariants = state.data?.variants?.dm?.filter((v) => v.active) ?? [];
+
+  const groupSection = groupVariants.length === 0
+    ? '<p style="color:#f87171;font-size:12px">⚠ Nenhum variant group ativo — grupo NÃO será enviado</p>'
+    : `
+      <h4 style="margin:0 0 8px;color:#aaa;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">📢 Grupo (Evolution) — ${groupVariants.length} variant${groupVariants.length > 1 ? "s" : ""} candidato${groupVariants.length > 1 ? "s" : ""} (random)</h4>
+      ${groupVariants.map((v) => `
+        <div class="preview-variant-card">
+          <div class="preview-variant-header">
+            <span class="preview-variant-id">${escapeHtml(v.id)}</span>
+            <span>peso ${v.weight}</span>
+          </div>
+          <div class="preview-wa-bubble">${escapeHtml(renderGroupTemplate(v.body_template, cohort.cohort_name, klass.class_name))}</div>
+        </div>
+      `).join("")}
+    `;
+
+  const dmSection = dmVariants.length === 0
+    ? '<p style="color:#fbbf24;font-size:12px;margin-top:14px">⚠ Nenhum variant DM ativo — DMs individuais não serão enviados (ative em "Router de Mensagens")</p>'
+    : `
+      <h4 style="margin:14px 0 8px;color:#aaa;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">💬 DM (Meta template) — ${dmVariants.length} variant${dmVariants.length > 1 ? "s" : ""}</h4>
+      ${dmVariants.map((v) => `
+        <div class="preview-variant-card">
+          <div class="preview-variant-header">
+            <span class="preview-variant-id">${escapeHtml(v.id)} · template: ${escapeHtml(v.meta_template_name ?? "—")}</span>
+            <span>peso ${v.weight}</span>
+          </div>
+          <div style="font-size:11px;color:#888;font-style:italic">Body controlado por Meta Business Manager (template aprovado). Parâmetros: {{1}}=primeiro_nome, {{2}}=${escapeHtml(sanitizeWA(klass.class_name))}, button URL=token.</div>
+        </div>
+      `).join("")}
+    `;
+
+  const safetyNote = !cohort.group_verified
+    ? `<p style="color:#fbbf24;background:#2a1a0a;border:1px solid #5b4a1e;padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:14px">⚠ Cohort não verificado — grupo NÃO será enviado mesmo com variants ativos. Verifique em "Grupos Verificados" primeiro.</p>`
+    : "";
+
+  $("modal-preview-body").innerHTML = safetyNote + groupSection + dmSection;
+  showModal($("modal-preview"));
 }
 
 async function openEligiblePreview(classId) {
@@ -820,6 +961,16 @@ async function saveVariant() {
     return;
   }
 
+  // P.6: pre-check min-1-active guard (UX-friendly message before RPC error)
+  if (v.active && !newActive) {
+    const channelVariants = state.data.variants?.[v.channel] ?? [];
+    const otherActive = channelVariants.filter((x) => x.id !== v.id && x.active).length;
+    if (otherActive === 0) {
+      toast(`Bloqueado: esta é a última variant ativa de ${v.channel}. Desativar pausa todos envios desse canal.`, "error");
+      return;
+    }
+  }
+
   try {
     await rpc("nps_admin_update_variant", {
       p_variant_id: v.id,
@@ -1003,6 +1154,8 @@ function wireEvents() {
   $("error-banner-dismiss").addEventListener("click", hideError);
 
   $("master-toggle").addEventListener("click", openMasterConfirm);
+  $("cron-register-btn").addEventListener("click", registerCron);
+  $("cron-unregister-btn").addEventListener("click", unregisterCron);
   $("modal-master-cancel").addEventListener("click", () => { state.pendingMasterFlip = null; closeModals(); });
   $("modal-master-accept").addEventListener("change", (e) => {
     $("modal-master-confirm-btn").disabled = !e.target.checked;
@@ -1039,6 +1192,12 @@ function wireEvents() {
       openEligiblePreview(previewBtn.dataset.previewEligible);
       return;
     }
+    const renderBtn = e.target.closest("[data-preview-render]");
+    if (renderBtn) {
+      const [cId, coId] = renderBtn.dataset.previewRender.split("|");
+      openRenderPreview(cId, coId);
+      return;
+    }
     const actionBtn = e.target.closest("[data-action]");
     if (actionBtn) {
       const action = actionBtn.dataset.action;
@@ -1062,6 +1221,7 @@ function wireEvents() {
   $("modal-job-confirm-btn").addEventListener("click", confirmJobAction);
 
   $("modal-job-detail-close").addEventListener("click", closeModals);
+  $("modal-preview-close").addEventListener("click", closeModals);
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && state.modalOpen) closeModals();
