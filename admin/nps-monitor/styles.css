@@ -107,6 +107,35 @@ body {
   font-size: 16px;
 }
 
+/* ─── Pending verification banner ──────────────────────────────── */
+.pending-verify-banner {
+  background: #2a1a0a;
+  border: 1px solid #5b4a1e;
+  color: #fbbf24;
+  padding: 12px 18px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.pending-verify-list {
+  font-size: 11px;
+  color: #fde68a;
+  margin-top: 6px;
+  line-height: 1.6;
+}
+.pending-verify-list .item {
+  display: inline-block;
+  background: rgba(251,191,36,0.08);
+  border: 1px solid #5b4a1e;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin: 2px 4px 2px 0;
+}
+
 /* ─── Test mode banner + card ──────────────────────────────────── */
 .test-mode-banner {
   background: #1e1430;

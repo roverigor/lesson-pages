@@ -136,6 +136,13 @@ const MOCK_DATA = {
     jobs_24h: 7, jobs_sent_24h: 4, jobs_partial_24h: 1, jobs_failed_24h: 1,
     dm_sent_24h: 124, dm_failed_24h: 5, opens_24h: 73, responses_24h: 28,
   },
+  pending_verification: {
+    count: 2,
+    cohorts: [
+      { cohort_id: "fff", cohort_name: "PS Fundamentals T2", whatsapp_group_jid: "120363042000000333@g.us", students_count: 67, created_at: "2026-05-16T14:00:00Z" },
+      { cohort_id: "bbb2", cohort_name: "PS Advanced T4 (novo)", whatsapp_group_jid: "120363042000000999@g.us", students_count: 28, created_at: "2026-05-17T19:00:00Z" },
+    ],
+  },
   fetched_at: new Date().toISOString(),
 };
 
@@ -419,6 +426,7 @@ function hideError() { hide($("error-banner")); }
 function renderAll() {
   if (!state.data) return;
   renderTestModeBanner();
+  renderPendingVerifyBanner();
   renderTestMode();
   renderMasterSwitch();
   renderCronStatus();
@@ -429,6 +437,18 @@ function renderAll() {
   renderVariants();
   renderPendingJobs();
   renderRecentJobs();
+}
+
+function renderPendingVerifyBanner() {
+  const pv = state.data?.pending_verification;
+  const banner = $("pending-verify-banner");
+  if (!pv || !pv.count) { hide(banner); return; }
+  $("pending-verify-count").textContent = pv.count;
+  $("pending-verify-list").innerHTML = (pv.cohorts ?? [])
+    .slice(0, 8)
+    .map((c) => `<span class="item">👥 ${escapeHtml(c.cohort_name)} (${c.students_count})</span>`)
+    .join("");
+  show(banner);
 }
 
 // ─── Test mode ────────────────────────────────────────────────────────
