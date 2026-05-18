@@ -115,6 +115,7 @@ function readFilters() {
   const cohort = $("filter-cohort").value || null;
   const klass = $("filter-class").value || null;
   const mode = $("filter-mode").value || null;
+  const source = $("filter-source")?.value || null;
   const f = {};
   if (from) f.date_from = new Date(from + "T00:00:00").toISOString();
   if (to) {
@@ -125,6 +126,7 @@ function readFilters() {
   if (cohort) f.cohort_id = cohort;
   if (klass) f.class_id = klass;
   if (mode) f.mode = mode;
+  if (source) f.source = source;
   return f;
 }
 
@@ -272,10 +274,14 @@ function renderComments() {
     body.innerHTML = `<div class="loading">Sem comentários no filtro atual.</div>`;
     return;
   }
-  body.innerHTML = state.comments.map((c) => `
+  body.innerHTML = state.comments.map((c) => {
+    const sourceTag = c.source === "manual_survey"
+      ? '<span style="color:#666;font-size:10px;background:#1a1a20;padding:1px 6px;border-radius:4px">📋 survey antigo</span>'
+      : '<span style="color:#4ade80;font-size:10px;background:#07332a;padding:1px 6px;border-radius:4px">⚡ auto pós-aula</span>';
+    return `
     <div class="comment-card ${c.bucket}">
       <div class="comment-header">
-        <span><span class="comment-score">${c.nps_score}</span>/10 · ${escapeHtml(c.bucket)}</span>
+        <span><span class="comment-score">${c.nps_score}</span>/10 · ${escapeHtml(c.bucket)} ${sourceTag}</span>
         <span>${fmtDateTime(c.submitted_at)}</span>
       </div>
       ${c.comment ? `<div class="comment-body">${escapeHtml(c.comment)}</div>` : '<div class="comment-body" style="font-style:italic;color:#666">(sem comentário)</div>'}
@@ -284,7 +290,8 @@ function renderComments() {
         <span>${c.mode === "dm" ? `👤 ${escapeHtml(c.student_name ?? "—")} · ${escapeHtml(c.student_phone ?? "—")}` : `📢 grupo (${escapeHtml(c.name_provided ?? "anônimo")})`}</span>
       </div>
     </div>
-  `).join("");
+  `;
+  }).join("");
 }
 
 // ─── Export CSV ──────────────────────────────────────────────────────
@@ -335,6 +342,7 @@ function wireEvents() {
     $("filter-cohort").value = "";
     $("filter-class").value = "";
     $("filter-mode").value = "";
+    if ($("filter-source")) $("filter-source").value = "";
     init();
   });
 
@@ -419,17 +427,19 @@ function _mockRpc(name, args) {
   }
   if (name === "nps_results_comments") {
     const all = [
-      { response_id: "1", submitted_at: "2026-05-16T22:18:00Z", nps_score: 9, bucket: "promoter", comment: "Aula sensacional, conteúdo bem amarrado e ritmo perfeito.", mode: "dm", name_provided: null, cohort_name: "Fundamentals T4", class_name: "Aula 11 — Análise estrutural", student_name: "Ana Silva", student_phone: "+5511920000001" },
-      { response_id: "2", submitted_at: "2026-05-16T21:50:00Z", nps_score: 5, bucket: "detractor", comment: "Ritmo muito acelerado, perdi o fio. Esperava mais exemplos.", mode: "dm", name_provided: null, cohort_name: "PS Advanced T3", class_name: "PS Advanced", student_name: "Bruno Costa", student_phone: "+5511920000002" },
-      { response_id: "3", submitted_at: "2026-05-16T19:30:00Z", nps_score: 10, bucket: "promoter", comment: "Melhor aula do módulo. Já indiquei pra dois colegas.", mode: "group", name_provided: "Carla M.", cohort_name: "Fundamentals T4", class_name: "Aula 11 — Análise estrutural", student_name: null, student_phone: null },
-      { response_id: "4", submitted_at: "2026-05-15T22:00:00Z", nps_score: 3, bucket: "detractor", comment: "Áudio com problemas durante 40% da aula. Frustrante.", mode: "dm", name_provided: null, cohort_name: "PS Fundamentals T2", class_name: "PS Fundamentals", student_name: "Daniel Lima", student_phone: "+5511920000003" },
-      { response_id: "5", submitted_at: "2026-05-15T21:30:00Z", nps_score: 8, bucket: "passive", comment: "Bom, mas senti falta de feedback no exercício final.", mode: "dm", name_provided: null, cohort_name: "Fundamentals T4", class_name: "Aula 11 — Análise estrutural", student_name: "Eduarda Souza", student_phone: "+5511920000004" },
-      { response_id: "6", submitted_at: "2026-05-14T22:00:00Z", nps_score: 9, bucket: "promoter", comment: null, mode: "dm", name_provided: null, cohort_name: "PS Advanced T3", class_name: "PS Advanced", student_name: "Fernando Alves", student_phone: "+5511920000005" },
+      { response_id: "1", source: "auto_class", submitted_at: "2026-05-16T22:18:00Z", nps_score: 9, bucket: "promoter", comment: "Aula sensacional, conteúdo bem amarrado e ritmo perfeito.", mode: "dm", name_provided: null, cohort_name: "Fundamentals T4", class_name: "Aula 11 — Análise estrutural", student_name: "Ana Silva", student_phone: "+5511920000001" },
+      { response_id: "2", source: "auto_class", submitted_at: "2026-05-16T21:50:00Z", nps_score: 5, bucket: "detractor", comment: "Ritmo muito acelerado, perdi o fio. Esperava mais exemplos.", mode: "dm", name_provided: null, cohort_name: "PS Advanced T3", class_name: "PS Advanced", student_name: "Bruno Costa", student_phone: "+5511920000002" },
+      { response_id: "3", source: "auto_class", submitted_at: "2026-05-16T19:30:00Z", nps_score: 10, bucket: "promoter", comment: "Melhor aula do módulo. Já indiquei pra dois colegas.", mode: "group", name_provided: "Carla M.", cohort_name: "Fundamentals T4", class_name: "Aula 11 — Análise estrutural", student_name: null, student_phone: null },
+      { response_id: "4", source: "manual_survey", submitted_at: "2026-05-15T22:00:00Z", nps_score: 3, bucket: "detractor", comment: "Áudio com problemas durante 40% da aula. Frustrante.", mode: "dm", name_provided: null, cohort_name: "PS Fundamentals T2", class_name: null, student_name: "Daniel Lima", student_phone: "+5511920000003" },
+      { response_id: "5", source: "auto_class", submitted_at: "2026-05-15T21:30:00Z", nps_score: 8, bucket: "passive", comment: "Bom, mas senti falta de feedback no exercício final.", mode: "dm", name_provided: null, cohort_name: "Fundamentals T4", class_name: "Aula 11 — Análise estrutural", student_name: "Eduarda Souza", student_phone: "+5511920000004" },
+      { response_id: "6", source: "manual_survey", submitted_at: "2026-05-14T22:00:00Z", nps_score: 9, bucket: "promoter", comment: "Conteúdo sólido, mentor preparado.", mode: "dm", name_provided: null, cohort_name: "PS Advanced T3", class_name: null, student_name: "Fernando Alves", student_phone: "+5511920000005" },
     ];
     let filtered = [...all];
     const bucket = args.p_filters?.bucket;
     if (bucket) filtered = filtered.filter((r) => r.bucket === bucket);
     if (args.p_filters?.only_with_comment) filtered = filtered.filter((r) => r.comment);
+    const source = args.p_filters?.source;
+    if (source) filtered = filtered.filter((r) => r.source === source);
     return filtered;
   }
   return null;

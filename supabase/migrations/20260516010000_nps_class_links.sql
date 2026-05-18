@@ -38,9 +38,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_nps_class_links_dm_unique
 CREATE INDEX IF NOT EXISTS idx_nps_class_links_token
   ON public.nps_class_links (token);
 
+-- NOTE: Index predicate dropped because now() is STABLE not IMMUTABLE
+-- (Postgres rejects). Full index used instead. Caught in deploy 2026-05-18.
 CREATE INDEX IF NOT EXISTS idx_nps_class_links_expires
-  ON public.nps_class_links (expires_at)
-  WHERE expires_at > now();
+  ON public.nps_class_links (expires_at);
 
 ALTER TABLE public.nps_class_links ENABLE ROW LEVEL SECURITY;
 
