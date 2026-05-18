@@ -278,6 +278,14 @@
           </div>
           <span class="config-help">Min 1000ms. Meta best practice: 10000ms.</span>
         </div>
+        <div class="config-item">
+          <label for="cfg-minduration">Duração mínima Zoom (min)</label>
+          <div class="config-input-row">
+            <input id="cfg-minduration" type="number" min="0" max="240" step="5" data-key="nps_dispatch_min_duration_minutes">
+            <button class="btn-primary btn-sm" data-save-config="nps_dispatch_min_duration_minutes">Salvar</button>
+          </div>
+          <span class="config-help">Zoom &lt;X min = teste → não dispara. <strong>60min default.</strong> 0 desabilita.</span>
+        </div>
       </div>
     </section>
 

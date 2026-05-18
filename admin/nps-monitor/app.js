@@ -96,6 +96,7 @@ const MOCK_DATA = {
     nps_dispatch_delay_minutes: "5",
     nps_dispatch_max_dm_per_run: "50",
     nps_dispatch_dm_throttle_ms: "10000",
+    nps_dispatch_min_duration_minutes: "60",
     nps_test_mode_enabled: "true",
     nps_test_mode_phone: "5543999250490",
     nps_test_mode_group_jid: "",
@@ -862,6 +863,7 @@ function renderConfig() {
   $("cfg-delay").value = cfg.nps_dispatch_delay_minutes ?? "";
   $("cfg-maxdm").value = cfg.nps_dispatch_max_dm_per_run ?? "";
   $("cfg-throttle").value = cfg.nps_dispatch_dm_throttle_ms ?? "";
+  if ($("cfg-minduration")) $("cfg-minduration").value = cfg.nps_dispatch_min_duration_minutes ?? "60";
 }
 
 async function saveConfig(key) {
