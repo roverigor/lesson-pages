@@ -17,6 +17,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const IP_HASH_SALT = Deno.env.get("NPS_IP_HASH_SALT") ?? "fallback-rotate-me";
+const SLACK_DETRACTORS_WEBHOOK = Deno.env.get("SLACK_DETRACTORS_WEBHOOK") ?? "";
 const MAX_SUBMITS_PER_IP_24H = 5;
 
 const CORS: Record<string, string> = {
@@ -133,8 +134,108 @@ Deno.serve(async (req: Request) => {
 
   await sb.rpc("increment_nps_link_response_count", { p_link_id: link.id }).then(() => {});
 
+  // ─── P.2: detractor branch — Slack alert for scores 0-6 ───
+  if (nps_score <= 6) {
+    // Fire and forget — never block survey response on Slack
+    notifyDetractor(sb, link, { nps_score, comment, nameProvided }).catch((e) => {
+      console.error("[detractor-alert] failed:", e);
+    });
+  }
+
+  // ─── P.2: bucketed thank-you ───
+  let thankYou;
+  let bucket;
+  if (nps_score <= 6) {
+    bucket = "detractor";
+    thankYou = "Obrigado pelo feedback. Um membro do nosso time vai te chamar pra entender melhor e ajustar o que for preciso. 🙏";
+  } else if (nps_score <= 8) {
+    bucket = "passive";
+    thankYou = "Valeu pela nota! Se quiser, conta o que faltaria pra ser 10 — usamos isso pra refinar.";
+  } else {
+    bucket = "promoter";
+    thankYou = "Que bom que foi bom! 💜 Se conhecer alguém que se beneficiaria, manda nossa página: https://academialendaria.ai";
+  }
+
   return jsonResponse({
     success: true,
-    thank_you: "Obrigado pelo feedback! Sua opinião é fundamental.",
+    bucket,
+    thank_you: thankYou,
   });
 });
+
+// ─── Detractor → Slack alert ────────────────────────────────────────────
+async function notifyDetractor(
+  sb: ReturnType<typeof createClient>,
+  link: {
+    id: string; class_id: string | null; cohort_id: string;
+    mode: string; student_id: string | null;
+  },
+  payload: { nps_score: number; comment: string | null; nameProvided: string | null },
+): Promise<void> {
+  if (!SLACK_DETRACTORS_WEBHOOK) return; // silent if not configured
+
+  // Fetch context
+  const [
+    { data: cohort },
+    { data: klass },
+    { data: student },
+  ] = await Promise.all([
+    sb.from("cohorts").select("name").eq("id", link.cohort_id).maybeSingle(),
+    link.class_id
+      ? sb.from("classes").select("name").eq("id", link.class_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    link.mode === "dm" && link.student_id
+      ? sb.from("students").select("name, phone").eq("id", link.student_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  const cohortName = (cohort as { name?: string } | null)?.name ?? "—";
+  const className = (klass as { name?: string } | null)?.name ?? "—";
+  const studentName = link.mode === "dm"
+    ? (student as { name?: string } | null)?.name ?? "—"
+    : payload.nameProvided ?? "Anônimo (form grupo)";
+  const studentPhone = link.mode === "dm"
+    ? (student as { phone?: string } | null)?.phone ?? "—"
+    : "—";
+
+  const scoreLabel = payload.nps_score <= 2 ? "🚨 NOTA CRÍTICA" : "⚠️ Detractor";
+
+  const text = `${scoreLabel} (${payload.nps_score}/10) — ${cohortName} · ${className}`;
+  const blocks = [
+    {
+      type: "section",
+      text: { type: "mrkdwn", text: `*${text}*` },
+    },
+    {
+      type: "section",
+      fields: [
+        { type: "mrkdwn", text: `*Aluno:*\n${studentName}` },
+        { type: "mrkdwn", text: `*Telefone:*\n${studentPhone}` },
+        { type: "mrkdwn", text: `*Cohort:*\n${cohortName}` },
+        { type: "mrkdwn", text: `*Aula:*\n${className}` },
+        { type: "mrkdwn", text: `*Nota:*\n${payload.nps_score}/10` },
+        { type: "mrkdwn", text: `*Canal:*\n${link.mode === "dm" ? "DM (atribuído)" : "Grupo (anônimo)"}` },
+      ],
+    },
+  ];
+
+  if (payload.comment) {
+    blocks.push({
+      type: "section",
+      text: { type: "mrkdwn", text: `*Comentário:*\n>${payload.comment.replace(/\n/g, "\n>")}` },
+    });
+  }
+
+  blocks.push({
+    type: "context",
+    elements: [
+      { type: "mrkdwn", text: `Ver detalhes em https://painel.academialendaria.ai/admin/nps-results/` },
+    ],
+  });
+
+  await fetch(SLACK_DETRACTORS_WEBHOOK, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, blocks }),
+  });
+}

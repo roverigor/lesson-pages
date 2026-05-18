@@ -249,6 +249,21 @@ async function mockRpc(name, args) {
   }
   if (name === "nps_admin_register_cron") return { ok: true, registered: true };
   if (name === "nps_admin_unregister_cron") return { ok: true, unregistered: true };
+  if (name === "nps_variant_performance") {
+    return [
+      { variant_id: "group_v4", channel: "group", active: true, sends_count: 47, open_count: 38, open_rate: 80.9, response_count: 32, response_rate: 68.1, avg_score: 9.1, performance_score: 73.2, rank_in_channel: 1 },
+      { variant_id: "group_v6", channel: "group", active: true, sends_count: 52, open_count: 41, open_rate: 78.8, response_count: 28, response_rate: 53.8, avg_score: 8.7, performance_score: 63.8, rank_in_channel: 2 },
+      { variant_id: "group_v8", channel: "group", active: true, sends_count: 38, open_count: 27, open_rate: 71.1, response_count: 22, response_rate: 57.9, avg_score: 8.5, performance_score: 63.2, rank_in_channel: 3 },
+      { variant_id: "group_v1", channel: "group", active: true, sends_count: 41, open_count: 24, open_rate: 58.5, response_count: 18, response_rate: 43.9, avg_score: 8.2, performance_score: 49.7, rank_in_channel: 4 },
+      { variant_id: "group_v3", channel: "group", active: true, sends_count: 35, open_count: 19, open_rate: 54.3, response_count: 14, response_rate: 40.0, avg_score: 7.9, performance_score: 45.7, rank_in_channel: 5 },
+      { variant_id: "group_v7", channel: "group", active: true, sends_count: 43, open_count: 21, open_rate: 48.8, response_count: 15, response_rate: 34.9, avg_score: 7.8, performance_score: 40.5, rank_in_channel: 6 },
+      { variant_id: "group_v5", channel: "group", active: true, sends_count: 28, open_count: 11, open_rate: 39.3, response_count: 7, response_rate: 25.0, avg_score: 7.5, performance_score: 30.7, rank_in_channel: 7 },
+      { variant_id: "group_v2", channel: "group", active: true, sends_count: 31, open_count: 8, open_rate: 25.8, response_count: 5, response_rate: 16.1, avg_score: 7.2, performance_score: 19.9, rank_in_channel: 8 },
+      { variant_id: "dm_v1", channel: "dm", active: false, sends_count: 0, open_count: 0, open_rate: 0, response_count: 0, response_rate: 0, avg_score: null, performance_score: 0, rank_in_channel: 1 },
+      { variant_id: "dm_v2", channel: "dm", active: false, sends_count: 0, open_count: 0, open_rate: 0, response_count: 0, response_rate: 0, avg_score: null, performance_score: 0, rank_in_channel: 2 },
+      { variant_id: "dm_v3", channel: "dm", active: false, sends_count: 0, open_count: 0, open_rate: 0, response_count: 0, response_rate: 0, avg_score: null, performance_score: 0, rank_in_channel: 3 },
+    ];
+  }
   if (name === "nps_resolve_eligible_students") {
     // Generate fake students for the requested cohort
     const fakeNames = ["Ana Silva", "Bruno Costa", "Carla Mendes", "Daniel Lima", "Eduarda Souza", "Fernando Alves", "Gabriela Rocha", "Henrique Tavares", "Isabela Castro", "João Pereira", "Larissa Vieira", "Mateus Almeida"];
@@ -366,16 +381,18 @@ async function logout() {
 // ─── Dashboard fetch + render ──────────────────────────────────────────
 async function refreshDashboard() {
   try {
-    const [data, groups, zoomMap, cron] = await Promise.all([
+    const [data, groups, zoomMap, cron, perf] = await Promise.all([
       rpc("nps_admin_dashboard"),
       rpc("nps_admin_list_cohort_groups").catch(() => []),
       rpc("nps_admin_zoom_class_map").catch(() => []),
       rpc("nps_admin_cron_status").catch(() => null),
+      rpc("nps_variant_performance", { p_days: 30 }).catch(() => []),
     ]);
     state.data = data;
     state.groups = groups || [];
     state.zoomMap = zoomMap || [];
     state.cron = cron;
+    state.variantPerf = perf || [];
     renderAll();
     hideError();
     $("last-fetched").textContent = `atualizado ${fmtDateTime(data?.fetched_at)}`;
@@ -905,9 +922,34 @@ function renderVariants() {
 
 function renderVariantList(list, lastVariantId) {
   if (!list?.length) return `<div class="loading-placeholder">Sem variantes cadastradas.</div>`;
+  const perfByVariant = Object.fromEntries((state.variantPerf ?? []).map((p) => [p.variant_id, p]));
+  const channelPerf = (state.variantPerf ?? []).filter((p) => list.find((v) => v.id === p.variant_id));
+  const topScore = Math.max(...channelPerf.map((p) => p.performance_score ?? 0), 0);
+
   return list.map((v) => {
     const rotated = v.id === lastVariantId;
     const isDM = v.channel === "dm";
+    const perf = perfByVariant[v.id];
+    const rank = perf?.rank_in_channel;
+    const rankBadge = rank === 1 ? '🏆' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : "";
+    const score = perf?.performance_score ?? 0;
+    const isUnderperforming = topScore > 0 && score < topScore * 0.3 && (perf?.sends_count ?? 0) >= 5;
+
+    const perfLine = (perf?.sends_count ?? 0) > 0
+      ? `<div class="variant-perf">
+          ${rankBadge ? `<span class="rank-badge">${rankBadge} #${rank}</span>` : `<span class="rank-badge muted">#${rank ?? "—"}</span>`}
+          <span>📊 ${score}pts</span>
+          <span>📤 ${perf.sends_count}</span>
+          <span title="open rate">👁 ${perf.open_rate}%</span>
+          <span title="response rate">💬 ${perf.response_rate}%</span>
+          ${perf.avg_score != null ? `<span title="NPS avg">⭐ ${perf.avg_score}</span>` : ""}
+        </div>`
+      : `<div class="variant-perf muted">Sem dados (precisa ≥5 envios pra ranquear)</div>`;
+
+    const suggestionLine = isUnderperforming
+      ? `<div class="variant-suggestion">⚠ Performance abaixo de 30% do top — considere desativar.</div>`
+      : "";
+
     return `
       <div class="variant-card ${v.active ? "active" : "inactive"}">
         <div class="variant-row-top">
@@ -929,6 +971,8 @@ function renderVariantList(list, lastVariantId) {
           ${isDM ? `<span>tpl: ${escapeHtml(v.meta_template_name ?? "—")}</span>` : ""}
           <span>peso: ${v.weight}</span>
         </div>
+        ${perfLine}
+        ${suggestionLine}
       </div>
     `;
   }).join("");

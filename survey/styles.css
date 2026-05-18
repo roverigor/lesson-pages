@@ -135,3 +135,6 @@ textarea:focus, input[type="text"]:focus { border-color: var(--accent); }
 }
 
 #thank-you { text-align: center; padding: 40px 24px; }
+#thank-you[data-bucket="detractor"] { border-left: 3px solid #f87171; padding-left: 24px; }
+#thank-you[data-bucket="passive"]   { border-left: 3px solid #fbbf24; padding-left: 24px; }
+#thank-you[data-bucket="promoter"]  { border-left: 3px solid #4ade80; padding-left: 24px; }

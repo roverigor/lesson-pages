@@ -90,6 +90,8 @@ async function submitResponse(token) {
 
     if (res.ok && data.success) {
       $("thank-you-msg").textContent = data.thank_you ?? "Obrigado pelo feedback!";
+      const tyContainer = $("thank-you");
+      if (data.bucket) tyContainer.dataset.bucket = data.bucket;
       showOnly("thank-you");
       return;
     }

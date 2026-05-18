@@ -362,6 +362,34 @@ body {
 .variant-status-pill.active { background: #07332a; color: #4ade80; }
 .variant-status-pill.inactive { background: #2a1a0a; color: #fbbf24; }
 
+.variant-perf {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 11px;
+  color: #aaa;
+  background: #0c0c0f;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+  font-feature-settings: "tnum";
+}
+.variant-perf.muted { color: #555; font-style: italic; }
+.rank-badge {
+  font-weight: 600;
+  color: #fbbf24;
+}
+.rank-badge.muted { color: #555; font-weight: 400; }
+.variant-suggestion {
+  background: #2a1a0a;
+  color: #fbbf24;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  margin-top: 6px;
+}
+
 /* ─── Zoom × Class × Cohort map ──────────────────────────────── */
 .zoom-map-legend {
   display: flex;
