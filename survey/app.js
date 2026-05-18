@@ -1,5 +1,6 @@
-const SUPABASE_URL = "https://gpufcipkajppykmnmdeh.supabase.co";
-const SUPABASE_ANON_KEY = "REPLACE_WITH_ANON_KEY_AT_DEPLOY";
+const SUPABASE_URL = window.SUPABASE_CONFIG?.url ?? "https://gpufcipkajppykmnmdeh.supabase.co";
+const SUPABASE_ANON_KEY = window.SUPABASE_CONFIG?.anonKey ?? "";
+if (!SUPABASE_ANON_KEY) console.error("SUPABASE_ANON_KEY missing — load /js/config.js first");
 
 const $ = (id) => document.getElementById(id);
 const show = (id) => $(id).classList.remove("hidden");
