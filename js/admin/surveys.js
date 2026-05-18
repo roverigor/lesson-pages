@@ -909,7 +909,7 @@ async function exportSurveyCSV(surveyId) {
   const header   = `data,aluno,telefone,turma,${qHeaders}`;
   const rows = responses.map(r => {
     const date  = r.submitted_at ? new Date(r.submitted_at).toLocaleDateString('pt-BR') : '';
-    const name  = csvCell(r.students?.name||'');
+    const name  = csvCell(r.students?.name || r.metadata?.name || '');
     const phone = csvCell(r.students?.phone||'');
     const turma = csvCell(turmaName);
     const vals  = questions.map(q => {
@@ -941,7 +941,8 @@ async function exportSurveyMD(surveyId) {
       if (a.value_number !== null && a.value_number !== undefined) return `| ${a.value_number} `;
       return '| — ';
     }).join('');
-    return `| ${date} | ${r.students?.name||'Anônimo'} ${vals}|`;
+    const respondent = r.students?.name || r.metadata?.name || 'Anônimo';
+    return `| ${date} | ${respondent.replace(/\|/g,'\\|')} ${vals}|`;
   }).join('\n');
 
   const md = `# ${survey.name}\n\n**Turma:** ${turmaName}  \n**Respostas:** ${responses.length}  \n**Exportado:** ${new Date().toLocaleDateString('pt-BR')}\n\n---\n\n| Data | Aluno ${qCols}|\n|---|---${qSep}|\n${tableRows}\n`;
