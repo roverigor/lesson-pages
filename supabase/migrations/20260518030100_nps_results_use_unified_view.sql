@@ -5,6 +5,15 @@
 
 BEGIN;
 
+-- Drop existing functions that changed RETURNS shape (source col added)
+-- Postgres rejects CREATE OR REPLACE when output columns change.
+DROP FUNCTION IF EXISTS public.nps_results_summary(jsonb);
+DROP FUNCTION IF EXISTS public.nps_results_trend(int, jsonb);
+DROP FUNCTION IF EXISTS public.nps_results_by_cohort(jsonb);
+DROP FUNCTION IF EXISTS public.nps_results_by_class(jsonb);
+DROP FUNCTION IF EXISTS public.nps_results_comments(jsonb, int);
+DROP FUNCTION IF EXISTS public.nps_results_filter_options();
+
 -- ─── Summary ───
 CREATE OR REPLACE FUNCTION public.nps_results_summary(
   p_filters JSONB DEFAULT '{}'::jsonb
