@@ -107,6 +107,33 @@ body {
   font-size: 16px;
 }
 
+/* ─── Test mode banner + card ──────────────────────────────────── */
+.test-mode-banner {
+  background: #1e1430;
+  border: 2px dashed #7c3aed;
+  color: #c4b5fd;
+  padding: 12px 18px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  text-align: center;
+}
+.test-mode-card {
+  background: linear-gradient(180deg, #1a1230 0%, #131319 100%);
+  border-color: #4c1d95;
+}
+.test-mode-config {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #2a2a32;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 720px) {
+  .test-mode-config { grid-template-columns: 1fr; }
+}
+
 /* ─── Mock banner ──────────────────────────────────────────────── */
 .mock-banner {
   background: #2a2310;

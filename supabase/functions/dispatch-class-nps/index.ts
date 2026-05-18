@@ -152,15 +152,26 @@ Deno.serve(async (req) => {
     );
   }
 
-  // ─── Read tunables ───
+  // ─── Read tunables (incl. test mode) ───
   const { data: cfgRows } = await client
     .from("nps_dispatch_config")
     .select("key, value")
-    .in("key", ["nps_dispatch_max_dm_per_run", "nps_dispatch_dm_throttle_ms"]);
+    .in("key", [
+      "nps_dispatch_max_dm_per_run",
+      "nps_dispatch_dm_throttle_ms",
+      "nps_test_mode_enabled",
+      "nps_test_mode_phone",
+      "nps_test_mode_group_jid",
+    ]);
 
   const cfg = Object.fromEntries((cfgRows ?? []).map((r) => [r.key, r.value]));
   const maxDmPerRun = parseInt(cfg["nps_dispatch_max_dm_per_run"] ?? "50", 10);
   const throttleMs = parseInt(cfg["nps_dispatch_dm_throttle_ms"] ?? "10000", 10);
+  const testMode = {
+    enabled: cfg["nps_test_mode_enabled"] === "true",
+    phone: cfg["nps_test_mode_phone"] ?? "",
+    groupJid: cfg["nps_test_mode_group_jid"] ?? "",
+  };
 
   // ─── Parse body ───
   const body = await req.json().catch(() => ({}));
@@ -195,7 +206,7 @@ Deno.serve(async (req) => {
   const results: JobResult[] = [];
 
   for (const job of jobs as JobRow[]) {
-    const result = await processJob(client, job, { dryRun, maxDmPerRun, throttleMs });
+    const result = await processJob(client, job, { dryRun, maxDmPerRun, throttleMs, testMode });
     results.push(result);
   }
 
@@ -209,7 +220,12 @@ Deno.serve(async (req) => {
 async function processJob(
   client: ReturnType<typeof sb>,
   job: JobRow,
-  opts: { dryRun: boolean; maxDmPerRun: number; throttleMs: number },
+  opts: {
+    dryRun: boolean;
+    maxDmPerRun: number;
+    throttleMs: number;
+    testMode: { enabled: boolean; phone: string; groupJid: string };
+  },
 ): Promise<JobResult> {
   const baseResult: JobResult = {
     job_id: job.id,
@@ -264,11 +280,18 @@ async function processJob(
     let groupToken: string | null = null;
 
     // L1+L2 safety: group send requires verified flag AND valid JID format
-    const groupAllowed = !!(
-      cohort.whatsapp_group_jid &&
-      cohort.whatsapp_group_verified === true &&
-      isValidGroupJid(cohort.whatsapp_group_jid)
-    );
+    // Test mode: override JID to test group (or skip if not configured)
+    const effectiveGroupJid = opts.testMode.enabled
+      ? (opts.testMode.groupJid || null)
+      : (cohort.whatsapp_group_jid ?? null);
+
+    const groupAllowed = opts.testMode.enabled
+      ? !!(opts.testMode.groupJid && isValidGroupJid(opts.testMode.groupJid))
+      : !!(
+          cohort.whatsapp_group_jid &&
+          cohort.whatsapp_group_verified === true &&
+          isValidGroupJid(cohort.whatsapp_group_jid)
+        );
 
     if (groupAllowed && groupVar) {
       const { data: groupLink } = await client
@@ -328,16 +351,17 @@ async function processJob(
       return baseResult;
     }
 
-    // 6. Send group via Evolution (gated by L1+L2 safety)
-    if (groupAllowed && groupVar && groupToken) {
+    // 6. Send group via Evolution (gated by L1+L2 safety; honors test mode override)
+    if (groupAllowed && groupVar && groupToken && effectiveGroupJid) {
       const groupLink = `${BASE_URL}/survey/grupo/${groupToken}`;
+      const testTag = opts.testMode.enabled ? "\n\n_[🧪 modo teste]_" : "";
       const groupMsg = renderTemplate(groupVar.body_template, {
         class_name: className,
         cohort_name: cohortName,
         link: groupLink,
         greeting: hourGreeting(),
-      });
-      const r = await sendEvolutionGroupText(cohort.whatsapp_group_jid!, groupMsg);
+      }) + testTag;
+      const r = await sendEvolutionGroupText(effectiveGroupJid, groupMsg);
       if (r.success) {
         baseResult.group.sent = true;
         await client.from("nps_class_links").update({
@@ -363,6 +387,8 @@ async function processJob(
 
     // 7. DM loop (capped at maxDmPerRun per tick) — V6 jitter ±30s
     // P.9: skip DM entirely when student name is missing (premium — no "Olá, aluno!")
+    // Test mode: phone overridden to nps_test_mode_phone; first_name kept original
+    //   for realism, but only ONE phone receives ALL DMs of this job.
     const JITTER_MS = 30_000;
     if (dmVar?.meta_template_name) {
       const batch = dmLinks.slice(0, opts.maxDmPerRun);
@@ -381,8 +407,13 @@ async function processJob(
         const bodyParams = [firstName, className]; // template: {{1}}=first_name, {{2}}=class_name
         const buttonParam = link.token;
 
+        // Test mode override: every DM lands on test phone
+        const effectivePhone = opts.testMode.enabled && opts.testMode.phone
+          ? opts.testMode.phone
+          : link.phone;
+
         const r = await sendWhatsAppTemplate(
-          link.phone,
+          effectivePhone,
           dmVar.meta_template_name,
           bodyParams,
           [buttonParam],
@@ -394,6 +425,7 @@ async function processJob(
             send_status: "sent",
             sent_at: new Date().toISOString(),
             meta_message_id: r.messageId,
+            error_detail: opts.testMode.enabled ? `test_mode_redirected_to:${opts.testMode.phone}` : null,
           }).eq("id", link.id);
         } else {
           baseResult.dm.failed++;

@@ -36,6 +36,12 @@
       <a href="/admin/nps-monitor/">Sair do mock</a>
     </div>
 
+    <!-- Test mode banner (real env) -->
+    <div id="test-mode-banner" class="test-mode-banner hidden">
+      🧪 <strong>MODO TESTE ATIVO</strong> — TODAS as mensagens estão sendo redirecionadas para
+      <span id="test-mode-phone-display" class="jid-mono">—</span>. Nada vai pra alunos reais.
+    </div>
+
     <!-- Header -->
     <header class="topbar">
       <div class="topbar-left">
@@ -62,6 +68,44 @@
     <section id="error-banner" class="error-banner hidden">
       <span id="error-banner-text"></span>
       <button id="error-banner-dismiss" type="button" class="error-banner-dismiss">✕</button>
+    </section>
+
+    <!-- ─── TEST MODE ──────────────────────────────────────────────── -->
+    <section class="card test-mode-card" id="test-mode-card">
+      <div class="master-switch-header">
+        <div>
+          <h2 class="card-title">🧪 Modo Teste — Sandbox</h2>
+          <p class="card-subtitle">
+            Quando ligado, <strong>TODAS</strong> as mensagens (DM e grupo) são redirecionadas pro telefone/grupo
+            de teste configurado abaixo. Aluno real <strong>não recebe nada</strong>.
+            Tokens são criados normalmente — pode submeter respostas pra testar fluxo completo.
+          </p>
+        </div>
+        <div class="master-switch-wrap">
+          <span id="test-mode-state-label" class="master-state-label">—</span>
+          <button id="test-mode-toggle" class="toggle-switch" role="switch" aria-checked="false" aria-label="Habilitar modo teste">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+      </div>
+      <div class="test-mode-config">
+        <div class="config-item">
+          <label for="cfg-test-phone">Telefone destino (DMs)</label>
+          <div class="config-input-row">
+            <input id="cfg-test-phone" type="text" placeholder="5543999250490 (digits-only, com código país)" data-key="nps_test_mode_phone">
+            <button class="btn-primary btn-sm" data-save-config="nps_test_mode_phone">Salvar</button>
+          </div>
+          <span class="config-help">Apenas dígitos, com código do país. Ex: <code>5543999250490</code></span>
+        </div>
+        <div class="config-item">
+          <label for="cfg-test-group-jid">Grupo destino (opcional)</label>
+          <div class="config-input-row">
+            <input id="cfg-test-group-jid" type="text" placeholder="120363xxxxxxxxxxx@g.us (deixe vazio pra pular grupo)" data-key="nps_test_mode_group_jid">
+            <button class="btn-primary btn-sm" data-save-config="nps_test_mode_group_jid">Salvar</button>
+          </div>
+          <span class="config-help">Se vazio, grupo é pulado durante teste — só DM dispara.</span>
+        </div>
+      </div>
     </section>
 
     <!-- ─── MASTER SWITCH ──────────────────────────────────────────── -->

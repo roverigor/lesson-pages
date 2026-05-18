@@ -96,6 +96,9 @@ const MOCK_DATA = {
     nps_dispatch_delay_minutes: "5",
     nps_dispatch_max_dm_per_run: "50",
     nps_dispatch_dm_throttle_ms: "10000",
+    nps_test_mode_enabled: "true",
+    nps_test_mode_phone: "5543999250490",
+    nps_test_mode_group_jid: "",
   },
   variants: {
     group: [
@@ -415,6 +418,8 @@ function hideError() { hide($("error-banner")); }
 
 function renderAll() {
   if (!state.data) return;
+  renderTestModeBanner();
+  renderTestMode();
   renderMasterSwitch();
   renderCronStatus();
   renderKpis();
@@ -424,6 +429,63 @@ function renderAll() {
   renderVariants();
   renderPendingJobs();
   renderRecentJobs();
+}
+
+// ─── Test mode ────────────────────────────────────────────────────────
+function renderTestMode() {
+  const cfg = state.data.config ?? {};
+  const enabled = cfg.nps_test_mode_enabled === "true";
+  const label = $("test-mode-state-label");
+  const toggle = $("test-mode-toggle");
+  label.textContent = enabled ? "Teste" : "Desligado";
+  label.className = `master-state-label ${enabled ? "on" : "off"}`;
+  label.style.background = enabled ? "#3a1a5f" : "";
+  label.style.color = enabled ? "#c4b5fd" : "";
+  toggle.setAttribute("aria-checked", String(enabled));
+
+  $("cfg-test-phone").value = cfg.nps_test_mode_phone ?? "";
+  $("cfg-test-group-jid").value = cfg.nps_test_mode_group_jid ?? "";
+}
+
+function renderTestModeBanner() {
+  const cfg = state.data?.config ?? {};
+  const enabled = cfg.nps_test_mode_enabled === "true";
+  const banner = $("test-mode-banner");
+  if (enabled) {
+    $("test-mode-phone-display").textContent = cfg.nps_test_mode_phone || "—";
+    show(banner);
+  } else {
+    hide(banner);
+  }
+}
+
+function openTestModeConfirm() {
+  const cfg = state.data?.config ?? {};
+  const currentlyOn = cfg.nps_test_mode_enabled === "true";
+  const next = currentlyOn ? "false" : "true";
+
+  if (!currentlyOn && !cfg.nps_test_mode_phone) {
+    toast("Configure o telefone de teste antes de ativar.", "error");
+    return;
+  }
+
+  const phone = cfg.nps_test_mode_phone;
+  const grp = cfg.nps_test_mode_group_jid || "(grupo pulado)";
+
+  $("modal-master-title").textContent = currentlyOn
+    ? "Desativar modo teste?"
+    : "Ativar modo teste?";
+  $("modal-master-msg").innerHTML = currentlyOn
+    ? "Próximos envios voltam pros números reais dos alunos. Tem certeza?"
+    : `Confirma redirecionar <strong>TODOS</strong> os envios pra:<br><br>
+       📱 Telefone: <code>${escapeHtml(phone)}</code><br>
+       👥 Grupo: <code>${escapeHtml(grp)}</code><br><br>
+       Aluno real <strong>não recebe</strong> nada enquanto modo teste estiver ON.`;
+
+  $("modal-master-accept").checked = false;
+  $("modal-master-confirm-btn").disabled = true;
+  state.pendingMasterFlip = { key: "nps_test_mode_enabled", value: next };
+  showModal($("modal-master-confirm"));
 }
 
 // ─── Cron status tile ─────────────────────────────────────────────────
@@ -719,15 +781,17 @@ function openMasterConfirm() {
 
   $("modal-master-accept").checked = false;
   $("modal-master-confirm-btn").disabled = true;
-  state.pendingMasterFlip = nextValue;
+  state.pendingMasterFlip = { key: "nps_dispatch_enabled", value: nextValue };
   showModal($("modal-master-confirm"));
 }
 
 async function confirmMasterFlip() {
   if (!state.pendingMasterFlip) return;
+  const { key, value } = state.pendingMasterFlip;
   try {
-    await rpc("nps_admin_set_config", { p_key: "nps_dispatch_enabled", p_value: state.pendingMasterFlip });
-    toast(`Dispatcher ${state.pendingMasterFlip === "true" ? "habilitado" : "desabilitado"}.`, "success");
+    await rpc("nps_admin_set_config", { p_key: key, p_value: value });
+    const niceName = key === "nps_test_mode_enabled" ? "Modo teste" : "Dispatcher";
+    toast(`${niceName} ${value === "true" ? "ativado" : "desativado"}.`, "success");
     closeModals();
     state.pendingMasterFlip = null;
     await refreshDashboard();
@@ -1198,6 +1262,7 @@ function wireEvents() {
   $("error-banner-dismiss").addEventListener("click", hideError);
 
   $("master-toggle").addEventListener("click", openMasterConfirm);
+  $("test-mode-toggle").addEventListener("click", openTestModeConfirm);
   $("cron-register-btn").addEventListener("click", registerCron);
   $("cron-unregister-btn").addEventListener("click", unregisterCron);
   $("modal-master-cancel").addEventListener("click", () => { state.pendingMasterFlip = null; closeModals(); });
