@@ -13,11 +13,12 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendBlockMessage } from "../_shared/slack.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const IP_HASH_SALT = Deno.env.get("NPS_IP_HASH_SALT") ?? "fallback-rotate-me";
-const SLACK_DETRACTORS_WEBHOOK = Deno.env.get("SLACK_DETRACTORS_WEBHOOK") ?? "";
+const SLACK_DETRACTORS_CHANNEL = Deno.env.get("SLACK_CHANNEL_DETRACTORS") ?? Deno.env.get("SLACK_CHANNEL_PRODUTO") ?? "";
 const MAX_SUBMITS_PER_IP_24H = 5;
 
 const CORS: Record<string, string> = {
@@ -194,7 +195,10 @@ async function notifyDetractor(
     detractorFollowup: string | null;
   },
 ): Promise<void> {
-  if (!SLACK_DETRACTORS_WEBHOOK) return; // silent if not configured
+  if (!SLACK_DETRACTORS_CHANNEL) {
+    console.warn("[detractor-alert] no SLACK_CHANNEL_DETRACTORS / SLACK_CHANNEL_PRODUTO env — skipping");
+    return;
+  }
 
   // Fetch context
   const [
@@ -278,9 +282,9 @@ async function notifyDetractor(
     ],
   });
 
-  await fetch(SLACK_DETRACTORS_WEBHOOK, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, blocks }),
-  });
+  try {
+    await sendBlockMessage(SLACK_DETRACTORS_CHANNEL, text, blocks);
+  } catch (e) {
+    console.error("[detractor-alert] sendBlockMessage failed:", e instanceof Error ? e.message : e);
+  }
 }

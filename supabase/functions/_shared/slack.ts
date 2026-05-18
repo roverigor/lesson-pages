@@ -39,6 +39,15 @@ export async function sendMessage(channel: string, text: string) {
   return slackPost("chat.postMessage", { channel, text });
 }
 
+/** Send a Block Kit message to a channel or DM */
+export async function sendBlockMessage(
+  channel: string,
+  text: string,
+  blocks: Array<Record<string, unknown>>,
+) {
+  return slackPost("chat.postMessage", { channel, text, blocks });
+}
+
 /** Send a DM to a user by their Slack user ID */
 export async function sendDM(userId: string, text: string) {
   const channel = await openDM(userId);
