@@ -79,6 +79,85 @@
       <a href="#groups-body" class="btn-secondary btn-sm">Verificar agora ↓</a>
     </section>
 
+    <!-- ─── SMOKE TEST WIZARD ──────────────────────────────────────── -->
+    <section class="card smoke-wizard-card" id="smoke-wizard-card">
+      <h2 class="card-title">🧪 Smoke Test — Wizard</h2>
+      <p class="card-subtitle">
+        Cria turma de teste com 1 aluno (você) + aula bound ao Zoom. Sistema dispara real no fim do meeting.
+        Idempotente — re-rodar atualiza ao invés de duplicar. Use ANTES de ativar dispatcher em cohorts reais.
+      </p>
+      <div class="wizard-steps">
+        <div class="wizard-step">
+          <span class="step-num">1</span>
+          <div class="step-body">
+            <h4>Submeter templates Meta (externo)</h4>
+            <p class="step-desc">Vai em <a href="https://business.facebook.com/wa/manage/message-templates" target="_blank" rel="noopener">Meta Business Suite</a> criar <code>nps_post_class_v1/v2/v3</code> (UTILITY pt_BR). Aprovação 2-6h.</p>
+          </div>
+        </div>
+        <div class="wizard-step">
+          <span class="step-num">2</span>
+          <div class="step-body">
+            <h4>Setar secrets Supabase (externo)</h4>
+            <p class="step-desc"><a href="https://supabase.com/dashboard/project/gpufcipkajppykmnmdeh/settings/functions" target="_blank" rel="noopener">Project Settings → Secrets</a>: META_API_KEY, META_PHONE_NUMBER_ID, EVOLUTION_*, NPS_IP_HASH_SALT.</p>
+          </div>
+        </div>
+        <div class="wizard-step">
+          <span class="step-num">3</span>
+          <div class="step-body">
+            <h4>Criar setup teste (aqui)</h4>
+            <p class="step-desc">Preencha os 4 campos abaixo e clique "Criar setup". Cria cohort + você como aluno + aula + bind.</p>
+            <div class="wizard-form">
+              <label>Seu nome (rótulo): <input id="wiz-name" type="text" placeholder="Igor (smoke)" value="Igor (smoke)"></label>
+              <label>Seu telefone (digits, código país): <input id="wiz-phone" type="text" placeholder="5543999250490" value="5543999250490"></label>
+              <label>JID do grupo teste WA: <input id="wiz-jid" type="text" placeholder="120363xxxxxxx@g.us"></label>
+              <label>Zoom Meeting ID (10-11 dígitos): <input id="wiz-zoom" type="text" placeholder="85211223344"></label>
+              <label>Nome da aula (opcional): <input id="wiz-class" type="text" placeholder="TESTE NPS — Aula validação" value="TESTE NPS — Aula validação"></label>
+              <button id="wiz-create-btn" class="btn-primary">Criar setup teste</button>
+            </div>
+            <div id="wiz-result" class="wizard-result hidden"></div>
+          </div>
+        </div>
+        <div class="wizard-step">
+          <span class="step-num">4</span>
+          <div class="step-body">
+            <h4>Aguardar Meta approval + ativar variants DM</h4>
+            <p class="step-desc">Quando os 3 templates estiverem APPROVED no Meta: vai em "📨 Router de Mensagens" e toggle ativo nos 3 variants DM. Ou roda <code>UPDATE nps_message_variants SET active=true WHERE channel='dm';</code></p>
+            <button id="wiz-activate-dm-btn" class="btn-secondary btn-sm">Ativar 3 variants DM agora</button>
+            <span id="wiz-activate-dm-status" class="step-status"></span>
+          </div>
+        </div>
+        <div class="wizard-step">
+          <span class="step-num">5</span>
+          <div class="step-body">
+            <h4>Ativar dispatcher + registrar cron</h4>
+            <p class="step-desc">Master switch ON (✋ acima) + botão Registrar cron (✋ acima). <strong>Faça só DEPOIS da Fase 4.</strong></p>
+          </div>
+        </div>
+        <div class="wizard-step">
+          <span class="step-num">6</span>
+          <div class="step-body">
+            <h4>Iniciar Zoom da aula teste</h4>
+            <p class="step-desc">Abre o Zoom Meeting ID que você cadastrou (passo 3). Conecta 2-3 min. Encerra (End meeting for all). Sistema dispara em ~10-15 min depois.</p>
+          </div>
+        </div>
+        <div class="wizard-step">
+          <span class="step-num">7</span>
+          <div class="step-body">
+            <h4>Verificar resultado</h4>
+            <p class="step-desc">Monitora aqui (auto-refresh 30s) ou em <a href="/admin/envios/" target="_blank">📊 Envios</a> e <a href="/admin/nps-results/" target="_blank">📈 Results</a>. Você deve receber DM + msg grupo em ~10-15 min após encerrar Zoom.</p>
+          </div>
+        </div>
+        <div class="wizard-step">
+          <span class="step-num">8</span>
+          <div class="step-body">
+            <h4>Cleanup (opcional, pós-validação)</h4>
+            <p class="step-desc">Desativa cohort teste preservando histórico de jobs/responses. Botão fica disponível após criar setup.</p>
+            <button id="wiz-cleanup-btn" class="btn-secondary btn-sm hidden">Desativar cohort teste</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ─── TEST MODE ──────────────────────────────────────────────── -->
     <section class="card test-mode-card" id="test-mode-card">
       <div class="master-switch-header">

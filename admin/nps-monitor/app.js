@@ -259,6 +259,24 @@ async function mockRpc(name, args) {
   }
   if (name === "nps_admin_register_cron") return { ok: true, registered: true };
   if (name === "nps_admin_unregister_cron") return { ok: true, unregistered: true };
+  if (name === "nps_admin_setup_smoke_test") {
+    return {
+      ok: true,
+      cohort_id: "mock-cohort-smoke",
+      cohort_name: `TESTE-NPS-${args.p_test_name}`,
+      student_id: "mock-student-smoke",
+      class_id: "mock-class-smoke",
+      class_name: args.p_class_name ?? "TESTE NPS — Aula validação",
+      zoom_meeting_id: args.p_zoom_meeting_id,
+      group_jid: args.p_group_jid,
+      phone: args.p_phone,
+      group_verified: true,
+      message: "Mock: setup criado.",
+    };
+  }
+  if (name === "nps_admin_cleanup_smoke_test") {
+    return { ok: true, cohort_id: args.p_cohort_id, students_deactivated: 1 };
+  }
   if (name === "nps_variant_performance") {
     return [
       { variant_id: "group_v4", channel: "group", active: true, sends_count: 47, open_count: 38, open_rate: 80.9, response_count: 32, response_rate: 68.1, avg_score: 9.1, performance_score: 73.2, rank_in_channel: 1 },
@@ -1285,6 +1303,9 @@ function wireEvents() {
   $("test-mode-toggle").addEventListener("click", openTestModeConfirm);
   $("cron-register-btn").addEventListener("click", registerCron);
   $("cron-unregister-btn").addEventListener("click", unregisterCron);
+  $("wiz-create-btn").addEventListener("click", wizardCreate);
+  $("wiz-activate-dm-btn").addEventListener("click", wizardActivateDm);
+  $("wiz-cleanup-btn").addEventListener("click", wizardCleanup);
   $("modal-master-cancel").addEventListener("click", () => { state.pendingMasterFlip = null; closeModals(); });
   $("modal-master-accept").addEventListener("change", (e) => {
     $("modal-master-confirm-btn").disabled = !e.target.checked;
@@ -1360,6 +1381,110 @@ function wireEvents() {
   ["login-email", "login-password"].forEach((id) => {
     $(id).addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
   });
+}
+
+// ─── Smoke test wizard ────────────────────────────────────────────────
+async function wizardCreate() {
+  const name = $("wiz-name").value.trim();
+  const phone = $("wiz-phone").value.trim();
+  const jid = $("wiz-jid").value.trim();
+  const zoom = $("wiz-zoom").value.trim();
+  const klass = $("wiz-class").value.trim() || "TESTE NPS — Aula validação";
+
+  if (!name || !phone || !jid || !zoom) {
+    showWizardResult("Preencha todos os campos obrigatórios.", true);
+    return;
+  }
+
+  $("wiz-create-btn").disabled = true;
+  $("wiz-create-btn").textContent = "Criando...";
+
+  try {
+    const r = await rpc("nps_admin_setup_smoke_test", {
+      p_test_name: name,
+      p_phone: phone,
+      p_group_jid: jid,
+      p_zoom_meeting_id: zoom,
+      p_class_name: klass,
+    });
+    state.smokeSetup = r;
+    showWizardResult(
+      `✅ Setup criado!\n\n` +
+      `Cohort: ${r.cohort_name}\n` +
+      `Cohort ID: ${r.cohort_id}\n` +
+      `Student ID: ${r.student_id}\n` +
+      `Class ID: ${r.class_id}\n` +
+      `Zoom Meeting ID: ${r.zoom_meeting_id}\n` +
+      `Group JID: ${r.group_jid}\n` +
+      `Phone: ${r.phone}\n` +
+      `Group verified: ${r.group_verified}\n\n` +
+      `Próximo passo:\n` +
+      `1. Aguarda Meta templates approved (passo 4)\n` +
+      `2. Ativa variants DM (botão acima)\n` +
+      `3. Ativa master switch + cron (cards acima)\n` +
+      `4. Inicia Zoom meeting (Meeting ID ${r.zoom_meeting_id})`,
+      false
+    );
+    show($("wiz-cleanup-btn"));
+    toast("Setup criado.", "success");
+    await refreshDashboard();
+  } catch (e) {
+    showWizardResult(`❌ Erro: ${e?.message ?? e}`, true);
+    toast(`Erro: ${e?.message ?? e}`, "error");
+  } finally {
+    $("wiz-create-btn").disabled = false;
+    $("wiz-create-btn").textContent = "Criar setup teste";
+  }
+}
+
+async function wizardActivateDm() {
+  if (MOCK) {
+    toast("Mock: ativaria 3 variants DM.", "info");
+    return;
+  }
+  if (!confirm("Ativar 3 variants DM (dm_v1, dm_v2, dm_v3)? Templates Meta precisam estar APPROVED.")) return;
+  try {
+    for (const id of ["dm_v1", "dm_v2", "dm_v3"]) {
+      await rpc("nps_admin_update_variant", {
+        p_variant_id: id,
+        p_body_template: `NPS pós-aula individual — variant ${id}`,
+        p_active: true,
+      });
+    }
+    $("wiz-activate-dm-status").textContent = "✅ Ativados";
+    $("wiz-activate-dm-status").style.color = "#4ade80";
+    toast("3 variants DM ativados.", "success");
+    await refreshDashboard();
+  } catch (e) {
+    toast(`Erro: ${e?.message ?? e}`, "error");
+    $("wiz-activate-dm-status").textContent = `❌ ${e?.message ?? "erro"}`;
+    $("wiz-activate-dm-status").style.color = "#f87171";
+  }
+}
+
+async function wizardCleanup() {
+  if (!state.smokeSetup?.cohort_id) {
+    toast("Sem setup ativo pra limpar.", "error");
+    return;
+  }
+  if (!confirm(`Desativar cohort ${state.smokeSetup.cohort_name}? Histórico de jobs/responses preservado.`)) return;
+  try {
+    await rpc("nps_admin_cleanup_smoke_test", { p_cohort_id: state.smokeSetup.cohort_id });
+    toast("Cohort teste desativado.", "success");
+    state.smokeSetup = null;
+    hide($("wiz-cleanup-btn"));
+    hide($("wiz-result"));
+    await refreshDashboard();
+  } catch (e) {
+    toast(`Erro: ${e?.message ?? e}`, "error");
+  }
+}
+
+function showWizardResult(text, isError) {
+  const el = $("wiz-result");
+  el.textContent = text;
+  el.className = `wizard-result ${isError ? "error" : ""}`;
+  show(el);
 }
 
 // ─── Init ──────────────────────────────────────────────────────────────
