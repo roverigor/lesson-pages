@@ -147,6 +147,7 @@ Deno.serve(async (req) => {
     const holidayName: string | null = holidayRow?.name ?? null;
 
     // Active classes for target weekday + within date range + reminder_enabled
+    // end_date IS NULL means recurring (no scheduled end) — e.g. PS classes
     const { data: classes, error: clsErr } = await sb
       .from("classes")
       .select("id, name, weekday, time_start, time_end, zoom_link, start_date, end_date, active, kind, reminder_enabled")
@@ -154,7 +155,7 @@ Deno.serve(async (req) => {
       .eq("reminder_enabled", true)
       .eq("weekday", target.weekday)
       .lte("start_date", target.isoDate)
-      .gte("end_date", target.isoDate);
+      .or(`end_date.gte.${target.isoDate},end_date.is.null`);
     if (clsErr) throw clsErr;
 
     const classRows: ClassRow[] = (classes ?? []) as ClassRow[];
@@ -234,17 +235,25 @@ Deno.serve(async (req) => {
 
       // Pick template ONCE per class+reminder_type — same variant pra todos grupos da mesma aula
       const tpl1h = isHoliday ? null : await pickTemplate(sb, "1h_before", classKind);
+      const tpl15 = isHoliday ? null : await pickTemplate(sb, "15min_before", classKind);
       const tplStart = isHoliday ? null : await pickTemplate(sb, "start", classKind);
       const tplHoliday = isHoliday ? await pickTemplate(sb, "holiday", classKind) : null;
       if (tpl1h) templatesUsed.add(tpl1h.id);
+      if (tpl15) templatesUsed.add(tpl15.id);
       if (tplStart) templatesUsed.add(tplStart.id);
       if (tplHoliday) templatesUsed.add(tplHoliday.id);
 
       // Saudação por hora do envio:
-      // 1h antes → time_start - 1h ; start → time_start ; feriado → time_start (msg no horário normal)
+      // 1h antes → time_start - 1h ; 15min antes → time_start - 15min ; start → time_start
       const [csH, csM] = cls.time_start.split(":").map(Number);
       const dispatchHour1h = String(Math.max(0, csH - 1)).padStart(2, "0");
       const saudacao1h = saudacaoFromTime(`${dispatchHour1h}:${String(csM).padStart(2, "0")}`);
+      // 15min antes: subtrai 15 do total minutos
+      const totalMin = csH * 60 + csM;
+      const min15 = Math.max(0, totalMin - 15);
+      const dispatchHour15 = String(Math.floor(min15 / 60)).padStart(2, "0");
+      const dispatchMin15 = String(min15 % 60).padStart(2, "0");
+      const saudacao15 = saudacaoFromTime(`${dispatchHour15}:${dispatchMin15}`);
       const saudacaoStart = saudacaoFromTime(cls.time_start);
 
       for (const co of (cohorts ?? []) as CohortRow[]) {
@@ -262,6 +271,10 @@ Deno.serve(async (req) => {
           time_end: cls.time_end ?? cls.time_start,
           zoom_link: zoomLink,
           holiday_name: holidayName ?? "",
+        };
+        const baseVars15: Record<string, string> = {
+          ...baseVars1h,
+          saudacao: saudacao15,
         };
         const baseVarsStart: Record<string, string> = {
           ...baseVars1h,
@@ -303,6 +316,7 @@ Deno.serve(async (req) => {
         }
 
         const body1h = tpl1h ? renderTemplate(tpl1h.body, baseVars1h) : `Lembrete: ${cls.name} em 1h.`;
+        const body15 = tpl15 ? renderTemplate(tpl15.body, baseVars15) : `Lembrete: ${cls.name} em 15min.`;
         const bodyStart = tplStart ? renderTemplate(tplStart.body, baseVarsStart) : `${cls.name} começou.`;
 
         sends.push({
@@ -314,6 +328,18 @@ Deno.serve(async (req) => {
           reminder_type: "1h_before",
           scheduled_at: buildScheduledAt(target.isoDate, cls.time_start, 60),
           message_preview: body1h,
+          zoom_link_snapshot: zoomLink,
+          send_status: "pending",
+        });
+        sends.push({
+          batch_id: batch.id,
+          class_id: cls.id,
+          cohort_id: co.id,
+          group_jid: co.whatsapp_group_jid,
+          group_name: co.whatsapp_group_name,
+          reminder_type: "15min_before",
+          scheduled_at: buildScheduledAt(target.isoDate, cls.time_start, 15),
+          message_preview: body15,
           zoom_link_snapshot: zoomLink,
           send_status: "pending",
         });
