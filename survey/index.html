@@ -11,15 +11,9 @@
     :root { --accent: #6366f1; }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #080808;
-      color: #ddd;
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 16px;
+      background: #080808; color: #ddd; font-family: 'Inter', sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px 16px;
     }
     .container { width: 100%; max-width: 520px; }
     .progress-bar { height: 3px; background: #1a1a1a; border-radius: 2px; margin-bottom: 32px; overflow: hidden; }
@@ -27,9 +21,49 @@
     .card { background: #0f0f0f; border: 1px solid #1e1e1e; border-radius: 20px; padding: 36px 32px; }
     .brand { font-size: 11px; color: #333; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; margin-bottom: 24px; }
     .q-counter { font-size: 11px; color: #444; margin-bottom: 10px; font-weight: 600; }
-    .question { font-size: 22px; font-weight: 800; color: #fff; line-height: 1.35; margin-bottom: 32px; }
-    .sub-context { font-size: 13px; color: #888; margin-bottom: 28px; line-height: 1.5; }
+    .question { font-size: 22px; font-weight: 800; color: #fff; line-height: 1.35; margin-bottom: 28px; }
+    .sub-context { font-size: 12px; color: #666; margin-bottom: 24px; }
 
+    /* CSAT stars */
+    .stars-row { display: flex; gap: 12px; justify-content: center; margin-bottom: 12px; }
+    .star-btn {
+      font-size: 42px; cursor: pointer; color: #222; transition: all .15s;
+      background: none; border: none; line-height: 1; font-family: inherit;
+    }
+    .star-btn.filled { color: #f59e0b; }
+    .star-btn:hover { transform: scale(1.15); }
+    .stars-label { text-align: center; font-size: 12px; color: #666; margin-bottom: 28px; min-height: 18px; }
+
+    /* Choice */
+    .options-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+    .option-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; background: #0d0d0d; border: 1px solid #1e1e1e;
+      border-radius: 10px; cursor: pointer; transition: border-color .15s, background .15s;
+      font-size: 14px; color: #ccc; user-select: none;
+    }
+    .option-item:hover { border-color: #333; }
+    .option-item.selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); color: #fff; }
+    .option-dot {
+      width: 18px; height: 18px; border: 2px solid #333; border-radius: 50%;
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      transition: border-color .15s, background .15s;
+    }
+    .option-item.selected .option-dot { border-color: var(--accent); background: var(--accent); }
+    .option-item.selected .option-dot::after { content: ''; width: 6px; height: 6px; background: #fff; border-radius: 50%; }
+
+    /* Text input */
+    .text-input {
+      width: 100%; background: #0d0d0d; border: 1px solid #1e1e1e;
+      border-radius: 10px; padding: 12px 14px; color: #ddd;
+      font-size: 14px; font-family: inherit; resize: none;
+      min-height: 100px; transition: border-color .15s; margin-bottom: 20px;
+    }
+    .text-input:focus { outline: none; border-color: var(--accent); }
+    .name-input { min-height: auto; height: 44px; }
+    .label-sm { font-size: 11px; color: #666; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+
+    /* NPS */
     .nps-grid { display: grid; grid-template-columns: repeat(11, 1fr); gap: 5px; margin-bottom: 8px; }
     .nps-btn {
       aspect-ratio: 1; border: 1px solid #222; border-radius: 8px;
@@ -37,23 +71,12 @@
       cursor: pointer; transition: all .15s; font-family: inherit;
     }
     .nps-btn:hover { border-color: var(--accent); color: #fff; }
-    .nps-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .nps-btn.det.selected  { background: #ef4444; border-color: #ef4444; }
-    .nps-btn.neu.selected  { background: #f59e0b; border-color: #f59e0b; }
-    .nps-btn.pro.selected  { background: #22c55e; border-color: #22c55e; }
+    .nps-btn.det.selected  { background: #ef4444; border-color: #ef4444; color: #fff; }
+    .nps-btn.neu.selected  { background: #f59e0b; border-color: #f59e0b; color: #fff; }
+    .nps-btn.pro.selected  { background: #22c55e; border-color: #22c55e; color: #fff; }
     .nps-labels { display: flex; justify-content: space-between; font-size: 10px; color: #444; margin-bottom: 28px; }
 
-    .text-input {
-      width: 100%; background: #0d0d0d; border: 1px solid #1e1e1e;
-      border-radius: 10px; padding: 12px 14px; color: #ddd;
-      font-size: 14px; font-family: inherit; resize: none;
-      min-height: 90px; transition: border-color .15s; margin-bottom: 16px;
-    }
-    .text-input:focus { outline: none; border-color: var(--accent); }
-    .name-input { min-height: auto; height: 44px; }
-
-    .label-sm { font-size: 11px; color: #666; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
-
+    /* CTA */
     .cta-btn {
       width: 100%; background: var(--accent); color: #fff; border: none;
       border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700;
@@ -62,41 +85,32 @@
     }
     .cta-btn:hover:not(:disabled) { background: #4f52d4; }
     .cta-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-back { background: none; border: none; color: #555; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; padding: 0; margin-bottom: 18px; transition: color .15s; }
+    .btn-back:hover { color: #aaa; }
 
     .screen { display: none; }
     .screen.active { display: block; }
 
-    .thanks-icon {
-      width: 72px; height: 72px;
-      background: rgba(34,197,94,.12);
-      border: 2px solid rgba(34,197,94,.3);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 32px; margin: 0 auto 20px;
-    }
+    /* Thank-you */
+    .thanks-icon { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; background: rgba(34,197,94,.12); border: 2px solid rgba(34,197,94,.3); }
+    .thanks-icon.detractor { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.3); }
+    .thanks-icon.passive { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.3); }
     .thanks-title { font-size: 24px; font-weight: 800; color: #fff; text-align: center; margin-bottom: 8px; }
     .thanks-sub { font-size: 14px; color: #aaa; text-align: center; line-height: 1.5; }
 
-    .thanks-icon.detractor { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.3); }
-    .thanks-icon.passive { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.3); }
-
+    /* Error */
     .error-icon { font-size: 36px; text-align: center; margin-bottom: 16px; }
     .error-title { font-size: 18px; font-weight: 700; color: #fff; text-align: center; margin-bottom: 8px; }
     .error-msg { font-size: 13px; color: #888; text-align: center; }
 
-    .spinner {
-      width: 32px; height: 32px;
-      border: 3px solid #1e1e1e;
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-      margin: 32px auto;
-    }
+    /* Spinner */
+    .spinner { width: 32px; height: 32px; border: 3px solid #1e1e1e; border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; margin: 32px auto; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     @media (max-width: 480px) {
       .card { padding: 28px 20px; }
       .question { font-size: 18px; }
+      .star-btn { font-size: 36px; }
       .nps-btn { font-size: 11px; }
     }
   </style>
@@ -108,47 +122,88 @@
 
   <div class="card">
 
-    <!-- Loading -->
-    <div class="screen active" id="screen-loading">
-      <div class="spinner"></div>
-    </div>
+    <div class="screen active" id="screen-loading"><div class="spinner"></div></div>
 
-    <!-- Error -->
     <div class="screen" id="screen-error">
       <div class="error-icon">😔</div>
       <div class="error-title" id="error-title">Link inválido</div>
       <div class="error-msg" id="error-msg">Este link é inválido, expirou ou já foi usado.</div>
     </div>
 
-    <!-- Question -->
-    <div class="screen" id="screen-question">
+    <!-- Step 1: CSAT -->
+    <div class="screen" id="screen-1">
       <div class="brand">Academia Lendária</div>
-      <div class="q-counter" id="q-counter">Avaliação rápida</div>
-      <div class="question" id="question-text">De 0 a 10, o quanto a aula foi útil pra você?</div>
-      <div class="sub-context" id="sub-context"></div>
+      <div class="q-counter" id="step-counter-1">Pergunta 1 de 4</div>
+      <div class="question">Como você avalia a aula de hoje?</div>
+      <div class="sub-context" id="sub-context-1"></div>
+      <div class="stars-row" id="stars-row"></div>
+      <div class="stars-label" id="stars-label">Toque numa estrela</div>
+      <button class="cta-btn" id="btn-next-1" disabled>Continuar →</button>
+    </div>
 
+    <!-- Step 2: Choice -->
+    <div class="screen" id="screen-2">
+      <button class="btn-back" data-back="1">← Voltar</button>
+      <div class="brand">Academia Lendária</div>
+      <div class="q-counter">Pergunta 2 de 4</div>
+      <div class="question">Você achou a aula muito técnica?</div>
+      <div class="options-list">
+        <div class="option-item" data-tech="true">
+          <div class="option-dot"></div>
+          <span>Sim, achei muito técnica</span>
+        </div>
+        <div class="option-item" data-tech="false">
+          <div class="option-dot"></div>
+          <span>Não, achei no nível certo</span>
+        </div>
+      </div>
+      <button class="cta-btn" id="btn-next-2" disabled>Continuar →</button>
+    </div>
+
+    <!-- Step 3: Improvement text -->
+    <div class="screen" id="screen-3">
+      <button class="btn-back" data-back="2">← Voltar</button>
+      <div class="brand">Academia Lendária</div>
+      <div class="q-counter">Pergunta 3 de 4</div>
+      <div class="question">O que poderia melhorar?</div>
+      <textarea id="improvement-input" class="text-input" placeholder="Algo que poderia ter sido diferente?"></textarea>
+      <button class="cta-btn" id="btn-next-3">Continuar →</button>
+    </div>
+
+    <!-- Step 4: NPS 0-10 -->
+    <div class="screen" id="screen-4">
+      <button class="btn-back" data-back="3">← Voltar</button>
+      <div class="brand">Academia Lendária</div>
+      <div class="q-counter" id="q-counter-4">Pergunta 4 de 4</div>
+      <div class="question">De 0 a 10, quais as chances de você indicar os treinamentos de AIOX Cohort para outra pessoa?</div>
       <div class="nps-grid" id="nps-grid"></div>
       <div class="nps-labels">
-        <span>Nada útil</span>
-        <span>Muito útil</span>
+        <span>Não indicaria</span>
+        <span>Indicaria com certeza</span>
       </div>
-
       <div id="name-field-wrap" style="display:none">
         <div class="label-sm">Nome (opcional)</div>
         <input id="name-input" type="text" class="text-input name-input" placeholder="Como podemos te chamar?">
       </div>
-
-      <div class="label-sm">Comentário (opcional)</div>
-      <textarea id="comment-input" class="text-input" placeholder="O que mais marcou? O que poderia melhorar?"></textarea>
-
-      <button id="btn-submit" class="cta-btn" disabled>Enviar avaliação →</button>
+      <button class="cta-btn" id="btn-next-4" disabled>Continuar →</button>
     </div>
 
-    <!-- Thank you -->
+    <!-- Step 5: Detractor follow-up (conditional NPS <= 6) -->
+    <div class="screen" id="screen-5">
+      <button class="btn-back" data-back="4">← Voltar</button>
+      <div class="brand">Academia Lendária</div>
+      <div class="q-counter">Última pergunta — só pra você</div>
+      <div class="question">O que precisamos fazer pra você se sentir 100% atendido?</div>
+      <div class="sub-context">Sua resposta vai direto pra equipe — vamos te chamar pra entender melhor.</div>
+      <textarea id="detractor-input" class="text-input" placeholder="Conta o que precisa mudar..." style="min-height:120px"></textarea>
+      <button class="cta-btn" id="btn-submit">Enviar feedback ✓</button>
+    </div>
+
+    <!-- Thank-you -->
     <div class="screen" id="screen-thanks">
       <div class="thanks-icon" id="thanks-icon">✓</div>
       <div class="thanks-title" id="thanks-title">Obrigado!</div>
-      <div class="thanks-sub" id="thanks-sub">Sua avaliação foi registrada. Seu feedback nos ajuda a evoluir cada encontro. 🚀</div>
+      <div class="thanks-sub" id="thanks-sub">Sua avaliação foi registrada. 🚀</div>
     </div>
 
   </div>
@@ -159,20 +214,26 @@
   const SUPABASE_URL = window.SUPABASE_CONFIG?.url ?? "https://gpufcipkajppykmnmdeh.supabase.co";
   const SUPABASE_KEY = window.SUPABASE_CONFIG?.anonKey ?? "";
 
-  let selectedScore = null;
-  let parsedToken   = null;
-  let parsedMode    = null;
-  let meta          = null;
+  const state = {
+    token: null,
+    mode: null,
+    meta: null,
+    csat: null,
+    tooTechnical: null,
+    improvement: "",
+    nps: null,
+    name: "",
+    detractorFollowup: "",
+  };
 
   const $ = (id) => document.getElementById(id);
-  const show = (id) => $(id).classList.add("active");
-  const hide = (id) => $(id).classList.remove("active");
+  const SCREENS = ["screen-loading","screen-error","screen-1","screen-2","screen-3","screen-4","screen-5","screen-thanks"];
 
   function showOnly(id) {
-    ["screen-loading","screen-error","screen-question","screen-thanks"].forEach((s) =>
-      s === id ? show(s) : hide(s),
-    );
+    SCREENS.forEach((s) => $(s).classList.toggle("active", s === id));
   }
+
+  function setProgress(pct) { $("progress").style.width = pct + "%"; }
 
   function showError(title, msg) {
     $("error-title").textContent = title;
@@ -185,28 +246,7 @@
     if (m) return { mode: m[1] === "grupo" ? "group" : "dm", token: m[2] };
     const params = new URLSearchParams(location.search);
     const token = params.get("token");
-    const mode = params.get("mode");
-    if (token) return { mode: mode || null, token };
-    return null;
-  }
-
-  function renderNpsButtons() {
-    const grid = $("nps-grid");
-    grid.innerHTML = "";
-    for (let i = 0; i <= 10; i++) {
-      const btn = document.createElement("button");
-      btn.className = "nps-btn";
-      btn.classList.add(i <= 6 ? "det" : i <= 8 ? "neu" : "pro");
-      btn.textContent = i;
-      btn.addEventListener("click", () => {
-        selectedScore = i;
-        document.querySelectorAll(".nps-btn").forEach((b) => b.classList.remove("selected"));
-        btn.classList.add("selected");
-        $("btn-submit").disabled = false;
-        $("progress").style.width = "50%";
-      });
-      grid.appendChild(btn);
-    }
+    return token ? { mode: params.get("mode") || null, token } : null;
   }
 
   async function fetchMetadata(token) {
@@ -241,30 +281,78 @@
     }).catch(() => {});
   }
 
-  async function submitResponse() {
-    if (selectedScore == null) return;
+  function renderStars() {
+    const row = $("stars-row");
+    row.innerHTML = "";
+    const labels = ["", "Muito ruim", "Ruim", "Regular", "Boa", "Excelente"];
+    for (let i = 1; i <= 5; i++) {
+      const btn = document.createElement("button");
+      btn.className = "star-btn";
+      btn.textContent = "★";
+      btn.addEventListener("click", () => {
+        state.csat = i;
+        Array.from(row.children).forEach((b, idx) => {
+          b.classList.toggle("filled", idx < i);
+        });
+        $("stars-label").textContent = labels[i];
+        $("btn-next-1").disabled = false;
+      });
+      row.appendChild(btn);
+    }
+  }
+
+  function renderNps() {
+    const grid = $("nps-grid");
+    grid.innerHTML = "";
+    for (let i = 0; i <= 10; i++) {
+      const btn = document.createElement("button");
+      btn.className = "nps-btn";
+      btn.classList.add(i <= 6 ? "det" : i <= 8 ? "neu" : "pro");
+      btn.textContent = i;
+      btn.addEventListener("click", () => {
+        state.nps = i;
+        document.querySelectorAll(".nps-btn").forEach((b) => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        $("btn-next-4").disabled = false;
+      });
+      grid.appendChild(btn);
+    }
+  }
+
+  function goto(step) {
+    showOnly("screen-" + step);
+    const pcts = { 1: 25, 2: 50, 3: 65, 4: 85, 5: 95 };
+    setProgress(pcts[step] ?? 100);
+  }
+
+  async function submit() {
     $("btn-submit").disabled = true;
     $("btn-submit").textContent = "Enviando...";
-    $("progress").style.width = "85%";
+    setProgress(95);
 
-    const comment = $("comment-input").value.trim();
-    const name = $("name-input").value.trim();
+    state.improvement = $("improvement-input").value.trim();
+    if ($("name-input")) state.name = $("name-input").value.trim();
+    state.detractorFollowup = $("detractor-input").value.trim();
 
     try {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/submit-survey-group`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          token: parsedToken,
-          nps_score: selectedScore,
-          comment: comment || undefined,
-          name_provided: name || undefined,
+          token: state.token,
+          nps_score: state.nps,
+          csat_score: state.csat,
+          too_technical: state.tooTechnical,
+          improvement_text: state.improvement || undefined,
+          comment: undefined,
+          name_provided: state.name || undefined,
+          detractor_followup_text: state.detractorFollowup || undefined,
         }),
       });
       const data = await res.json().catch(() => ({}));
 
       if (res.ok && data.success) {
-        $("progress").style.width = "100%";
+        setProgress(100);
         const bucket = data.bucket ?? "promoter";
         const iconEl = $("thanks-icon");
         if (bucket === "detractor") {
@@ -295,51 +383,76 @@
     }
   }
 
+  function wire() {
+    renderStars();
+    renderNps();
+
+    $("btn-next-1").addEventListener("click", () => goto(2));
+
+    document.querySelectorAll(".option-item[data-tech]").forEach((el) => {
+      el.addEventListener("click", () => {
+        document.querySelectorAll(".option-item[data-tech]").forEach((x) => x.classList.remove("selected"));
+        el.classList.add("selected");
+        state.tooTechnical = el.dataset.tech === "true";
+        $("btn-next-2").disabled = false;
+      });
+    });
+    $("btn-next-2").addEventListener("click", () => goto(3));
+
+    $("btn-next-3").addEventListener("click", () => goto(4));
+
+    $("btn-next-4").addEventListener("click", () => {
+      // Branch: if NPS <= 6 → detractor screen 5, else submit
+      if (state.nps != null && state.nps <= 6) {
+        goto(5);
+      } else {
+        submit();
+      }
+    });
+
+    $("btn-submit").addEventListener("click", submit);
+
+    document.querySelectorAll(".btn-back").forEach((b) => {
+      b.addEventListener("click", () => goto(parseInt(b.dataset.back, 10)));
+    });
+  }
+
   async function init() {
     showOnly("screen-loading");
-    $("progress").style.width = "25%";
+    setProgress(10);
 
     const parsed = getToken();
-    if (!parsed) {
-      showError("Link inválido", "Nenhum token encontrado na URL.");
-      return;
-    }
-    parsedToken = parsed.token;
-    parsedMode  = parsed.mode;
+    if (!parsed) { showError("Link inválido", "Nenhum token encontrado na URL."); return; }
+    state.token = parsed.token;
+    state.mode = parsed.mode;
 
+    let meta;
     try {
-      meta = await fetchMetadata(parsedToken);
+      meta = await fetchMetadata(state.token);
     } catch (e) {
-      showError("Erro ao validar", `Não consegui validar o link. (${e.message})`);
+      showError("Erro ao validar", `Não consegui validar o link.`);
       return;
     }
 
     if (!meta || !meta.valid) {
-      if (meta?.expired) {
-        showError("Link expirado", "Este link de avaliação expirou.");
-      } else {
-        showError("Link inválido", "Este link não foi reconhecido.");
-      }
+      if (meta?.expired) showError("Link expirado", "Este link de avaliação expirou.");
+      else showError("Link inválido", "Este link não foi reconhecido.");
       return;
     }
 
-    recordOpen(parsedToken);
+    state.meta = meta;
+    recordOpen(state.token);
 
-    const greeting = meta.mode === "dm" && meta.student_name
-      ? `Olá, ${meta.student_name.split(/\s+/)[0]}! 👋`
-      : "Avaliação rápida";
-    $("q-counter").textContent = greeting;
-
-    $("question-text").textContent = `Como foi a aula de hoje?`;
-    $("sub-context").textContent = `${meta.class_name} — ${meta.cohort_name}`;
-
-    if (meta.mode === "group") {
-      $("name-field-wrap").style.display = "block";
+    if (meta.mode === "dm" && meta.student_name) {
+      const first = meta.student_name.split(/\s+/)[0];
+      $("step-counter-1").textContent = `Olá, ${first}! 👋 — Pergunta 1 de 4`;
     }
+    $("sub-context-1").textContent = `${meta.class_name} — ${meta.cohort_name}`;
 
-    renderNpsButtons();
-    $("btn-submit").addEventListener("click", submitResponse);
-    showOnly("screen-question");
+    if (meta.mode === "group") $("name-field-wrap").style.display = "block";
+
+    wire();
+    goto(1);
   }
 
   init();

@@ -62,6 +62,10 @@ Deno.serve(async (req: Request) => {
     nps_score?: number;
     comment?: string;
     name_provided?: string;
+    csat_score?: number;
+    too_technical?: boolean;
+    improvement_text?: string;
+    detractor_followup_text?: string;
   };
   try {
     body = await req.json();
@@ -73,6 +77,10 @@ Deno.serve(async (req: Request) => {
   const nps_score = body.nps_score;
   const comment = (body.comment ?? "").trim() || null;
   const nameProvided = (body.name_provided ?? "").trim() || null;
+  const csatScore = typeof body.csat_score === "number" ? body.csat_score : null;
+  const tooTechnical = typeof body.too_technical === "boolean" ? body.too_technical : null;
+  const improvementText = (body.improvement_text ?? "").trim() || null;
+  const detractorFollowup = (body.detractor_followup_text ?? "").trim() || null;
 
   if (!token) return jsonResponse({ error: "missing_token" }, 400);
   if (
@@ -128,6 +136,10 @@ Deno.serve(async (req: Request) => {
     name_provided: link.mode === "group" ? nameProvided : null,
     ip_hash: ipHash,
     user_agent: userAgent,
+    csat_score: csatScore,
+    too_technical: tooTechnical,
+    improvement_text: improvementText,
+    detractor_followup_text: detractorFollowup,
   });
 
   if (insertErr) return jsonResponse({ error: "internal_error" }, 500);
@@ -136,8 +148,10 @@ Deno.serve(async (req: Request) => {
 
   // ─── P.2: detractor branch — Slack alert for scores 0-6 ───
   if (nps_score <= 6) {
-    // Fire and forget — never block survey response on Slack
-    notifyDetractor(sb, link, { nps_score, comment, nameProvided }).catch((e) => {
+    notifyDetractor(sb, link, {
+      nps_score, comment, nameProvided,
+      csatScore, tooTechnical, improvementText, detractorFollowup,
+    }).catch((e) => {
       console.error("[detractor-alert] failed:", e);
     });
   }
@@ -170,7 +184,15 @@ async function notifyDetractor(
     id: string; class_id: string | null; cohort_id: string;
     mode: string; student_id: string | null;
   },
-  payload: { nps_score: number; comment: string | null; nameProvided: string | null },
+  payload: {
+    nps_score: number;
+    comment: string | null;
+    nameProvided: string | null;
+    csatScore: number | null;
+    tooTechnical: boolean | null;
+    improvementText: string | null;
+    detractorFollowup: string | null;
+  },
 ): Promise<void> {
   if (!SLACK_DETRACTORS_WEBHOOK) return; // silent if not configured
 
@@ -219,10 +241,33 @@ async function notifyDetractor(
     },
   ];
 
+  // CSAT + too_technical extras
+  const extras: string[] = [];
+  if (payload.csatScore != null) extras.push(`*CSAT:* ${payload.csatScore}/5 ⭐`);
+  if (payload.tooTechnical === true) extras.push(`*Muito técnica:* Sim ⚠️`);
+  if (payload.tooTechnical === false) extras.push(`*Muito técnica:* Não, no nível certo ✓`);
+  if (extras.length > 0) {
+    blocks.push({ type: "section", text: { type: "mrkdwn", text: extras.join("\n") } });
+  }
+
+  if (payload.improvementText) {
+    blocks.push({
+      type: "section",
+      text: { type: "mrkdwn", text: `*O que pode melhorar:*\n>${payload.improvementText.replace(/\n/g, "\n>")}` },
+    });
+  }
+
   if (payload.comment) {
     blocks.push({
       type: "section",
       text: { type: "mrkdwn", text: `*Comentário:*\n>${payload.comment.replace(/\n/g, "\n>")}` },
+    });
+  }
+
+  if (payload.detractorFollowup) {
+    blocks.push({
+      type: "section",
+      text: { type: "mrkdwn", text: `*🚨 O que precisamos fazer:*\n>${payload.detractorFollowup.replace(/\n/g, "\n>")}` },
     });
   }
 
