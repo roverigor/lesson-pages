@@ -80,6 +80,15 @@ async function sendDM(phone: string, text: string): Promise<{ ok: boolean; messa
   }
 }
 
+async function slackNotify(text: string, blocks?: Array<Record<string, unknown>>) {
+  if (!SLACK_CHANNEL) return;
+  try {
+    await sendBlockMessage(SLACK_CHANNEL, text, blocks ?? [{ type: "section", text: { type: "mrkdwn", text } }]);
+  } catch (e) {
+    console.error("[slack-notify]", e instanceof Error ? e.message : e);
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
@@ -93,6 +102,11 @@ Deno.serve(async (req: Request) => {
 
   const today = body.force_date ? { isoDate: body.force_date, weekday: new Date(body.force_date).getUTCDay() } : brtToday();
 
+  // STARTUP notify (always, regardless of outcome)
+  await slackNotify(`🚀 dispatch-ps-rsvp fired — ${today.isoDate} (weekday ${today.weekday})${dryRun ? " [DRY RUN]" : ""}`);
+
+  try {
+
   // Find PS classes for today's weekday + active + reminder_enabled
   // Cross-cohort: get class_cohorts → students (active=true, is_mentor=false)
   // Ignores cohort.active per design B.
@@ -104,6 +118,7 @@ Deno.serve(async (req: Request) => {
     .eq("weekday", today.weekday);
 
   if (!classes || classes.length === 0) {
+    await slackNotify(`✅ dispatch-ps-rsvp finished — no PS class today (${today.isoDate}, weekday ${today.weekday})`);
     return json({ success: true, message: "no PS class today", today });
   }
 
@@ -155,16 +170,7 @@ Deno.serve(async (req: Request) => {
     // Send DMs to pending only
     const pending = (upserted ?? []).filter((l) => l.send_status === "pending");
 
-    // Slack healthcheck — pre-send announce
-    if (SLACK_CHANNEL && pending.length > 0) {
-      await sendBlockMessage(
-        SLACK_CHANNEL,
-        `🔔 PS RSVP dispatch starting — ${cls.name}`,
-        [
-          { type: "section", text: { type: "mrkdwn", text: `*🔔 PS RSVP dispatch starting*\n*Class:* ${cls.name}\n*Date:* ${today.isoDate}\n*Eligible students:* ${eligible.length}\n*DMs to send:* ${pending.length}\n*Throttle:* ${DELAY_MS}ms` } },
-        ],
-      ).catch((e) => console.error("[slack-pre]", e));
-    }
+
 
     const studentMap = new Map<string, { name: string; phone: string }>();
     eligible.forEach((s) => studentMap.set(s.id, { name: s.name, phone: s.phone }));
@@ -209,18 +215,33 @@ Deno.serve(async (req: Request) => {
     }
 
     results.push({ class_id: cls.id, class_name: cls.name, eligible: eligible.length, sent, failed, group_sent: groupSent, group_failed: groupFailed });
-
-    // Slack healthcheck — post-send summary
-    if (SLACK_CHANNEL) {
-      await sendBlockMessage(
-        SLACK_CHANNEL,
-        `✅ PS RSVP dispatch finished — ${cls.name}`,
-        [
-          { type: "section", text: { type: "mrkdwn", text: `*✅ PS RSVP dispatch finished*\n*Class:* ${cls.name}\n*DMs sent:* ${sent}\n*DMs failed:* ${failed}\n*Groups sent:* ${groupSent}\n*Groups failed:* ${groupFailed}\n*Date:* ${today.isoDate}\n_Responses → ps_rsvp_today view._` } },
-        ],
-      ).catch((e) => console.error("[slack-post]", e));
-    }
   }
 
+  // Final summary Slack (always)
+  const totals = results.reduce((acc, r) => {
+    acc.sent += (r.sent as number) ?? 0;
+    acc.failed += (r.failed as number) ?? 0;
+    acc.groupSent += (r.group_sent as number) ?? 0;
+    acc.groupFailed += (r.group_failed as number) ?? 0;
+    return acc;
+  }, { sent: 0, failed: 0, groupSent: 0, groupFailed: 0 });
+
+  const detailLines = results.map((r) =>
+    `• *${r.class_name}* — DM: ${r.sent ?? 0}/${(r.sent ?? 0) + (r.failed ?? 0)} · Grupo: ${r.group_sent ?? 0}/${(r.group_sent ?? 0) + (r.group_failed ?? 0)}`
+  ).join("\n");
+
+  await slackNotify(
+    `✅ dispatch-ps-rsvp finished — ${today.isoDate}`,
+    [
+      { type: "section", text: { type: "mrkdwn", text: `*✅ dispatch-ps-rsvp finished* — ${today.isoDate}\n\n*DMs:* ${totals.sent} sent · ${totals.failed} failed\n*Groups:* ${totals.groupSent} sent · ${totals.groupFailed} failed\n\n${detailLines}\n\n_Respostas → https://painel.academialendaria.ai/admin/ps-rsvp/_` } },
+    ],
+  );
+
   return json({ success: true, today, results });
+
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    await slackNotify(`❌ dispatch-ps-rsvp FAILED — ${today.isoDate}\n\`\`\`${msg}\`\`\``);
+    return json({ success: false, error: msg }, 500);
+  }
 });
