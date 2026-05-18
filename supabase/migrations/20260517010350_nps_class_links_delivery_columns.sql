@@ -4,8 +4,10 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- 1. Default token: 32 hex chars (16 random bytes)
+-- NOTE: qualify extensions.gen_random_bytes — Supabase places pgcrypto in
+-- the extensions schema, not on default search_path during migration apply.
 ALTER TABLE public.nps_class_links
-  ALTER COLUMN token SET DEFAULT encode(gen_random_bytes(16), 'hex');
+  ALTER COLUMN token SET DEFAULT encode(extensions.gen_random_bytes(16), 'hex');
 
 -- 2. Make class_id nullable (cohort-only dispatch in some PS edge cases)
 ALTER TABLE public.nps_class_links

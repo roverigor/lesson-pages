@@ -31,7 +31,7 @@ BEGIN
     RAISE EXCEPTION 'retry_only_allowed_for_failed_dispatches';
   END IF;
 
-  v_token      := encode(gen_random_bytes(24), 'base64');
+  v_token      := encode(extensions.gen_random_bytes(24), 'base64');
   v_expires_at := now() + interval '15 minutes';
 
   INSERT INTO retry_confirm_tokens (token, source, dispatch_id, issued_to, expires_at)
