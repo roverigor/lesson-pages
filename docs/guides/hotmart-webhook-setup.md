@@ -59,7 +59,7 @@ Sem esse header → webhook rejeita com HTTP 401.
 
 Pra cada produto Hotmart, configurar onde aluno deve ir:
 
-1. Acessa https://painel.igorrover.com.br/cs/#/integrations
+1. Acessa https://painel.academialendaria.ai/cs/#/integrations
 2. Sub-tab **"🔌 Mappings AC"**
 3. Click **"+ Novo Mapping"**
 4. Preencher:

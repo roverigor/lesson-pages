@@ -115,8 +115,8 @@ Construir braço dedicado do sistema lesson-pages para o time de Customer Succes
 │  └─ Container cs-portal      :3081  (NOVO — Story 15.J)     │
 │                                                              │
 │  Nginx routing:                                             │
-│   painel.igorrover.com.br  → :3080                          │
-│   painel.igorrover.com.br/cs/* → :3081 (Story 15.K)         │
+│   painel.academialendaria.ai  → :3080                          │
+│   painel.academialendaria.ai/cs/* → :3081 (Story 15.K)         │
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐

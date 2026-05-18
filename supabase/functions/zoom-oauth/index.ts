@@ -16,7 +16,7 @@ const REDIRECT_URI = "https://lesson-pages.vercel.app/api/zoom/callback";
 const ALLOWED_ORIGINS = [
   "https://lesson-pages.vercel.app",
   "https://calendario.igorrover.com.br",
-  "https://painel.igorrover.com.br",
+  "https://painel.academialendaria.ai",
 ];
 
 function getCorsHeaders(req: Request): Record<string, string> {

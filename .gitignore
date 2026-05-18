@@ -44,3 +44,4 @@ alunos/Base\ alunos\ sistema\ interno/*.csv
 alunos/Base\ alunos\ sistema\ interno/
 db/seed-*.sql
 *.backup.*.html
+.playwright-mcp/

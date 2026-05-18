@@ -219,7 +219,7 @@ stories:
       - 'Container cs-portal buildando'
       - 'GitHub Action deploy.yml funcional'
     postConditions:
-      - 'painel.igorrover.com.br/cs/ responde HTTPS 200'
+      - 'painel.academialendaria.ai/cs/ responde HTTPS 200'
       - 'Nginx config commit em git infra ou docs'
       - 'SSL via Let''s Encrypt validado'
     blocks: ['15.5 production-ready']

@@ -66,6 +66,23 @@ function buildEventsFromDB() {
     }
   }
 
+  // Detectar cancelamentos e remarcações
+  // Aula está cancelada quando: existem registros 'remove' pra essa course/date E mentors.length === 0
+  const removeOvs = overridesCache.filter(o => o.action === 'remove');
+  for (const ov of removeOvs) {
+    const entry = map[ov.lesson_date]?.[ov.course];
+    if (entry && entry.mentors.length === 0) {
+      entry.cancelled = true;
+      if (ov.rescheduled_to) entry.rescheduled_to = ov.rescheduled_to;
+    }
+  }
+  // Aula reagendada destino: tem qualquer 'add' com rescheduled_to apontando pra data original
+  const addOvs = overridesCache.filter(o => o.action === 'add' && o.rescheduled_to);
+  for (const ov of addOvs) {
+    const entry = map[ov.lesson_date]?.[ov.course];
+    if (entry) entry.rescheduled_from = ov.rescheduled_to;
+  }
+
   return map;
 }
 

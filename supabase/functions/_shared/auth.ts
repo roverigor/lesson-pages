@@ -80,3 +80,47 @@ export async function verifyAdminStrict(
   if (auth.role === "admin" || auth.role === "service_role") return auth;
   return null;
 }
+
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+/**
+ * Timing-safe constant-time string compare.
+ * Returns false immediately if lengths differ — sacrifices full timing safety
+ * for that case but avoids cycling on huge inputs.
+ */
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
+/**
+ * Verify request carries service-role bearer token. Use this on internal
+ * edge-function endpoints that should NEVER accept user JWTs (workers, cron,
+ * retry helpers). Returns true only if `Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>`.
+ *
+ * NPS.D.3 — added per architect review 2026-05-17.
+ *
+ * Usage:
+ *   if (!verifyServiceRole(req)) {
+ *     return new Response(
+ *       JSON.stringify({ error: "unauthorized" }),
+ *       { status: 401, headers: { ...CORS, "Content-Type": "application/json" } },
+ *     );
+ *   }
+ */
+export function verifyServiceRole(req: Request): boolean {
+  if (!SUPABASE_SERVICE_ROLE_KEY) {
+    // Fail closed if env var missing — would otherwise allow empty bearer through
+    console.error("[auth] SUPABASE_SERVICE_ROLE_KEY env var missing — denying all requests");
+    return false;
+  }
+  const header = req.headers.get("authorization") ?? req.headers.get("Authorization") ?? "";
+  const m = header.match(/^Bearer\s+(.+)$/i);
+  if (!m) return false;
+  const presented = m[1].trim();
+  return timingSafeEqual(presented, SUPABASE_SERVICE_ROLE_KEY);
+}

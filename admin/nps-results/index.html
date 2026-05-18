@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NPS Results — Painel Admin</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+  <link rel="stylesheet" href="/templates/design-tokens-dark-premium.css">
+  <link rel="stylesheet" href="/templates/admin-shared.css">
+  <link rel="stylesheet" href="/templates/login-overlay.css">
+  <link rel="stylesheet" href="/admin/nps-results/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ─── LOGIN OVERLAY ─────────────────────────────────────────────── -->
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-box">
+      <div class="login-icon">📈</div>
+      <h1 class="login-title">NPS Results</h1>
+      <p class="login-subtitle">Acesso restrito a administradores</p>
+      <input id="login-email" class="login-field" type="email" placeholder="Email" autocomplete="email">
+      <input id="login-password" class="login-field" type="password" placeholder="Senha" autocomplete="current-password">
+      <button id="login-btn" class="login-btn">Entrar</button>
+      <p id="login-error" class="login-error hidden"></p>
+    </div>
+  </div>
+
+  <!-- ─── APP ─────────────────────────────────────────────────────────── -->
+  <main id="app" class="app hidden">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <a href="/admin/" class="brand-link">🏛️ Admin</a>
+        <span class="topbar-sep">›</span>
+        <span class="topbar-title">NPS Results</span>
+      </div>
+      <div class="topbar-right">
+        <a href="/admin/nps-monitor/" class="btn-secondary">📡 Monitor</a>
+        <a href="/admin/envios/" class="btn-secondary">📊 Envios</a>
+        <button id="export-csv-btn" class="btn-secondary">⬇ CSV detractors</button>
+        <button id="refresh-btn" class="btn-secondary">↻ Atualizar</button>
+        <button id="logout-btn" class="btn-tertiary">Sair</button>
+      </div>
+    </header>
+
+    <section id="forbidden" class="card forbidden hidden">
+      <h2>🚫 Acesso negado</h2>
+      <p>Você precisa de permissão de administrador para acessar esta página.</p>
+    </section>
+
+    <section id="error-banner" class="error-banner hidden">
+      <span id="error-banner-text"></span>
+      <button id="error-banner-dismiss" type="button" class="error-banner-dismiss">✕</button>
+    </section>
+
+    <!-- ─── FILTERS ──────────────────────────────────────────────── -->
+    <section class="card filters-card">
+      <div class="filters-row">
+        <label>De: <input id="filter-date-from" type="date"></label>
+        <label>Até: <input id="filter-date-to" type="date"></label>
+        <label>Cohort: <select id="filter-cohort"><option value="">— todos —</option></select></label>
+        <label>Aula: <select id="filter-class"><option value="">— todas —</option></select></label>
+        <label>Canal:
+          <select id="filter-mode">
+            <option value="">— ambos —</option>
+            <option value="group">Grupo (anônimo)</option>
+            <option value="dm">DM (atribuído)</option>
+          </select>
+        </label>
+        <label>Origem:
+          <select id="filter-source">
+            <option value="">— todas —</option>
+            <option value="auto_class">Auto pós-aula</option>
+            <option value="manual_survey">Survey manual (antigo)</option>
+          </select>
+        </label>
+        <button id="apply-filters" class="btn-primary btn-sm">Aplicar</button>
+        <button id="reset-filters" class="btn-tertiary btn-sm">Reset</button>
+      </div>
+    </section>
+
+    <!-- ─── HERO NPS ──────────────────────────────────────────────── -->
+    <section class="card hero-nps">
+      <div class="hero-nps-main">
+        <div class="hero-nps-score">
+          <span id="hero-nps-value">—</span>
+          <span class="hero-nps-suffix">NPS</span>
+        </div>
+        <div class="hero-nps-avg">
+          Nota média: <span id="hero-avg">—</span>/10 · <span id="hero-total">0</span> respostas
+        </div>
+      </div>
+      <div class="hero-nps-bar">
+        <div class="bar-segment promoter" id="bar-promoter" style="width:0%"></div>
+        <div class="bar-segment passive" id="bar-passive" style="width:0%"></div>
+        <div class="bar-segment detractor" id="bar-detractor" style="width:0%"></div>
+      </div>
+      <div class="hero-nps-legend">
+        <span class="legend-item"><span class="dot promoter"></span> Promoters <span id="leg-promoter">0</span> (<span id="leg-promoter-pct">0</span>%)</span>
+        <span class="legend-item"><span class="dot passive"></span> Passives <span id="leg-passive">0</span> (<span id="leg-passive-pct">0</span>%)</span>
+        <span class="legend-item"><span class="dot detractor"></span> Detractors <span id="leg-detractor">0</span> (<span id="leg-detractor-pct">0</span>%)</span>
+      </div>
+    </section>
+
+    <!-- ─── TREND CHART ──────────────────────────────────────────── -->
+    <section class="card">
+      <h2 class="card-title">📉 Tendência NPS (12 semanas)</h2>
+      <canvas id="trend-chart" height="80"></canvas>
+    </section>
+
+    <!-- ─── BREAKDOWN GRID ───────────────────────────────────────── -->
+    <div class="breakdown-grid">
+      <section class="card">
+        <h2 class="card-title">👥 Por turma (cohort)</h2>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Cohort</th><th>Respostas</th><th>NPS</th><th>Média</th><th>Detractors</th></tr>
+            </thead>
+            <tbody id="cohort-body"><tr><td colspan="5" class="loading">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="card-title">🎓 Por aula</h2>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr><th>Aula</th><th>Respostas</th><th>NPS</th><th>Média</th></tr>
+            </thead>
+            <tbody id="class-body"><tr><td colspan="4" class="loading">Carregando...</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ─── COMMENTS LIST ────────────────────────────────────────── -->
+    <section class="card">
+      <h2 class="card-title">💬 Comentários</h2>
+      <div class="comments-filters">
+        <button class="chip active" data-bucket="">Todos</button>
+        <button class="chip" data-bucket="detractor">🚨 Detractors</button>
+        <button class="chip" data-bucket="passive">⚠️ Passives</button>
+        <button class="chip" data-bucket="promoter">💚 Promoters</button>
+        <label class="checkbox-label">
+          <input type="checkbox" id="only-with-comment" checked>
+          Apenas com comentário
+        </label>
+      </div>
+      <div id="comments-list" class="comments-list">
+        <div class="loading">Carregando...</div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Deps -->
+  <script src="/js/config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="/admin/nps-results/app.js"></script>
+</body>
+</html>

@@ -395,7 +395,7 @@ Se em dúvida: **PARE e pergunte**.
 - **SSH:** `ssh -i ~/.ssh/contabo root@194.163.179.68`
 - **App dir:** `/app/lesson-pages`
 - **Container:** `lesson-pages` rodando na porta `3080`
-- **Domínio:** `https://painel.igorrover.com.br`
+- **Domínio:** `https://painel.academialendaria.ai`
 - **Nginx config:** `/etc/nginx/sites-available/painel-lesson-pages` (arquivo `lesson-pages` serve `calendario.igorrover.com.br`, não o painel)
 - **Deploy:** automático via GitHub Actions ao push em `main` (`.github/workflows/deploy.yml`)
 - **Secrets GitHub:** `VPS_HOST`, `VPS_SSH_KEY`, `LESSON_PAGES_DOMAIN` no repo `roverigor/lesson-pages`

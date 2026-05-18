@@ -143,8 +143,8 @@ Hash-based router (`#/cohorts`, `#/forms`) em ~30 linhas de JS. Não precisa ser
 
 ```css
 /* cs-portal/src/styles/cs-shared.css */
-@import url('https://painel.igorrover.com.br/css/design-tokens-dark-premium.css');
-@import url('https://painel.igorrover.com.br/css/admin-shared.css');
+@import url('https://painel.academialendaria.ai/css/design-tokens-dark-premium.css');
+@import url('https://painel.academialendaria.ai/css/admin-shared.css');
 ```
 
 Alternativa offline (preferida): copia tokens via build step `npm run sync-tokens` que faz fetch e salva em `public/assets/`. Versão imutável snapshot — não quebra se lesson-pages mudar.

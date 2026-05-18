@@ -1,0 +1,66 @@
+handoff:
+  from_agent: architect
+  to_agent: sm
+  timestamp: 2026-05-05T23:15:00-03:00
+  consumed: false
+
+  story_context:
+    epic_id: EPIC-020
+    epic_path: docs/stories/epics/EPIC-020-engagement-engine.md
+    epic_status: Ready (ADR aprovado)
+    current_task: Criar 13 story files baseado em ADR-017 + EPIC-020
+    branch: feature/15.0-ac-discovery
+
+  decisions:
+    - "ADR-017 APROVADO COM MODIFICAÇÕES por Aria"
+    - "Story 020.1 quebrada em 4 sub-stories (020.1a-d) pra rollback safety"
+    - "Step decay function aprovada (rejeita exponential)"
+    - "Config table engagement_config pra cohort autonomia"
+    - "Trigger incremental + daily full safety net"
+    - "Materialized view mv_at_risk_students pra dashboard performance"
+
+  files_modified:
+    - docs/architecture/ADR-017-engagement-scoring-engine.md (revisado por Aria)
+    - docs/stories/epics/EPIC-020-engagement-engine.md
+    - docs/reports/spike-engagement-2026-05-05.md
+    - docs/reports/at-risk-students-2026-05-05.csv
+
+  blockers: []
+
+  next_action: |
+    Criar 13 story files em docs/stories/ baseado em sequência aprovada Aria:
+
+    1. 20.0.story.md  - Data Quality Cleanup (BLOQUEADOR)
+    2. 20.1a.story.md - Migration: tabelas + indexes + partitioning + RLS + config table
+    3. 20.1b.story.md - Function: engagement_decay_weight + recompute_engagement_scores
+    4. 20.1c.story.md - Migration: backfill signals 180d + initial compute
+    5. 20.1d.story.md - Trigger + workers (incremental 5min + full daily) + health check + Slack alert
+    6. 20.2.story.md  - Zoom evidence confidence_score (refactor student_attendance)
+    7. 20.3.story.md  - Multi-source aggregator (popula signals via triggers)
+    8. 20.4.story.md  - UI /admin/at-risk + /cs/at-risk (consome MV) — MIRROR OBRIGATÓRIO
+    9. 20.6.story.md  - Feedback button + table
+    10. 20.7.story.md - Bucket → automation rules integration
+    11. 20.5.story.md - Pulse check WhatsApp semanal
+    12. 20.8.story.md - UI manual attendance (admin + cs)
+    13. 20.9.story.md - Calibration UI (engagement_config edits)
+
+    Cada story file segue padrão `docs/stories/<num>.story.md` existente:
+    - Status, Prioridade, Story, Acceptance Criteria
+    - Dev Notes, Tasks/Subtasks
+    - Testing Plan, File List
+    - References pra ADR-017 + EPIC-020
+
+  context_summary: |
+    EPIC-020 Probabilistic Engagement Engine. Spike validou: 130 alunos at-risk
+    identificados em 7 cohorts ativos. Architecture 3 camadas (raw signals + computed
+    scores + feedback loop) aprovada com 8 adições arquiteturais.
+
+    Foco SM: criar story files DETALHADOS (não scaffolds). Cada story precisa
+    Acceptance Criteria executável + Tasks/Subtasks com files específicos do projeto
+    + Dev Notes referencing ADR-017 sections.
+
+    Mirror /cs/ é AC obrigatório em TODAS UI stories (20.4, 20.8, 20.9).
+    RLS policies seguem padrão CS+admin de EPIC-015.
+
+    Bloqueador crítico: 020.0 Data Quality DEVE ser primeira — sem cleanup,
+    35% das entries (lixo: sem email, nome=telefone, vazio) gera falsos positivos.

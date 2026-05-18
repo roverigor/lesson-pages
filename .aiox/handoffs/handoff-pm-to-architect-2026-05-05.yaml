@@ -1,0 +1,61 @@
+handoff:
+  from_agent: pm
+  to_agent: architect
+  timestamp: 2026-05-05T22:50:00-03:00
+  consumed: false
+
+  story_context:
+    epic_id: EPIC-020
+    epic_path: docs/stories/epics/EPIC-020-engagement-engine.md
+    epic_status: Draft
+    current_task: ADR-017 architectural review
+    branch: feature/15.0-ac-discovery
+
+  decisions:
+    - "Spike validou modelo MVP — 130 alunos at-risk identificados em 7 cohorts"
+    - "Arquitetura proposta 3 camadas (raw signals + computed scores + feedback loop)"
+    - "Pesos preliminares heurísticos: 0.50 attendance + 0.30 survey + 0.20 manual"
+    - "Mirror /cs/ obrigatório em todas UI stories"
+    - "Story 020.0 Data Quality Cleanup é bloqueador P0"
+
+  files_modified:
+    - docs/reports/spike-engagement-2026-05-05.md
+    - docs/architecture/ADR-017-engagement-scoring-engine.md
+    - docs/stories/epics/EPIC-020-engagement-engine.md
+    - docs/stories/epics/EPIC-016-stabilization-compliance.md
+    - docs/stories/epics/EPIC-017-intelligent-survey-platform.md
+    - docs/stories/epics/EPIC-018-lifecycle-journey-orchestration.md
+    - docs/stories/epics/EPIC-019-rich-response-data-layer.md
+    - docs/reports/at-risk-students-2026-05-05.csv
+
+  blockers: []
+
+  next_action: |
+    Review ADR-017 (docs/architecture/ADR-017-engagement-scoring-engine.md).
+
+    7 pontos abertos pra Aria validar/decidir:
+
+    1. Event sourcing (engagement_signals table) vs derivação direct via VIEWs
+    2. Decay function: exponential exp(-t/14) vs linear vs step
+    3. Cohort-specific weights V1 hardcoded OR config-driven
+    4. Refresh cadence: cron diário OR realtime trigger em INSERT
+    5. Backfill window: 90d vs 180d
+    6. Recompute parcial OR full
+    7. data_quality_flag em score table OR view filter
+
+    Após decisões, atualizar ADR-017 com sections "Decisões finais Aria" + handoff
+    pra @sm criar story files detalhados (20.0 a 20.10).
+
+  context_summary: |
+    EPIC-020 Probabilistic Engagement Engine validado via spike. Modelo MVP simples
+    (heurística pesos) já identifica 130 alunos at-risk reais (20% base válida) em
+    7 cohorts ativos. Achado crítico: 35% dos entries em students são lixo (sem
+    email, nomes-telefone, vazios) — cleanup é Story 020.0 bloqueador P0.
+
+    Arquitetura proposta separa coleta (event sourcing) de agregação (materialized
+    snapshots) de ação (buckets + feedback loop). Tabelas novas: engagement_signals,
+    student_engagement_scores, engagement_feedback. Worker pg_cron diário recomputa
+    scores. Calibration loop permite CS rep ensinar modelo via "marcar falso positivo".
+
+    Roadmap 5 épicos consolidado: 016 (estab) + 017 (intel survey) + 018 (journey)
+    + 019 (data layer) + 020 (engagement). Total ~170 dias dev, mirror /cs/ universal.

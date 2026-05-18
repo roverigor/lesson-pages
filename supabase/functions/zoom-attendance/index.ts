@@ -20,7 +20,7 @@ const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
 const ALLOWED_ORIGINS = [
   "https://lesson-pages.vercel.app",
   "https://calendario.igorrover.com.br",
-  "https://painel.igorrover.com.br",
+  "https://painel.academialendaria.ai",
 ];
 
 function getCorsHeaders(req: Request): Record<string, string> {
@@ -515,7 +515,7 @@ serve(async (req: Request) => {
       let alertSent = false;
       const SLACK_IGOR = Deno.env.get("SLACK_IGOR_USER_ID") ?? "";
       if (alerts.length > 0 && SLACK_IGOR) {
-        const msg = `🩺 *Health Check — ${today}*\n\n${alerts.join("\n")}\n\n<https://painel.igorrover.com.br/admin/?view=automations|Abrir Automações>`;
+        const msg = `🩺 *Health Check — ${today}*\n\n${alerts.join("\n")}\n\n<https://painel.academialendaria.ai/admin/?view=automations|Abrir Automações>`;
         try {
           await sendDM(SLACK_IGOR, msg);
           alertSent = true;
@@ -730,7 +730,7 @@ serve(async (req: Request) => {
             }));
 
             // Queue notification for approval
-            const msgText = `⚠️ Staff não encontrado no Zoom — ${checkDate}\n\n${lines.join("\n")}\n\nTotal: ${absentList.length} ausência(s)\n<https://painel.igorrover.com.br/relatorio/|Ver Relatório>`;
+            const msgText = `⚠️ Staff não encontrado no Zoom — ${checkDate}\n\n${lines.join("\n")}\n\nTotal: ${absentList.length} ausência(s)\n<https://painel.academialendaria.ai/relatorio/|Ver Relatório>`;
 
             const { data: notif } = await sb
               .from("notification_queue")
@@ -738,7 +738,7 @@ serve(async (req: Request) => {
                 type: "attendance_alert",
                 title: `Staff ausente — ${checkDate}`,
                 payload: {
-                  message: `⚠️ Você não foi detectado(a) na aula do Zoom em ${checkDate}.\n\nSe participou, pode ter entrado com nome diferente. Verifique com a coordenação.\n\n<https://painel.igorrover.com.br/relatorio/|Ver Relatório>`,
+                  message: `⚠️ Você não foi detectado(a) na aula do Zoom em ${checkDate}.\n\nSe participou, pode ter entrado com nome diferente. Verifique com a coordenação.\n\n<https://painel.academialendaria.ai/relatorio/|Ver Relatório>`,
                   message_builder: "personalized",
                   summary: msgText,
                 },
@@ -758,7 +758,7 @@ serve(async (req: Request) => {
             }
           } else if (COORDINATOR_PHONE) {
             // Fallback to WhatsApp
-            const msg = `⚠️ Staff não encontrado no Zoom — ${checkDate}\n\n${lines.join("\n")}\n\nTotal: ${absentList.length} ausência(s)\n📊 https://painel.igorrover.com.br/relatorio/`;
+            const msg = `⚠️ Staff não encontrado no Zoom — ${checkDate}\n\n${lines.join("\n")}\n\nTotal: ${absentList.length} ausência(s)\n📊 https://painel.academialendaria.ai/relatorio/`;
             await sendWA(COORDINATOR_PHONE, msg);
           }
         }
@@ -817,6 +817,52 @@ serve(async (req: Request) => {
     // Uses Zoom Reports API to discover all meetings for the host in a date range.
     // Does NOT require knowing the meeting_id in advance.
     // body: { action: "list_meetings", user_id: "me"|email, from: "YYYY-MM-DD", to: "YYYY-MM-DD" }
+    // ── ACTION: list_recordings_zoom ─────────────────────────────────
+    // Lista cloud recordings via /users/me/recordings (recording:read:list_user_recordings:admin)
+    // body: { action: "list_recordings_zoom", from?: "YYYY-MM-DD", to?: "YYYY-MM-DD" }
+    if (action === "list_recordings_zoom") {
+      const {
+        from = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        to = new Date().toISOString().slice(0, 10),
+      } = body as { from?: string; to?: string };
+      const token = await getS2SToken();
+      const meetings: Array<Record<string, unknown>> = [];
+      let nextToken: string | undefined;
+      let pages = 0;
+      do {
+        const url = `/users/me/recordings?from=${from}&to=${to}&page_size=100${nextToken ? "&next_page_token=" + nextToken : ""}`;
+        const data = await zoomGet(token, url) as { meetings?: Array<Record<string, unknown>>; next_page_token?: string };
+        if (data?.meetings) meetings.push(...data.meetings);
+        nextToken = data?.next_page_token;
+        pages++;
+        if (pages > 10) break;
+      } while (nextToken);
+
+      const summary = meetings.map((m) => {
+        const files = (m.recording_files || []) as Array<{ file_type: string; download_url?: string; status?: string }>;
+        const hasTranscript = files.some((f) => f.file_type === "TRANSCRIPT");
+        const hasVideo = files.some((f) => f.file_type === "MP4" || f.file_type === "VIDEO");
+        const hasAudio = files.some((f) => f.file_type === "M4A" || f.file_type === "AUDIO");
+        return {
+          meeting_id: m.id,
+          uuid: m.uuid,
+          topic: m.topic,
+          start_time: m.start_time,
+          duration: m.duration,
+          total_size_mb: m.total_size ? Math.round((m.total_size as number) / 1024 / 1024) : 0,
+          file_count: files.length,
+          has_video: hasVideo,
+          has_audio: hasAudio,
+          has_transcript: hasTranscript,
+        };
+      });
+
+      return new Response(
+        JSON.stringify({ ok: true, from, to, total: summary.length, recordings: summary }),
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
+      );
+    }
+
     if (action === "list_meetings") {
       const {
         user_id = "me",

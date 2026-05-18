@@ -27,7 +27,7 @@ const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL") ?? "";
 const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY") ?? "";
 const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
 
-const BASE_URL = "https://painel.igorrover.com.br";
+const BASE_URL = "https://painel.academialendaria.ai";
 
 // ── SAFE throttle: 10s between messages ──
 const DELAY_MS = 10_000;
