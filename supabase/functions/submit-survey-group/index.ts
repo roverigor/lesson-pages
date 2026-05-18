@@ -67,6 +67,9 @@ Deno.serve(async (req: Request) => {
     too_technical?: boolean;
     improvement_text?: string;
     detractor_followup_text?: string;
+    ps_brought_doubts?: boolean | null;
+    ps_doubts_resolved?: string | null;
+    ps_unblocked?: string | null;
   };
   try {
     body = await req.json();
@@ -82,6 +85,9 @@ Deno.serve(async (req: Request) => {
   const tooTechnical = typeof body.too_technical === "boolean" ? body.too_technical : null;
   const improvementText = (body.improvement_text ?? "").trim() || null;
   const detractorFollowup = (body.detractor_followup_text ?? "").trim() || null;
+  const psBroughtDoubts = typeof body.ps_brought_doubts === "boolean" ? body.ps_brought_doubts : null;
+  const psDoubtsResolved = (body.ps_doubts_resolved ?? "").trim() || null;
+  const psUnblocked = (body.ps_unblocked ?? "").trim() || null;
 
   if (!token) return jsonResponse({ error: "missing_token" }, 400);
   if (
@@ -141,6 +147,9 @@ Deno.serve(async (req: Request) => {
     too_technical: tooTechnical,
     improvement_text: improvementText,
     detractor_followup_text: detractorFollowup,
+    ps_brought_doubts: psBroughtDoubts,
+    ps_doubts_resolved: psDoubtsResolved,
+    ps_unblocked: psUnblocked,
   });
 
   if (insertErr) return jsonResponse({ error: "internal_error" }, 500);
