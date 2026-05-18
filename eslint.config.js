@@ -16,6 +16,7 @@ const config = [
         fetch: 'readonly',
         alert: 'readonly',
         confirm: 'readonly',
+        prompt: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
         setInterval: 'readonly',
