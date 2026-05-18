@@ -53,11 +53,11 @@ function buildDMText(firstName: string, className: string, timeStart: string, to
 function buildGroupText(className: string, timeStart: string): string {
   const url = `https://painel.academialendaria.ai/ps-rsvp`;
   const variants = [
-    `Bom dia, time.\n\nHoje rola *${className}*, ${timeStart} (Brasília). Cada um recebeu DM individual pra confirmar presença + listar dúvidas que está trazendo — o mentor já se prepara com base nisso.\n\nSe não viu o DM, passa aqui: ${url}`,
-    `Time, bom dia!\n\n*${className}* aberta hoje às ${timeStart}. Foco da sessão se ajusta às dúvidas que vocês trouxerem — verifica o DM individual e conta o que tá precisando destravar.`,
-    `Bom dia.\n\nPS *${className}* — ${timeStart} (Brasília). Vocês receberam DM individual: 30s pra dizer se vem + dúvidas. Mentor chega com pauta calibrada pelas respostas.\n\nNão viu? ${url}`,
-    `Time, hoje tem *${className}* às ${timeStart}.\n\nO mentor vai usar os pontos que vocês compartilharam no DM individual pra calibrar a sessão. Vale a pena reservar 30s pra responder.`,
-    `Bom dia, Lendários.\n\n*${className}* — ${timeStart} (Brasília). DM individual chegou: confirma presença + manda dúvidas. Quanto mais sincero, mais o mentor consegue te ajudar de fato.`,
+    `Bom dia, time.\n\nHoje rola *${className}*, ${timeStart} (Brasília).\n\nQuanto mais a sessão for sobre o que vocês estão construindo, mais valor ela gera. Reserva 30s pra contar o que precisa destravar:\n${url}`,
+    `Time, bom dia!\n\n*${className}* abre hoje às ${timeStart}. O foco do PS se ajusta às dúvidas que vocês trouxerem — vale separar 30s antes:\n${url}`,
+    `Bom dia.\n\nPS *${className}* — ${timeStart} (Brasília). Pra mentor chegar com pauta calibrada pro seu caso, conta o que está precisando trabalhar:\n${url}`,
+    `Time, hoje tem *${className}* às ${timeStart}.\n\nA sessão fica mais cirúrgica quando os pontos chegam antes. 30s pra preencher:\n${url}`,
+    `Bom dia, Lendários.\n\n*${className}* — ${timeStart} (Brasília). Compartilha o que está te travando hoje pra gente trazer resposta direcionada:\n${url}`,
   ];
   return pickRandom(variants);
 }
