@@ -165,7 +165,7 @@
       <div class="question" id="question-1">Como você avalia a aula de hoje?</div>
       <div class="sub-context" id="sub-context-1"></div>
       <div id="name-field-top" style="display:none; margin-bottom:18px">
-        <div class="label-sm">Como podemos te chamar? (opcional)</div>
+        <div class="label-sm">Seu nome</div>
         <input id="name-input-top" type="text" class="text-input name-input" placeholder="Seu nome…">
       </div>
       <div class="stars-row" id="stars-row"></div>
@@ -229,7 +229,7 @@
       </div>
       <div id="name-field-wrap" style="display:none">
         <div class="label-sm">Nome (opcional)</div>
-        <input id="name-input" type="text" class="text-input name-input" placeholder="Como podemos te chamar?">
+        <input id="name-input" type="text" class="text-input name-input" placeholder="Seu nome">
       </div>
       <button class="cta-btn" id="btn-next-4" disabled>Continuar →</button>
     </div>
@@ -575,7 +575,7 @@
         const wrap = document.createElement("div");
         wrap.id = "name-field-ps";
         wrap.style.cssText = "margin-bottom:18px";
-        wrap.innerHTML = `<div class="label-sm">Como podemos te chamar? (opcional)</div><input id="name-input-ps" type="text" class="text-input name-input" placeholder="Seu nome…">`;
+        wrap.innerHTML = `<div class="label-sm">Seu nome</div><input id="name-input-ps" type="text" class="text-input name-input" placeholder="Seu nome…">`;
         const sub = psDoubtsScreen.querySelector("#sub-context-ps-doubts");
         if (sub) sub.insertAdjacentElement("afterend", wrap);
       }
