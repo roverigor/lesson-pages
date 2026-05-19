@@ -116,7 +116,7 @@ function readFilters() {
   const klass = $("filter-class").value || null;
   const mode = $("filter-mode").value || null;
   const source = $("filter-source")?.value || null;
-  const survey = $("filter-survey")?.value || null;
+  const surveyRaw = $("filter-survey")?.value || null;
   const f = {};
   if (from) f.date_from = new Date(from + "T00:00:00").toISOString();
   if (to) {
@@ -128,7 +128,26 @@ function readFilters() {
   if (klass) f.class_id = klass;
   if (mode) f.mode = mode;
   if (source) f.source = source;
-  if (survey) f.survey_id = survey;
+  // surveyRaw may be either:
+  //   - real survey UUID (legacy "manual_survey" type)
+  //   - synthetic "session:{class_id}:{YYYY-MM-DD}" representing a NPS post-class session
+  if (surveyRaw) {
+    if (surveyRaw.startsWith("session:")) {
+      const [, classId, dateStr] = surveyRaw.split(":");
+      if (classId) f.class_id = classId;
+      if (dateStr) {
+        const d0 = new Date(dateStr + "T00:00:00").toISOString();
+        const d1 = new Date(dateStr + "T00:00:00");
+        d1.setDate(d1.getDate() + 1);
+        f.date_from = d0;
+        f.date_to = d1.toISOString();
+      }
+      f.source = "auto_class";
+    } else {
+      f.survey_id = surveyRaw;
+      f.source = "manual_survey";
+    }
+  }
   return f;
 }
 
@@ -141,8 +160,13 @@ function populateFilters() {
   sClass.innerHTML = '<option value="">— todas —</option>' + (state.filterOpts.classes ?? [])
     .map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join("");
   if (sSurvey) {
-    sSurvey.innerHTML = '<option value="">— todos —</option>' + (state.filterOpts.surveys ?? [])
-      .map((s) => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name)}</option>`).join("");
+    const surveyOpts = (state.filterOpts.surveys ?? [])
+      .map((s) => `<option value="${escapeHtml(s.id)}">📋 ${escapeHtml(s.name)}</option>`).join("");
+    const sessionOpts = (state.filterOpts.auto_sessions ?? [])
+      .map((s) => `<option value="session:${escapeHtml(s.class_id)}:${escapeHtml(s.date)}">⚡ ${escapeHtml(s.label || (s.class_name + ' — ' + s.date))}</option>`).join("");
+    sSurvey.innerHTML = '<option value="">— todos —</option>' +
+      (surveyOpts ? `<optgroup label="Formulários manuais">${surveyOpts}</optgroup>` : '') +
+      (sessionOpts ? `<optgroup label="NPS Pós-aula automático">${sessionOpts}</optgroup>` : '');
   }
 }
 
