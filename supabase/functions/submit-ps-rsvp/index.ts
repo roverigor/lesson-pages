@@ -32,6 +32,9 @@ Deno.serve(async (req: Request) => {
     will_attend?: string;
     doubts_text?: string;
     project_phase?: string;
+    confirmed_name?: string;
+    no_reason?: string;
+    team_message?: string;
   };
   try { body = await req.json(); } catch { return json({ error: "invalid_json" }, 400); }
 
@@ -39,9 +42,12 @@ Deno.serve(async (req: Request) => {
   const willAttend = (body.will_attend ?? "").trim();
   const doubtsText = (body.doubts_text ?? "").trim() || null;
   const projectPhase = (body.project_phase ?? "").trim() || null;
+  const confirmedName = (body.confirmed_name ?? "").trim().slice(0, 120) || null;
+  const noReason = (body.no_reason ?? "").trim().slice(0, 2000) || null;
+  const teamMessage = (body.team_message ?? "").trim().slice(0, 2000) || null;
 
   if (!token) return json({ error: "missing_token" }, 400);
-  if (!["yes", "no", "maybe"].includes(willAttend)) return json({ error: "invalid_will_attend" }, 400);
+  if (!["yes", "no"].includes(willAttend)) return json({ error: "invalid_will_attend" }, 400);
 
   const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
@@ -77,6 +83,9 @@ Deno.serve(async (req: Request) => {
     will_attend: willAttend,
     doubts_text: doubtsText,
     project_phase: projectPhase,
+    confirmed_name: confirmedName,
+    no_reason: noReason,
+    team_message: teamMessage,
     ip_hash: ipHash,
     user_agent: userAgent,
   });

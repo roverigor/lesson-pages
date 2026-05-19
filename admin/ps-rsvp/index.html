@@ -33,6 +33,26 @@
     .time-cell { font-size:11px; color:#555; white-space:nowrap; }
     .export-btn { padding:6px 12px; background:#1a1a1a; border:1px solid #333; border-radius:6px; color:#ccc; font-size:12px; cursor:pointer; }
     .export-btn:hover { background:#222; }
+    .class-block { background:#0a0a0a; border:1px solid #1a1a1a; border-radius:10px; padding:14px; }
+    .class-block.has-issue { border-color:#5b1f1f; }
+    .class-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:12px; flex-wrap:wrap; }
+    .class-name { font-size:15px; font-weight:700; color:#fff; }
+    .class-meta { font-size:11px; color:#666; }
+    .class-stats { display:flex; gap:8px; flex-wrap:wrap; }
+    .stat-pill { padding:3px 10px; border-radius:12px; font-size:11px; font-weight:700; background:#1a1a1a; color:#aaa; }
+    .stat-pill.ok { background:rgba(74,222,128,.12); color:#4ade80; }
+    .stat-pill.warn { background:rgba(248,113,113,.12); color:#f87171; }
+    .cohort-row { display:grid; grid-template-columns:1fr 1.4fr auto auto; gap:10px; padding:8px 10px; border-top:1px solid #111; font-size:12px; align-items:center; }
+    .cohort-row:first-of-type { border-top:1px solid #1a1a1a; margin-top:6px; }
+    .cohort-name { color:#ddd; }
+    .cohort-name .inactive-tag { font-size:10px; color:#666; margin-left:6px; padding:1px 6px; background:#1a1a1a; border-radius:6px; }
+    .grupo-cell { font-family:monospace; font-size:11px; color:#888; word-break:break-all; }
+    .grupo-cell.missing { color:#f87171; font-family:inherit; font-style:italic; }
+    .count-cell { color:#fff; font-weight:600; min-width:50px; text-align:right; }
+    .toggle-students-btn { padding:4px 10px; background:#1a1a1a; border:1px solid #333; border-radius:6px; color:#ccc; font-size:11px; cursor:pointer; }
+    .students-list { padding:10px; background:#050505; border-radius:8px; margin-top:8px; max-height:280px; overflow-y:auto; font-size:11px; }
+    .student-line { padding:4px 0; border-bottom:1px solid #111; color:#bbb; font-family:monospace; }
+    .student-line:last-child { border-bottom:none; }
   </style>
 </head>
 <body>
@@ -82,7 +102,6 @@
           <select id="filter-attend">
             <option value="">— todos —</option>
             <option value="yes">Vai participar</option>
-            <option value="maybe">Talvez</option>
             <option value="no">Não vai</option>
           </select>
         </label>
@@ -99,9 +118,19 @@
       <div class="kpi-row" id="kpi-row">
         <div class="kpi-card"><div class="kpi-val" id="kpi-total">0</div><div class="kpi-lbl">Respostas</div></div>
         <div class="kpi-card"><div class="kpi-val" id="kpi-yes">0</div><div class="kpi-lbl">Vão participar</div></div>
-        <div class="kpi-card"><div class="kpi-val" id="kpi-maybe">0</div><div class="kpi-lbl">Talvez</div></div>
         <div class="kpi-card"><div class="kpi-val" id="kpi-no">0</div><div class="kpi-lbl">Não vão</div></div>
         <div class="kpi-card"><div class="kpi-val" id="kpi-doubts">0</div><div class="kpi-lbl">Trouxeram dúvidas</div></div>
+        <div class="kpi-card"><div class="kpi-val" id="kpi-feedback">0</div><div class="kpi-lbl">Recados/motivos</div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">🔧 Setup PS — Cohorts + Grupos WA + Alunos elegíveis</h2>
+      <div style="font-size:13px;color:#888;margin-bottom:12px">
+        Quais cohorts cada classe PS está vinculada, qual grupo WA recebe a msg e quantos alunos elegíveis (active=true · is_mentor=false · phone preenchido). Alertas em vermelho indicam cohort sem grupo WA registrado.
+      </div>
+      <div id="setup-container" style="display:flex;flex-direction:column;gap:16px">
+        <div class="empty">Carregando setup...</div>
       </div>
     </section>
 
@@ -114,8 +143,8 @@
               <th>Status</th>
               <th>Aluno</th>
               <th>Classe</th>
-              <th>Dúvidas / desafios</th>
-              <th>Fase projeto</th>
+              <th>Dúvidas / Motivo</th>
+              <th>Fase / Recado</th>
               <th>Quando</th>
             </tr>
           </thead>

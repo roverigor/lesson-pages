@@ -17,7 +17,8 @@ const $ = (id) => document.getElementById(id);
 const show = (el) => el.classList.remove("hidden");
 const hide = (el) => el.classList.add("hidden");
 
-const state = { responses: [], pending: [], classes: [] };
+const state = { responses: [], pending: [], classes: [], setup: [] };
+const _studentsCache = new Map(); // classId → students[]
 
 function escapeHtml(s) {
   if (s == null) return "";
@@ -33,7 +34,6 @@ function fmtTime(ts) {
 function attendChip(v) {
   if (v === "yes") return `<span class="attend-chip yes">✓ Vai</span>`;
   if (v === "no") return `<span class="attend-chip no">✗ Não</span>`;
-  if (v === "maybe") return `<span class="attend-chip maybe">~ Talvez</span>`;
   return `<span class="attend-chip">—</span>`;
 }
 
@@ -42,7 +42,7 @@ async function loadResponses() {
   const today = new Date().toISOString().slice(0, 10);
 
   let q = sb.from("ps_rsvp_responses")
-    .select("id, class_id, session_date, will_attend, doubts_text, project_phase, submitted_at, student_id, classes(name), students(name, phone)")
+    .select("id, class_id, session_date, will_attend, doubts_text, project_phase, confirmed_name, no_reason, team_message, submitted_at, student_id, classes(name), students(name, phone)")
     .order("submitted_at", { ascending: false });
 
   if (dateFilter === "today") q = q.eq("session_date", today);
@@ -86,25 +86,36 @@ function renderResponses() {
   let rows = state.responses;
   if (classFilter) rows = rows.filter((r) => r.class_id === classFilter);
   if (attendFilter) rows = rows.filter((r) => r.will_attend === attendFilter);
-  if (onlyDoubts) rows = rows.filter((r) => r.doubts_text && r.doubts_text.trim());
+  if (onlyDoubts) rows = rows.filter((r) => (r.doubts_text && r.doubts_text.trim()) || (r.no_reason && r.no_reason.trim()));
 
   if (rows.length === 0) {
     $("responses-body").innerHTML = `<tr><td colspan="6" class="empty">Nenhuma resposta com os filtros atuais.</td></tr>`;
     return;
   }
-  $("responses-body").innerHTML = rows.map((r) => `
+  $("responses-body").innerHTML = rows.map((r) => {
+    const isYes = r.will_attend === "yes";
+    const displayName = isYes
+      ? (r.confirmed_name || r.students?.name || "—")
+      : (r.students?.name || "—");
+    const middleText = isYes
+      ? (r.doubts_text || "—")
+      : (r.no_reason ? `🗨️ ${r.no_reason}` : "—");
+    const rightText = isYes
+      ? (r.project_phase || "—")
+      : (r.team_message ? `✉️ ${r.team_message}` : "—");
+    return `
     <tr>
       <td>${attendChip(r.will_attend)}</td>
       <td>
-        <div class="name-cell">${escapeHtml(r.students?.name || "—")}</div>
+        <div class="name-cell">${escapeHtml(displayName)}</div>
         <div class="phone-cell">${escapeHtml(r.students?.phone || "—")}</div>
       </td>
       <td>${escapeHtml(r.classes?.name || "—")}</td>
-      <td class="doubts-cell">${escapeHtml(r.doubts_text || "—")}</td>
-      <td class="phase-cell">${escapeHtml(r.project_phase || "—")}</td>
+      <td class="doubts-cell">${escapeHtml(middleText)}</td>
+      <td class="phase-cell">${escapeHtml(rightText)}</td>
       <td class="time-cell">${fmtTime(r.submitted_at)}</td>
-    </tr>
-  `).join("");
+    </tr>`;
+  }).join("");
 }
 
 function renderPending() {
@@ -129,9 +140,10 @@ function renderKpis() {
   const rows = state.responses;
   $("kpi-total").textContent = rows.length;
   $("kpi-yes").textContent = rows.filter((r) => r.will_attend === "yes").length;
-  $("kpi-maybe").textContent = rows.filter((r) => r.will_attend === "maybe").length;
   $("kpi-no").textContent = rows.filter((r) => r.will_attend === "no").length;
   $("kpi-doubts").textContent = rows.filter((r) => r.doubts_text && r.doubts_text.trim()).length;
+  const feedback = $("kpi-feedback");
+  if (feedback) feedback.textContent = rows.filter((r) => (r.no_reason && r.no_reason.trim()) || (r.team_message && r.team_message.trim())).length;
 }
 
 async function loadClasses() {
@@ -152,15 +164,18 @@ async function loadClasses() {
 function exportCSV() {
   const rows = state.responses;
   if (rows.length === 0) { alert("Nada pra exportar."); return; }
-  const header = "data,classe,aluno,telefone,status,duvidas,fase,quando";
+  const header = "data,classe,aluno,nome_confirmado,telefone,status,duvidas,fase,motivo_nao,recado_equipe,quando";
   const csv = rows.map((r) => [
     r.session_date,
     csvCell(r.classes?.name),
     csvCell(r.students?.name),
+    csvCell(r.confirmed_name),
     csvCell(r.students?.phone),
     r.will_attend,
     csvCell(r.doubts_text),
     csvCell(r.project_phase),
+    csvCell(r.no_reason),
+    csvCell(r.team_message),
     r.submitted_at,
   ].join(",")).join("\n");
   download(`ps-rsvp-${new Date().toISOString().slice(0, 10)}.csv`, header + "\n" + csv, "text/csv");
@@ -169,25 +184,38 @@ function exportCSV() {
 function exportMD() {
   const rows = state.responses;
   if (rows.length === 0) { alert("Nada pra exportar."); return; }
-  // Group by class, show only attending + maybe with doubts
-  const relevant = rows.filter((r) => (r.will_attend === "yes" || r.will_attend === "maybe") && r.doubts_text && r.doubts_text.trim());
+  // Briefing: yes-with-doubts grouped by class
+  const attending = rows.filter((r) => r.will_attend === "yes" && r.doubts_text && r.doubts_text.trim());
+  const notComingWithFeedback = rows.filter((r) => r.will_attend === "no" && ((r.no_reason && r.no_reason.trim()) || (r.team_message && r.team_message.trim())));
   const byClass = {};
-  for (const r of relevant) {
+  for (const r of attending) {
     const cn = r.classes?.name || "—";
     (byClass[cn] = byClass[cn] || []).push(r);
   }
   let md = `# Briefing PS — ${new Date().toLocaleDateString("pt-BR")}\n\n`;
-  md += `**Total respostas:** ${rows.length} · **Vão participar:** ${rows.filter(r=>r.will_attend==="yes").length} · **Talvez:** ${rows.filter(r=>r.will_attend==="maybe").length} · **Com dúvidas:** ${relevant.length}\n\n---\n\n`;
-  if (relevant.length === 0) {
-    md += "_Nenhuma dúvida coletada ainda._\n";
+  md += `**Total respostas:** ${rows.length} · **Vão:** ${rows.filter(r=>r.will_attend==="yes").length} · **Não:** ${rows.filter(r=>r.will_attend==="no").length} · **Com dúvidas:** ${attending.length}\n\n---\n\n`;
+  md += `## Dúvidas dos que vão\n\n`;
+  if (attending.length === 0) {
+    md += "_Nenhuma dúvida coletada ainda._\n\n";
   } else {
     for (const cn of Object.keys(byClass).sort()) {
-      md += `## ${cn}\n\n`;
+      md += `### ${cn}\n\n`;
       for (const r of byClass[cn]) {
-        md += `### ${r.students?.name || "Aluno"}${r.will_attend === "maybe" ? " *(talvez)*" : ""}\n`;
+        const nm = r.confirmed_name || r.students?.name || "Aluno";
+        md += `#### ${nm}\n`;
         if (r.project_phase) md += `**Fase:** ${r.project_phase}\n`;
         md += `${r.doubts_text}\n\n`;
       }
+    }
+  }
+  if (notComingWithFeedback.length > 0) {
+    md += `---\n\n## Quem não vai (com retorno)\n\n`;
+    for (const r of notComingWithFeedback) {
+      const nm = r.students?.name || "Aluno";
+      md += `### ${nm} — ${r.classes?.name || "—"}\n`;
+      if (r.no_reason) md += `**Motivo:** ${r.no_reason}\n`;
+      if (r.team_message) md += `**Recado:** ${r.team_message}\n`;
+      md += `\n`;
     }
   }
   download(`briefing-ps-${new Date().toISOString().slice(0, 10)}.md`, md, "text/markdown");
@@ -204,8 +232,185 @@ function download(name, content, mime) {
 }
 
 async function refresh() {
+  await loadSetup();
   await loadResponses();
   await loadPending();
+}
+
+// ─── SETUP DASHBOARD ─────────────────────────────────────────────────
+async function loadSetup() {
+  const container = $("setup-container");
+  if (!container) return;
+  container.innerHTML = `<div class="empty">Carregando setup...</div>`;
+
+  // 1) PS classes ativas
+  const { data: classes, error: classErr } = await sb.from("classes")
+    .select("id, name, weekday, time_start")
+    .eq("kind", "ps")
+    .eq("active", true)
+    .order("name");
+  if (classErr) {
+    container.innerHTML = `<div class="empty" style="color:#f87171">Erro classes: ${escapeHtml(classErr.message)}</div>`;
+    return;
+  }
+  if (!classes || classes.length === 0) {
+    container.innerHTML = `<div class="empty">Nenhuma classe PS ativa.</div>`;
+    return;
+  }
+
+  // 2) class_cohorts + cohorts em batch
+  const classIds = classes.map((c) => c.id);
+  const { data: bridges } = await sb.from("class_cohorts")
+    .select("class_id, cohort_id")
+    .in("class_id", classIds);
+  const cohortIds = [...new Set((bridges || []).map((b) => b.cohort_id))];
+  const cohortMap = new Map();
+  if (cohortIds.length > 0) {
+    const { data: cohorts } = await sb.from("cohorts")
+      .select("id, name, active, whatsapp_group_jid, whatsapp_group_name")
+      .in("id", cohortIds);
+    (cohorts || []).forEach((co) => cohortMap.set(co.id, co));
+  }
+
+  // 3) Count students por cohort
+  const { data: students } = await sb.from("students")
+    .select("id, cohort_id, active, is_mentor, phone")
+    .in("cohort_id", cohortIds.length > 0 ? cohortIds : ["00000000-0000-0000-0000-000000000000"]);
+  const studentByCohort = new Map();
+  (students || []).forEach((s) => {
+    if (!studentByCohort.has(s.cohort_id)) studentByCohort.set(s.cohort_id, []);
+    studentByCohort.get(s.cohort_id).push(s);
+  });
+
+  // 4) Build setup view
+  const setup = classes.map((c) => {
+    const classCohorts = (bridges || [])
+      .filter((b) => b.class_id === c.id)
+      .map((b) => cohortMap.get(b.cohort_id))
+      .filter(Boolean);
+
+    const cohortDetails = classCohorts.map((co) => {
+      const list = studentByCohort.get(co.id) || [];
+      const eligible = list.filter((s) => s.active && !s.is_mentor && s.phone && s.phone.trim());
+      const noPhone = list.filter((s) => s.active && !s.is_mentor && (!s.phone || !s.phone.trim()));
+      return {
+        cohort: co,
+        eligible_count: eligible.length,
+        no_phone_count: noPhone.length,
+        total_active: list.filter((s) => s.active).length,
+      };
+    });
+
+    const totalEligible = cohortDetails.reduce((s, d) => s + d.eligible_count, 0);
+    const missingWA = cohortDetails.filter((d) => !d.cohort.whatsapp_group_jid).length;
+
+    return {
+      class: c,
+      cohorts: cohortDetails,
+      total_eligible: totalEligible,
+      missing_wa: missingWA,
+      has_issue: missingWA > 0 || cohortDetails.length === 0,
+    };
+  });
+
+  state.setup = setup;
+  renderSetup();
+}
+
+const WEEKDAYS = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
+
+function renderSetup() {
+  const container = $("setup-container");
+  if (!container) return;
+  if (!state.setup.length) { container.innerHTML = `<div class="empty">Sem dados de setup.</div>`; return; }
+
+  container.innerHTML = state.setup.map((s) => {
+    const c = s.class;
+    const wdLabel = WEEKDAYS[c.weekday] || `weekday=${c.weekday}`;
+    const timeLabel = c.time_start ? c.time_start.slice(0, 5) : "—";
+    const issueClass = s.has_issue ? "has-issue" : "";
+
+    const cohortRows = s.cohorts.length === 0
+      ? `<div class="empty" style="padding:14px">⚠️ Nenhum cohort vinculado a esta classe. <code>class_cohorts</code> precisa de INSERT.</div>`
+      : s.cohorts.map((d) => {
+          const co = d.cohort;
+          const inactiveTag = !co.active ? `<span class="inactive-tag">inativo</span>` : "";
+          const groupCell = co.whatsapp_group_jid
+            ? `<span class="grupo-cell">${escapeHtml(co.whatsapp_group_name || co.whatsapp_group_jid)}</span>`
+            : `<span class="grupo-cell missing">⚠️ sem grupo WA</span>`;
+          return `
+            <div class="cohort-row">
+              <div class="cohort-name">${escapeHtml(co.name)}${inactiveTag}</div>
+              ${groupCell}
+              <div class="count-cell">${d.eligible_count} 👤</div>
+              <button class="toggle-students-btn" data-class="${escapeHtml(c.id)}" data-cohort="${escapeHtml(co.id)}">Ver alunos</button>
+            </div>
+          `;
+        }).join("");
+
+    const issueBadge = s.missing_wa > 0
+      ? `<span class="stat-pill warn">⚠️ ${s.missing_wa} sem grupo WA</span>`
+      : s.cohorts.length > 0 ? `<span class="stat-pill ok">✓ grupos OK</span>` : "";
+
+    return `
+      <div class="class-block ${issueClass}">
+        <div class="class-header">
+          <div>
+            <div class="class-name">${escapeHtml(c.name)}</div>
+            <div class="class-meta">${wdLabel} · ${timeLabel}</div>
+          </div>
+          <div class="class-stats">
+            <span class="stat-pill">${s.cohorts.length} cohort(s)</span>
+            <span class="stat-pill">${s.total_eligible} aluno(s) elegível(s)</span>
+            ${issueBadge}
+          </div>
+        </div>
+        ${cohortRows}
+        <div class="students-list hidden" id="students-${cssId(c.id)}"></div>
+      </div>
+    `;
+  }).join("");
+
+  container.querySelectorAll(".toggle-students-btn").forEach((btn) => {
+    btn.addEventListener("click", () => toggleStudents(btn.dataset.class, btn.dataset.cohort));
+  });
+}
+
+function cssId(s) { return String(s).replace(/[^a-zA-Z0-9_-]/g, "_"); }
+
+async function toggleStudents(classId, cohortId) {
+  const el = document.getElementById(`students-${cssId(classId)}`);
+  if (!el) return;
+  if (!el.classList.contains("hidden") && el.dataset.cohort === cohortId) {
+    el.classList.add("hidden");
+    el.innerHTML = "";
+    return;
+  }
+  el.classList.remove("hidden");
+  el.dataset.cohort = cohortId;
+  el.innerHTML = `<div style="color:#666;font-size:11px">Carregando alunos...</div>`;
+
+  const cacheKey = `${cohortId}`;
+  let list = _studentsCache.get(cacheKey);
+  if (!list) {
+    const { data } = await sb.from("students")
+      .select("id, name, phone, is_mentor, active")
+      .eq("cohort_id", cohortId)
+      .order("name");
+    list = data || [];
+    _studentsCache.set(cacheKey, list);
+  }
+  const eligible = list.filter((s) => s.active && !s.is_mentor && s.phone);
+  const others = list.filter((s) => !(s.active && !s.is_mentor && s.phone));
+  el.innerHTML = `
+    <div style="color:#888;font-size:11px;margin-bottom:6px">📋 Cohort: ${escapeHtml(cohortId)} · Elegíveis: ${eligible.length} · Total: ${list.length}</div>
+    ${eligible.map((s) => `<div class="student-line">✓ ${escapeHtml(s.name)} — ${escapeHtml(s.phone)}</div>`).join("")}
+    ${others.length ? `<div style="color:#666;font-size:11px;margin-top:8px;border-top:1px solid #222;padding-top:6px">Não elegíveis (${others.length}):</div>` : ""}
+    ${others.map((s) => {
+      const reason = !s.active ? "inativo" : s.is_mentor ? "mentor" : "sem phone";
+      return `<div class="student-line" style="color:#666">⊘ ${escapeHtml(s.name)} <span style="color:#444">(${reason})</span></div>`;
+    }).join("")}
+  `;
 }
 
 async function ensureAdmin() {

@@ -9,15 +9,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendBlockMessage } from "../_shared/slack.ts";
 import { sendEvolutionGroupText } from "../_shared/evolution-group.ts";
+import { sendWhatsAppTemplate } from "../_shared/meta-whatsapp.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL") ?? "";
-const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY") ?? "";
-const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
 const SLACK_CHANNEL = Deno.env.get("SLACK_CHANNEL_DEV_ALERTS") ?? Deno.env.get("SLACK_CHANNEL_DETRACTORS") ?? "";
-const BASE_URL = "https://painel.academialendaria.ai";
-const DELAY_MS = 5000;
+// Meta Cloud API — 500ms throttle (2 msg/s, comfortable under tier limits).
+const DELAY_MS = 500;
 
 const CORS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -35,49 +33,52 @@ function brtToday(): { isoDate: string; weekday: number } {
   return { isoDate: brt.toISOString().slice(0, 10), weekday: brt.getUTCDay() };
 }
 
-// ── Variant pools — rotated per send, premium tone, no clichês ──
+// ── Variant rotation ──
 function pickRandom<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
 
-function buildDMText(firstName: string, className: string, timeStart: string, token: string): string {
-  const url = `https://painel.academialendaria.ai/ps-rsvp/${token}`;
-  const variants = [
-    `Bom dia, ${firstName}.\n\nHoje rola *${className}* — ${timeStart} (Brasília).\n\nPra eu chegar preparado pro seu caso específico, me conta em 30s:\n${url}`,
-    `${firstName}, bom dia.\n\nPS de hoje é *${className}*, ${timeStart}.\n\nQual ponto travado você quer destravar hoje? Conta aqui pro mentor já chegar com material relevante:\n${url}`,
-    `Bom dia, ${firstName}!\n\n*${className}* abre ${timeStart}. Pra valer cada minuto seu, o mentor adapta o foco baseado no que vocês trouxerem.\n\nLeva 30s:\n${url}`,
-    `${firstName}, ${className} hoje ${timeStart} (Brasília).\n\nMe diz o que você quer trabalhar — o PS rende muito mais com pauta pré-definida:\n${url}`,
-    `Bom dia, ${firstName}.\n\nHoje tem *${className}* — ${timeStart}. Conta rapidamente onde você está e o que precisa destravar; chega tudo pro mentor antes da sessão:\n${url}`,
-  ];
-  return pickRandom(variants);
+interface PsVariant {
+  id: string;
+  meta_template_name: string;
+  weight: number;
+}
+
+function pickWeighted(variants: PsVariant[]): PsVariant {
+  const total = variants.reduce((s, v) => s + v.weight, 0);
+  let r = Math.random() * total;
+  for (const v of variants) {
+    r -= v.weight;
+    if (r <= 0) return v;
+  }
+  return variants[variants.length - 1];
 }
 
 function buildGroupText(className: string, timeStart: string): string {
   const url = `https://painel.academialendaria.ai/ps-rsvp`;
   const variants = [
-    `Bom dia, time.\n\nHoje rola *${className}*, ${timeStart} (Brasília). Cada um recebeu DM individual pra confirmar presença + listar dúvidas que está trazendo — o mentor já se prepara com base nisso.\n\nSe não viu o DM, passa aqui: ${url}`,
-    `Time, bom dia!\n\n*${className}* aberta hoje às ${timeStart}. Foco da sessão se ajusta às dúvidas que vocês trouxerem — verifica o DM individual e conta o que tá precisando destravar.`,
-    `Bom dia.\n\nPS *${className}* — ${timeStart} (Brasília). Vocês receberam DM individual: 30s pra dizer se vem + dúvidas. Mentor chega com pauta calibrada pelas respostas.\n\nNão viu? ${url}`,
-    `Time, hoje tem *${className}* às ${timeStart}.\n\nO mentor vai usar os pontos que vocês compartilharam no DM individual pra calibrar a sessão. Vale a pena reservar 30s pra responder.`,
-    `Bom dia, Lendários.\n\n*${className}* — ${timeStart} (Brasília). DM individual chegou: confirma presença + manda dúvidas. Quanto mais sincero, mais o mentor consegue te ajudar de fato.`,
+    `Bom dia, time.\n\nHoje rola *${className}*, ${timeStart} (Brasília).\n\nQuanto mais a sessão for sobre o que vocês estão construindo, mais valor ela gera. Reserva 30s pra contar o que precisa destravar:\n${url}`,
+    `Time, bom dia!\n\n*${className}* abre hoje às ${timeStart}. O foco do PS se ajusta às dúvidas que vocês trouxerem — vale separar 30s antes:\n${url}`,
+    `Bom dia.\n\nPS *${className}* — ${timeStart} (Brasília). Pra mentor chegar com pauta calibrada pro seu caso, conta o que está precisando trabalhar:\n${url}`,
+    `Time, hoje tem *${className}* às ${timeStart}.\n\nA sessão fica mais cirúrgica quando os pontos chegam antes. 30s pra preencher:\n${url}`,
+    `Bom dia, Lendários.\n\n*${className}* — ${timeStart} (Brasília). Compartilha o que está te travando hoje pra gente trazer resposta direcionada:\n${url}`,
   ];
   return pickRandom(variants);
 }
 
-async function sendDM(phone: string, text: string): Promise<{ ok: boolean; messageId: string | null; error?: string }> {
-  if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY) return { ok: false, messageId: null, error: "evolution_env_missing" };
-  const digits = phone.replace(/\D/g, "");
-  try {
-    const res = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", apikey: EVOLUTION_API_KEY },
-      body: JSON.stringify({ number: `${digits}@s.whatsapp.net`, text }),
-    });
-    if (!res.ok) return { ok: false, messageId: null, error: `http_${res.status}: ${(await res.text()).slice(0, 200)}` };
-    const data = await res.json().catch(() => ({}));
-    const id = data?.key?.id ?? data?.messageId ?? data?.message?.id ?? null;
-    return { ok: true, messageId: id };
-  } catch (e) {
-    return { ok: false, messageId: null, error: e instanceof Error ? e.message : String(e) };
-  }
+async function sendDmTemplate(
+  phone: string,
+  templateName: string,
+  firstName: string,
+  className: string,
+  timeStart: string,
+  token: string,
+): Promise<{ ok: boolean; messageId: string | null; error?: string }> {
+  const r = await sendWhatsAppTemplate(
+    phone,
+    templateName,
+    [firstName, className, timeStart],
+    [token],
+  );
+  return { ok: r.success, messageId: r.messageId, error: r.error };
 }
 
 async function slackNotify(text: string, blocks?: Array<Record<string, unknown>>) {
@@ -120,6 +121,18 @@ Deno.serve(async (req: Request) => {
   if (!classes || classes.length === 0) {
     await slackNotify(`✅ dispatch-ps-rsvp finished — no PS class today (${today.isoDate}, weekday ${today.weekday})`);
     return json({ success: true, message: "no PS class today", today });
+  }
+
+  // Load active Meta template variants for rotation
+  const { data: variantRows } = await sb
+    .from("ps_rsvp_variants")
+    .select("id, meta_template_name, weight")
+    .eq("active", true);
+
+  const variants: PsVariant[] = (variantRows ?? []) as PsVariant[];
+  if (variants.length === 0) {
+    await slackNotify(`❌ dispatch-ps-rsvp aborted — no active ps_rsvp_variants. Approve Meta templates and flip active=true.`);
+    return json({ success: false, error: "no_active_variants" }, 412);
   }
 
   const results: Record<string, unknown>[] = [];
@@ -185,11 +198,11 @@ Deno.serve(async (req: Request) => {
         continue;
       }
       const firstName = (stu.name || "").trim().split(/\s+/)[0] || "Lendário";
-      const text = buildDMText(firstName, cls.name, cls.time_start, lnk.token);
+      const variant = pickWeighted(variants);
 
-      const r = await sendDM(stu.phone, text);
+      const r = await sendDmTemplate(stu.phone, variant.meta_template_name, firstName, cls.name, cls.time_start, lnk.token);
       if (r.ok) {
-        await sb.from("ps_rsvp_links").update({ send_status: "sent", sent_at: new Date().toISOString(), evolution_message_id: r.messageId }).eq("id", lnk.id);
+        await sb.from("ps_rsvp_links").update({ send_status: "sent", sent_at: new Date().toISOString(), meta_message_id: r.messageId }).eq("id", lnk.id);
         sent++;
       } else {
         await sb.from("ps_rsvp_links").update({ send_status: "failed", error_detail: r.error }).eq("id", lnk.id);
