@@ -172,17 +172,19 @@ function populateFilters() {
 
 async function refreshAll() {
   try {
-    const [summary, trend, cohortBreak, classBreak, comments] = await Promise.all([
+    const [summary, trend, cohortBreak, classBreak, surveyBreak, comments] = await Promise.all([
       rpc("nps_results_summary", { p_filters: state.filters }),
       rpc("nps_results_trend", { p_weeks: 12, p_filters: state.filters }),
       rpc("nps_results_by_cohort", { p_filters: state.filters }),
       rpc("nps_results_by_class", { p_filters: state.filters }),
+      rpc("nps_results_by_survey", { p_filters: state.filters }).catch(() => []),
       fetchComments(),
     ]);
     state.summary = summary;
     state.trend = trend || [];
     state.cohortBreak = cohortBreak || [];
     state.classBreak = classBreak || [];
+    state.surveyBreak = surveyBreak || [];
     state.comments = comments || [];
     renderAll();
     hideError();
@@ -208,6 +210,7 @@ function renderAll() {
   renderTrend();
   renderCohortBreak();
   renderClassBreak();
+  renderSurveyBreak();
   renderComments();
   renderAllResponses();
 }
@@ -325,6 +328,174 @@ function renderClassBreak() {
       <td>${r.avg_score ?? "—"}</td>
     </tr>
   `).join("");
+}
+
+// ─── By survey / session ─────────────────────────────────────────────
+function renderSurveyBreak() {
+  const list = $("survey-list");
+  if (!list) return;
+  const kindFilter = $("survey-kind-filter")?.value || "";
+  let rows = state.surveyBreak || [];
+  if (kindFilter) rows = rows.filter((r) => r.kind === kindFilter);
+
+  if (rows.length === 0) {
+    list.innerHTML = `<div class="loading">Nenhum formulário com filtros atuais.</div>`;
+    return;
+  }
+
+  list.innerHTML = rows.map((r) => {
+    const icon = r.kind === "manual" ? "📋" : "⚡";
+    const kindLbl = r.kind === "manual" ? "Formulário manual" : (r.class_kind === "ps" ? "PS pós-aula" : "Aula pós-aula");
+    const dateRange = (r.first_at && r.last_at && r.first_at !== r.last_at)
+      ? `${fmtDate(r.first_at)} – ${fmtDate(r.last_at)}`
+      : fmtDate(r.first_at || r.last_at);
+    const npsCol = npsColor(r.nps);
+    const dmNpsCol = npsColor(r.dm_nps);
+    const grpNpsCol = npsColor(r.group_nps);
+    const modeSplitTxt = (r.dm_total > 0 || r.group_total > 0)
+      ? `<span style="color:#888;font-size:11px">📩 DM ${r.dm_total ?? 0}${r.dm_nps != null ? ` (NPS ${r.dm_nps})` : ""} · 📢 Grupo ${r.group_total ?? 0}${r.group_nps != null ? ` (NPS ${r.group_nps})` : ""}</span>`
+      : "";
+    return `
+      <div class="survey-item" data-key="${escapeHtml(r.group_key)}">
+        <div class="survey-row">
+          <div class="survey-main">
+            <div class="survey-label">${icon} ${escapeHtml(r.label)}</div>
+            <div class="survey-meta">${escapeHtml(kindLbl)} · ${escapeHtml(dateRange)}</div>
+            ${modeSplitTxt ? `<div style="margin-top:4px">${modeSplitTxt}</div>` : ""}
+          </div>
+          <div class="survey-stats">
+            <div class="stat-block"><div class="stat-num">${r.total}</div><div class="stat-lbl">respostas</div></div>
+            <div class="stat-block"><div class="stat-num" style="color:${npsCol}">${r.nps ?? "—"}</div><div class="stat-lbl">NPS geral</div></div>
+            <div class="stat-block"><div class="stat-num">${r.avg_score ?? "—"}</div><div class="stat-lbl">média</div></div>
+            <button class="btn-expand" data-key="${escapeHtml(r.group_key)}">Ver detalhe</button>
+          </div>
+        </div>
+        <div class="survey-detail hidden" id="detail-${cssId(r.group_key)}"></div>
+      </div>
+    `;
+  }).join("");
+
+  list.querySelectorAll(".btn-expand").forEach((btn) => {
+    btn.addEventListener("click", () => toggleSurveyDetail(btn.dataset.key));
+  });
+}
+
+function cssId(str) { return String(str).replace(/[^a-zA-Z0-9_-]/g, "_"); }
+
+async function toggleSurveyDetail(key) {
+  const elId = `detail-${cssId(key)}`;
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (!el.classList.contains("hidden")) {
+    el.classList.add("hidden");
+    el.innerHTML = "";
+    return;
+  }
+  el.classList.remove("hidden");
+  el.innerHTML = `<div class="loading">Carregando respostas...</div>`;
+
+  const row = (state.surveyBreak || []).find((r) => r.group_key === key);
+  if (!row) { el.innerHTML = `<div class="loading">Dados não encontrados.</div>`; return; }
+
+  // Build filter for detail query
+  const f = { ...state.filters };
+  if (row.kind === "manual") {
+    f.survey_id = row.survey_id;
+    f.source = "manual_survey";
+  } else {
+    f.class_id = row.class_id;
+    f.source = "auto_class";
+    if (row.session_date) {
+      const d0 = new Date(row.session_date + "T00:00:00").toISOString();
+      const d1 = new Date(row.session_date + "T00:00:00");
+      d1.setDate(d1.getDate() + 1);
+      f.date_from = d0;
+      f.date_to = d1.toISOString();
+    }
+  }
+
+  try {
+    const rows = await rpc("nps_results_comments", { p_filters: f, p_limit: 500 });
+    renderSurveyDetail(el, row, rows || []);
+  } catch (e) {
+    el.innerHTML = `<div class="loading" style="color:#f87171">Erro: ${escapeHtml(e?.message ?? String(e))}</div>`;
+  }
+}
+
+function renderSurveyDetail(el, row, responses) {
+  if (!responses.length) {
+    el.innerHTML = `<div class="loading">Sem respostas para mostrar.</div>`;
+    return;
+  }
+
+  // Build per-mode summary helper
+  const summarize = (arr) => {
+    if (!arr.length) return null;
+    const promoters = arr.filter((r) => r.nps_score >= 9).length;
+    const passives = arr.filter((r) => r.nps_score >= 7 && r.nps_score <= 8).length;
+    const detractors = arr.filter((r) => r.nps_score <= 6).length;
+    const total = arr.length;
+    const nps = Math.round((promoters - detractors) * 100 / total);
+    const avg = (arr.reduce((s, r) => s + (r.nps_score ?? 0), 0) / total).toFixed(1);
+    return {
+      total, promoters, passives, detractors, nps, avg,
+      pp: Math.round(promoters * 100 / total),
+      ps: Math.round(passives * 100 / total),
+      pd: Math.round(detractors * 100 / total),
+    };
+  };
+
+  const all = summarize(responses);
+  const dm = summarize(responses.filter((r) => r.mode === "dm"));
+  const grp = summarize(responses.filter((r) => r.mode === "group"));
+  const withComment = responses.filter((r) => r.comment && r.comment.trim());
+
+  const buildBar = (s, title) => s ? `
+    <div class="detail-mode-block">
+      <div class="detail-mode-title">${title} · ${s.total} respostas · NPS <strong style="color:${npsColor(s.nps)}">${s.nps}</strong> · média ${s.avg}</div>
+      <div class="detail-bar">
+        <div class="bar-segment promoter" style="width:${s.pp}%"></div>
+        <div class="bar-segment passive" style="width:${s.ps}%"></div>
+        <div class="bar-segment detractor" style="width:${s.pd}%"></div>
+      </div>
+      <div class="detail-legend">
+        <span style="color:#4ade80">💚 ${s.promoters} (${s.pp}%)</span>
+        <span style="color:#facc15">⚠️ ${s.passives} (${s.ps}%)</span>
+        <span style="color:#f87171">🚨 ${s.detractors} (${s.pd}%)</span>
+      </div>
+    </div>` : "";
+
+  let html = `
+    ${buildBar(all, "📊 Geral")}
+    ${dm && grp ? `
+      <div class="detail-mode-split">
+        ${buildBar(dm, "📩 DM (atribuído)")}
+        ${buildBar(grp, "📢 Grupo (anônimo)")}
+      </div>` : ""}
+    ${dm && !grp ? buildBar(dm, "📩 DM (atribuído)") : ""}
+    ${grp && !dm ? buildBar(grp, "📢 Grupo (anônimo)") : ""}
+    <div class="detail-section">
+      <div class="detail-section-title">Respostas (${all.total})${withComment.length ? ` · ${withComment.length} c/ comentário` : ""}</div>
+      <table class="data-table" style="margin-top:6px">
+        <thead><tr><th>Quando</th><th>Aluno</th><th>Canal</th><th>Nota</th><th>Comentário</th></tr></thead>
+        <tbody>
+          ${responses.map((r) => {
+            const scoreCol = r.nps_score >= 9 ? "#4ade80" : r.nps_score >= 7 ? "#facc15" : "#f87171";
+            const who = r.student_name || r.name_provided || "Anônimo";
+            const modeLbl = r.mode === "dm" ? "📩 DM" : "📢 Grupo";
+            return `<tr>
+              <td style="font-size:11px;color:#666">${escapeHtml(fmtDateTime(r.submitted_at))}</td>
+              <td>${escapeHtml(who)}</td>
+              <td style="color:#888;font-size:11px">${modeLbl}</td>
+              <td><strong style="color:${scoreCol}">${r.nps_score ?? "—"}</strong></td>
+              <td style="color:#ccc;font-size:12px;max-width:480px">${escapeHtml(r.comment || "")}</td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+  el.innerHTML = html;
 }
 
 function npsColor(nps) {
@@ -455,6 +626,8 @@ function wireEvents() {
     state.comments = await fetchComments();
     renderComments();
   });
+
+  $("survey-kind-filter")?.addEventListener("change", () => renderSurveyBreak());
 
   $("login-btn").addEventListener("click", login);
   ["login-email", "login-password"].forEach((id) => {

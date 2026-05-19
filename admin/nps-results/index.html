@@ -115,6 +115,26 @@
       </div>
     </section>
 
+    <!-- ─── BY SURVEY / SESSION ──────────────────────────────────── -->
+    <section class="card">
+      <h2 class="card-title">📝 Por formulário / sessão</h2>
+      <div style="font-size:13px;color:#888;margin-bottom:12px">
+        Cada linha = um formulário manual ou uma sessão de NPS pós-aula. Clique pra ver detalhe.
+      </div>
+      <div class="filters-row" style="margin-bottom:12px">
+        <label>Tipo:
+          <select id="survey-kind-filter">
+            <option value="">— todos —</option>
+            <option value="manual">📋 Manuais</option>
+            <option value="auto">⚡ Pós-aula</option>
+          </select>
+        </label>
+      </div>
+      <div id="survey-list" class="survey-list">
+        <div class="loading">Carregando formulários...</div>
+      </div>
+    </section>
+
     <!-- ─── BREAKDOWN GRID ───────────────────────────────────────── -->
     <div class="breakdown-grid">
       <section class="card">
