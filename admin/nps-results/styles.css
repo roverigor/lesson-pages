@@ -315,6 +315,34 @@ body {
   .hero-nps-score #hero-nps-value { font-size: 56px; }
 }
 
+/* ─── Survey list (Por formulário) ─────────────────────────── */
+.survey-list { display:flex; flex-direction:column; gap:10px; }
+.survey-item { background:#0a0a0a; border:1px solid #1a1a1a; border-radius:10px; overflow:hidden; transition:border-color .15s; }
+.survey-item:hover { border-color:#2a2a30; }
+.survey-row { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px 18px; flex-wrap:wrap; }
+.survey-main { flex:1; min-width:240px; }
+.survey-label { font-size:14px; font-weight:700; color:#fff; margin-bottom:4px; }
+.survey-meta { font-size:11px; color:#666; }
+.survey-stats { display:flex; align-items:center; gap:14px; }
+.stat-block { text-align:center; min-width:60px; }
+.stat-block .stat-num { font-size:18px; font-weight:800; color:#fff; line-height:1; }
+.stat-block .stat-lbl { font-size:10px; color:#666; text-transform:uppercase; margin-top:2px; letter-spacing:.05em; }
+.btn-expand { padding:8px 12px; background:#1a1a1a; border:1px solid #2a2a30; border-radius:6px; color:#aaa; font-size:12px; cursor:pointer; }
+.btn-expand:hover { background:#222; color:#fff; }
+.survey-detail { padding:0 18px 18px; border-top:1px solid #111; }
+.survey-detail.hidden { display:none; }
+.detail-bar { display:flex; height:8px; border-radius:4px; overflow:hidden; margin-top:12px; background:#111; }
+.detail-bar .bar-segment { height:100%; }
+.detail-bar .bar-segment.promoter { background:#4ade80; }
+.detail-bar .bar-segment.passive  { background:#facc15; }
+.detail-bar .bar-segment.detractor { background:#f87171; }
+.detail-legend { display:flex; gap:14px; flex-wrap:wrap; font-size:11px; margin:8px 0 12px; }
+.detail-section-title { font-size:12px; color:#888; text-transform:uppercase; letter-spacing:.05em; margin-top:10px; font-weight:700; }
+.detail-mode-block { margin-top:12px; padding:10px 12px; background:#050505; border-radius:8px; border:1px solid #1a1a1a; }
+.detail-mode-title { font-size:12px; color:#aaa; font-weight:700; margin-bottom:8px; }
+.detail-mode-split { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
+@media (max-width: 800px) { .detail-mode-split { grid-template-columns:1fr; } }
+
 /* ─── Print ──────────────────────────────────────────────────── */
 @media print {
   .topbar, .filters-card, .comments-filters, #export-csv-btn, #print-btn, #refresh-btn, #logout-btn, .btn-secondary, .btn-tertiary { display:none !important; }
@@ -324,3 +352,23 @@ body {
   .data-table th, .data-table td { color:#000 !important; border-color:#bbb !important; }
   canvas { display:none !important; }
 }
+
+
+/* ─── Survey list (Por formulário) ─────────────────────────── */
+.survey-list { display:flex; flex-direction:column; gap:10px; }
+.survey-item { background:#0a0a0a; border:1px solid #1a1a1a; border-radius:10px; overflow:hidden; transition:border-color .15s; }
+.survey-item:hover { border-color:#2a2a30; }
+.survey-row { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:14px 18px; flex-wrap:wrap; }
+.survey-main { flex:1; min-width:240px; }
+.survey-label { font-size:14px; font-weight:700; color:#fff; margin-bottom:4px; }
+.survey-meta { font-size:11px; color:#666; }
+.survey-stats { display:flex; align-items:center; gap:14px; }
+.stat-block { text-align:center; min-width:60px; }
+.stat-block .stat-num { font-size:18px; font-weight:800; color:#fff; line-height:1; }
+.stat-block .stat-lbl { font-size:10px; color:#666; text-transform:uppercase; margin-top:2px; letter-spacing:.05em; }
+.btn-expand { padding:8px 12px; background:#1a1a1a; border:1px solid #2a2a30; border-radius:6px; color:#aaa; font-size:12px; cursor:pointer; }
+.btn-expand:hover { background:#222; color:#fff; }
+.survey-detail { padding:0 18px 18px; border-top:1px solid #111; }
+.survey-detail.hidden { display:none; }
+.detail-bar { display:flex; height:8px; border-radius:4px; overflow:hidden; margin-top:12px; background:#111; }
+.detail-bar .bar-segment { height:100
