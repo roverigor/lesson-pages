@@ -29,8 +29,8 @@ const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
 
 const BASE_URL = "https://painel.academialendaria.ai";
 
-// ── SAFE throttle: 10s between messages ──
-const DELAY_MS = 10_000;
+// ── Throttle: 500ms (Meta Cloud API tolerates 80 msg/s on biz tier) ──
+const DELAY_MS = 500;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));

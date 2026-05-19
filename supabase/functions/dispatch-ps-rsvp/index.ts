@@ -17,7 +17,9 @@ const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY") ?? "";
 const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE") ?? "";
 const SLACK_CHANNEL = Deno.env.get("SLACK_CHANNEL_DEV_ALERTS") ?? Deno.env.get("SLACK_CHANNEL_DETRACTORS") ?? "";
 const BASE_URL = "https://painel.academialendaria.ai";
-const DELAY_MS = 5000;
+// Evolution API — 800ms throttle: 1.25 msg/s, safe for group account.
+// With ~600 DMs per PS class, 800ms × 600 = 480s; split across multiple cron ticks if needed.
+const DELAY_MS = 800;
 
 const CORS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
