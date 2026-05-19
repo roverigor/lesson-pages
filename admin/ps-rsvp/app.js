@@ -447,6 +447,175 @@ async function enterApp() {
 
 async function logout() { await sb.auth.signOut(); location.reload(); }
 
+// ─── PRE-BRIEF GROUP DISPATCH MODAL ──────────────────────────────────
+const PREBRIEF_GROUP_VARIANTS = [
+  (className, timeStart) => `Bom dia, time.\n\nHoje rola *${className}*, ${timeStart} (Brasília).\n\nQuanto mais a sessão for sobre o que vocês estão construindo, mais valor ela gera. Reserva 30s pra contar o que precisa destravar:\nhttps://painel.academialendaria.ai/ps-rsvp`,
+  (className, timeStart) => `Time, bom dia!\n\n*${className}* abre hoje às ${timeStart}. O foco do PS se ajusta às dúvidas que vocês trouxerem — vale separar 30s antes:\nhttps://painel.academialendaria.ai/ps-rsvp`,
+  (className, timeStart) => `Bom dia.\n\nPS *${className}* — ${timeStart} (Brasília). Pra mentor chegar com pauta calibrada pro seu caso, conta o que está precisando trabalhar:\nhttps://painel.academialendaria.ai/ps-rsvp`,
+  (className, timeStart) => `Time, hoje tem *${className}* às ${timeStart}.\n\nA sessão fica mais cirúrgica quando os pontos chegam antes. 30s pra preencher:\nhttps://painel.academialendaria.ai/ps-rsvp`,
+  (className, timeStart) => `Bom dia, Lendários.\n\n*${className}* — ${timeStart} (Brasília). Compartilha o que está te travando hoje pra gente trazer resposta direcionada:\nhttps://painel.academialendaria.ai/ps-rsvp`,
+];
+
+const prebriefState = { groups: [] };
+
+function brtWeekday() {
+  const now = new Date();
+  const brt = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+  return brt.getUTCDay();
+}
+
+async function openPrebriefModal() {
+  const overlay = $("prebrief-modal");
+  overlay.classList.remove("hidden");
+  $("prebrief-loading").classList.remove("hidden");
+  $("prebrief-list").classList.add("hidden");
+  $("prebrief-empty").classList.add("hidden");
+  $("prebrief-token-row").classList.add("hidden");
+  $("prebrief-results").classList.add("hidden");
+  $("prebrief-fire").disabled = true;
+  $("prebrief-fire").textContent = "Disparar →";
+  $("prebrief-results").innerHTML = "";
+
+  const wd = brtWeekday();
+
+  const { data: classes } = await sb.from("classes")
+    .select("id, name, weekday, time_start")
+    .eq("kind", "ps").eq("active", true).eq("weekday", wd)
+    .order("name");
+
+  if (!classes || classes.length === 0) {
+    $("prebrief-loading").classList.add("hidden");
+    $("prebrief-empty").classList.remove("hidden");
+    $("prebrief-empty").textContent = `Nenhuma classe PS ativa para hoje (weekday=${wd}).`;
+    return;
+  }
+
+  const classIds = classes.map((c) => c.id);
+  const { data: bridges } = await sb.from("class_cohorts").select("class_id, cohort_id").in("class_id", classIds);
+  const cohortIds = [...new Set((bridges || []).map((b) => b.cohort_id))];
+  const { data: cohorts } = await sb.from("cohorts")
+    .select("id, name, whatsapp_group_jid, whatsapp_group_name")
+    .in("id", cohortIds.length > 0 ? cohortIds : ["00000000-0000-0000-0000-000000000000"])
+    .not("whatsapp_group_jid", "is", null);
+
+  const cohortMap = new Map();
+  (cohorts || []).forEach((co) => cohortMap.set(co.id, co));
+
+  prebriefState.groups = [];
+  for (const c of classes) {
+    const myCohortIds = (bridges || []).filter((b) => b.class_id === c.id).map((b) => b.cohort_id);
+    for (const coId of myCohortIds) {
+      const co = cohortMap.get(coId);
+      if (!co || !co.whatsapp_group_jid) continue;
+      const variantIdx = Math.floor(Math.random() * PREBRIEF_GROUP_VARIANTS.length);
+      const timeStr = c.time_start ? c.time_start.slice(0, 5) : "";
+      const text = PREBRIEF_GROUP_VARIANTS[variantIdx](c.name, timeStr);
+      prebriefState.groups.push({
+        key: `${c.id}__${coId}`,
+        class_id: c.id, class_name: c.name, cohort_id: coId, cohort_name: co.name,
+        group_jid: co.whatsapp_group_jid, group_name: co.whatsapp_group_name,
+        text, selected: true, status: "pending",
+      });
+    }
+  }
+
+  $("prebrief-loading").classList.add("hidden");
+  if (prebriefState.groups.length === 0) {
+    $("prebrief-empty").classList.remove("hidden");
+    $("prebrief-empty").textContent = "Classes PS encontradas mas sem cohorts com whatsapp_group_jid.";
+    return;
+  }
+
+  $("prebrief-list").classList.remove("hidden");
+  $("prebrief-token-row").classList.remove("hidden");
+  renderPrebriefList();
+
+  const cachedToken = sessionStorage.getItem("admin_one_shot_token") || "";
+  $("prebrief-token").value = cachedToken;
+  updatePrebriefFireBtn();
+}
+
+function renderPrebriefList() {
+  const list = $("prebrief-list");
+  list.innerHTML = prebriefState.groups.map((g) => `
+    <div class="prebrief-group-card">
+      <div class="group-head">
+        <label>
+          <input type="checkbox" data-key="${escapeHtml(g.key)}" ${g.selected ? "checked" : ""}>
+          <div>
+            <div class="group-title">${escapeHtml(g.class_name)} — ${escapeHtml(g.cohort_name)}</div>
+            <div class="group-jid">${escapeHtml(g.group_name || "")} · ${escapeHtml(g.group_jid)}</div>
+          </div>
+        </label>
+      </div>
+      <div class="group-text">${escapeHtml(g.text)}</div>
+    </div>
+  `).join("");
+  list.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+    cb.addEventListener("change", () => {
+      const g = prebriefState.groups.find((x) => x.key === cb.dataset.key);
+      if (g) g.selected = cb.checked;
+      updatePrebriefFireBtn();
+    });
+  });
+}
+
+function updatePrebriefFireBtn() {
+  const token = $("prebrief-token").value.trim();
+  const selected = prebriefState.groups.filter((g) => g.selected).length;
+  $("prebrief-fire").disabled = !token || selected === 0;
+  $("prebrief-fire").textContent = selected > 0 ? `Disparar para ${selected} grupo(s) →` : "Disparar →";
+}
+
+async function firePrebrief() {
+  const token = $("prebrief-token").value.trim();
+  if (!token) return;
+  sessionStorage.setItem("admin_one_shot_token", token);
+  const selected = prebriefState.groups.filter((g) => g.selected);
+  if (!selected.length) return;
+
+  $("prebrief-fire").disabled = true;
+  $("prebrief-results").classList.remove("hidden");
+  const res = $("prebrief-results");
+  res.innerHTML = "Disparando...\n";
+
+  for (const g of selected) {
+    const start = Date.now();
+    try {
+      const r = await fetch(`${SUPABASE_URL}/functions/v1/admin-send-group-once`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-token": token,
+        },
+        body: JSON.stringify({ group_jid: g.group_jid, text: g.text, cohort_id: g.cohort_id }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok && data.ok) {
+        g.status = "sent";
+        res.innerHTML += `✅ ${g.cohort_name} — sent (${Date.now() - start}ms)\n`;
+      } else {
+        g.status = "failed";
+        res.innerHTML += `❌ ${g.cohort_name} — ${r.status} ${JSON.stringify(data)}\n`;
+      }
+    } catch (e) {
+      g.status = "failed";
+      res.innerHTML += `❌ ${g.cohort_name} — ${e.message}\n`;
+    }
+    // 2s sleep between sends
+    await new Promise((rsv) => setTimeout(rsv, 2000));
+  }
+  res.innerHTML += `\nFinalizado. Fechar modal para reset.\n`;
+  $("prebrief-fire").disabled = false;
+  $("prebrief-fire").textContent = "Fechar";
+  $("prebrief-fire").onclick = closePrebriefModal;
+}
+
+function closePrebriefModal() {
+  $("prebrief-modal").classList.add("hidden");
+  $("prebrief-fire").onclick = firePrebrief;
+}
+
 (async function bootstrap() {
   const ok = await ensureAdmin();
   if (ok) { enterApp(); }
@@ -462,4 +631,9 @@ async function logout() { await sb.auth.signOut(); location.reload(); }
   $("only-with-doubts").addEventListener("change", renderResponses);
   $("export-csv-btn").addEventListener("click", exportCSV);
   $("export-md-btn").addEventListener("click", exportMD);
+  $("send-group-prebrief-btn")?.addEventListener("click", openPrebriefModal);
+  $("prebrief-modal-close")?.addEventListener("click", closePrebriefModal);
+  $("prebrief-cancel")?.addEventListener("click", closePrebriefModal);
+  $("prebrief-fire")?.addEventListener("click", firePrebrief);
+  $("prebrief-token")?.addEventListener("input", updatePrebriefFireBtn);
 })();

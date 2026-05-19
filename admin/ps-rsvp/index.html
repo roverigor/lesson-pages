@@ -53,6 +53,21 @@
     .students-list { padding:10px; background:#050505; border-radius:8px; margin-top:8px; max-height:280px; overflow-y:auto; font-size:11px; }
     .student-line { padding:4px 0; border-bottom:1px solid #111; color:#bbb; font-family:monospace; }
     .student-line:last-child { border-bottom:none; }
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:2000; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .modal-overlay.hidden { display:none; }
+    .modal-box { background:#0a0a0a; border:1px solid #2a2a2a; border-radius:12px; max-width:640px; width:100%; max-height:90vh; display:flex; flex-direction:column; }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; padding:18px 20px; border-bottom:1px solid #1a1a1a; }
+    .modal-header h3 { margin:0; font-size:16px; color:#fff; }
+    .modal-close { background:none; border:none; color:#666; font-size:20px; cursor:pointer; }
+    .modal-close:hover { color:#fff; }
+    .modal-body { padding:18px 20px; overflow-y:auto; flex:1; }
+    .modal-footer { padding:14px 20px; border-top:1px solid #1a1a1a; display:flex; gap:10px; justify-content:flex-end; }
+    .prebrief-group-card { background:#050505; border:1px solid #1a1a1a; border-radius:8px; padding:12px; }
+    .prebrief-group-card .group-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:10px; }
+    .prebrief-group-card .group-title { font-weight:700; color:#fff; font-size:13px; }
+    .prebrief-group-card .group-jid { font-family:monospace; font-size:10px; color:#666; word-break:break-all; }
+    .prebrief-group-card .group-text { background:#0a0a0a; border:1px solid #1a1a1a; border-radius:6px; padding:10px; font-size:12px; color:#ccc; white-space:pre-wrap; margin-top:6px; }
+    .prebrief-group-card label { display:flex; align-items:center; gap:8px; cursor:pointer; }
   </style>
 </head>
 <body>
@@ -125,6 +140,14 @@
     </section>
 
     <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+        <h2 class="card-title" style="margin:0">⚡ Ações</h2>
+        <button id="send-group-prebrief-btn" class="btn-primary" style="padding:10px 16px">📢 Enviar pré-aula nos grupos</button>
+      </div>
+      <div style="font-size:12px;color:#666">Dispara mensagem nos grupos WA das classes PS do dia (Evolution API). Preview + confirmação antes de enviar.</div>
+    </section>
+
+    <section class="card">
       <h2 class="card-title">🔧 Setup PS — Cohorts + Grupos WA + Alunos elegíveis</h2>
       <div style="font-size:13px;color:#888;margin-bottom:12px">
         Quais cohorts cada classe PS está vinculada, qual grupo WA recebe a msg e quantos alunos elegíveis (active=true · is_mentor=false · phone preenchido). Alertas em vermelho indicam cohort sem grupo WA registrado.
@@ -171,6 +194,31 @@
     </section>
 
   </main>
+
+  <!-- Modal: Enviar pré-aula grupos -->
+  <div id="prebrief-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>📢 Enviar pré-aula nos grupos PS</h3>
+        <button class="modal-close" id="prebrief-modal-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="prebrief-loading" style="color:#888;font-size:13px">Carregando classes PS de hoje...</div>
+        <div id="prebrief-list" class="hidden" style="display:flex;flex-direction:column;gap:10px;max-height:50vh;overflow-y:auto;margin-bottom:14px"></div>
+        <div id="prebrief-empty" class="hidden" style="color:#f87171;font-size:13px;padding:14px;text-align:center">Nenhum grupo PS encontrado pra hoje.</div>
+        <div id="prebrief-token-row" class="hidden" style="margin-top:14px;padding-top:14px;border-top:1px solid #1a1a1a">
+          <label style="font-size:12px;color:#888;display:block;margin-bottom:6px">Admin token (ADMIN_ONE_SHOT_TOKEN):</label>
+          <input id="prebrief-token" type="password" placeholder="Token..." style="width:100%;padding:10px;background:#111;border:1px solid #222;border-radius:6px;color:#fff;font-family:monospace">
+          <div style="font-size:11px;color:#666;margin-top:6px">Buscar com @devops se não souber. Cached em sessionStorage durante esta aba.</div>
+        </div>
+        <div id="prebrief-results" class="hidden" style="margin-top:14px;padding:12px;background:#050505;border-radius:8px;font-family:monospace;font-size:12px;color:#aaa;max-height:200px;overflow-y:auto"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="prebrief-cancel" class="btn-tertiary">Cancelar</button>
+        <button id="prebrief-fire" class="btn-primary" disabled>Disparar →</button>
+      </div>
+    </div>
+  </div>
 
   <script src="/js/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
