@@ -552,9 +552,16 @@
         $("step-counter-1").textContent = `Olá, ${first}! 👋 — Pergunta 1 de ${totalQ}`;
       }
     }
-    $("sub-context-1").textContent = `${meta.class_name} — ${meta.cohort_name}`;
+    const dateStr = meta.session_date
+      ? new Date(meta.session_date + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
+      : "";
+    $("sub-context-1").textContent = dateStr
+      ? `${meta.class_name} — ${meta.cohort_name} · ${dateStr}`
+      : `${meta.class_name} — ${meta.cohort_name}`;
     if (state.isPS) {
-      $("sub-context-ps-doubts").textContent = `${meta.class_name} — ${meta.cohort_name}`;
+      $("sub-context-ps-doubts").textContent = dateStr
+        ? `${meta.class_name} — ${meta.cohort_name} · ${dateStr}`
+        : `${meta.class_name} — ${meta.cohort_name}`;
       $("question-1").textContent = "Como avalia o atendimento dos mentores no PS?";
       $("step-counter-1").textContent = `Pergunta 3 de ${totalQ}`;
       $("q-counter-4").textContent = `Pergunta 6 de ${totalQ}`;
