@@ -40,6 +40,7 @@
         <a href="/admin/nps-monitor/" class="btn-secondary">📡 Monitor</a>
         <a href="/admin/envios/" class="btn-secondary">📊 Envios</a>
         <button id="export-csv-btn" class="btn-secondary">⬇ CSV detractors</button>
+        <button id="print-btn" class="btn-secondary">🖨 Imprimir</button>
         <button id="refresh-btn" class="btn-secondary">↻ Atualizar</button>
         <button id="logout-btn" class="btn-tertiary">Sair</button>
       </div>
@@ -62,6 +63,7 @@
         <label>Até: <input id="filter-date-to" type="date"></label>
         <label>Cohort: <select id="filter-cohort"><option value="">— todos —</option></select></label>
         <label>Aula: <select id="filter-class"><option value="">— todas —</option></select></label>
+        <label>Formulário: <select id="filter-survey"><option value="">— todos —</option></select></label>
         <label>Canal:
           <select id="filter-mode">
             <option value="">— ambos —</option>
@@ -154,6 +156,30 @@
       </div>
       <div id="comments-list" class="comments-list">
         <div class="loading">Carregando...</div>
+      </div>
+    </section>
+
+    <!-- ─── ALL RESPONSES TABLE ────────────────────────────────── -->
+    <section class="card">
+      <h2 class="card-title">📋 Todas as respostas</h2>
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Quando</th>
+              <th>Aluno</th>
+              <th>Cohort</th>
+              <th>Aula</th>
+              <th>Nota</th>
+              <th>Bucket</th>
+              <th>Modo</th>
+              <th>Comentário</th>
+            </tr>
+          </thead>
+          <tbody id="all-responses-body">
+            <tr><td colspan="8" class="loading">Carregando...</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
 

@@ -116,6 +116,7 @@ function readFilters() {
   const klass = $("filter-class").value || null;
   const mode = $("filter-mode").value || null;
   const source = $("filter-source")?.value || null;
+  const survey = $("filter-survey")?.value || null;
   const f = {};
   if (from) f.date_from = new Date(from + "T00:00:00").toISOString();
   if (to) {
@@ -127,16 +128,22 @@ function readFilters() {
   if (klass) f.class_id = klass;
   if (mode) f.mode = mode;
   if (source) f.source = source;
+  if (survey) f.survey_id = survey;
   return f;
 }
 
 function populateFilters() {
   const sCohort = $("filter-cohort");
   const sClass = $("filter-class");
+  const sSurvey = $("filter-survey");
   sCohort.innerHTML = '<option value="">— todos —</option>' + (state.filterOpts.cohorts ?? [])
     .map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join("");
   sClass.innerHTML = '<option value="">— todas —</option>' + (state.filterOpts.classes ?? [])
     .map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join("");
+  if (sSurvey) {
+    sSurvey.innerHTML = '<option value="">— todos —</option>' + (state.filterOpts.surveys ?? [])
+      .map((s) => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.name)}</option>`).join("");
+  }
 }
 
 async function refreshAll() {
@@ -167,12 +174,48 @@ async function fetchComments() {
   return await rpc("nps_results_comments", { p_filters: f, p_limit: 100 });
 }
 
+async function fetchAllResponses() {
+  // Don't filter by bucket/comment — show all matching the global filters
+  return await rpc("nps_results_comments", { p_filters: state.filters, p_limit: 1000 });
+}
+
 function renderAll() {
   renderHero();
   renderTrend();
   renderCohortBreak();
   renderClassBreak();
   renderComments();
+  renderAllResponses();
+}
+
+async function renderAllResponses() {
+  const tb = $("all-responses-body");
+  if (!tb) return;
+  try {
+    const rows = await fetchAllResponses();
+    if (!rows || rows.length === 0) {
+      tb.innerHTML = `<tr><td colspan="8" style="padding:20px;color:#444;text-align:center">Nenhuma resposta com filtros atuais.</td></tr>`;
+      return;
+    }
+    tb.innerHTML = rows.map((r) => {
+      const when = r.submitted_at ? new Date(r.submitted_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
+      const who = r.student_name || r.name_provided || "Anônimo";
+      const bucketCol = r.bucket === "promoter" ? "#4ade80" : r.bucket === "passive" ? "#f59e0b" : "#f87171";
+      const scoreCol = r.nps_score >= 9 ? "#4ade80" : r.nps_score >= 7 ? "#f59e0b" : "#f87171";
+      return `<tr>
+        <td style="font-size:11px;color:#666">${escapeHtml(when)}</td>
+        <td>${escapeHtml(who)}</td>
+        <td style="color:#888">${escapeHtml(r.cohort_name || "—")}</td>
+        <td style="color:#888">${escapeHtml(r.class_name || "—")}</td>
+        <td style="font-weight:700;color:${scoreCol}">${r.nps_score ?? "—"}</td>
+        <td style="color:${bucketCol}">${escapeHtml(r.bucket || "—")}</td>
+        <td style="color:#888;font-size:11px">${escapeHtml(r.mode || "—")}</td>
+        <td style="font-size:12px;color:#ccc;max-width:380px">${escapeHtml(r.comment || "")}</td>
+      </tr>`;
+    }).join("");
+  } catch (e) {
+    tb.innerHTML = `<tr><td colspan="8" style="padding:20px;color:#f87171">Erro: ${escapeHtml(e?.message ?? String(e))}</td></tr>`;
+  }
 }
 
 // ─── Hero NPS ────────────────────────────────────────────────────────

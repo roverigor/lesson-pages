@@ -25,13 +25,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 import { sendEvolutionGroupText } from "../_shared/evolution-group.ts";
 import { sendWhatsAppTemplate } from "../_shared/meta-whatsapp.ts";
 import { verifyServiceRole } from "../_shared/auth.ts";
-import { sendBlockMessage } from "../_shared/slack.ts";
+import { sendDM } from "../_shared/slack.ts";
 
-const SLACK_CHANNEL = Deno.env.get("SLACK_CHANNEL_DEV_ALERTS") ?? Deno.env.get("SLACK_CHANNEL_DETRACTORS") ?? "";
-async function slackNotify(text: string, blocks?: Array<Record<string, unknown>>) {
-  if (!SLACK_CHANNEL) return;
+// NPS run summaries go to Igor private DM (not channel).
+// Detractor alerts stay in channel via existing postSlack webhook.
+const SLACK_IGOR_USER_ID = Deno.env.get("SLACK_IGOR_USER_ID") ?? "";
+async function slackNotify(text: string, _blocks?: Array<Record<string, unknown>>) {
+  if (!SLACK_IGOR_USER_ID) return;
   try {
-    await sendBlockMessage(SLACK_CHANNEL, text, blocks ?? [{ type: "section", text: { type: "mrkdwn", text } }]);
+    await sendDM(SLACK_IGOR_USER_ID, text);
   } catch (e) { console.error("[slack-notify]", e instanceof Error ? e.message : e); }
 }
 
@@ -341,24 +343,39 @@ async function processJob(
 
     const dmLinks: { id: string; token: string; student_id: string; phone: string; name: string }[] = [];
     if (dmVar && students.length > 0) {
-      const dmInserts = students.map((s) => ({
-        mode: "dm",
-        cohort_id: job.cohort_id,
-        class_id: job.class_id,
-        trigger_date: job.session_date,
-        session_date: job.session_date,
-        student_id: s.student_id,
-        expires_at: expiresAt,
-        dispatch_job_id: job.id,
-        created_by: "dispatch-class-nps",
-      }));
-      const { data: dmInserted } = await client
+      // Resume case: existing pending DM links from a previous run of this job.
+      const { data: existing } = await client
         .from("nps_class_links")
-        .insert(dmInserts)
-        .select("id, token, student_id");
-      for (const dl of dmInserted ?? []) {
-        const stu = students.find((s) => s.student_id === dl.student_id);
-        if (stu) dmLinks.push({ ...dl, phone: stu.phone, name: stu.name });
+        .select("id, token, student_id, send_status")
+        .eq("dispatch_job_id", job.id)
+        .eq("mode", "dm")
+        .eq("send_status", "pending");
+      if (existing && existing.length > 0) {
+        for (const e of existing) {
+          const stu = students.find((s) => s.student_id === e.student_id);
+          if (stu) dmLinks.push({ id: e.id, token: e.token, student_id: e.student_id, phone: stu.phone, name: stu.name });
+        }
+      } else {
+        // Fresh dispatch: create new links.
+        const dmInserts = students.map((s) => ({
+          mode: "dm",
+          cohort_id: job.cohort_id,
+          class_id: job.class_id,
+          trigger_date: job.session_date,
+          session_date: job.session_date,
+          student_id: s.student_id,
+          expires_at: expiresAt,
+          dispatch_job_id: job.id,
+          created_by: "dispatch-class-nps",
+        }));
+        const { data: dmInserted } = await client
+          .from("nps_class_links")
+          .insert(dmInserts)
+          .select("id, token, student_id");
+        for (const dl of dmInserted ?? []) {
+          const stu = students.find((s) => s.student_id === dl.student_id);
+          if (stu) dmLinks.push({ ...dl, phone: stu.phone, name: stu.name });
+        }
       }
     }
 
