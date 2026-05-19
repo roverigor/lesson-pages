@@ -314,3 +314,13 @@ body {
   .breakdown-grid { grid-template-columns: 1fr; }
   .hero-nps-score #hero-nps-value { font-size: 56px; }
 }
+
+/* ─── Print ──────────────────────────────────────────────────── */
+@media print {
+  .topbar, .filters-card, .comments-filters, #export-csv-btn, #print-btn, #refresh-btn, #logout-btn, .btn-secondary, .btn-tertiary { display:none !important; }
+  body, .app { background:#fff !important; color:#000 !important; }
+  .card { background:#fff !important; border:1px solid #ddd !important; color:#000 !important; page-break-inside:avoid; }
+  .card-title { color:#000 !important; }
+  .data-table th, .data-table td { color:#000 !important; border-color:#bbb !important; }
+  canvas { display:none !important; }
+}
