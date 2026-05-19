@@ -367,6 +367,31 @@ async function exportCsv() {
   }
 }
 
+async function exportCsvAll() {
+  const f = { ...state.filters, only_with_comment: false };
+  try {
+    const rows = await rpc("nps_results_comments", { p_filters: f, p_limit: 1000 });
+    if (!rows?.length) { toast("Sem respostas no filtro.", "info"); return; }
+    const header = ["submitted_at","nps_score","bucket","mode","source","cohort","class","student_name","student_phone","name_provided","comment"];
+    const lines = rows.map((r) => header.map((h) => {
+      const val = {
+        submitted_at: r.submitted_at, nps_score: r.nps_score, bucket: r.bucket, mode: r.mode, source: r.source,
+        cohort: r.cohort_name, class: r.class_name,
+        student_name: r.student_name, student_phone: r.student_phone,
+        name_provided: r.name_provided, comment: r.comment,
+      }[h];
+      return `"${String(val ?? "").replace(/"/g, '""')}"`;
+    }).join(","));
+    const csv = [header.join(","), ...lines].join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `nps-todas-respostas-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    toast(`Exportadas ${rows.length} respostas.`, "success");
+  } catch (e) { toast(`Erro: ${e?.message ?? e}`, "error"); }
+}
+
 function showError(m) { $("error-banner-text").textContent = m; show($("error-banner")); }
 function hideError() { hide($("error-banner")); }
 
@@ -375,6 +400,8 @@ function wireEvents() {
   $("logout-btn").addEventListener("click", logout);
   $("refresh-btn").addEventListener("click", refreshAll);
   $("export-csv-btn").addEventListener("click", exportCsv);
+  $("export-csv-all-btn")?.addEventListener("click", exportCsvAll);
+  $("print-btn")?.addEventListener("click", () => window.print());
   $("error-banner-dismiss").addEventListener("click", hideError);
 
   $("apply-filters").addEventListener("click", async () => {
