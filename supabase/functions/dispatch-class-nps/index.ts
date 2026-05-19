@@ -302,7 +302,19 @@ async function processJob(
     const dmVar = (Array.isArray(dmVarRaw) ? dmVarRaw[0] : dmVarRaw) as VariantRow | null;
 
     // 4. Insert nps_class_links (1 group + N dm)
-    const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+    // Expires in 48h — short window prevents stale links collecting responses for wrong class.
+    const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+
+    // Expire any older active links for SAME (class_id, student) — avoids collecting responses
+    // against the wrong class session if a previous link still works.
+    if (job.class_id) {
+      await client
+        .from("nps_class_links")
+        .update({ expires_at: new Date().toISOString() })
+        .eq("class_id", job.class_id)
+        .neq("dispatch_job_id", job.id)
+        .gt("expires_at", new Date().toISOString());
+    }
     let groupLinkId: string | null = null;
     let groupToken: string | null = null;
 
@@ -343,21 +355,27 @@ async function processJob(
 
     const dmLinks: { id: string; token: string; student_id: string; phone: string; name: string }[] = [];
     if (dmVar && students.length > 0) {
-      // Resume case: existing pending DM links from a previous run of this job.
-      const { data: existing } = await client
+      // 1) Pick up any existing pending links for this job (resume case)
+      const { data: allLinks } = await client
         .from("nps_class_links")
         .select("id, token, student_id, send_status")
         .eq("dispatch_job_id", job.id)
-        .eq("mode", "dm")
-        .eq("send_status", "pending");
-      if (existing && existing.length > 0) {
-        for (const e of existing) {
+        .eq("mode", "dm");
+      const existingByStudent = new Map<string, { id: string; token: string; send_status: string }>();
+      for (const e of allLinks ?? []) existingByStudent.set(e.student_id, e);
+
+      // 2) Process pending existing links
+      for (const e of allLinks ?? []) {
+        if (e.send_status === "pending") {
           const stu = students.find((s) => s.student_id === e.student_id);
           if (stu) dmLinks.push({ id: e.id, token: e.token, student_id: e.student_id, phone: stu.phone, name: stu.name });
         }
-      } else {
-        // Fresh dispatch: create new links.
-        const dmInserts = students.map((s) => ({
+      }
+
+      // 3) Insert links for students without any link yet (handles eligibility expansion mid-job)
+      const missingStudents = students.filter((s) => !existingByStudent.has(s.student_id));
+      if (missingStudents.length > 0) {
+        const dmInserts = missingStudents.map((s) => ({
           mode: "dm",
           cohort_id: job.cohort_id,
           class_id: job.class_id,
