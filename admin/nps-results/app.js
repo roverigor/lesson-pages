@@ -350,8 +350,7 @@ function renderSurveyBreak() {
       ? `${fmtDate(r.first_at)} – ${fmtDate(r.last_at)}`
       : fmtDate(r.first_at || r.last_at);
     const npsCol = npsColor(r.nps);
-    const dmNpsCol = npsColor(r.dm_nps);
-    const grpNpsCol = npsColor(r.group_nps);
+    const cohortTag = r.cohort_name ? `<span style="background:#1a1a20;padding:2px 8px;border-radius:12px;font-size:11px;color:#aaa">👥 ${escapeHtml(r.cohort_name)}</span>` : "";
     const modeSplitTxt = (r.dm_total > 0 || r.group_total > 0)
       ? `<span style="color:#888;font-size:11px">📩 DM ${r.dm_total ?? 0}${r.dm_nps != null ? ` (NPS ${r.dm_nps})` : ""} · 📢 Grupo ${r.group_total ?? 0}${r.group_nps != null ? ` (NPS ${r.group_nps})` : ""}</span>`
       : "";
@@ -360,7 +359,10 @@ function renderSurveyBreak() {
         <div class="survey-row">
           <div class="survey-main">
             <div class="survey-label">${icon} ${escapeHtml(r.label)}</div>
-            <div class="survey-meta">${escapeHtml(kindLbl)} · ${escapeHtml(dateRange)}</div>
+            <div class="survey-meta" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px">
+              ${cohortTag}
+              <span>${escapeHtml(kindLbl)} · ${escapeHtml(dateRange)}</span>
+            </div>
             ${modeSplitTxt ? `<div style="margin-top:4px">${modeSplitTxt}</div>` : ""}
           </div>
           <div class="survey-stats">
