@@ -164,6 +164,10 @@
       <div class="q-counter" id="step-counter-1">Pergunta 1 de 4</div>
       <div class="question" id="question-1">Como você avalia a aula de hoje?</div>
       <div class="sub-context" id="sub-context-1"></div>
+      <div id="name-field-top" style="display:none; margin-bottom:18px">
+        <div class="label-sm">Como podemos te chamar? (opcional)</div>
+        <input id="name-input-top" type="text" class="text-input name-input" placeholder="Seu nome…">
+      </div>
       <div class="stars-row" id="stars-row"></div>
       <div class="stars-label" id="stars-label">Toque numa estrela</div>
       <button class="cta-btn" id="btn-next-1" disabled>Continuar →</button>
@@ -383,7 +387,11 @@
     setProgress(95);
 
     state.improvement = $("improvement-input").value.trim();
-    if ($("name-input")) state.name = $("name-input").value.trim();
+    // Prefer name typed on first screen; fallback to NPS step name field
+    const topName = $("name-input-top")?.value?.trim();
+    const psName = $("name-input-ps")?.value?.trim();
+    const npsName = $("name-input")?.value?.trim();
+    state.name = topName || psName || npsName || "";
     state.detractorFollowup = $("detractor-input").value.trim();
 
     try {
@@ -558,7 +566,20 @@
       if (improvementInput) improvementInput.placeholder = "Opcional — sugestões, ajustes…";
     }
 
-    if (meta.mode === "group") $("name-field-wrap").style.display = "block";
+    if (meta.mode === "group") {
+      $("name-field-wrap").style.display = "block";
+      $("name-field-top").style.display = "block";
+      const psDoubtsScreen = $("screen-ps-doubts");
+      if (state.isPS && psDoubtsScreen) {
+        // also show name field for PS group flow on first screen
+        const wrap = document.createElement("div");
+        wrap.id = "name-field-ps";
+        wrap.style.cssText = "margin-bottom:18px";
+        wrap.innerHTML = `<div class="label-sm">Como podemos te chamar? (opcional)</div><input id="name-input-ps" type="text" class="text-input name-input" placeholder="Seu nome…">`;
+        const sub = psDoubtsScreen.querySelector("#sub-context-ps-doubts");
+        if (sub) sub.insertAdjacentElement("afterend", wrap);
+      }
+    }
 
     wire();
     goto(state.isPS ? "ps-doubts" : 1);
