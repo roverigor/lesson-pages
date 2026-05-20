@@ -28,6 +28,8 @@ const state = {
   comments: [],
   filterOpts: { cohorts: [], classes: [] },
   trendChart: null,
+  psRsvpLinks: [],
+  psRsvpResponses: [],
 };
 
 function escapeHtml(s) {
@@ -213,6 +215,96 @@ function renderAll() {
   renderSurveyBreak();
   renderComments();
   renderAllResponses();
+  renderPsRsvp();
+}
+
+// ─── PS RSVP ─────────────────────────────────────────────────────────
+async function fetchPsRsvp() {
+  if (MOCK || !sb) return { links: [], responses: [] };
+  const from = $("filter-date-from").value;
+  const to = $("filter-date-to").value;
+  const dateFrom = from || new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
+  const dateTo = to || new Date().toISOString().slice(0, 10);
+
+  const [linksRes, respsRes] = await Promise.all([
+    sb.from("ps_rsvp_links")
+      .select("id, session_date, send_status, sent_at, created_at, class_id, student_id")
+      .gte("session_date", dateFrom)
+      .lte("session_date", dateTo),
+    sb.from("ps_rsvp_responses")
+      .select("id, link_id, class_id, student_id, session_date, will_attend, doubts_text, project_phase, submitted_at")
+      .gte("session_date", dateFrom)
+      .lte("session_date", dateTo)
+      .order("submitted_at", { ascending: false }),
+  ]);
+  if (linksRes.error) throw linksRes.error;
+  if (respsRes.error) throw respsRes.error;
+
+  // Hydrate class+student via separate queries (no FK declared on ps_rsvp_responses)
+  const classIds = [...new Set([...(linksRes.data || []), ...(respsRes.data || [])].map((r) => r.class_id).filter(Boolean))];
+  const studentIds = [...new Set([...(linksRes.data || []), ...(respsRes.data || [])].map((r) => r.student_id).filter(Boolean))];
+
+  const [classesRes, studentsRes] = await Promise.all([
+    classIds.length ? sb.from("classes").select("id, name").in("id", classIds) : Promise.resolve({ data: [], error: null }),
+    studentIds.length ? sb.from("students").select("id, name, phone").in("id", studentIds) : Promise.resolve({ data: [], error: null }),
+  ]);
+  if (classesRes.error) throw classesRes.error;
+  if (studentsRes.error) throw studentsRes.error;
+  const classMap = new Map((classesRes.data || []).map((c) => [c.id, c]));
+  const studentMap = new Map((studentsRes.data || []).map((s) => [s.id, s]));
+
+  const responses = (respsRes.data || []).map((r) => ({ ...r, class: classMap.get(r.class_id), student: studentMap.get(r.student_id) }));
+  const links = (linksRes.data || []).map((l) => ({ ...l, class: classMap.get(l.class_id), student: studentMap.get(l.student_id) }));
+  return { links, responses };
+}
+
+async function renderPsRsvp() {
+  const body = $("ps-rsvp-body");
+  if (!body) return;
+  try {
+    const { links, responses } = await fetchPsRsvp();
+    state.psRsvpLinks = links;
+    state.psRsvpResponses = responses;
+    const sent = links.filter((l) => l.send_status === "sent").length;
+    const resp = responses.length;
+    const rate = sent > 0 ? Math.round((resp / sent) * 100) : 0;
+    const yes = responses.filter((r) => r.will_attend === "yes").length;
+    const no = responses.filter((r) => r.will_attend === "no").length;
+    const maybe = responses.filter((r) => r.will_attend === "maybe").length;
+
+    $("ps-kpi-sent").textContent = sent;
+    $("ps-kpi-resp").textContent = resp;
+    $("ps-kpi-rate").textContent = `${rate}%`;
+    $("ps-kpi-yes").textContent = yes;
+    $("ps-kpi-no").textContent = no;
+    $("ps-kpi-maybe").textContent = maybe;
+
+    if (!responses.length) {
+      body.innerHTML = `<tr><td colspan="8" style="padding:20px;color:#444;text-align:center">Nenhuma resposta no período. Total envios: ${sent}.</td></tr>`;
+      return;
+    }
+
+    body.innerHTML = responses.map((r) => {
+      const respLbl = r.will_attend === "yes" ? '<span class="ps-resp-yes">✅ Vai</span>'
+        : r.will_attend === "no" ? '<span class="ps-resp-no">❌ Não vai</span>'
+        : r.will_attend === "maybe" ? '<span class="ps-resp-maybe">⚠️ Dúvida</span>'
+        : '<span class="ps-resp-pending">—</span>';
+      const when = r.submitted_at ? new Date(r.submitted_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
+      const session = r.session_date ? new Date(r.session_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "—";
+      return `<tr>
+        <td style="font-size:12px;color:#aaa">${escapeHtml(session)}</td>
+        <td>${escapeHtml(r.student?.name || "—")}</td>
+        <td style="font-size:11px;color:#888">${escapeHtml(r.student?.phone || "—")}</td>
+        <td style="color:#888">${escapeHtml(r.class?.name || "—")}</td>
+        <td>${respLbl}</td>
+        <td style="font-size:12px;color:#ccc;max-width:340px">${escapeHtml(r.doubts_text || "")}</td>
+        <td style="font-size:11px;color:#888">${escapeHtml(r.project_phase || "—")}</td>
+        <td style="font-size:11px;color:#666">${escapeHtml(when)}</td>
+      </tr>`;
+    }).join("");
+  } catch (e) {
+    body.innerHTML = `<tr><td colspan="8" style="padding:20px;color:#f87171">Erro: ${escapeHtml(e?.message ?? String(e))}</td></tr>`;
+  }
 }
 
 async function renderAllResponses() {
@@ -564,6 +656,94 @@ async function exportCsv() {
   }
 }
 
+function downloadBlob(content, filename, mime) {
+  const blob = new Blob(["﻿" + content], { type: `${mime};charset=utf-8` });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function fmtRespLabel(v) {
+  return v === "yes" ? "Vai" : v === "no" ? "Não vai" : v === "maybe" ? "Dúvida" : "—";
+}
+
+async function exportPsRsvpCsv() {
+  const rows = state.psRsvpResponses || [];
+  if (!rows.length) { toast("Sem respostas PS RSVP no filtro.", "info"); return; }
+  const header = ["session_date","student_name","student_phone","class_name","will_attend","doubts_text","project_phase","submitted_at"];
+  const lines = rows.map((r) => header.map((h) => {
+    const val = {
+      session_date: r.session_date,
+      student_name: r.student?.name,
+      student_phone: r.student?.phone,
+      class_name: r.class?.name,
+      will_attend: fmtRespLabel(r.will_attend),
+      doubts_text: r.doubts_text,
+      project_phase: r.project_phase,
+      submitted_at: r.submitted_at,
+    }[h];
+    return `"${String(val ?? "").replace(/"/g, '""')}"`;
+  }).join(","));
+  const csv = [header.join(","), ...lines].join("\n");
+  downloadBlob(csv, `ps-rsvp-${new Date().toISOString().slice(0,10)}.csv`, "text/csv");
+  toast(`Exportado ${rows.length} respostas PS RSVP.`, "success");
+}
+
+async function exportPsRsvpMd() {
+  const rows = state.psRsvpResponses || [];
+  const links = state.psRsvpLinks || [];
+  if (!rows.length && !links.length) { toast("Sem dados PS RSVP no filtro.", "info"); return; }
+  const sent = links.filter((l) => l.send_status === "sent").length;
+  const resp = rows.length;
+  const rate = sent > 0 ? Math.round((resp / sent) * 100) : 0;
+  const yes = rows.filter((r) => r.will_attend === "yes").length;
+  const no = rows.filter((r) => r.will_attend === "no").length;
+  const maybe = rows.filter((r) => r.will_attend === "maybe").length;
+  const dateFrom = $("filter-date-from").value || "—";
+  const dateTo = $("filter-date-to").value || "—";
+
+  let md = `# Pré PS RSVP — Respostas\n\n`;
+  md += `**Período:** ${dateFrom} → ${dateTo}\n\n`;
+  md += `## Resumo\n\n`;
+  md += `- Enviados: **${sent}**\n`;
+  md += `- Respostas: **${resp}** (${rate}% taxa)\n`;
+  md += `- ✅ Vão: **${yes}**\n`;
+  md += `- ❌ Não vão: **${no}**\n`;
+  md += `- ⚠️ Dúvida: **${maybe}**\n\n`;
+
+  // Group by session_date
+  const grouped = {};
+  for (const r of rows) {
+    const k = r.session_date || "sem-data";
+    if (!grouped[k]) grouped[k] = [];
+    grouped[k].push(r);
+  }
+  const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
+  for (const date of sortedDates) {
+    const dateLbl = date !== "sem-data" ? new Date(date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }) : "Sem data";
+    md += `## ${dateLbl}\n\n`;
+    md += `| Aluno | Telefone | Aula | Resposta | Fase projeto | Dúvida/Comentário |\n`;
+    md += `|---|---|---|---|---|---|\n`;
+    for (const r of grouped[date]) {
+      const nome = (r.student?.name || "—").replace(/\|/g, "\\|");
+      const tel = (r.student?.phone || "—").replace(/\|/g, "\\|");
+      const aula = (r.class?.name || "—").replace(/\|/g, "\\|");
+      const resp = fmtRespLabel(r.will_attend);
+      const fase = (r.project_phase || "—").replace(/\|/g, "\\|").replace(/\n/g, " ");
+      const doubts = (r.doubts_text || "").replace(/\|/g, "\\|").replace(/\n/g, " ");
+      md += `| ${nome} | ${tel} | ${aula} | ${resp} | ${fase} | ${doubts} |\n`;
+    }
+    md += `\n`;
+  }
+
+  downloadBlob(md, `ps-rsvp-${new Date().toISOString().slice(0,10)}.md`, "text/markdown");
+  toast(`Exportado ${rows.length} respostas PS RSVP em MD.`, "success");
+}
+
 async function exportCsvAll() {
   const f = { ...state.filters, only_with_comment: false };
   try {
@@ -598,6 +778,8 @@ function wireEvents() {
   $("refresh-btn").addEventListener("click", refreshAll);
   $("export-csv-btn").addEventListener("click", exportCsv);
   $("export-csv-all-btn")?.addEventListener("click", exportCsvAll);
+  $("export-ps-csv-btn")?.addEventListener("click", exportPsRsvpCsv);
+  $("export-ps-md-btn")?.addEventListener("click", exportPsRsvpMd);
   $("print-btn")?.addEventListener("click", () => window.print());
   $("error-banner-dismiss").addEventListener("click", hideError);
 
