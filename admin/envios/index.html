@@ -108,6 +108,26 @@
       </div>
     </section>
 
+    <!-- Tipos de envio — guia rápido -->
+    <section class="card" id="types-guide-card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="document.getElementById('types-guide-body').classList.toggle('hidden');this.querySelector('.toggle-icon').textContent=document.getElementById('types-guide-body').classList.contains('hidden')?'▸':'▾'">
+        <h3 style="margin:0">ℹ️ Tipos de envio — o que cada chip significa</h3>
+        <span class="toggle-icon" style="font-size:18px;color:#888">▸</span>
+      </div>
+      <div id="types-guide-body" class="hidden" style="margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;font-size:12px;color:#aaa">
+        <div><strong style="color:#fff">🔔 Lembrete pré-aula (auto)</strong><br>WhatsApp grupo. 3 disparos por aula: 60min antes / 15min antes / na hora.</div>
+        <div><strong style="color:#fff">📋 Pré PS RSVP (auto)</strong><br>DM Meta 8h BRT. Confirma presença + dúvidas antes PS (Ter/Sex).</div>
+        <div><strong style="color:#fff">⭐ NPS pós-aula (auto)</strong><br>DM ou grupo. Dispara 5min após fim Zoom. Coleta nota 0-10.</div>
+        <div><strong style="color:#fff">📝 Survey/Formulário (manual)</strong><br>Formulário criado manualmente em Avaliações + enviado pra lista.</div>
+        <div><strong style="color:#fff">👤 Aviso mentor (manual)</strong><br>DM individual pro mentor sobre aula específica.</div>
+        <div><strong style="color:#fff">📢 Anúncio grupo (manual)</strong><br>Mensagem livre disparada num grupo WA.</div>
+        <div><strong style="color:#fff">✍️ Mensagem livre (manual)</strong><br>Texto ad-hoc enviado via aba Avisos WhatsApp.</div>
+        <div style="background:#1a1a26;border-left:3px solid #f59e0b;padding:8px 10px;border-radius:6px;color:#fbbf24;grid-column:1/-1">
+          <strong>⏳ Pendente ≠ erro.</strong> Pendente = agendado pra horário futuro. Quando bate hora, cron */5min envia e status muda pra ✅ Enviado. Falhas reais aparecem como ❌ Falhou.
+        </div>
+      </div>
+    </section>
+
     <!-- Main dispatch table -->
     <section class="card dispatch-section">
       <div class="card-header dispatch-header">
@@ -166,24 +186,25 @@
       <div class="filter-group">
         <label>Status</label>
         <div class="chips" id="filter-statuses">
-          <button class="chip toggle" data-value="pending">Pendente</button>
-          <button class="chip toggle" data-value="sent">Enviado</button>
-          <button class="chip toggle" data-value="delivered">Entregue</button>
-          <button class="chip toggle" data-value="read">Lido</button>
-          <button class="chip toggle" data-value="responded">Respondeu</button>
-          <button class="chip toggle" data-value="failed">Falhou</button>
+          <button class="chip toggle" data-value="pending">⏳ Pendente/Agendado</button>
+          <button class="chip toggle" data-value="sent">✅ Enviado</button>
+          <button class="chip toggle" data-value="delivered">📬 Entregue</button>
+          <button class="chip toggle" data-value="read">👁 Lido</button>
+          <button class="chip toggle" data-value="responded">💬 Respondido</button>
+          <button class="chip toggle" data-value="failed">❌ Falhou</button>
         </div>
       </div>
 
       <div class="filter-group">
         <label>Tipo de envio</label>
         <div class="chips" id="filter-dispatch-types">
-          <button class="chip toggle" data-value="class_reminder">Lembrete aula</button>
-          <button class="chip toggle" data-value="survey">Survey</button>
-          <button class="chip toggle" data-value="nps">NPS</button>
-          <button class="chip toggle" data-value="mentor_individual">Mentor DM</button>
-          <button class="chip toggle" data-value="group_announcement">Anúncio</button>
-          <button class="chip toggle" data-value="custom">Custom</button>
+          <button class="chip toggle" data-value="class_reminder">🔔 Lembrete pré-aula (auto)</button>
+          <button class="chip toggle" data-value="ps_rsvp">📋 Pré PS RSVP (auto)</button>
+          <button class="chip toggle" data-value="nps">⭐ NPS pós-aula (auto)</button>
+          <button class="chip toggle" data-value="survey">📝 Survey/Formulário (manual)</button>
+          <button class="chip toggle" data-value="mentor_individual">👤 Aviso mentor (manual)</button>
+          <button class="chip toggle" data-value="group_announcement">📢 Anúncio grupo (manual)</button>
+          <button class="chip toggle" data-value="custom">✍️ Mensagem livre (manual)</button>
         </div>
       </div>
 

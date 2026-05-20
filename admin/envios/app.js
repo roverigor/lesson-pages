@@ -40,6 +40,38 @@ const state = {
   retryExpiresAt: null,
 };
 
+// ─── Labels ───────────────────────────────────────────────────────────
+const TYPE_LABELS = {
+  class_reminder: { icon: "🔔", text: "Lembrete pré-aula", sub: "auto" },
+  ps_rsvp: { icon: "📋", text: "Pré PS RSVP", sub: "auto" },
+  nps: { icon: "⭐", text: "NPS pós-aula", sub: "auto" },
+  survey: { icon: "📝", text: "Survey/Formulário", sub: "manual" },
+  mentor_individual: { icon: "👤", text: "Aviso mentor", sub: "manual" },
+  group_announcement: { icon: "📢", text: "Anúncio grupo", sub: "manual" },
+  custom: { icon: "✍️", text: "Mensagem livre", sub: "manual" },
+};
+
+const STATUS_LABELS = {
+  pending: { icon: "⏳", text: "Pendente/Agendado", color: "#fbbf24" },
+  sent: { icon: "✅", text: "Enviado", color: "#4ade80" },
+  delivered: { icon: "📬", text: "Entregue", color: "#22d3ee" },
+  read: { icon: "👁", text: "Lido", color: "#a5b4fc" },
+  responded: { icon: "💬", text: "Respondido", color: "#a78bfa" },
+  failed: { icon: "❌", text: "Falhou", color: "#f87171" },
+  cancelled: { icon: "🚫", text: "Cancelado", color: "#666" },
+  skipped: { icon: "⏭", text: "Pulado", color: "#666" },
+};
+
+function typeLabel(t) {
+  const l = TYPE_LABELS[t];
+  return l ? `${l.icon} ${l.text} <span class="muted small">(${l.sub})</span>` : (t ?? "—");
+}
+
+function statusLabel(s) {
+  const l = STATUS_LABELS[s];
+  return l ? `${l.icon} ${l.text}` : (s ?? "—");
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────
 function fmtDate(iso) {
   if (!iso) return "—";
@@ -110,7 +142,10 @@ function renderActiveFilters() {
   }
   (f.channels ?? []).forEach((c) => add(`📡 ${c}`));
   (f.statuses ?? []).forEach((s) => add(`● ${s}`));
-  (f.dispatch_types ?? []).forEach((t) => add(`🏷 ${t}`));
+  (f.dispatch_types ?? []).forEach((t) => {
+    const l = TYPE_LABELS[t];
+    add(l ? `${l.icon} ${l.text}` : `🏷 ${t}`);
+  });
   if (f.student_search) add(`👤 ${f.student_search}`);
   if (f.template_name)  add(`📝 ${f.template_name}`);
 }
@@ -341,8 +376,8 @@ function renderDispatchTable() {
       <td>${fmtDate(r.sent_at)}</td>
       <td><span class="channel-pill ${escapeHtml(r.channel)}">${escapeHtml(r.channel)}</span></td>
       <td>${escapeHtml(recipient)}</td>
-      <td>${escapeHtml(r.dispatch_type ?? "—")}</td>
-      <td><span class="status-pill status-${escapeHtml(r.status)}">${escapeHtml(r.status)}</span></td>
+      <td>${typeLabel(r.dispatch_type)}</td>
+      <td><span class="status-pill status-${escapeHtml(r.status)}">${statusLabel(r.status)}</span></td>
       <td class="right">${r.cost_usd > 0 ? fmtUSD(r.cost_usd) : "—"}</td>
     </tr>`;
   }).join("");
@@ -368,7 +403,8 @@ async function openDispatchModal(source, dispatchId) {
   if (!row) return;
   state.currentDispatch = row;
 
-  $("dm-title").textContent = `${row.dispatch_type ?? "envio"} · ${row.channel}`;
+  const tL = TYPE_LABELS[row.dispatch_type];
+  $("dm-title").textContent = `${tL ? tL.icon + " " + tL.text : row.dispatch_type ?? "envio"} · ${row.channel}`;
   show($("dispatch-modal-backdrop"));
   show($("dispatch-modal"));
 
