@@ -524,9 +524,18 @@
     const MIN = 2;
     const trimLen = (id) => ($(id)?.value?.trim() || "").length;
     function nameOk() {
-      // Coletado em qualquer um dos inputs (top/ps) — name persiste entre telas
-      return trimLen("name-input-top") >= MIN
-          || trimLen("name-input-ps")  >= MIN;
+      // DM mode shows no name fields (student known via token). If nothing visible, name not required.
+      const top = $("name-input-top");
+      const ps  = $("name-input-ps");
+      const nps = $("name-input");
+      const topVisible = top && top.offsetParent !== null;
+      const psVisible  = ps  && ps.offsetParent  !== null;
+      const npsVisible = nps && nps.offsetParent !== null;
+      if (!topVisible && !psVisible && !npsVisible) return true;
+      if (topVisible && trimLen("name-input-top") >= MIN) return true;
+      if (psVisible  && trimLen("name-input-ps")  >= MIN) return true;
+      if (npsVisible && trimLen("name-input")     >= MIN) return true;
+      return false;
     }
     function updateBtn1() {
       $("btn-next-1").disabled = !(state.csat != null && nameOk());
