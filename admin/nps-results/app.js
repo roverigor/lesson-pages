@@ -226,11 +226,13 @@ async function fetchPsRsvp() {
   const dateFrom = from || new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
   const dateTo = to || new Date().toISOString().slice(0, 10);
 
+  // Fetch só links com send_status sent/failed (skip 'pending' que pode ter milhares stale)
   const [linksRes, respsRes] = await Promise.all([
     sb.from("ps_rsvp_links")
       .select("id, session_date, send_status, sent_at, created_at, class_id, student_id")
       .gte("session_date", dateFrom)
-      .lte("session_date", dateTo),
+      .lte("session_date", dateTo)
+      .in("send_status", ["sent", "failed"]),
     sb.from("ps_rsvp_responses")
       .select("id, link_id, class_id, student_id, session_date, will_attend, doubts_text, project_phase, submitted_at")
       .gte("session_date", dateFrom)
@@ -240,18 +242,27 @@ async function fetchPsRsvp() {
   if (linksRes.error) throw linksRes.error;
   if (respsRes.error) throw respsRes.error;
 
-  // Hydrate class+student via separate queries (no FK declared on ps_rsvp_responses)
+  // Hydrate class+student via separate queries (chunked pra evitar URL length overflow)
   const classIds = [...new Set([...(linksRes.data || []), ...(respsRes.data || [])].map((r) => r.class_id).filter(Boolean))];
   const studentIds = [...new Set([...(linksRes.data || []), ...(respsRes.data || [])].map((r) => r.student_id).filter(Boolean))];
 
-  const [classesRes, studentsRes] = await Promise.all([
-    classIds.length ? sb.from("classes").select("id, name").in("id", classIds) : Promise.resolve({ data: [], error: null }),
-    studentIds.length ? sb.from("students").select("id, name, phone").in("id", studentIds) : Promise.resolve({ data: [], error: null }),
+  async function chunkedIn(table, columns, ids, chunkSize = 80) {
+    const out = [];
+    for (let i = 0; i < ids.length; i += chunkSize) {
+      const chunk = ids.slice(i, i + chunkSize);
+      const r = await sb.from(table).select(columns).in("id", chunk);
+      if (r.error) throw r.error;
+      out.push(...(r.data || []));
+    }
+    return out;
+  }
+
+  const [classesData, studentsData] = await Promise.all([
+    classIds.length ? chunkedIn("classes", "id, name", classIds) : Promise.resolve([]),
+    studentIds.length ? chunkedIn("students", "id, name, phone", studentIds) : Promise.resolve([]),
   ]);
-  if (classesRes.error) throw classesRes.error;
-  if (studentsRes.error) throw studentsRes.error;
-  const classMap = new Map((classesRes.data || []).map((c) => [c.id, c]));
-  const studentMap = new Map((studentsRes.data || []).map((s) => [s.id, s]));
+  const classMap = new Map(classesData.map((c) => [c.id, c]));
+  const studentMap = new Map(studentsData.map((s) => [s.id, s]));
 
   const responses = (respsRes.data || []).map((r) => ({ ...r, class: classMap.get(r.class_id), student: studentMap.get(r.student_id) }));
   const links = (linksRes.data || []).map((l) => ({ ...l, class: classMap.get(l.class_id), student: studentMap.get(l.student_id) }));
