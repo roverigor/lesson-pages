@@ -258,6 +258,55 @@ async function fetchPsRsvp() {
   return { links, responses };
 }
 
+function mergePsRsvpIntoSurveyBreak() {
+  const links = state.psRsvpLinks || [];
+  const responses = state.psRsvpResponses || [];
+  const groups = new Map();
+  for (const l of links) {
+    const k = `${l.class_id || "null"}|${l.session_date}`;
+    if (!groups.has(k)) groups.set(k, { class_id: l.class_id, class_name: l.class?.name, session_date: l.session_date, links: [], responses: [] });
+    groups.get(k).links.push(l);
+  }
+  for (const r of responses) {
+    const k = `${r.class_id || "null"}|${r.session_date}`;
+    if (!groups.has(k)) groups.set(k, { class_id: r.class_id, class_name: r.class?.name, session_date: r.session_date, links: [], responses: [] });
+    groups.get(k).responses.push(r);
+  }
+  // Remove old PS RSVP entries to avoid duplication on re-render
+  state.surveyBreak = (state.surveyBreak || []).filter((s) => s.kind !== "ps_rsvp");
+  const psEntries = [];
+  for (const [k, g] of groups) {
+    const sent = g.links.filter((l) => l.send_status === "sent").length;
+    const total = g.responses.length;
+    const yes = g.responses.filter((r) => r.will_attend === "yes").length;
+    const no = g.responses.filter((r) => r.will_attend === "no").length;
+    const maybe = g.responses.filter((r) => r.will_attend === "maybe").length;
+    const rate = sent > 0 ? Math.round((total / sent) * 100) : 0;
+    psEntries.push({
+      group_key: `psrsvp:${k}`,
+      kind: "ps_rsvp",
+      label: `📋 Pré PS — ${g.class_name || "Aula PS"} · ${g.session_date}`,
+      class_name: g.class_name,
+      class_id: g.class_id,
+      cohort_name: null,
+      session_date: g.session_date,
+      first_at: g.session_date + "T00:00:00",
+      last_at: g.session_date + "T23:59:59",
+      total,
+      nps: rate,        // reaproveita NPS slot pra mostrar taxa resposta
+      avg_score: null,
+      dm_total: sent,
+      dm_nps: null,
+      group_total: 0,
+      group_nps: null,
+      ps_yes: yes,
+      ps_no: no,
+      ps_maybe: maybe,
+    });
+  }
+  state.surveyBreak = state.surveyBreak.concat(psEntries);
+}
+
 async function renderPsRsvp() {
   const body = $("ps-rsvp-body");
   if (!body) return;
@@ -265,6 +314,8 @@ async function renderPsRsvp() {
     const { links, responses } = await fetchPsRsvp();
     state.psRsvpLinks = links;
     state.psRsvpResponses = responses;
+    mergePsRsvpIntoSurveyBreak();
+    renderSurveyBreak();
     const sent = links.filter((l) => l.send_status === "sent").length;
     const resp = responses.length;
     const rate = sent > 0 ? Math.round((resp / sent) * 100) : 0;
@@ -436,16 +487,33 @@ function renderSurveyBreak() {
   }
 
   list.innerHTML = rows.map((r) => {
-    const icon = r.kind === "manual" ? "📋" : "⚡";
-    const kindLbl = r.kind === "manual" ? "Formulário manual" : (r.class_kind === "ps" ? "PS pós-aula" : "Aula pós-aula");
+    const isPs = r.kind === "ps_rsvp";
+    const icon = isPs ? "📋" : r.kind === "manual" ? "📋" : "⚡";
+    const kindLbl = isPs ? "Pré PS RSVP" : r.kind === "manual" ? "Formulário manual" : (r.class_kind === "ps" ? "PS pós-aula" : "Aula pós-aula");
     const dateRange = (r.first_at && r.last_at && r.first_at !== r.last_at)
       ? `${fmtDate(r.first_at)} – ${fmtDate(r.last_at)}`
       : fmtDate(r.first_at || r.last_at);
-    const npsCol = npsColor(r.nps);
     const cohortTag = r.cohort_name ? `<span style="background:#1a1a20;padding:2px 8px;border-radius:12px;font-size:11px;color:#aaa">👥 ${escapeHtml(r.cohort_name)}</span>` : "";
-    const modeSplitTxt = (r.dm_total > 0 || r.group_total > 0)
-      ? `<span style="color:#888;font-size:11px">📩 DM ${r.dm_total ?? 0}${r.dm_nps != null ? ` (NPS ${r.dm_nps})` : ""} · 📢 Grupo ${r.group_total ?? 0}${r.group_nps != null ? ` (NPS ${r.group_nps})` : ""}</span>`
-      : "";
+
+    let modeSplitTxt = "";
+    let stats = "";
+    if (isPs) {
+      modeSplitTxt = `<span style="color:#888;font-size:11px">📩 Enviados ${r.dm_total ?? 0} · ✅ ${r.ps_yes ?? 0} vão · ❌ ${r.ps_no ?? 0} não · ⚠️ ${r.ps_maybe ?? 0} dúvida</span>`;
+      const rateCol = r.nps >= 50 ? "#4ade80" : r.nps >= 20 ? "#fbbf24" : "#f87171";
+      stats = `
+        <div class="stat-block"><div class="stat-num">${r.total}</div><div class="stat-lbl">respostas</div></div>
+        <div class="stat-block"><div class="stat-num" style="color:${rateCol}">${r.nps}%</div><div class="stat-lbl">taxa</div></div>
+        <div class="stat-block"><div class="stat-num">${r.dm_total ?? 0}</div><div class="stat-lbl">enviados</div></div>`;
+    } else {
+      modeSplitTxt = (r.dm_total > 0 || r.group_total > 0)
+        ? `<span style="color:#888;font-size:11px">📩 DM ${r.dm_total ?? 0}${r.dm_nps != null ? ` (NPS ${r.dm_nps})` : ""} · 📢 Grupo ${r.group_total ?? 0}${r.group_nps != null ? ` (NPS ${r.group_nps})` : ""}</span>`
+        : "";
+      const npsCol = npsColor(r.nps);
+      stats = `
+        <div class="stat-block"><div class="stat-num">${r.total}</div><div class="stat-lbl">respostas</div></div>
+        <div class="stat-block"><div class="stat-num" style="color:${npsCol}">${r.nps ?? "—"}</div><div class="stat-lbl">NPS geral</div></div>
+        <div class="stat-block"><div class="stat-num">${r.avg_score ?? "—"}</div><div class="stat-lbl">média</div></div>`;
+    }
     return `
       <div class="survey-item" data-key="${escapeHtml(r.group_key)}">
         <div class="survey-row">
@@ -458,9 +526,7 @@ function renderSurveyBreak() {
             ${modeSplitTxt ? `<div style="margin-top:4px">${modeSplitTxt}</div>` : ""}
           </div>
           <div class="survey-stats">
-            <div class="stat-block"><div class="stat-num">${r.total}</div><div class="stat-lbl">respostas</div></div>
-            <div class="stat-block"><div class="stat-num" style="color:${npsCol}">${r.nps ?? "—"}</div><div class="stat-lbl">NPS geral</div></div>
-            <div class="stat-block"><div class="stat-num">${r.avg_score ?? "—"}</div><div class="stat-lbl">média</div></div>
+            ${stats}
             <button class="btn-expand" data-key="${escapeHtml(r.group_key)}">Ver detalhe</button>
           </div>
         </div>
@@ -490,6 +556,28 @@ async function toggleSurveyDetail(key) {
 
   const row = (state.surveyBreak || []).find((r) => r.group_key === key);
   if (!row) { el.innerHTML = `<div class="loading">Dados não encontrados.</div>`; return; }
+
+  // PS RSVP detail — render direto do state.psRsvpResponses (não RPC)
+  if (row.kind === "ps_rsvp") {
+    const matches = (state.psRsvpResponses || []).filter((r) => r.session_date === row.session_date && r.class_id === row.class_id);
+    if (!matches.length) { el.innerHTML = `<div class="loading">Sem respostas PS RSVP.</div>`; return; }
+    el.innerHTML = `<table class="data-table" style="margin-top:6px">
+      <thead><tr><th>Quando</th><th>Aluno</th><th>Telefone</th><th>Resposta</th><th>Dúvida/Comentário</th><th>Fase</th></tr></thead>
+      <tbody>${matches.map((r) => {
+        const respLbl = r.will_attend === "yes" ? '<span style="color:#4ade80;font-weight:700">✅ Vai</span>'
+          : r.will_attend === "no" ? '<span style="color:#f87171;font-weight:700">❌ Não</span>'
+          : r.will_attend === "maybe" ? '<span style="color:#fbbf24;font-weight:700">⚠️ Dúvida</span>' : "—";
+        return `<tr>
+          <td style="font-size:11px;color:#666">${escapeHtml(fmtDateTime(r.submitted_at))}</td>
+          <td>${escapeHtml(r.student?.name || "—")}</td>
+          <td style="font-size:11px;color:#888">${escapeHtml(r.student?.phone || "—")}</td>
+          <td>${respLbl}</td>
+          <td style="font-size:12px;color:#ccc;max-width:380px">${escapeHtml(r.doubts_text || "")}</td>
+          <td style="font-size:11px;color:#888">${escapeHtml(r.project_phase || "—")}</td>
+        </tr>`;
+      }).join("")}</tbody></table>`;
+    return;
+  }
 
   // Build filter for detail query
   const f = { ...state.filters };
