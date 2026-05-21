@@ -165,8 +165,8 @@
       <div class="question" id="question-1">Como você avalia a aula de hoje?</div>
       <div class="sub-context" id="sub-context-1"></div>
       <div id="name-field-top" style="display:none; margin-bottom:18px">
-        <div class="label-sm">Seu nome</div>
-        <input id="name-input-top" type="text" class="text-input name-input" placeholder="Seu nome…">
+        <div class="label-sm">Seu nome <span style="color:#ef4444">*</span></div>
+        <input id="name-input-top" type="text" class="text-input name-input" placeholder="Seu nome completo" minlength="2" required>
       </div>
       <div class="stars-row" id="stars-row"></div>
       <div class="stars-label" id="stars-label">Toque numa estrela</div>
@@ -212,8 +212,8 @@
       <div class="brand">Academia Lendária</div>
       <div class="q-counter">Pergunta 3 de 4</div>
       <div class="question">O que poderia melhorar?</div>
-      <textarea id="improvement-input" class="text-input" placeholder="Algo que poderia ter sido diferente?"></textarea>
-      <button class="cta-btn" id="btn-next-3">Continuar →</button>
+      <textarea id="improvement-input" class="text-input" placeholder="Algo que poderia ter sido diferente?" minlength="2" required></textarea>
+      <button class="cta-btn" id="btn-next-3" disabled>Continuar →</button>
     </div>
 
     <!-- Step 4: NPS 0-10 -->
@@ -228,8 +228,8 @@
         <span>Indicaria com certeza</span>
       </div>
       <div id="name-field-wrap" style="display:none">
-        <div class="label-sm">Nome (opcional)</div>
-        <input id="name-input" type="text" class="text-input name-input" placeholder="Seu nome">
+        <div class="label-sm">Seu nome <span style="color:#ef4444">*</span></div>
+        <input id="name-input" type="text" class="text-input name-input" placeholder="Seu nome completo" minlength="2" required>
       </div>
       <button class="cta-btn" id="btn-next-4" disabled>Continuar →</button>
     </div>
@@ -241,8 +241,8 @@
       <div class="q-counter">Última pergunta — só pra você</div>
       <div class="question">O que precisamos fazer pra você se sentir 100% atendido?</div>
       <div class="sub-context">Sua resposta vai direto pra equipe — vamos te chamar pra entender melhor.</div>
-      <textarea id="detractor-input" class="text-input" placeholder="Conta o que precisa mudar..." style="min-height:120px"></textarea>
-      <button class="cta-btn" id="btn-submit">Enviar feedback ✓</button>
+      <textarea id="detractor-input" class="text-input" placeholder="Conta o que precisa mudar..." style="min-height:120px" minlength="2" required></textarea>
+      <button class="cta-btn" id="btn-submit" disabled>Enviar feedback ✓</button>
     </div>
 
     <!-- Thank-you -->
@@ -437,7 +437,8 @@
       }
 
       let msg = "Não foi possível enviar. Tente novamente.";
-      if (res.status === 410) msg = "Este link expirou.";
+      if (data?.error === "name_required") msg = "Preencha seu nome (mínimo 2 caracteres) para enviar.";
+      else if (res.status === 410) msg = "Este link expirou.";
       else if (res.status === 429) msg = "Você já respondeu hoje. Obrigado!";
       else if (res.status === 404) msg = "Link inválido.";
       showError("Erro ao enviar", msg);
@@ -506,6 +507,53 @@
     });
 
     $("btn-submit").addEventListener("click", submit);
+
+    // ─── Required field validation (min 2 chars) ──────────────────────
+    const MIN = 2;
+    const trimLen = (id) => ($(id)?.value?.trim() || "").length;
+    function nameOk() {
+      // Any visible name input with >=2 chars passes (top/ps/nps)
+      const top = $("name-input-top");
+      const ps  = $("name-input-ps");
+      const nps = $("name-input");
+      if (top && top.offsetParent !== null && trimLen("name-input-top") >= MIN) return true;
+      if (ps  && ps.offsetParent  !== null && trimLen("name-input-ps")  >= MIN) return true;
+      if (nps && nps.offsetParent !== null && trimLen("name-input")     >= MIN) return true;
+      return false;
+    }
+    function updateBtn1() {
+      $("btn-next-1").disabled = !(state.csat != null && nameOk());
+    }
+    function updateBtn4() {
+      $("btn-next-4").disabled = !(state.nps != null && nameOk());
+    }
+    function updateBtnPsDoubts() {
+      const sel = state.psBroughtDoubts != null;
+      $("btn-next-ps-doubts").disabled = !(sel && nameOk());
+    }
+    function updateBtn3() {
+      $("btn-next-3").disabled = trimLen("improvement-input") < MIN;
+    }
+    function updateBtnSubmit() {
+      $("btn-submit").disabled = trimLen("detractor-input") < MIN;
+    }
+    ["name-input-top","name-input-ps","name-input"].forEach((id) => {
+      const el = $(id);
+      if (el) el.addEventListener("input", () => { updateBtn1(); updateBtn4(); updateBtnPsDoubts(); });
+    });
+    $("improvement-input")?.addEventListener("input", updateBtn3);
+    $("detractor-input")?.addEventListener("input", updateBtnSubmit);
+
+    // Re-evaluate name-gated buttons whenever rating selected
+    const origBtn1Click = $("btn-next-1").onclick;
+    // Already gated via existing star handler. Wire patch in stars/nps/options handlers via mutation observer-like:
+    // Hook into csat star click — re-evaluate after state.csat set
+    document.addEventListener("click", (e) => {
+      if (e.target.classList?.contains("star-btn") || e.target.classList?.contains("nps-btn")) {
+        setTimeout(() => { updateBtn1(); updateBtn4(); }, 0);
+      }
+      if (e.target.closest(".option-item[data-ps-doubts]")) setTimeout(updateBtnPsDoubts, 0);
+    });
 
     document.querySelectorAll(".btn-back").forEach((b) => {
       b.addEventListener("click", () => {
@@ -582,7 +630,7 @@
         const wrap = document.createElement("div");
         wrap.id = "name-field-ps";
         wrap.style.cssText = "margin-bottom:18px";
-        wrap.innerHTML = `<div class="label-sm">Seu nome</div><input id="name-input-ps" type="text" class="text-input name-input" placeholder="Seu nome…">`;
+        wrap.innerHTML = `<div class="label-sm">Seu nome <span style="color:#ef4444">*</span></div><input id="name-input-ps" type="text" class="text-input name-input" placeholder="Seu nome completo" minlength="2" required>`;
         const sub = psDoubtsScreen.querySelector("#sub-context-ps-doubts");
         if (sub) sub.insertAdjacentElement("afterend", wrap);
       }

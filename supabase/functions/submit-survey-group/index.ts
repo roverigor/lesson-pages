@@ -115,6 +115,11 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: "token_expired" }, 410);
   }
 
+  // Group mode: nome obrigatório (min 2 chars) — pra rastrear detractor
+  if (link.mode === "group" && (!nameProvided || nameProvided.length < 2)) {
+    return jsonResponse({ error: "name_required" }, 400);
+  }
+
   const ip = clientIp(req);
   const ipHash = await sha256Hex(`${ip}|${IP_HASH_SALT}|${dailySaltSuffix()}`);
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
