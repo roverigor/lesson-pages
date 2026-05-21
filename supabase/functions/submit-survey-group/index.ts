@@ -179,7 +179,7 @@ Deno.serve(async (req: Request) => {
     thankYou = "Obrigado pelo feedback. Um membro do nosso time vai te chamar pra entender melhor e ajustar o que for preciso. 🙏";
   } else if (nps_score <= 8) {
     bucket = "passive";
-    thankYou = "Valeu pela nota! Se quiser, conta o que faltaria pra ser 10 — usamos isso pra refinar.";
+    thankYou = "Valeu pela nota! Sua avaliação nos ajuda a calibrar a próxima aula. 💛";
   } else {
     bucket = "promoter";
     thankYou = "Que bom que foi bom! 💜 Se conhecer alguém que se beneficiaria, manda nossa página: https://academialendaria.ai";
