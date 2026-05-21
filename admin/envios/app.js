@@ -362,27 +362,90 @@ async function loadDispatchTable() {
   renderPagination();
 }
 
+function shortId(id) {
+  if (!id) return "";
+  return String(id).replace(/-/g, "").slice(0, 8);
+}
+
+function formLabel(r) {
+  // Map row to "qual formulário" string + form ID (when applicable).
+  const meta = r.metadata || {};
+  if (r.source === "survey_link") {
+    const name = meta.survey_name || "Survey";
+    const id = meta.survey_id || r.metadata?.survey_id;
+    return { text: name, idLabel: "Forms", id };
+  }
+  if (r.source === "nps_class_link") {
+    const id = meta.dispatch_job_id;
+    const mode = meta.mode === "group" ? "Grupo" : "DM";
+    return { text: `NPS pós-aula (${mode})`, idLabel: "Disparo", id };
+  }
+  if (r.source === "class_reminder") {
+    const t = meta.reminder_type;
+    const labels = { "60min": "Lembrete 60min", "15min": "Lembrete 15min", "now": "Lembrete na hora" };
+    return { text: labels[t] || "Lembrete pré-aula", idLabel: "Batch", id: meta.batch_id };
+  }
+  if (r.source === "ps_rsvp_link") {
+    return { text: "Pré PS RSVP", idLabel: "Disparo", id: meta.dispatch_id || r.dispatch_id };
+  }
+  if (r.source === "notification") {
+    return { text: r.template_name || r.dispatch_type || "Notificação", idLabel: "Tmpl", id: r.template_name };
+  }
+  return { text: r.template_name || r.dispatch_type || "—", idLabel: "", id: null };
+}
+
+function classLabel(r) {
+  const parts = [];
+  if (r.class_title) parts.push(escapeHtml(r.class_title));
+  if (r.cohort_name) parts.push(`<span class="muted small">${escapeHtml(r.cohort_name)}</span>`);
+  return parts.length ? parts.join("<br>") : '<span class="muted">—</span>';
+}
+
+function formCell(r) {
+  const f = formLabel(r);
+  const txt = escapeHtml(f.text);
+  if (!f.id) return txt;
+  const sid = shortId(f.id);
+  const fullId = escapeHtml(String(f.id));
+  return `${txt}<br><span class="muted small" title="${escapeHtml(f.idLabel)} ID: ${fullId}" style="cursor:copy" data-copy="${fullId}">🆔 ${escapeHtml(f.idLabel)}: ${escapeHtml(sid)}</span>`;
+}
+
 function renderDispatchTable() {
   const tbody = $("envios-tbody");
   $("envios-count").textContent = `(${state.totalCount} total)`;
   if (!state.rows.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="muted center">Nenhum envio com os filtros atuais</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="muted center">Nenhum envio com os filtros atuais</td></tr>';
     return;
   }
   tbody.innerHTML = state.rows.map(r => {
     const recipient = r.student_name ?? r.recipient_identifier ?? "—";
+    const dispatchSid = shortId(r.dispatch_id);
     return `
     <tr data-source="${escapeHtml(r.source)}" data-id="${escapeHtml(r.dispatch_id)}">
-      <td>${fmtDate(r.sent_at)}</td>
+      <td>${fmtDate(r.sent_at)}<br><span class="muted small" title="Envio ID: ${escapeHtml(r.dispatch_id)}" style="cursor:copy" data-copy="${escapeHtml(r.dispatch_id)}">🆔 ${escapeHtml(dispatchSid)}</span></td>
       <td><span class="channel-pill ${escapeHtml(r.channel)}">${escapeHtml(r.channel)}</span></td>
       <td>${escapeHtml(recipient)}</td>
       <td>${typeLabel(r.dispatch_type)}</td>
+      <td>${classLabel(r)}</td>
+      <td>${formCell(r)}</td>
       <td><span class="status-pill status-${escapeHtml(r.status)}">${statusLabel(r.status)}</span></td>
       <td class="right">${r.cost_usd > 0 ? fmtUSD(r.cost_usd) : "—"}</td>
     </tr>`;
   }).join("");
   tbody.querySelectorAll("tr").forEach(tr => {
-    tr.addEventListener("click", () => openDispatchModal(tr.dataset.source, tr.dataset.id));
+    tr.addEventListener("click", (e) => {
+      // Copy on small-ID click; otherwise open modal
+      const copyEl = e.target.closest("[data-copy]");
+      if (copyEl) {
+        e.stopPropagation();
+        navigator.clipboard?.writeText(copyEl.dataset.copy);
+        const original = copyEl.textContent;
+        copyEl.textContent = "✓ copiado";
+        setTimeout(() => { copyEl.textContent = original; }, 1500);
+        return;
+      }
+      openDispatchModal(tr.dataset.source, tr.dataset.id);
+    });
   });
 }
 
@@ -554,11 +617,15 @@ async function exportCsv() {
   }
 
   const cols = [
+    ["dispatch_id", "Envio ID"],
+    ["source", "Source"],
     ["sent_at", "Data"],
     ["channel", "Canal"],
     ["student_name", "Aluno"],
     ["recipient_identifier", "Destinatário"],
     ["dispatch_type", "Tipo"],
+    ["class_title", "Aula"],
+    ["cohort_name", "Turma"],
     ["template_name", "Template"],
     ["status", "Status"],
     ["cost_usd", "Custo USD"],
