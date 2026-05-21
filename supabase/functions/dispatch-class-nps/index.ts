@@ -282,6 +282,27 @@ async function processJob(
       return baseResult;
     }
 
+    // ─── Idempotency gate: bloqueia se já enviou group/DM pra esta sessão ─
+    // Previne race condition cron */5min + manual trigger + retry
+    const { data: existingSentGroup } = await client
+      .from("nps_class_links")
+      .select("id, evolution_message_id, dispatch_job_id")
+      .eq("cohort_id", job.cohort_id)
+      .eq("session_date", job.session_date)
+      .eq("mode", "group")
+      .eq("send_status", "sent")
+      .neq("dispatch_job_id", job.id)
+      .maybeSingle();
+
+    if (existingSentGroup) {
+      console.warn(`[dispatch-class-nps] DUP DETECTED — cohort=${job.cohort_id} date=${job.session_date} já enviou group via job=${existingSentGroup.dispatch_job_id?.slice(0,8)} msg=${existingSentGroup.evolution_message_id?.slice(0,20)}`);
+      await finishJob(client, job.id, "skipped", {
+        error_detail: `duplicate_session_already_sent_via_job_${existingSentGroup.dispatch_job_id}`,
+      });
+      baseResult.status = "skipped";
+      return baseResult;
+    }
+
     // P.10: sanitize names that flow into templates (WA markdown safety)
     const cohortName = sanitizeForWA(cohort.name) || "Turma";
     const rawClassName = (klass as { name?: string } | null)?.name ?? cohortName;
