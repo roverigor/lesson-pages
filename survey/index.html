@@ -284,10 +284,13 @@
   };
 
   const $ = (id) => document.getElementById(id);
-  const SCREENS = ["screen-loading","screen-error","screen-ps-doubts","screen-ps-resolved","screen-1","screen-ps-unblocked","screen-2","screen-3","screen-4","screen-5","screen-thanks"];
 
+  // Iterates all DOM .screen elements (not hardcoded array) so new screens auto-register.
+  // Past bug: screen-passive added to HTML but missing from a static SCREENS list, causing blank screen on NPS 7-9.
   function showOnly(id) {
-    SCREENS.forEach((s) => $(s).classList.toggle("active", s === id));
+    const target = $(id);
+    if (!target) { console.error("showOnly: unknown screen id", id); return; }
+    document.querySelectorAll(".screen").forEach((el) => el.classList.toggle("active", el === target));
   }
 
   function setProgress(pct) { $("progress").style.width = pct + "%"; }
