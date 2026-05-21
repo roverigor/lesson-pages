@@ -230,6 +230,17 @@
       <button class="cta-btn" id="btn-next-4" disabled>Continuar →</button>
     </div>
 
+    <!-- Step 4b: Passive feedback (conditional NPS 7-9) -->
+    <div class="screen" id="screen-passive">
+      <button class="btn-back" data-back="4">← Voltar</button>
+      <div class="brand">Academia Lendária</div>
+      <div class="q-counter">Última pergunta</div>
+      <div class="question">O que faltaria pra ser 10?</div>
+      <div class="sub-context">Opcional — sua resposta nos ajuda a refinar a próxima aula.</div>
+      <textarea id="passive-input" class="text-input" placeholder="Algo que poderia ter sido diferente?" style="min-height:120px"></textarea>
+      <button class="cta-btn" id="btn-submit-passive">Enviar ✓</button>
+    </div>
+
     <!-- Step 5: Detractor follow-up (conditional NPS <= 6) -->
     <div class="screen" id="screen-5">
       <button class="btn-back" data-back="4">← Voltar</button>
@@ -399,7 +410,7 @@
           csat_score: state.csat,
           too_technical: state.tooTechnical,
           improvement_text: state.improvement || undefined,
-          comment: undefined,
+          comment: state.passiveFeedback || undefined,
           name_provided: state.name || undefined,
           detractor_followup_text: state.detractorFollowup || undefined,
           ps_brought_doubts: state.psBroughtDoubts,
@@ -494,14 +505,17 @@
     $("btn-next-3").addEventListener("click", () => goto(4));
 
     $("btn-next-4").addEventListener("click", () => {
-      if (state.nps != null && state.nps <= 6) {
-        goto(5);
-      } else {
-        submit();
-      }
+      if (state.nps == null) return;
+      if (state.nps <= 6) goto(5);              // detractor — textarea obrigatório
+      else if (state.nps <= 9) goto("passive"); // 7-9 — textarea opcional "o que faltaria pra 10"
+      else submit();                            // 10 — submit direto
     });
 
     $("btn-submit").addEventListener("click", submit);
+    $("btn-submit-passive")?.addEventListener("click", () => {
+      state.passiveFeedback = $("passive-input")?.value?.trim() || "";
+      submit();
+    });
 
     // ─── Required field validation (min 2 chars) ──────────────────────
     const MIN = 2;
