@@ -501,9 +501,24 @@ function renderSurveyBreak() {
     const isPs = r.kind === "ps_rsvp";
     const icon = isPs ? "📋" : r.kind === "manual" ? "📋" : "⚡";
     const kindLbl = isPs ? "Pré PS RSVP" : r.kind === "manual" ? "Formulário manual" : (r.class_kind === "ps" ? "PS pós-aula" : "Aula pós-aula");
-    const dateRange = (r.first_at && r.last_at && r.first_at !== r.last_at)
-      ? `${fmtDate(r.first_at)} – ${fmtDate(r.last_at)}`
-      : fmtDate(r.first_at || r.last_at);
+    // Datas distintas: aula (session_date), envio (dispatch_sent_at), respostas (first_at/last_at)
+    const aulaLbl = r.session_date ? `📅 Aula ${fmtDate(r.session_date + "T12:00:00")}` : "";
+    const envioLbl = r.dispatch_sent_at ? `📩 Envio ${fmtDate(r.dispatch_sent_at)}` : "";
+    const respLbl = r.first_at && r.last_at && r.first_at !== r.last_at
+      ? `💬 Respostas ${fmtDate(r.first_at)}–${fmtDate(r.last_at)}`
+      : (r.first_at || r.last_at ? `💬 Resposta ${fmtDate(r.first_at || r.last_at)}` : "");
+    const dateParts = [aulaLbl, envioLbl, respLbl].filter(Boolean);
+    const dateRange = dateParts.length
+      ? dateParts.join(" · ")
+      : ((r.first_at && r.last_at && r.first_at !== r.last_at)
+          ? `${fmtDate(r.first_at)} – ${fmtDate(r.last_at)}`
+          : fmtDate(r.first_at || r.last_at));
+    // ID curto do disparo/form pra diretoria reconhecer no card
+    const shortId = (r.dispatch_job_id || r.link_id || r.survey_id || r.group_key || "")
+      .toString().split(":").pop().replace(/-/g, "").slice(0, 8);
+    const idTag = shortId
+      ? `<span style="background:#1a1a20;padding:2px 8px;border-radius:12px;font-size:11px;color:#9aa" title="${escapeHtml(r.dispatch_job_id || r.link_id || r.survey_id || r.group_key || "")}">🆔 ${escapeHtml(shortId)}</span>`
+      : "";
     const cohortTag = r.cohort_name ? `<span style="background:#1a1a20;padding:2px 8px;border-radius:12px;font-size:11px;color:#aaa">👥 ${escapeHtml(r.cohort_name)}</span>` : "";
 
     let modeSplitTxt = "";
@@ -531,6 +546,7 @@ function renderSurveyBreak() {
           <div class="survey-main">
             <div class="survey-label">${icon} ${escapeHtml(r.label)}</div>
             <div class="survey-meta" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px">
+              ${idTag}
               ${cohortTag}
               <span>${escapeHtml(kindLbl)} · ${escapeHtml(dateRange)}</span>
             </div>
@@ -591,19 +607,33 @@ async function toggleSurveyDetail(key) {
   }
 
   // Build filter for detail query
+  // Limpa filtros globais que poluem o detalhe quando o card já carrega chave única
   const f = { ...state.filters };
+  delete f.date_from;
+  delete f.date_to;
+  delete f.search;
+  delete f.bucket;
+  delete f.only_with_comment;
   if (row.kind === "manual") {
     f.survey_id = row.survey_id;
     f.source = "manual_survey";
   } else {
-    f.class_id = row.class_id;
     f.source = "auto_class";
-    if (row.session_date) {
-      const d0 = new Date(row.session_date + "T00:00:00").toISOString();
-      const d1 = new Date(row.session_date + "T00:00:00");
-      d1.setDate(d1.getDate() + 1);
-      f.date_from = d0;
-      f.date_to = d1.toISOString();
+    // Prioriza chave imutável do envio. Sem date range — detalhe vem por dispatch/link.
+    if (row.dispatch_job_id) {
+      f.dispatch_job_id = row.dispatch_job_id;
+    } else if (row.link_id) {
+      f.link_id = row.link_id;
+    } else {
+      // Fallback legacy (linha sem link): mantém filtro por aula+data
+      f.class_id = row.class_id;
+      if (row.session_date) {
+        const d0 = new Date(row.session_date + "T00:00:00").toISOString();
+        const d1 = new Date(row.session_date + "T00:00:00");
+        d1.setDate(d1.getDate() + 1);
+        f.date_from = d0;
+        f.date_to = d1.toISOString();
+      }
     }
   }
 
@@ -868,6 +898,78 @@ async function exportCsvAll() {
   } catch (e) { toast(`Erro: ${e?.message ?? e}`, "error"); }
 }
 
+function fmtRespDate(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
+}
+
+function escapeMdCell(v) {
+  return String(v ?? "—").replace(/\|/g, "\\|").replace(/\n/g, " ").replace(/\r/g, "");
+}
+
+function bucketLabel(b) {
+  return b === "detractor" ? "🔴 Detractor" : b === "passive" ? "🟡 Passive" : b === "promoter" ? "🟢 Promoter" : "—";
+}
+
+async function exportMdAll(opts = {}) {
+  const onlyDetractor = !!opts.onlyDetractor;
+  const f = { ...state.filters, only_with_comment: false };
+  if (onlyDetractor) f.bucket = "detractor";
+  try {
+    const rows = await rpc("nps_results_comments", { p_filters: f, p_limit: 1000 });
+    if (!rows?.length) { toast(onlyDetractor ? "Sem detractors no filtro." : "Sem respostas no filtro.", "info"); return; }
+
+    const dateFrom = $("filter-date-from").value || "—";
+    const dateTo = $("filter-date-to").value || "—";
+    const total = rows.length;
+    const detractors = rows.filter((r) => r.bucket === "detractor").length;
+    const passives = rows.filter((r) => r.bucket === "passive").length;
+    const promoters = rows.filter((r) => r.bucket === "promoter").length;
+    const nps = total > 0 ? Math.round(((promoters - detractors) / total) * 1000) / 10 : 0;
+    const avg = total > 0 ? Math.round((rows.reduce((s, r) => s + (Number(r.nps_score) || 0), 0) / total) * 100) / 100 : 0;
+
+    const title = onlyDetractor ? "NPS — Detractors" : "NPS — Todas Respostas";
+    let md = `# ${title}\n\n`;
+    md += `**Período:** ${dateFrom} → ${dateTo}\n\n`;
+    md += `## Resumo\n\n`;
+    md += `- Total respostas: **${total}**\n`;
+    if (!onlyDetractor) {
+      md += `- 🟢 Promoters: **${promoters}**\n`;
+      md += `- 🟡 Passives: **${passives}**\n`;
+      md += `- 🔴 Detractors: **${detractors}**\n`;
+      md += `- NPS: **${nps}**\n`;
+    }
+    md += `- Nota média: **${avg}**\n\n`;
+
+    const grouped = {};
+    for (const r of rows) {
+      const k = `${r.cohort_name || "Sem cohort"} :: ${r.class_name || "Sem aula"}`;
+      if (!grouped[k]) grouped[k] = [];
+      grouped[k].push(r);
+    }
+    const sortedKeys = Object.keys(grouped).sort();
+
+    for (const key of sortedKeys) {
+      const sectionRows = grouped[key];
+      md += `## ${key}\n\n`;
+      md += `_${sectionRows.length} respostas_\n\n`;
+      md += `| Data | Nota | Bucket | Canal | Aluno | Telefone | Nome (declarado) | Comentário |\n`;
+      md += `|---|---|---|---|---|---|---|---|\n`;
+      sectionRows
+        .sort((a, b) => (b.submitted_at || "").localeCompare(a.submitted_at || ""))
+        .forEach((r) => {
+          md += `| ${fmtRespDate(r.submitted_at)} | ${r.nps_score ?? "—"} | ${bucketLabel(r.bucket)} | ${r.mode === "dm" ? "DM" : "Grupo"} | ${escapeMdCell(r.student_name)} | ${escapeMdCell(r.student_phone)} | ${escapeMdCell(r.name_provided)} | ${escapeMdCell(r.comment)} |\n`;
+        });
+      md += `\n`;
+    }
+
+    const slug = onlyDetractor ? "nps-detractors" : "nps-todas-respostas";
+    downloadBlob(md, `${slug}-${new Date().toISOString().slice(0, 10)}.md`, "text/markdown");
+    toast(`Exportadas ${rows.length} respostas em MD.`, "success");
+  } catch (e) { toast(`Erro: ${e?.message ?? e}`, "error"); }
+}
+
 function showError(m) { $("error-banner-text").textContent = m; show($("error-banner")); }
 function hideError() { hide($("error-banner")); }
 
@@ -877,6 +979,8 @@ function wireEvents() {
   $("refresh-btn").addEventListener("click", refreshAll);
   $("export-csv-btn").addEventListener("click", exportCsv);
   $("export-csv-all-btn")?.addEventListener("click", exportCsvAll);
+  $("export-md-btn")?.addEventListener("click", () => exportMdAll({ onlyDetractor: false }));
+  $("export-md-detractors-btn")?.addEventListener("click", () => exportMdAll({ onlyDetractor: true }));
   $("export-ps-csv-btn")?.addEventListener("click", exportPsRsvpCsv);
   $("export-ps-md-btn")?.addEventListener("click", exportPsRsvpMd);
   $("print-btn")?.addEventListener("click", () => window.print());
