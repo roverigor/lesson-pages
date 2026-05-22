@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DS v1 Preview — Academia Lendária</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+
+  <!--
+    Página oculta de QA visual do Design System v1.
+    Prefix `_` no nome = não aparece em nav.
+    Acesso direto: /admin/_ds-preview.html
+    NÃO USAR EM PROD.
+  -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/css/ds/index.css">
+
+  <style>
+    body {
+      background: var(--color-surface-0);
+      color: var(--color-content-default);
+      font-family: var(--font-sans);
+      padding: var(--space-8);
+      min-height: 100vh;
+    }
+    .preview-header {
+      max-width: 1280px;
+      margin: 0 auto var(--space-8);
+      padding-bottom: var(--space-6);
+      border-bottom: 1px solid var(--color-border-default);
+    }
+    .preview-header h1 {
+      font-size: var(--font-size-3xl, 2rem);
+      font-weight: var(--font-weight-bold, 700);
+      color: var(--color-content-strong);
+      margin: 0 0 var(--space-2);
+    }
+    .preview-header p {
+      color: var(--color-content-muted);
+      max-width: 640px;
+    }
+    .preview-section {
+      max-width: 1280px;
+      margin: 0 auto var(--space-12);
+    }
+    .preview-section h2 {
+      font-size: var(--font-size-2xl, 1.5rem);
+      font-weight: var(--font-weight-semibold, 600);
+      color: var(--color-content-strong);
+      margin: 0 0 var(--space-2);
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--color-border-subtle);
+    }
+    .preview-section h3 {
+      font-size: var(--font-size-lg, 1.125rem);
+      font-weight: var(--font-weight-semibold, 600);
+      color: var(--color-content-default);
+      margin: var(--space-6) 0 var(--space-3);
+    }
+    .preview-section p.preview-caption {
+      color: var(--color-content-muted);
+      font-size: var(--font-size-sm, 0.875rem);
+      margin-bottom: var(--space-4);
+    }
+    .preview-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+      align-items: center;
+      margin-bottom: var(--space-6);
+    }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+    .preview-swatch {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+      padding: var(--space-4);
+      background: var(--color-surface-1);
+      border: 1px solid var(--color-border-default);
+      border-radius: var(--radius-md);
+      font-family: var(--font-mono, 'SF Mono', Menlo, monospace);
+      font-size: var(--font-size-xs, 0.75rem);
+    }
+    .preview-swatch__sample {
+      height: 64px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--color-border-subtle);
+    }
+    .preview-swatch__name {
+      color: var(--color-content-default);
+    }
+    .preview-swatch__value {
+      color: var(--color-content-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="preview-header">
+    <h1>🎨 Design System v1 — Preview</h1>
+    <p>
+      Showcase dos primitives entregues no v1.0: Button, Card, StatCard + tokens base.
+      Página oculta de QA visual, não aparece em nav. Use pra validar antes de adoção em telas live.
+    </p>
+  </header>
+
+
+  <!-- =========================================================== -->
+  <!-- 1. TOKENS — Color sample                                     -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>1. Tokens — Cores</h2>
+    <p class="preview-caption">Amostras dos tokens semânticos. Hex literal proibido em código novo (use var()).</p>
+
+    <h3>Surfaces</h3>
+    <div class="preview-grid">
+      <div class="preview-swatch">
+        <div class="preview-swatch__sample" style="background: var(--color-surface-0);"></div>
+        <span class="preview-swatch__name">--color-surface-0</span>
+        <span class="preview-swatch__value">Page background</span>
+      </div>
+      <div class="preview-swatch">
+        <div class="preview-swatch__sample" style="background: var(--color-surface-1);"></div>
+        <span class="preview-swatch__name">--color-surface-1</span>
+        <span class="preview-swatch__value">Cards, containers</span>
+      </div>
+      <div class="preview-swatch">
+        <div class="preview-swatch__sample" style="background: var(--color-surface-2);"></div>
+        <span class="preview-swatch__name">--color-surface-2</span>
+        <span class="preview-swatch__value">Cards hover, nested</span>
+      </div>
+      <div class="preview-swatch">
+        <div class="preview-swatch__sample" style="background: var(--color-surface-3);"></div>
+        <span class="preview-swatch__name">--color-surface-3</span>
+        <span class="preview-swatch__value">Inputs, dropdowns</span>
+      </div>
+    </div>
+
+    <h3>Accent + Status</h3>
+    <div class="preview-grid">
+      <div class="preview-swatch">
+        <div class="preview-swatch__sample" style="background: var(--color-accent-emphasis);"></div>
+        <span class="preview-swatch__name">--color-accent-emphasis</span>
+        <span class="preview-swatch__value">CTA primário</span>
+      </div>
+      <div class="preview-swatch">
+        <div class="preview-swatch__sample" style="background: var(--color-success-emphasis);"></div>
+        <span class="preview-swatch__name">--color-success-emphasis</span>
+        <span class="preview-swatch__value">Success badge fill</span>
+      </div>
+      <div class="preview-swatch">
+        <div class="preview-swatch__sample" style="background: var(--color-warning-emphasis);"></div>
+        <span class="preview-swatch__name">--color-warning-emphasis</span>
+        <span class="preview-swatch__value">Warning badge fill</span>
+      </div>
+      <div class="preview-swatch">
+        <div class="preview-swatch__sample" style="background: var(--color-danger-emphasis, #DC2626);"></div>
+        <span class="preview-swatch__name">--color-danger-emphasis</span>
+        <span class="preview-swatch__value">Danger badge fill</span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 2. BUTTONS                                                   -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>2. Buttons</h2>
+    <p class="preview-caption">5 variantes × 3 sizes × states (hover, focus, disabled, loading).</p>
+
+    <h3>Variantes (size md default)</h3>
+    <div class="preview-row">
+      <button class="btn btn--primary">Primary</button>
+      <button class="btn btn--secondary">Secondary</button>
+      <button class="btn btn--ghost">Ghost</button>
+      <button class="btn btn--danger">Danger</button>
+      <button class="btn btn--success">Success</button>
+    </div>
+
+    <h3>Sizes (primary)</h3>
+    <div class="preview-row">
+      <button class="btn btn--primary btn--sm">Small</button>
+      <button class="btn btn--primary">Medium (default)</button>
+      <button class="btn btn--primary btn--lg">Large</button>
+    </div>
+
+    <h3>States</h3>
+    <div class="preview-row">
+      <button class="btn btn--primary" disabled>Disabled</button>
+      <button class="btn btn--primary btn--loading" aria-busy="true">Loading…</button>
+      <button class="btn btn--secondary" disabled>Disabled secondary</button>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 3. CARDS                                                     -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>3. Cards</h2>
+    <p class="preview-caption">Elevation (flat/raised/floating) × tone (default/accent/success/warning/danger/info).</p>
+
+    <h3>Elevations</h3>
+    <div class="preview-grid">
+      <article class="card">
+        <header class="card__header">
+          <h3 class="card__title">Flat (default)</h3>
+        </header>
+        <div class="card__body">
+          <p>Card básico sem elevation. Usado em listas, grids densas.</p>
+        </div>
+      </article>
+
+      <article class="card card--raised">
+        <header class="card__header">
+          <h3 class="card__title">Raised</h3>
+        </header>
+        <div class="card__body">
+          <p>Sutil shadow, destaque visual baixo. Hover states naturais.</p>
+        </div>
+      </article>
+
+      <article class="card card--floating">
+        <header class="card__header">
+          <h3 class="card__title">Floating</h3>
+        </header>
+        <div class="card__body">
+          <p>Shadow forte, destaque máximo. Use com moderação.</p>
+        </div>
+      </article>
+    </div>
+
+    <h3>Tones (raised)</h3>
+    <div class="preview-grid">
+      <article class="card card--raised card--accent">
+        <header class="card__header">
+          <h3 class="card__title">Accent</h3>
+        </header>
+        <div class="card__body">CTA primário, destaque</div>
+      </article>
+
+      <article class="card card--raised card--success">
+        <header class="card__header">
+          <h3 class="card__title">Success</h3>
+        </header>
+        <div class="card__body">Confirmação, ação completa</div>
+      </article>
+
+      <article class="card card--raised card--warning">
+        <header class="card__header">
+          <h3 class="card__title">Warning</h3>
+        </header>
+        <div class="card__body">Atenção, ação reversível</div>
+      </article>
+
+      <article class="card card--raised card--danger">
+        <header class="card__header">
+          <h3 class="card__title">Danger</h3>
+        </header>
+        <div class="card__body">Erro, ação destrutiva</div>
+      </article>
+
+      <article class="card card--raised card--info">
+        <header class="card__header">
+          <h3 class="card__title">Info</h3>
+        </header>
+        <div class="card__body">Informativo neutro</div>
+      </article>
+    </div>
+
+    <h3>Card composto (com header, body, footer, actions)</h3>
+    <div class="preview-grid">
+      <article class="card card--raised">
+        <header class="card__header">
+          <div>
+            <h3 class="card__title">Turma T5 — Quarta-feira</h3>
+            <p class="card__subtitle">Mentor: Igor</p>
+          </div>
+          <div class="card__actions">
+            <button class="btn btn--ghost btn--sm">Editar</button>
+          </div>
+        </header>
+        <div class="card__body">
+          <p>23 alunos ativos. Próxima aula: 28/05 19:00.</p>
+        </div>
+        <footer class="card__footer">
+          <button class="btn btn--primary btn--sm">Ver detalhes</button>
+        </footer>
+      </article>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 4. STAT CARDS (KPI)                                          -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>4. StatCards (KPI)</h2>
+    <p class="preview-caption">Unifica .kpi-card, .stat-card, .kpi-num legacy. Trend up/down/flat × tones.</p>
+
+    <h3>Trends</h3>
+    <div class="preview-grid">
+      <article class="stat-card stat-card--accent">
+        <div class="stat-card__label">NPS Score</div>
+        <div class="stat-card__value">72</div>
+        <div class="stat-card__trend stat-card__trend--up">
+          <span class="stat-card__trend-icon" aria-hidden="true">↑</span>
+          <span>12%</span>
+        </div>
+        <p class="stat-card__helper">vs. último mês</p>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-card__label">Detratores</div>
+        <div class="stat-card__value">8</div>
+        <div class="stat-card__trend stat-card__trend--down">
+          <span class="stat-card__trend-icon" aria-hidden="true">↓</span>
+          <span>3</span>
+        </div>
+        <p class="stat-card__helper">menos que mês anterior</p>
+      </article>
+
+      <article class="stat-card stat-card--info">
+        <div class="stat-card__label">Total Respostas</div>
+        <div class="stat-card__value">157</div>
+        <div class="stat-card__trend stat-card__trend--flat">
+          <span class="stat-card__trend-icon" aria-hidden="true">→</span>
+          <span>0%</span>
+        </div>
+        <p class="stat-card__helper">estável</p>
+      </article>
+    </div>
+
+    <h3>Tones</h3>
+    <div class="preview-grid">
+      <article class="stat-card stat-card--success">
+        <div class="stat-card__label">Promoters</div>
+        <div class="stat-card__value">98</div>
+        <p class="stat-card__helper">62% do total</p>
+      </article>
+
+      <article class="stat-card stat-card--warning">
+        <div class="stat-card__label">Passivos</div>
+        <div class="stat-card__value">51</div>
+        <p class="stat-card__helper">32% do total</p>
+      </article>
+
+      <article class="stat-card stat-card--danger">
+        <div class="stat-card__label">Detratores</div>
+        <div class="stat-card__value">8</div>
+        <p class="stat-card__helper">5% do total</p>
+      </article>
+    </div>
+
+    <h3>Sizes</h3>
+    <div class="preview-grid">
+      <article class="stat-card stat-card--accent stat-card--sm">
+        <div class="stat-card__label">Small</div>
+        <div class="stat-card__value">42</div>
+      </article>
+
+      <article class="stat-card stat-card--accent">
+        <div class="stat-card__label">Medium (default)</div>
+        <div class="stat-card__value">128</div>
+      </article>
+
+      <article class="stat-card stat-card--accent stat-card--lg">
+        <div class="stat-card__label">Large</div>
+        <div class="stat-card__value">1.247</div>
+      </article>
+    </div>
+  </section>
+
+
+  <footer style="max-width:1280px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6) 0;border-top:1px solid var(--color-border-default);color:var(--color-content-muted);font-size:var(--font-size-sm);">
+    <p>DS v1 preview · gerado pra QA visual antes adoção em telas live.</p>
+    <p>Specs: <code>docs/design-system/v1/</code> · Source: <code>css/ds/</code></p>
+  </footer>
+
+</body>
+</html>
