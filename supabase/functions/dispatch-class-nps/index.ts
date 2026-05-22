@@ -23,6 +23,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 import { sendEvolutionGroupText } from "../_shared/evolution-group.ts";
+import { safeSendGroup } from "../_shared/safe-group-send.ts";
 import { sendWhatsAppTemplate } from "../_shared/meta-whatsapp.ts";
 import { verifyServiceRole } from "../_shared/auth.ts";
 import { sendDM } from "../_shared/slack.ts";
@@ -442,7 +443,16 @@ async function processJob(
         link: groupLink,
         greeting: hourGreeting(),
       }) + testTag;
-      const r = await sendEvolutionGroupText(effectiveGroupJid, groupMsg);
+      const r = await safeSendGroup(client, effectiveGroupJid, groupMsg, "dispatch-class-nps", groupLinkId);
+      if (r.skipped) {
+        console.warn(`[dispatch-class-nps] GROUP SKIPPED — ${r.skipped_reason} group=${effectiveGroupJid}`);
+        await client.from("nps_class_links").update({
+          send_status: "skipped",
+          error_detail: `safe_guard: ${r.skipped_reason}`,
+        }).eq("id", groupLinkId!);
+        baseResult.group.sent = false;
+        baseResult.group.error = r.skipped_reason;
+      }
       if (r.success) {
         baseResult.group.sent = true;
         await client.from("nps_class_links").update({
