@@ -194,9 +194,12 @@ Deno.serve(async (req: Request) => {
         .filter((p: string) => p.length > 0),
     );
     const normalizePhone = (p: string | null) => (p ?? "").replace(/\D/g, "");
+    const namePlaceholderRegex = /^(WA \d+|\d+)$/;
     const eligible = allStudents.filter((s) => {
       const p = normalizePhone(s.phone);
-      return p && normalizedImportPhones.has(p);
+      if (!p || !normalizedImportPhones.has(p)) return false;
+      if (!s.name || namePlaceholderRegex.test(s.name.trim())) return false;
+      return true;
     });
     const blockedNonCsv = allStudents.length - eligible.length;
 
