@@ -170,11 +170,15 @@ BEGIN
       CASE
         WHEN cl.kind = 'ps' THEN NULL
         ELSE (
-          SELECT COUNT(*)::int + 1
+          -- DISTINCT data BRT + filtro participants_count>=10 AND duration>=60min
+          -- ignora zoom_meetings fantasma (sessões teste, mentor 1:1, late carry-over)
+          SELECT COUNT(DISTINCT (zm.start_time AT TIME ZONE 'America/Sao_Paulo')::date)::int + 1
           FROM public.zoom_meetings zm
           WHERE zm.class_id = a.class_id
             AND zm.cohort_id = a.cohort_id
             AND zm.start_time IS NOT NULL
+            AND COALESCE(zm.participants_count, 0) >= 10
+            AND COALESCE(zm.duration_minutes, 0) >= 60
             AND (zm.start_time AT TIME ZONE 'America/Sao_Paulo')::date < a.session_date
         )
       END AS session_index
