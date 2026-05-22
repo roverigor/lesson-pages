@@ -412,7 +412,11 @@
     try {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/submit-survey-group`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${SUPABASE_KEY}`,
+          "apikey": SUPABASE_KEY,
+        },
         body: JSON.stringify({
           token: state.token,
           nps_score: state.nps,
