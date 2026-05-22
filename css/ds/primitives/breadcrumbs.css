@@ -1,0 +1,130 @@
+/* =============================================================================
+   Breadcrumbs — Molecule — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Breadcrumbs
+   -----------------------------------------------------------------------------
+   GAP-FIX: não existe hoje em nenhuma página admin. Mandatory v1.
+
+   Estrutura BEM:
+     .breadcrumbs              — <nav aria-label="Breadcrumbs">
+     .breadcrumbs__list        — <ol>
+     .breadcrumbs__item        — <li>
+     .breadcrumbs__link        — <a> (intermediates)
+     .breadcrumbs__current     — <span aria-current="page"> (last item)
+     .breadcrumbs__separator   — "/" entre items
+
+   A11y obrigatório:
+     - <nav aria-label="Breadcrumbs">
+     - <ol> (ordem importa)
+     - Current item aria-current="page" (não <a>, só span)
+     - Separator presentational (aria-hidden)
+   -----------------------------------------------------------------------------
+   Uso:
+     <nav class="breadcrumbs" aria-label="Breadcrumbs">
+       <ol class="breadcrumbs__list">
+         <li class="breadcrumbs__item">
+           <a href="/admin" class="breadcrumbs__link">Admin</a>
+           <span class="breadcrumbs__separator" aria-hidden="true">/</span>
+         </li>
+         <li class="breadcrumbs__item">
+           <a href="/admin/insights" class="breadcrumbs__link">Insights</a>
+           <span class="breadcrumbs__separator" aria-hidden="true">/</span>
+         </li>
+         <li class="breadcrumbs__item">
+           <span class="breadcrumbs__current" aria-current="page">NPS Results</span>
+         </li>
+       </ol>
+     </nav>
+   ============================================================================= */
+
+@layer primitives {
+  .breadcrumbs {
+    display: block;
+    width: 100%;
+  }
+
+  .breadcrumbs__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0;
+  }
+
+  .breadcrumbs__item {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+  }
+
+  .breadcrumbs__link {
+    color: var(--color-content-muted);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-normal);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+
+  .breadcrumbs__link:hover {
+    color: var(--color-content-default);
+    text-decoration: underline;
+    text-decoration-color: var(--color-border-strong);
+    text-underline-offset: 3px;
+  }
+
+  .breadcrumbs__link:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  .breadcrumbs__separator {
+    margin: 0 var(--space-2);
+    color: var(--color-content-subtle);
+    font-size: var(--font-size-sm);
+    user-select: none;
+  }
+
+  .breadcrumbs__current {
+    color: var(--color-content-default);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Modifier: --compact (smaller spacing)
+     --------------------------------------------------------------------------- */
+  .breadcrumbs--compact .breadcrumbs__separator {
+    margin: 0 var(--space-1);
+  }
+
+  .breadcrumbs--compact .breadcrumbs__link,
+  .breadcrumbs--compact .breadcrumbs__current {
+    font-size: var(--font-size-xs);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Truncate em mobile (mantém home + atual)
+     --------------------------------------------------------------------------- */
+  @media (max-width: 640px) {
+    .breadcrumbs__item:not(:first-child):not(:last-child) {
+      display: none;
+    }
+    .breadcrumbs__item:first-child::after {
+      content: "...";
+      margin: 0 var(--space-2);
+      color: var(--color-content-subtle);
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .breadcrumbs__link {
+      transition: none;
+    }
+  }
+}

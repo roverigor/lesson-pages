@@ -1,0 +1,214 @@
+/* =============================================================================
+   EmptyState — Molecule — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §EmptyState
+   -----------------------------------------------------------------------------
+   Placeholder pra tabelas/listas vazias. Substitui "Nenhum dado encontrado"
+   genérico por mensagem útil + CTA opcional.
+
+   Estrutura BEM:
+     .empty-state                  — container centered
+     .empty-state__icon            — ícone leading (decorativo)
+     .empty-state__title           — heading "Nenhum X"
+     .empty-state__description     — texto auxiliar
+     .empty-state__actions         — wrapper buttons CTA
+
+   Variants:
+     --centered  — center em flex parent (default)
+     --inline    — inline horizontal (compact)
+     --error     — variante erro (border tinted)
+     --success   — variante celebrate (border tinted)
+
+   Sizes: --sm | --md (default) | --lg
+
+   A11y:
+     - role="status" se contexto loading-empty (já carregou, vazio mesmo)
+     - aria-live="polite" se conteúdo muda dinamicamente
+   -----------------------------------------------------------------------------
+   Uso:
+     <div class="empty-state" role="status">
+       <div class="empty-state__icon" aria-hidden="true">📭</div>
+       <h3 class="empty-state__title">Nenhuma resposta NPS ainda</h3>
+       <p class="empty-state__description">
+         As respostas aparecem aqui após o primeiro disparo na turma.
+       </p>
+       <div class="empty-state__actions">
+         <button class="btn btn--primary">Disparar primeira</button>
+         <button class="btn btn--ghost">Ver runbook</button>
+       </div>
+     </div>
+   ============================================================================= */
+
+@layer primitives {
+  /* ---------------------------------------------------------------------------
+     Base — centered vertical stack
+     --------------------------------------------------------------------------- */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: var(--space-3);
+
+    padding: var(--space-8) var(--space-4);
+    min-height: 12rem;
+
+    background-color: var(--color-surface-1);
+    border: 1px dashed var(--color-border-default);
+    border-radius: var(--radius-lg);
+
+    color: var(--color-content-default);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Icon (decorativo, default emoji ou SVG inline)
+     --------------------------------------------------------------------------- */
+  .empty-state__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--space-12, 4rem);
+    height: var(--space-12, 4rem);
+    font-size: 2.5rem;
+    line-height: 1;
+    margin-bottom: var(--space-2);
+    color: var(--color-content-muted);
+    opacity: 0.7;
+  }
+
+  /* SVG icons */
+  .empty-state__icon svg {
+    width: 100%;
+    height: 100%;
+    stroke-width: 1.25;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Title
+     --------------------------------------------------------------------------- */
+  .empty-state__title {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    color: var(--color-content-strong);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Description
+     --------------------------------------------------------------------------- */
+  .empty-state__description {
+    margin: 0;
+    max-width: 32rem;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+    color: var(--color-content-muted);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Actions (CTA buttons)
+     --------------------------------------------------------------------------- */
+  .empty-state__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Sizes
+     --------------------------------------------------------------------------- */
+  .empty-state--sm {
+    padding: var(--space-4);
+    min-height: 8rem;
+    gap: var(--space-2);
+  }
+
+  .empty-state--sm .empty-state__icon {
+    width: var(--space-8);
+    height: var(--space-8);
+    font-size: 1.5rem;
+  }
+
+  .empty-state--sm .empty-state__title {
+    font-size: var(--font-size-md);
+  }
+
+  .empty-state--lg {
+    padding: var(--space-12) var(--space-8);
+    min-height: 20rem;
+    gap: var(--space-4);
+  }
+
+  .empty-state--lg .empty-state__icon {
+    width: var(--space-16, 6rem);
+    height: var(--space-16, 6rem);
+    font-size: 3.5rem;
+  }
+
+  .empty-state--lg .empty-state__title {
+    font-size: var(--font-size-xl);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Variants tone
+     --------------------------------------------------------------------------- */
+  .empty-state--error {
+    border-color: var(--color-danger-emphasis, #DC2626);
+    border-style: solid;
+    background-color: var(--color-danger-muted, rgba(220, 38, 38, 0.06));
+  }
+
+  .empty-state--error .empty-state__icon,
+  .empty-state--error .empty-state__title {
+    color: var(--color-danger-fg, #EF4444);
+  }
+
+  .empty-state--success {
+    border-color: var(--color-success-emphasis);
+    border-style: solid;
+    background-color: var(--color-success-muted);
+  }
+
+  .empty-state--success .empty-state__icon,
+  .empty-state--success .empty-state__title {
+    color: var(--color-success-fg);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Variant: --inline (horizontal compact)
+     --------------------------------------------------------------------------- */
+  .empty-state--inline {
+    flex-direction: row;
+    text-align: left;
+    align-items: center;
+    gap: var(--space-4);
+    min-height: auto;
+    padding: var(--space-4);
+  }
+
+  .empty-state--inline .empty-state__icon {
+    width: var(--space-8);
+    height: var(--space-8);
+    font-size: 1.5rem;
+    margin-bottom: 0;
+  }
+
+  .empty-state--inline .empty-state__title {
+    font-size: var(--font-size-md);
+  }
+
+  .empty-state--inline .empty-state__description {
+    text-align: left;
+  }
+
+  .empty-state--inline .empty-state__actions {
+    margin-top: 0;
+    margin-left: auto;
+  }
+}

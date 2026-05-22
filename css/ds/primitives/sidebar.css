@@ -1,0 +1,268 @@
+/* =============================================================================
+   Sidebar — Organism — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Sidebar
+   -----------------------------------------------------------------------------
+   Persistent navigation em /admin/*. Fix gap audit: "sidebar perde quando
+   navega entre páginas admin".
+
+   Estrutura BEM:
+     .sidebar                — <aside> container
+     .sidebar__header        — logo + título projeto
+     .sidebar__nav           — <nav aria-label="Principal">
+     .sidebar__section       — agrupamento (com título opcional)
+     .sidebar__section-title — small caps header
+     .sidebar__list          — <ul>
+     .sidebar__item          — <li>
+     .sidebar__link          — <a> active state
+     .sidebar__link-icon     — ícone leading
+     .sidebar__link-label    — texto
+     .sidebar__link-badge    — count/dot trailing
+     .sidebar__footer        — bottom (user menu, theme toggle)
+
+   States:
+     .sidebar.is-collapsed   — mode compacto (apenas ícones)
+     .sidebar__link[aria-current="page"]  — active route
+
+   A11y:
+     - <nav aria-label="Principal">
+     - Active link aria-current="page"
+     - Section headers <h2> visually-hidden ou small caps
+     - Collapse toggle aria-expanded
+   -----------------------------------------------------------------------------
+   Uso:
+     <aside class="sidebar">
+       <header class="sidebar__header">
+         <span class="sidebar__logo" aria-hidden="true">🏛️</span>
+         <span class="sidebar__title">Painel AL</span>
+       </header>
+       <nav class="sidebar__nav" aria-label="Principal">
+         <div class="sidebar__section">
+           <h2 class="sidebar__section-title">Comunicação</h2>
+           <ul class="sidebar__list">
+             <li class="sidebar__item">
+               <a href="/admin/dispatch" class="sidebar__link" aria-current="page">
+                 <span class="sidebar__link-icon" aria-hidden="true">📤</span>
+                 <span class="sidebar__link-label">Dispatch</span>
+                 <span class="sidebar__link-badge badge badge--count">3</span>
+               </a>
+             </li>
+             <li class="sidebar__item">
+               <a href="/admin/insights" class="sidebar__link">
+                 <span class="sidebar__link-icon" aria-hidden="true">📊</span>
+                 <span class="sidebar__link-label">Insights</span>
+               </a>
+             </li>
+           </ul>
+         </div>
+       </nav>
+     </aside>
+   ============================================================================= */
+
+@layer primitives {
+  /* ---------------------------------------------------------------------------
+     Container
+     --------------------------------------------------------------------------- */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 16rem; /* 256px */
+    height: 100vh;
+    background-color: var(--color-surface-1);
+    border-right: 1px solid var(--color-border-default);
+    overflow-y: auto;
+
+    /* Sticky em layouts com main content scrollable */
+    position: sticky;
+    top: 0;
+
+    transition: width var(--duration-normal) var(--ease-standard);
+  }
+
+  .sidebar.is-collapsed {
+    width: 4rem; /* 64px — só ícones */
+  }
+
+  .sidebar.is-collapsed .sidebar__link-label,
+  .sidebar.is-collapsed .sidebar__title,
+  .sidebar.is-collapsed .sidebar__section-title,
+  .sidebar.is-collapsed .sidebar__link-badge:not(.badge--dot) {
+    display: none;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Header (logo + title)
+     --------------------------------------------------------------------------- */
+  .sidebar__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--color-border-subtle);
+    min-height: var(--space-12);
+  }
+
+  .sidebar__logo {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--space-8);
+    height: var(--space-8);
+    font-size: var(--font-size-xl);
+  }
+
+  .sidebar__title {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-content-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Nav container
+     --------------------------------------------------------------------------- */
+  .sidebar__nav {
+    flex: 1;
+    padding: var(--space-3) 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Section (agrupamento)
+     --------------------------------------------------------------------------- */
+  .sidebar__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .sidebar__section-title {
+    margin: 0;
+    padding: 0 var(--space-4);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-2xs, 0.6875rem);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-wide, 0.05em);
+    text-transform: uppercase;
+    color: var(--color-content-subtle);
+    margin-bottom: var(--space-1);
+  }
+
+  /* ---------------------------------------------------------------------------
+     List
+     --------------------------------------------------------------------------- */
+  .sidebar__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px; /* separação visual sutil */
+  }
+
+  .sidebar__item {
+    margin: 0;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Link
+     --------------------------------------------------------------------------- */
+  .sidebar__link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-4);
+    margin: 0 var(--space-2);
+
+    color: var(--color-content-default);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard);
+  }
+
+  .sidebar__link:hover {
+    background-color: var(--color-surface-2);
+    color: var(--color-content-strong);
+  }
+
+  .sidebar__link:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: -2px;
+  }
+
+  /* Active state — aria-current="page" preferred over class */
+  .sidebar__link[aria-current="page"],
+  .sidebar__link.is-active {
+    background-color: var(--color-accent-muted);
+    color: var(--color-accent-fg);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .sidebar__link-icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--space-5);
+    height: var(--space-5);
+    font-size: var(--font-size-md);
+  }
+
+  .sidebar__link-label {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sidebar__link-badge {
+    flex-shrink: 0;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Footer (user menu, toggle, etc)
+     --------------------------------------------------------------------------- */
+  .sidebar__footer {
+    margin-top: auto;
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Mobile responsive (hidden por default, slide-in)
+     --------------------------------------------------------------------------- */
+  @media (max-width: 768px) {
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: var(--z-drawer, 900);
+      transform: translateX(-100%);
+      box-shadow: var(--elevation-3, 0 20px 40px rgba(0, 0, 0, 0.5));
+    }
+
+    .sidebar.is-open {
+      transform: translateX(0);
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .sidebar,
+    .sidebar__link {
+      transition: none;
+    }
+  }
+}

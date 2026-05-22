@@ -732,10 +732,226 @@
   </section>
 
 
+  <!-- =========================================================== -->
+  <!-- 10. SIDEBAR (mockup inline)                                  -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>10. Sidebar</h2>
+    <p class="preview-caption">Organism sidebar persistente — fix gap audit "sidebar perde quando navega". aria-current="page" no link ativo + collapse mode.</p>
+
+    <div style="display:flex;gap:var(--space-4);align-items:flex-start;border:1px solid var(--color-border-default);border-radius:var(--radius-lg);overflow:hidden;height:24rem;">
+      <aside class="sidebar" style="position:relative;height:100%;">
+        <header class="sidebar__header">
+          <span class="sidebar__logo" aria-hidden="true">🏛️</span>
+          <span class="sidebar__title">Painel AL</span>
+        </header>
+        <nav class="sidebar__nav" aria-label="Principal (demo)">
+          <div class="sidebar__section">
+            <h2 class="sidebar__section-title">Operacional</h2>
+            <ul class="sidebar__list">
+              <li class="sidebar__item">
+                <a href="#" class="sidebar__link" aria-current="page" onclick="event.preventDefault()">
+                  <span class="sidebar__link-icon" aria-hidden="true">📤</span>
+                  <span class="sidebar__link-label">Dispatch</span>
+                  <span class="sidebar__link-badge badge badge--count">3</span>
+                </a>
+              </li>
+              <li class="sidebar__item">
+                <a href="#" class="sidebar__link" onclick="event.preventDefault()">
+                  <span class="sidebar__link-icon" aria-hidden="true">📅</span>
+                  <span class="sidebar__link-label">Aulas</span>
+                </a>
+              </li>
+              <li class="sidebar__item">
+                <a href="#" class="sidebar__link" onclick="event.preventDefault()">
+                  <span class="sidebar__link-icon" aria-hidden="true">🚨</span>
+                  <span class="sidebar__link-label">PS RSVP</span>
+                  <span class="sidebar__link-badge badge badge--danger badge--dot" aria-label="Pendente"></span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="sidebar__section">
+            <h2 class="sidebar__section-title">Análise</h2>
+            <ul class="sidebar__list">
+              <li class="sidebar__item">
+                <a href="#" class="sidebar__link" onclick="event.preventDefault()">
+                  <span class="sidebar__link-icon" aria-hidden="true">📊</span>
+                  <span class="sidebar__link-label">Insights</span>
+                </a>
+              </li>
+              <li class="sidebar__item">
+                <a href="#" class="sidebar__link" onclick="event.preventDefault()">
+                  <span class="sidebar__link-icon" aria-hidden="true">📦</span>
+                  <span class="sidebar__link-label">Envios</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="sidebar__section">
+            <h2 class="sidebar__section-title">Setup</h2>
+            <ul class="sidebar__list">
+              <li class="sidebar__item">
+                <a href="#" class="sidebar__link" onclick="event.preventDefault()">
+                  <span class="sidebar__link-icon" aria-hidden="true">👥</span>
+                  <span class="sidebar__link-label">Alunos</span>
+                </a>
+              </li>
+              <li class="sidebar__item">
+                <a href="#" class="sidebar__link" onclick="event.preventDefault()">
+                  <span class="sidebar__link-icon" aria-hidden="true">⚙️</span>
+                  <span class="sidebar__link-label">Config</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+        <div class="sidebar__footer" style="font-size:var(--font-size-xs);color:var(--color-content-muted);">
+          v1.0 · DS preview
+        </div>
+      </aside>
+      <main style="flex:1;padding:var(--space-6);color:var(--color-content-muted);">
+        <p>Conteúdo principal (mockup)</p>
+        <p style="margin-top:var(--space-3);font-size:var(--font-size-sm);">Sidebar persiste durante navegação. Active link tem <code>aria-current="page"</code>.</p>
+      </main>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 11. BREADCRUMBS                                              -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>11. Breadcrumbs</h2>
+    <p class="preview-caption">Molecule breadcrumbs — GAP-FIX. Não existe hoje em nenhuma página admin. Mandatory v1.</p>
+
+    <h3>Default</h3>
+    <nav class="breadcrumbs" aria-label="Breadcrumbs (demo 1)">
+      <ol class="breadcrumbs__list">
+        <li class="breadcrumbs__item">
+          <a href="#" class="breadcrumbs__link" onclick="event.preventDefault()">Admin</a>
+          <span class="breadcrumbs__separator" aria-hidden="true">/</span>
+        </li>
+        <li class="breadcrumbs__item">
+          <a href="#" class="breadcrumbs__link" onclick="event.preventDefault()">Insights</a>
+          <span class="breadcrumbs__separator" aria-hidden="true">/</span>
+        </li>
+        <li class="breadcrumbs__item">
+          <span class="breadcrumbs__current" aria-current="page">NPS Results</span>
+        </li>
+      </ol>
+    </nav>
+
+    <h3 style="margin-top:var(--space-6);">Deep path (5 níveis)</h3>
+    <nav class="breadcrumbs" aria-label="Breadcrumbs (demo 2)">
+      <ol class="breadcrumbs__list">
+        <li class="breadcrumbs__item">
+          <a href="#" class="breadcrumbs__link" onclick="event.preventDefault()">Admin</a>
+          <span class="breadcrumbs__separator" aria-hidden="true">/</span>
+        </li>
+        <li class="breadcrumbs__item">
+          <a href="#" class="breadcrumbs__link" onclick="event.preventDefault()">Insights</a>
+          <span class="breadcrumbs__separator" aria-hidden="true">/</span>
+        </li>
+        <li class="breadcrumbs__item">
+          <a href="#" class="breadcrumbs__link" onclick="event.preventDefault()">NPS Results</a>
+          <span class="breadcrumbs__separator" aria-hidden="true">/</span>
+        </li>
+        <li class="breadcrumbs__item">
+          <a href="#" class="breadcrumbs__link" onclick="event.preventDefault()">Turma T5</a>
+          <span class="breadcrumbs__separator" aria-hidden="true">/</span>
+        </li>
+        <li class="breadcrumbs__item">
+          <span class="breadcrumbs__current" aria-current="page">Aula 03 · 28/05</span>
+        </li>
+      </ol>
+    </nav>
+
+    <h3 style="margin-top:var(--space-6);">Compact</h3>
+    <nav class="breadcrumbs breadcrumbs--compact" aria-label="Breadcrumbs (demo 3)">
+      <ol class="breadcrumbs__list">
+        <li class="breadcrumbs__item">
+          <a href="#" class="breadcrumbs__link" onclick="event.preventDefault()">Admin</a>
+          <span class="breadcrumbs__separator" aria-hidden="true">/</span>
+        </li>
+        <li class="breadcrumbs__item">
+          <a href="#" class="breadcrumbs__link" onclick="event.preventDefault()">Dispatch</a>
+          <span class="breadcrumbs__separator" aria-hidden="true">/</span>
+        </li>
+        <li class="breadcrumbs__item">
+          <span class="breadcrumbs__current" aria-current="page">PS RSVP</span>
+        </li>
+      </ol>
+    </nav>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 12. EMPTY STATE                                              -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>12. Empty State</h2>
+    <p class="preview-caption">Molecule empty-state — placeholder pra tabelas/listas vazias. Substitui "Nenhum dado encontrado" genérico por mensagem útil + CTA.</p>
+
+    <h3>Default (md)</h3>
+    <div class="empty-state" role="status">
+      <div class="empty-state__icon" aria-hidden="true">📭</div>
+      <h3 class="empty-state__title">Nenhuma resposta NPS ainda</h3>
+      <p class="empty-state__description">
+        As respostas aparecem aqui após o primeiro disparo na turma. Configure o template e dispare a primeira mensagem.
+      </p>
+      <div class="empty-state__actions">
+        <button class="btn btn--primary btn--sm">Disparar primeira</button>
+        <button class="btn btn--ghost btn--sm">Ver runbook</button>
+      </div>
+    </div>
+
+    <h3 style="margin-top:var(--space-6);">Error</h3>
+    <div class="empty-state empty-state--error" role="alert">
+      <div class="empty-state__icon" aria-hidden="true">⚠️</div>
+      <h3 class="empty-state__title">Falha ao carregar dados</h3>
+      <p class="empty-state__description">
+        Erro de conexão com Supabase. Verifique sua sessão ou tente novamente em alguns segundos.
+      </p>
+      <div class="empty-state__actions">
+        <button class="btn btn--danger btn--sm">Tentar novamente</button>
+      </div>
+    </div>
+
+    <h3 style="margin-top:var(--space-6);">Success (celebrate)</h3>
+    <div class="empty-state empty-state--success" role="status">
+      <div class="empty-state__icon" aria-hidden="true">🎉</div>
+      <h3 class="empty-state__title">Todos alunos responderam!</h3>
+      <p class="empty-state__description">
+        Sua turma teve 100% de resposta NPS. Bom trabalho!
+      </p>
+    </div>
+
+    <h3 style="margin-top:var(--space-6);">Sizes</h3>
+    <div class="preview-grid">
+      <div class="empty-state empty-state--sm" role="status">
+        <div class="empty-state__icon" aria-hidden="true">📭</div>
+        <h3 class="empty-state__title">Vazio (sm)</h3>
+        <p class="empty-state__description">Compact pra cards/widgets</p>
+      </div>
+      <div class="empty-state empty-state--inline" role="status">
+        <div class="empty-state__icon" aria-hidden="true">📭</div>
+        <div>
+          <h3 class="empty-state__title">Inline</h3>
+          <p class="empty-state__description">Horizontal pra contextos compactos</p>
+        </div>
+        <div class="empty-state__actions">
+          <button class="btn btn--ghost btn--sm">Ação</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
   <footer style="max-width:1280px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6) 0;border-top:1px solid var(--color-border-default);color:var(--color-content-muted);font-size:var(--font-size-sm);">
     <p>DS v1 preview · gerado pra QA visual antes adoção em telas live.</p>
     <p>Specs: <code>docs/design-system/v1/</code> · Source: <code>css/ds/</code></p>
-    <p>Primitives entregues: Button · Card · StatCard · Input · Badge · FormField · Modal · Toast (8/30 v1 total)</p>
+    <p>Primitives entregues: Button · Card · StatCard · Input · Badge · FormField · Modal · Toast · Sidebar · Breadcrumbs · EmptyState (11/30 v1 total)</p>
   </footer>
 
 </body>
