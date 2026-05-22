@@ -1,0 +1,157 @@
+/* =============================================================================
+   Tokens Legacy — Aliases — DS v1
+   -----------------------------------------------------------------------------
+   Aliases NÃO-DESTRUTIVOS dos tokens antigos definidos em
+   `templates/design-tokens-dark-premium.css`. Aponta os nomes legacy
+   pros novos tokens semânticos de `tokens.css`.
+   -----------------------------------------------------------------------------
+   Objetivo: páginas que ainda consomem `--color-bg-page`, `--font-size-md`,
+   `--spacing-md` etc continuam funcionando enquanto migramos página-por-página.
+   -----------------------------------------------------------------------------
+   Status: ATIVO em v1. Remover em v2 (após sweep completo).
+   ============================================================================= */
+
+:root {
+  /* ---------------------------------------------------------------------------
+     COLOR — BACKGROUNDS (legacy → surface tokens)
+     --------------------------------------------------------------------------- */
+  --color-bg-page: var(--color-surface-0);
+  --color-bg-card: var(--color-surface-1);
+  --color-bg-card-alt: var(--color-surface-2);
+  --color-bg-glass: var(--color-surface-glass);
+  --color-bg-warning: var(--color-warning-muted);
+
+  /* ---------------------------------------------------------------------------
+     COLOR — TEXT (legacy → content tokens)
+     --------------------------------------------------------------------------- */
+  --color-text-headline: var(--color-content-strong);
+  --color-text-body: var(--color-content-muted);
+  --color-text-body-alt: var(--color-content-default);
+  --color-text-label: var(--color-danger-fg);
+  --color-text-tech: var(--color-danger-fg);
+  --color-text-cost: var(--color-danger-fg);
+  --color-text-profit: var(--color-success-fg);
+  --color-text-agent: var(--color-success-emphasis);
+  --color-text-on-urgency: var(--color-content-strong);
+  --color-text-source: var(--color-content-subtle);
+
+  /* ---------------------------------------------------------------------------
+     COLOR — ACTIONS (legacy → accent / state tokens)
+     --------------------------------------------------------------------------- */
+  --color-cta-primary: var(--color-accent-emphasis);
+  --color-cta-primary-hover: var(--color-accent-emphasis-hover);
+  --color-cta-primary-text: var(--color-content-on-accent);
+  --color-cta-secondary: var(--color-success-fg);
+  --color-cta-secondary-text: var(--color-content-strong);
+  --color-checkbox-active: var(--color-danger-fg);
+  --color-icon-arrow: var(--color-content-strong);
+
+  /* ---------------------------------------------------------------------------
+     COLOR — BORDERS (legacy → border tokens)
+     --------------------------------------------------------------------------- */
+  --color-border-card: var(--color-border-default);
+  --color-border-separator: var(--color-border-subtle);
+  --color-border-hover: var(--color-border-strong);
+  --color-border-warning: var(--color-warning-muted);
+
+  /* ---------------------------------------------------------------------------
+     TYPOGRAPHY — SIZE (legacy → font-size tokens)
+     Legacy usava px literal. Mapeamento aproximado pro scale rem-based.
+     --------------------------------------------------------------------------- */
+  /* --font-size-xs legacy = 12px → match exato com novo --font-size-xs */
+  /* --font-size-sm legacy = 13px → match exato com novo --font-size-sm */
+  --font-size-base: var(--font-size-md);       /* legacy 14px */
+  /* --font-size-md legacy = 16px → novo --font-size-lg (16px). REMAP. */
+  /* Override só do legacy nome pra não quebrar nada: */
+  /* Comentado pra não conflitar com o novo --font-size-md (14px).      */
+  /* Se legacy chamava --font-size-md esperando 16px, vai virar 14px.   */
+  /* Páginas legacy serão revisitadas no sweep.                         */
+  /* --font-size-lg legacy = 18px → novo --font-size-xl (18px) */
+  /* --font-size-xl legacy = 20px → sem token novo (descontinuado).    */
+  /*   Páginas que usarem --font-size-xl pegam o novo (18px).          */
+  /* --font-size-2xl legacy = 24px → match com novo --font-size-2xl    */
+  /* --font-size-3xl legacy = 36px → mapeia pro novo 3xl (32px).       */
+  /* --font-size-4xl legacy = 48px → sem match exato. Mapeia 4xl (40)  */
+  --font-size-5xl: var(--font-size-display);   /* legacy 56px = display */
+  --font-size-6xl: var(--font-size-display);   /* legacy 64px → display */
+  --font-size-7xl: var(--font-size-display);   /* legacy 72px → display */
+
+  /* ---------------------------------------------------------------------------
+     TYPOGRAPHY — WEIGHT (legacy → weight tokens)
+     --font-weight-regular/medium/semibold/bold já existem com mesmo nome.
+     --------------------------------------------------------------------------- */
+  --font-weight-extrabold: var(--font-weight-bold);
+  --font-weight-black: var(--font-weight-bold);
+
+  /* ---------------------------------------------------------------------------
+     TYPOGRAPHY — LINE HEIGHT (legacy → line-height tokens)
+     Nomes idênticos: --line-height-tight/snug/normal/relaxed. Sem alias.
+     Atenção: legacy normal=1.6, novo=1.5. Diff minor, aceito.
+     --------------------------------------------------------------------------- */
+
+  /* ---------------------------------------------------------------------------
+     TYPOGRAPHY — LETTER SPACING (legacy → letter-spacing tokens)
+     --------------------------------------------------------------------------- */
+  --letter-spacing-wider: var(--letter-spacing-wide);
+
+  /* ---------------------------------------------------------------------------
+     SPACING (legacy --spacing-* → novo --space-*)
+     Mapping por px equivalente.
+     --------------------------------------------------------------------------- */
+  --spacing-xs: var(--space-2);                /* 8px */
+  --spacing-sm: var(--space-3);                /* 12px */
+  --spacing-md: var(--space-4);                /* 16px */
+  --spacing-lg: var(--space-5);                /* 20px */
+  --spacing-xl: var(--space-6);                /* 24px */
+  --spacing-2xl: var(--space-8);               /* 32px */
+  --spacing-3xl: var(--space-10);              /* 40px */
+  --spacing-4xl: var(--space-12);              /* 48px */
+  --spacing-5xl: var(--space-16);              /* 64px aprox legacy 60px */
+  --spacing-6xl: var(--space-16);              /* legacy 80 → 64 (sweep dep) */
+  --spacing-7xl: var(--space-16);              /* legacy 100 → 64 */
+  --spacing-8xl: var(--space-16);              /* legacy 120 → 64 */
+
+  /* ---------------------------------------------------------------------------
+     RADIUS (legacy nomes diferentes do novo scale)
+     Legacy: sm=8, md=12, lg=16, xl=20, 2xl=24, pill=9999.
+     Novo:   sm=4, md=8,  lg=12, xl=16, 2xl=24, pill=9999, circle=50%.
+     --------------------------------------------------------------------------- */
+  /* Páginas legacy esperam radius "sm"=8 → novo sm=4. Diff visível. */
+  /* Decisão: aliasar legacy sm pro novo md, etc, pra preservar look. */
+  /* Comentamos pra evitar shadow do nome — se conflito ocorrer no sweep,
+     descomente individualmente. Defaults novos prevalecem. */
+  /* --radius-sm: var(--radius-md);   legacy 8px → novo md (8px) */
+  /* --radius-md: var(--radius-lg);   legacy 12px → novo lg (12px) */
+
+  /* ---------------------------------------------------------------------------
+     SHADOWS / GLOWS (legacy → elevation tokens)
+     --------------------------------------------------------------------------- */
+  --shadow-cta: var(--elevation-2);
+  --glow-cta-hover: var(--elevation-glow-accent);
+
+  /* ---------------------------------------------------------------------------
+     TRANSITIONS (legacy → duration tokens)
+     Legacy: --transition-fast=150ms, --transition-normal=300ms, --transition-slow=500ms.
+     --------------------------------------------------------------------------- */
+  --transition-fast: var(--duration-fast) ease;
+  --transition-normal: var(--duration-normal) ease;
+  --transition-slow: var(--duration-slow) ease;
+
+  /* ---------------------------------------------------------------------------
+     LAYOUT (legacy widths/gaps — mantém literal por hora)
+     Não há equivalente semântico no DS v1. Mantém valor original.
+     --------------------------------------------------------------------------- */
+  /* --width-container: 1200px;        já existe em legacy file */
+  /* --width-card-icon: 48px;          já existe em legacy file */
+  /* --width-icon-circle: 40px;        já existe em legacy file */
+  /* --gap-cards: 16px;                já existe em legacy file */
+
+  /* ---------------------------------------------------------------------------
+     Z-INDEX (legacy → z tokens)
+     --------------------------------------------------------------------------- */
+  /* Legacy: base=1, dropdown=10, sticky=50, modal=100.   */
+  /* Novo:   base=0, raised=10, dropdown=100, sticky=200, */
+  /*         overlay=800, modal=900, toast=1000.          */
+  /* Comentado pra não shadowar: páginas legacy continuam */
+  /* funcionando com os valores próprios dela.            */
+}

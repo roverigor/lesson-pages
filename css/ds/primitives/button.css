@@ -1,0 +1,261 @@
+/* =============================================================================
+   Button — Atom — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Button
+   -----------------------------------------------------------------------------
+   Variantes:  primary | secondary | ghost | danger | success
+   Sizes:      sm | md (default) | lg
+   States:     :hover, :active, :focus-visible, :disabled, .btn--loading
+   A11y:       <button> nativo. aria-busy=true em loading. focus-visible ring.
+   -----------------------------------------------------------------------------
+   Uso:
+     <button class="btn btn--primary">Salvar</button>
+     <button class="btn btn--secondary btn--sm">Cancelar</button>
+     <button class="btn btn--danger btn--lg" disabled>Excluir</button>
+     <button class="btn btn--primary btn--loading" aria-busy="true">Salvando</button>
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   Base — shared por todas variantes
+   --------------------------------------------------------------------------- */
+.btn {
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+
+  /* Box */
+  padding-inline: var(--space-4);
+  padding-block: var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+
+  /* Type */
+  font-family: var(--font-sans);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-normal);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+
+  /* Interaction */
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+/* Focus visible — ring AA-contrast, 2px offset */
+.btn:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* Disabled — sem hover/active, cursor not-allowed */
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Variant — Primary (CTA dourado AL)
+   --------------------------------------------------------------------------- */
+.btn--primary {
+  background-color: var(--color-accent-emphasis);
+  color: var(--color-content-on-accent);
+  border-color: var(--color-accent-emphasis);
+}
+
+.btn--primary:hover:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--color-accent-emphasis-hover);
+  border-color: var(--color-accent-emphasis-hover);
+  box-shadow: var(--elevation-glow-accent);
+}
+
+.btn--primary:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Variant — Secondary (neutro, surface-2)
+   --------------------------------------------------------------------------- */
+.btn--secondary {
+  background-color: var(--color-surface-2);
+  color: var(--color-content-default);
+  border-color: var(--color-border-strong);
+}
+
+.btn--secondary:hover:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--color-surface-3);
+  border-color: var(--color-content-muted);
+  color: var(--color-content-strong);
+}
+
+.btn--secondary:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(1px);
+}
+
+/* ---------------------------------------------------------------------------
+   Variant — Ghost (transparente, só hover mostra surface)
+   --------------------------------------------------------------------------- */
+.btn--ghost {
+  background-color: transparent;
+  color: var(--color-content-default);
+  border-color: transparent;
+}
+
+.btn--ghost:hover:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--color-surface-2);
+  color: var(--color-content-strong);
+}
+
+.btn--ghost:active:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--color-surface-3);
+}
+
+/* ---------------------------------------------------------------------------
+   Variant — Danger (destrutivo)
+   --------------------------------------------------------------------------- */
+.btn--danger {
+  background-color: var(--color-danger-emphasis);
+  color: var(--color-content-on-danger);
+  border-color: var(--color-danger-emphasis);
+}
+
+.btn--danger:hover:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--color-danger-fg);
+  border-color: var(--color-danger-fg);
+  box-shadow: var(--elevation-glow-danger);
+}
+
+.btn--danger:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.btn--danger:focus-visible {
+  outline-color: var(--color-danger-fg);
+}
+
+/* ---------------------------------------------------------------------------
+   Variant — Success
+   --------------------------------------------------------------------------- */
+.btn--success {
+  background-color: var(--color-success-emphasis);
+  color: var(--color-content-strong);
+  border-color: var(--color-success-emphasis);
+}
+
+.btn--success:hover:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--color-success-fg);
+  border-color: var(--color-success-fg);
+}
+
+.btn--success:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: translateY(1px);
+}
+
+/* ---------------------------------------------------------------------------
+   Sizes
+   --------------------------------------------------------------------------- */
+.btn--sm {
+  padding-inline: var(--space-3);
+  padding-block: var(--space-2);
+  font-size: var(--font-size-sm);
+  gap: var(--space-1);
+}
+
+.btn--md {
+  /* Default — match com base. Classe explícita pra legibilidade. */
+  padding-inline: var(--space-4);
+  padding-block: var(--space-3);
+  font-size: var(--font-size-md);
+}
+
+.btn--lg {
+  padding-inline: var(--space-6);
+  padding-block: var(--space-4);
+  font-size: var(--font-size-lg);
+  gap: var(--space-3);
+}
+
+/* ---------------------------------------------------------------------------
+   Modifier — Full width
+   --------------------------------------------------------------------------- */
+.btn--full {
+  width: 100%;
+}
+
+/* ---------------------------------------------------------------------------
+   Modifier — Loading
+   Substitui o conteúdo visual por spinner sem alterar layout (preserva width).
+   --------------------------------------------------------------------------- */
+.btn--loading {
+  position: relative;
+  color: transparent !important;        /* Esconde label sem reflow */
+  pointer-events: none;
+}
+
+.btn--loading::after {
+  content: "";
+  position: absolute;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: var(--radius-circle);
+  color: var(--color-content-on-accent);
+  animation: btn-spin var(--duration-slow) linear infinite;
+}
+
+.btn--loading.btn--secondary::after,
+.btn--loading.btn--ghost::after {
+  color: var(--color-content-default);
+}
+
+.btn--loading.btn--danger::after,
+.btn--loading.btn--success::after {
+  color: var(--color-content-strong);
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reduced motion — spinner não anima (mantém visual mas estático) */
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+  .btn--loading::after {
+    animation: none;
+    /* Mostra spinner congelado, mas o aria-busy faz screenreader anunciar */
+  }
+  .btn:hover,
+  .btn:active {
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Icon slot — auto-sizing pra ícone inline
+   --------------------------------------------------------------------------- */
+.btn > svg,
+.btn > .btn__icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  stroke-width: var(--icon-stroke);
+}

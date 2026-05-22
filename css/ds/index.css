@@ -1,0 +1,28 @@
+/* =============================================================================
+   Design System v1 — Entry Point
+   -----------------------------------------------------------------------------
+   Source of truth pra ordem de cascade. Import único nas páginas:
+     <link rel="stylesheet" href="/css/ds/index.css">
+
+   @layer garante ordem determinística independente de import order.
+   Especificidade local não vaza entre camadas.
+   -----------------------------------------------------------------------------
+   Camadas (low → high specificity):
+     1. reset       — normalize + a11y resets
+     2. tokens      — :root vars (source of truth + legacy aliases)
+     3. utilities   — helpers (.u-visually-hidden, etc) — futuro v1.1
+     4. primitives  — atomic components (.btn, .card, .stat-card, …)
+     5. pages       — page-specific composition — futuro
+     6. overrides   — escape hatch (último recurso, evitar)
+   ============================================================================= */
+
+@layer reset, tokens, utilities, primitives, pages, overrides;
+
+@import url("./reset.css") layer(reset);
+
+@import url("./tokens.css") layer(tokens);
+@import url("./tokens.legacy.css") layer(tokens);
+
+@import url("./primitives/button.css") layer(primitives);
+@import url("./primitives/card.css") layer(primitives);
+@import url("./primitives/stat-card.css") layer(primitives);

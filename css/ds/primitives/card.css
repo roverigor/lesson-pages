@@ -1,0 +1,188 @@
+/* =============================================================================
+   Card — Atom — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Card
+   -----------------------------------------------------------------------------
+   Estrutura BEM:
+     .card                         — container
+     .card__header                 — top zone (title + actions opcionais)
+     .card__title                  — h-level dentro do header
+     .card__subtitle               — small caption sob título
+     .card__actions                — cluster de botões à direita
+     .card__body                   — conteúdo principal
+     .card__footer                 — bottom zone (CTA, metadata)
+
+   Variantes elevation: --flat (default) | --raised | --floating
+   Variantes tone:      --accent | --success | --warning | --danger | --info
+   Modifier:            --interactive (hover cursor + border-strong)
+   -----------------------------------------------------------------------------
+   Uso:
+     <article class="card">
+       <header class="card__header">
+         <h3 class="card__title">Título</h3>
+         <div class="card__actions"><button class="btn btn--ghost btn--sm">⋯</button></div>
+       </header>
+       <div class="card__body">Conteúdo aqui</div>
+       <footer class="card__footer">Footer</footer>
+     </article>
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+
+  background-color: var(--color-surface-1);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-0);
+
+  color: var(--color-content-default);
+
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+/* ---------------------------------------------------------------------------
+   Elements
+   --------------------------------------------------------------------------- */
+.card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.card__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  color: var(--color-content-strong);
+  margin: 0;
+}
+
+.card__subtitle {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-normal);
+  color: var(--color-content-muted);
+  margin: 0;
+  margin-top: var(--space-1);
+}
+
+.card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: var(--font-size-md);
+  color: var(--color-content-default);
+}
+
+.card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* ---------------------------------------------------------------------------
+   Variants — Elevation
+   --------------------------------------------------------------------------- */
+.card--flat {
+  /* Default. Sem sombra. */
+  box-shadow: var(--elevation-0);
+}
+
+.card--raised {
+  box-shadow: var(--elevation-1);
+}
+
+.card--floating {
+  box-shadow: var(--elevation-2);
+  border-color: var(--color-border-strong);
+}
+
+/* ---------------------------------------------------------------------------
+   Variants — Tone (border-left tinted, accent strip)
+   --------------------------------------------------------------------------- */
+.card--accent {
+  border-left: 3px solid var(--color-accent-emphasis);
+}
+
+.card--success {
+  border-left: 3px solid var(--color-success-emphasis);
+}
+
+.card--warning {
+  border-left: 3px solid var(--color-warning-emphasis);
+}
+
+.card--danger {
+  border-left: 3px solid var(--color-danger-emphasis);
+}
+
+.card--info {
+  border-left: 3px solid var(--color-info-emphasis);
+}
+
+/* ---------------------------------------------------------------------------
+   Modifier — Interactive (clickable card)
+   --------------------------------------------------------------------------- */
+.card--interactive {
+  cursor: pointer;
+}
+
+.card--interactive:hover {
+  background-color: var(--color-surface-2);
+  border-color: var(--color-border-strong);
+}
+
+.card--interactive:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+   Modifier — Compact padding (denser layouts)
+   --------------------------------------------------------------------------- */
+.card--compact {
+  padding: var(--space-4);
+  gap: var(--space-3);
+}
+
+.card--compact .card__footer {
+  padding-top: var(--space-3);
+}
+
+/* ---------------------------------------------------------------------------
+   Modifier — Spacious padding (hero / landing)
+   --------------------------------------------------------------------------- */
+.card--spacious {
+  padding: var(--space-8);
+  gap: var(--space-6);
+  border-radius: var(--radius-xl);
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion — desliga transitions
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}
