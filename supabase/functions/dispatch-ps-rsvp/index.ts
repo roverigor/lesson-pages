@@ -53,6 +53,9 @@ function pickWeighted(variants: PsVariant[]): PsVariant {
 }
 
 function buildGroupText(className: string, timeStart: string): string {
+  // ATENÇÃO: URL aqui é sem token (group msg compartilhada). Form requer token único
+  // por aluno. Esta função ficou DESATIVADA em prod 2026-05-22 — usar DM-only.
+  // Se re-habilitar, trocar texto pra "confira sua DM" sem URL.
   const url = `https://painel.academialendaria.ai/ps-rsvp`;
   const variants = [
     `Bom dia, time.\n\nHoje rola *${className}*, ${timeStart} (Brasília).\n\nQuanto mais a sessão for sobre o que vocês estão construindo, mais valor ela gera. Reserva 30s pra contar o que precisa destravar:\n${url}`,
@@ -221,23 +224,12 @@ Deno.serve(async (req: Request) => {
       if (i < pending.length - 1) await sleep(DELAY_MS);
     }
 
-    // Group msg to each cohort WA group (single msg per group)
-    const { data: cohortGroups } = await sb
-      .from("cohorts")
-      .select("id, name, whatsapp_group_jid, whatsapp_group_name")
-      .in("id", cohortIds)
-      .not("whatsapp_group_jid", "is", null);
+    // Group msgs DESATIVADAS (2026-05-22) — re-triggers spamavam grupos.
+    // Dispatch DM-only. Group precisa idempotência via gravar dispatch_group_sent
+    // antes de re-habilitar.
+    const groupSent = 0; const groupFailed = 0;
 
-    let groupSent = 0; let groupFailed = 0;
-    for (const cg of (cohortGroups ?? [])) {
-      const groupText = buildGroupText(cls.name, cls.time_start);
-      const r = await sendEvolutionGroupText(cg.whatsapp_group_jid as string, groupText);
-      if (r.success) groupSent++;
-      else groupFailed++;
-      await sleep(2000);
-    }
-
-    results.push({ class_id: cls.id, class_name: cls.name, eligible: eligible.length, sent, failed, group_sent: groupSent, group_failed: groupFailed });
+    results.push({ class_id: cls.id, class_name: cls.name, eligible: eligible.length, sent, failed, group_sent: groupSent, group_failed: groupFailed, group_disabled: true });
   }
 
   // Final summary Slack (always)
