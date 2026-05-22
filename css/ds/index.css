@@ -34,3 +34,7 @@
 @import url("./primitives/sidebar.css") layer(primitives);
 @import url("./primitives/breadcrumbs.css") layer(primitives);
 @import url("./primitives/empty-state.css") layer(primitives);
+@import url("./primitives/select.css") layer(primitives);
+@import url("./primitives/switch.css") layer(primitives);
+@import url("./primitives/data-table.css") layer(primitives);
+@import url("./primitives/drawer.css") layer(primitives);

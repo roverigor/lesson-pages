@@ -1,0 +1,243 @@
+/* =============================================================================
+   Drawer — Organism — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Drawer
+   -----------------------------------------------------------------------------
+   Slide-in panel (filters drawer, settings panel, mobile sidebar).
+   Mesma a11y do Modal mas com slide animation.
+
+   Estrutura BEM:
+     .drawer-overlay              — backdrop + side container
+     .drawer                      — sliding panel
+     .drawer__header              — top zone (title + close)
+     .drawer__title               — heading
+     .drawer__close               — × button
+     .drawer__body                — scrollable content
+     .drawer__footer              — actions bottom
+
+   Sides: --left | --right (default)
+   Sizes: --sm | --md (default) | --lg | --full
+
+   States: .is-open
+
+   A11y obrigatório:
+     - role="dialog" aria-modal="true"
+     - aria-labelledby apontando pro título
+     - Focus trap
+     - Escape fecha
+     - Backdrop click fecha
+   -----------------------------------------------------------------------------
+   Uso:
+     <div class="drawer-overlay is-open">
+       <aside class="drawer drawer--right drawer--md"
+              role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+         <header class="drawer__header">
+           <h2 class="drawer__title" id="drawer-title">Filtros</h2>
+           <button class="drawer__close" aria-label="Fechar">×</button>
+         </header>
+         <div class="drawer__body">
+           <!-- form fields, filters, etc -->
+         </div>
+         <footer class="drawer__footer">
+           <button class="btn btn--ghost">Limpar</button>
+           <button class="btn btn--primary">Aplicar</button>
+         </footer>
+       </aside>
+     </div>
+   ============================================================================= */
+
+@layer primitives {
+  /* ---------------------------------------------------------------------------
+     Overlay (backdrop + side container)
+     --------------------------------------------------------------------------- */
+  .drawer-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-drawer, 900);
+
+    display: flex;
+    background-color: var(--color-surface-overlay, rgba(0, 0, 0, 0.72));
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-normal) var(--ease-standard);
+  }
+
+  .drawer-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Side positioning via overlay alignment */
+  .drawer-overlay:has(.drawer--right) {
+    justify-content: flex-end;
+  }
+
+  .drawer-overlay:has(.drawer--left) {
+    justify-content: flex-start;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Drawer panel
+     --------------------------------------------------------------------------- */
+  .drawer {
+    display: flex;
+    flex-direction: column;
+    width: 24rem;  /* md default */
+    height: 100vh;
+    max-width: 90vw;
+
+    background-color: var(--color-surface-1);
+    border-left: 1px solid var(--color-border-default);
+    box-shadow: var(--elevation-3, 0 20px 40px rgba(0, 0, 0, 0.5));
+
+    transition: transform var(--duration-normal) var(--ease-emphasized, cubic-bezier(0.34, 1.56, 0.64, 1));
+  }
+
+  /* Right side (default) */
+  .drawer--right {
+    transform: translateX(100%);
+  }
+
+  /* Left side */
+  .drawer--left {
+    border-left: none;
+    border-right: 1px solid var(--color-border-default);
+    transform: translateX(-100%);
+  }
+
+  /* Open state — slides in */
+  .drawer-overlay.is-open .drawer {
+    transform: translateX(0);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Sizes
+     --------------------------------------------------------------------------- */
+  .drawer--sm { width: 18rem; }
+  .drawer--md { width: 24rem; }
+  .drawer--lg { width: 32rem; }
+  .drawer--xl { width: 48rem; }
+  .drawer--full {
+    width: 100vw;
+    max-width: 100vw;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Header
+     --------------------------------------------------------------------------- */
+  .drawer__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+
+    padding: var(--space-5) var(--space-5) var(--space-4);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .drawer__title {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    color: var(--color-content-strong);
+  }
+
+  .drawer__subtitle {
+    display: block;
+    margin-top: var(--space-1);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-normal);
+    color: var(--color-content-muted);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Close button (shared pattern com modal)
+     --------------------------------------------------------------------------- */
+  .drawer__close {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--space-8);
+    height: var(--space-8);
+
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+
+    color: var(--color-content-muted);
+    font-size: var(--font-size-xl);
+    line-height: 1;
+
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard);
+  }
+
+  .drawer__close:hover {
+    background-color: var(--color-surface-2);
+    color: var(--color-content-default);
+  }
+
+  .drawer__close:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Body (scrollable)
+     --------------------------------------------------------------------------- */
+  .drawer__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-4) var(--space-5);
+    color: var(--color-content-default);
+  }
+
+  /* Custom scrollbar */
+  .drawer__body::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .drawer__body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .drawer__body::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: var(--radius-pill, 9999px);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Footer (actions)
+     --------------------------------------------------------------------------- */
+  .drawer__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-5) var(--space-5);
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .drawer__footer--spread {
+    justify-content: space-between;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Reduced motion (a11y)
+     --------------------------------------------------------------------------- */
+  @media (prefers-reduced-motion: reduce) {
+    .drawer-overlay,
+    .drawer {
+      transition: none;
+    }
+  }
+}

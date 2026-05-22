@@ -1,0 +1,327 @@
+/* =============================================================================
+   DataTable — Organism — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §DataTable
+   -----------------------------------------------------------------------------
+   Unifica 10+ tables legacy (nps-results × 4 + nps-monitor × 3 + ps-rsvp +
+   envios + lembretes-aulas).
+
+   Estrutura BEM:
+     .data-table-wrapper           — overflow-x container
+     .data-table                   — <table>
+     .data-table__caption          — visually-hidden ou visível
+     .data-table__head             — <thead>
+     .data-table__head-row         — <tr>
+     .data-table__head-cell        — <th scope="col">
+     .data-table__sort-button      — <button> dentro de th (sortable)
+     .data-table__sort-icon        — chevron up/down/none
+     .data-table__body             — <tbody>
+     .data-table__row              — <tr>
+     .data-table__cell             — <td>
+     .data-table__row-actions      — última cell com botões
+     .data-table__footer           — <tfoot> ou after-table div (pagination)
+
+   Variants:
+     --compact         density compacta
+     --comfortable     density default
+     --striped         linhas zebradas
+     --bordered        bordas em cada cell
+
+   States:
+     .data-table__row.is-selected  — selected row (highlight)
+     .data-table__row.is-active    — current focused row
+
+   A11y:
+     - <table> semântico + <caption>
+     - <th scope="col">, <th scope="row"> (primeira td)
+     - aria-sort em sortable headers
+     - Checkbox row selection com aria-label="Selecionar linha N"
+   -----------------------------------------------------------------------------
+   Uso:
+     <div class="data-table-wrapper">
+       <table class="data-table">
+         <caption class="data-table__caption u-visually-hidden">NPS responses</caption>
+         <thead class="data-table__head">
+           <tr class="data-table__head-row">
+             <th scope="col" class="data-table__head-cell">
+               <button class="data-table__sort-button" aria-sort="ascending">
+                 Aluno
+                 <span class="data-table__sort-icon" aria-hidden="true">↑</span>
+               </button>
+             </th>
+             <th scope="col" class="data-table__head-cell">Nota</th>
+           </tr>
+         </thead>
+         <tbody class="data-table__body">
+           <tr class="data-table__row">
+             <th scope="row" class="data-table__cell">João Silva</th>
+             <td class="data-table__cell">9</td>
+           </tr>
+         </tbody>
+       </table>
+     </div>
+   ============================================================================= */
+
+@layer primitives {
+  /* ---------------------------------------------------------------------------
+     Wrapper (overflow horizontal mobile)
+     --------------------------------------------------------------------------- */
+  .data-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    background-color: var(--color-surface-1);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-lg);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Table base
+     --------------------------------------------------------------------------- */
+  .data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    color: var(--color-content-default);
+  }
+
+  .data-table__caption {
+    text-align: left;
+    padding: var(--space-3) var(--space-4);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-content-strong);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Head
+     --------------------------------------------------------------------------- */
+  .data-table__head {
+    background-color: var(--color-surface-2);
+  }
+
+  .data-table__head-row {
+    border-bottom: 1px solid var(--color-border-default);
+  }
+
+  .data-table__head-cell {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-content-muted);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide, 0.05em);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    background-color: var(--color-surface-2);
+    z-index: 1;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Sortable button (dentro th)
+     --------------------------------------------------------------------------- */
+  .data-table__sort-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+  }
+
+  .data-table__sort-button:hover {
+    color: var(--color-content-default);
+  }
+
+  .data-table__sort-button:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  .data-table__sort-icon {
+    font-size: var(--font-size-xs);
+    opacity: 0.5;
+  }
+
+  /* Active sort */
+  .data-table__sort-button[aria-sort="ascending"] .data-table__sort-icon,
+  .data-table__sort-button[aria-sort="descending"] .data-table__sort-icon {
+    opacity: 1;
+    color: var(--color-accent-fg);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Body
+     --------------------------------------------------------------------------- */
+  .data-table__body .data-table__row {
+    border-bottom: 1px solid var(--color-border-subtle);
+    transition: background-color var(--duration-fast) var(--ease-standard);
+  }
+
+  .data-table__body .data-table__row:hover {
+    background-color: var(--color-surface-2);
+  }
+
+  .data-table__body .data-table__row:last-child {
+    border-bottom: none;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Cell
+     --------------------------------------------------------------------------- */
+  .data-table__cell {
+    padding: var(--space-3) var(--space-4);
+    vertical-align: top;
+    color: var(--color-content-default);
+  }
+
+  /* Primeira cell = row header (scope="row") */
+  th.data-table__cell {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-content-strong);
+    text-align: left;
+  }
+
+  /* Numeric cells (right-align) */
+  .data-table__cell--numeric {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Centered cells (status badges, etc) */
+  .data-table__cell--center {
+    text-align: center;
+  }
+
+  /* Actions cell (right-aligned button group) */
+  .data-table__row-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-2);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Selected / Active states
+     --------------------------------------------------------------------------- */
+  .data-table__row.is-selected,
+  .data-table__row.is-selected:hover {
+    background-color: var(--color-accent-muted);
+  }
+
+  .data-table__row.is-active {
+    background-color: var(--color-surface-2);
+    box-shadow: inset 3px 0 0 var(--color-accent-emphasis);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Variant: --compact (density)
+     --------------------------------------------------------------------------- */
+  .data-table--compact .data-table__head-cell,
+  .data-table--compact .data-table__cell {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-xs);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Variant: --striped (zebra rows)
+     --------------------------------------------------------------------------- */
+  .data-table--striped .data-table__body .data-table__row:nth-child(even) {
+    background-color: var(--color-surface-2);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Variant: --bordered (full borders)
+     --------------------------------------------------------------------------- */
+  .data-table--bordered .data-table__cell,
+  .data-table--bordered .data-table__head-cell {
+    border-right: 1px solid var(--color-border-subtle);
+  }
+
+  .data-table--bordered .data-table__cell:last-child,
+  .data-table--bordered .data-table__head-cell:last-child {
+    border-right: none;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Sticky first column (large tables com horizontal scroll)
+     --------------------------------------------------------------------------- */
+  .data-table--sticky-first .data-table__head-cell:first-child,
+  .data-table--sticky-first .data-table__cell:first-child {
+    position: sticky;
+    left: 0;
+    background-color: var(--color-surface-1);
+    z-index: 1;
+  }
+
+  .data-table--sticky-first .data-table__head-cell:first-child {
+    background-color: var(--color-surface-2);
+    z-index: 2;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Empty state inline (no rows)
+     --------------------------------------------------------------------------- */
+  .data-table__empty-cell {
+    padding: var(--space-8);
+    text-align: center;
+    color: var(--color-content-muted);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Footer (pagination/summary)
+     --------------------------------------------------------------------------- */
+  .data-table__footer {
+    background-color: var(--color-surface-2);
+    border-top: 1px solid var(--color-border-default);
+  }
+
+  .data-table__footer .data-table__cell {
+    padding: var(--space-3) var(--space-4);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-content-muted);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Mobile responsive (stacked layout opcional via class --responsive)
+     --------------------------------------------------------------------------- */
+  @media (max-width: 640px) {
+    .data-table--responsive .data-table__head {
+      display: none;
+    }
+
+    .data-table--responsive .data-table__body .data-table__row {
+      display: block;
+      padding: var(--space-3);
+      border-bottom: 2px solid var(--color-border-default);
+    }
+
+    .data-table--responsive .data-table__cell {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--space-1) 0;
+    }
+
+    .data-table--responsive .data-table__cell::before {
+      content: attr(data-label);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-content-muted);
+      margin-right: var(--space-2);
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .data-table__body .data-table__row {
+      transition: none;
+    }
+  }
+}

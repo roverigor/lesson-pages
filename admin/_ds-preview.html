@@ -948,10 +948,298 @@
   </section>
 
 
+  <!-- =========================================================== -->
+  <!-- 13. SELECT                                                   -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>13. Select</h2>
+    <p class="preview-caption">Atom select — native dropdown styled. A11y gratuita via &lt;select&gt; nativo. Custom dropdown só em v1.1 com Radix.</p>
+
+    <h3>Sizes + states</h3>
+    <div class="preview-grid">
+      <select class="select select--sm">
+        <option>Small (sm)</option>
+        <option>Turma T5</option>
+        <option>Turma T4</option>
+      </select>
+      <select class="select">
+        <option>Medium (default)</option>
+        <option>Turma T5</option>
+        <option>Turma T4</option>
+      </select>
+      <select class="select select--lg">
+        <option>Large (lg)</option>
+        <option>Turma T5</option>
+      </select>
+    </div>
+
+    <h3>States</h3>
+    <div class="preview-grid">
+      <select class="select" disabled>
+        <option>Disabled</option>
+      </select>
+      <select class="select is-error" aria-invalid="true">
+        <option>Error state</option>
+      </select>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 14. SWITCH                                                   -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>14. Switch</h2>
+    <p class="preview-caption">Atom switch — toggle on/off. Usa role="switch" + aria-checked. Keyboard space toggla.</p>
+
+    <h3>Default size</h3>
+    <div class="preview-row" style="flex-direction:column;align-items:flex-start;gap:var(--space-3);">
+      <button class="switch" role="switch" aria-checked="false" onclick="this.setAttribute('aria-checked', this.getAttribute('aria-checked')==='true' ? 'false' : 'true')">
+        <span class="switch__track">
+          <span class="switch__thumb"></span>
+        </span>
+        <span class="switch__label">Notificações WhatsApp</span>
+      </button>
+
+      <button class="switch" role="switch" aria-checked="true" onclick="this.setAttribute('aria-checked', this.getAttribute('aria-checked')==='true' ? 'false' : 'true')">
+        <span class="switch__track">
+          <span class="switch__thumb"></span>
+        </span>
+        <span class="switch__label">NPS auto-dispatch (já ON)</span>
+      </button>
+
+      <button class="switch" role="switch" aria-checked="false" disabled>
+        <span class="switch__track">
+          <span class="switch__thumb"></span>
+        </span>
+        <span class="switch__label">Disabled (Beta feature)</span>
+      </button>
+    </div>
+
+    <h3>Small size</h3>
+    <div class="preview-row" style="flex-direction:column;align-items:flex-start;gap:var(--space-2);">
+      <button class="switch switch--sm" role="switch" aria-checked="true" onclick="this.setAttribute('aria-checked', this.getAttribute('aria-checked')==='true' ? 'false' : 'true')">
+        <span class="switch__track">
+          <span class="switch__thumb"></span>
+        </span>
+        <span class="switch__label">Compact toggle</span>
+      </button>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 15. DATA TABLE                                               -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>15. DataTable</h2>
+    <p class="preview-caption">Organism table — unifica 10+ tables legacy. Sortable headers + selected rows + density variants + responsive.</p>
+
+    <h3>Default (comfortable density)</h3>
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <caption class="data-table__caption">NPS Responses — Turma T5</caption>
+        <thead class="data-table__head">
+          <tr class="data-table__head-row">
+            <th scope="col" class="data-table__head-cell">
+              <button class="data-table__sort-button" aria-sort="ascending">
+                Aluno
+                <span class="data-table__sort-icon" aria-hidden="true">↑</span>
+              </button>
+            </th>
+            <th scope="col" class="data-table__head-cell data-table__cell--center">Nota</th>
+            <th scope="col" class="data-table__head-cell">Categoria</th>
+            <th scope="col" class="data-table__head-cell">Comentário</th>
+            <th scope="col" class="data-table__head-cell data-table__cell--numeric">Aula</th>
+          </tr>
+        </thead>
+        <tbody class="data-table__body">
+          <tr class="data-table__row">
+            <th scope="row" class="data-table__cell">Ana Silva</th>
+            <td class="data-table__cell data-table__cell--center">10</td>
+            <td class="data-table__cell"><span class="badge badge--success">Promoter</span></td>
+            <td class="data-table__cell" style="max-width:300px;">Aula incrível! Aprendi muito sobre arquitetura.</td>
+            <td class="data-table__cell data-table__cell--numeric">12</td>
+          </tr>
+          <tr class="data-table__row is-selected">
+            <th scope="row" class="data-table__cell">João Pereira</th>
+            <td class="data-table__cell data-table__cell--center">7</td>
+            <td class="data-table__cell"><span class="badge badge--warning">Passive</span></td>
+            <td class="data-table__cell" style="max-width:300px;">Bom mas faltou exemplo prático.</td>
+            <td class="data-table__cell data-table__cell--numeric">12</td>
+          </tr>
+          <tr class="data-table__row">
+            <th scope="row" class="data-table__cell">Maria Costa</th>
+            <td class="data-table__cell data-table__cell--center">4</td>
+            <td class="data-table__cell"><span class="badge badge--danger">Detractor</span></td>
+            <td class="data-table__cell" style="max-width:300px;">Difícil acompanhar o ritmo da aula.</td>
+            <td class="data-table__cell data-table__cell--numeric">12</td>
+          </tr>
+          <tr class="data-table__row">
+            <th scope="row" class="data-table__cell">Pedro Almeida</th>
+            <td class="data-table__cell data-table__cell--center">9</td>
+            <td class="data-table__cell"><span class="badge badge--success">Promoter</span></td>
+            <td class="data-table__cell" style="max-width:300px;">Excelente conteúdo!</td>
+            <td class="data-table__cell data-table__cell--numeric">11</td>
+          </tr>
+        </tbody>
+        <tfoot class="data-table__footer">
+          <tr>
+            <td class="data-table__cell" colspan="5">4 respostas · NPS = +50</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <h3 style="margin-top:var(--space-6);">Compact + Striped</h3>
+    <div class="data-table-wrapper">
+      <table class="data-table data-table--compact data-table--striped">
+        <thead class="data-table__head">
+          <tr class="data-table__head-row">
+            <th scope="col" class="data-table__head-cell">Job ID</th>
+            <th scope="col" class="data-table__head-cell">Status</th>
+            <th scope="col" class="data-table__head-cell data-table__cell--numeric">Recipients</th>
+            <th scope="col" class="data-table__head-cell">Started</th>
+          </tr>
+        </thead>
+        <tbody class="data-table__body">
+          <tr class="data-table__row"><th scope="row" class="data-table__cell">job-1247</th><td class="data-table__cell"><span class="badge badge--success badge--sm">SENT</span></td><td class="data-table__cell data-table__cell--numeric">128</td><td class="data-table__cell">10min ago</td></tr>
+          <tr class="data-table__row"><th scope="row" class="data-table__cell">job-1246</th><td class="data-table__cell"><span class="badge badge--warning badge--sm">PROCESSING</span></td><td class="data-table__cell data-table__cell--numeric">42</td><td class="data-table__cell">25min ago</td></tr>
+          <tr class="data-table__row"><th scope="row" class="data-table__cell">job-1245</th><td class="data-table__cell"><span class="badge badge--danger badge--sm">FAILED</span></td><td class="data-table__cell data-table__cell--numeric">7</td><td class="data-table__cell">1h ago</td></tr>
+          <tr class="data-table__row"><th scope="row" class="data-table__cell">job-1244</th><td class="data-table__cell"><span class="badge badge--success badge--sm">SENT</span></td><td class="data-table__cell data-table__cell--numeric">95</td><td class="data-table__cell">2h ago</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:var(--space-6);">Empty state inline</h3>
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead class="data-table__head">
+          <tr class="data-table__head-row">
+            <th scope="col" class="data-table__head-cell">Aluno</th>
+            <th scope="col" class="data-table__head-cell">Status</th>
+          </tr>
+        </thead>
+        <tbody class="data-table__body">
+          <tr><td class="data-table__empty-cell" colspan="2">
+            📭 Nenhuma resposta NPS ainda nesta turma.
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 16. DRAWER (interactive demo)                                -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>16. Drawer</h2>
+    <p class="preview-caption">Organism drawer — slide-in panel (filters, settings, mobile sidebar). a11y completo igual Modal.</p>
+
+    <div class="preview-row">
+      <button class="btn btn--primary" onclick="document.getElementById('demo-drawer-right').classList.add('is-open')">
+        Open Right Drawer
+      </button>
+      <button class="btn btn--secondary" onclick="document.getElementById('demo-drawer-left').classList.add('is-open')">
+        Open Left Drawer
+      </button>
+      <button class="btn btn--ghost" onclick="document.getElementById('demo-drawer-lg').classList.add('is-open')">
+        Open Large
+      </button>
+    </div>
+
+    <!-- Drawer Right (md) -->
+    <div class="drawer-overlay" id="demo-drawer-right" onclick="if(event.target===this) this.classList.remove('is-open')">
+      <aside class="drawer drawer--right drawer--md" role="dialog" aria-modal="true" aria-labelledby="drawer-right-title">
+        <header class="drawer__header">
+          <h2 class="drawer__title" id="drawer-right-title">Filtros</h2>
+          <button class="drawer__close" aria-label="Fechar" onclick="this.closest('.drawer-overlay').classList.remove('is-open')">×</button>
+        </header>
+        <div class="drawer__body">
+          <div class="form-field">
+            <label class="form-field__label" for="drawer-filter-cohort">Turma</label>
+            <div class="form-field__control">
+              <select class="select" id="drawer-filter-cohort">
+                <option value="">Todas</option>
+                <option>T5</option>
+                <option>T4</option>
+                <option>T3</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field" style="margin-top:var(--space-4);">
+            <label class="form-field__label" for="drawer-filter-status">Status</label>
+            <div class="form-field__control">
+              <select class="select" id="drawer-filter-status">
+                <option value="">Todos</option>
+                <option>Sent</option>
+                <option>Processing</option>
+                <option>Failed</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field" style="margin-top:var(--space-4);">
+            <label class="form-field__label" for="drawer-filter-period">Período</label>
+            <div class="form-field__control">
+              <input type="date" class="input" id="drawer-filter-period">
+            </div>
+          </div>
+          <div style="margin-top:var(--space-5);display:flex;flex-direction:column;gap:var(--space-3);">
+            <button class="switch" role="switch" aria-checked="true" onclick="this.setAttribute('aria-checked', this.getAttribute('aria-checked')==='true' ? 'false' : 'true')">
+              <span class="switch__track"><span class="switch__thumb"></span></span>
+              <span class="switch__label">Apenas com comentário</span>
+            </button>
+            <button class="switch" role="switch" aria-checked="false" onclick="this.setAttribute('aria-checked', this.getAttribute('aria-checked')==='true' ? 'false' : 'true')">
+              <span class="switch__track"><span class="switch__thumb"></span></span>
+              <span class="switch__label">Detractors only</span>
+            </button>
+          </div>
+        </div>
+        <footer class="drawer__footer drawer__footer--spread">
+          <button class="btn btn--ghost" onclick="this.closest('.drawer-overlay').classList.remove('is-open')">Limpar</button>
+          <button class="btn btn--primary" onclick="this.closest('.drawer-overlay').classList.remove('is-open')">Aplicar</button>
+        </footer>
+      </aside>
+    </div>
+
+    <!-- Drawer Left (sm) -->
+    <div class="drawer-overlay" id="demo-drawer-left" onclick="if(event.target===this) this.classList.remove('is-open')">
+      <aside class="drawer drawer--left drawer--sm" role="dialog" aria-modal="true" aria-labelledby="drawer-left-title">
+        <header class="drawer__header">
+          <h2 class="drawer__title" id="drawer-left-title">Navegação</h2>
+          <button class="drawer__close" aria-label="Fechar" onclick="this.closest('.drawer-overlay').classList.remove('is-open')">×</button>
+        </header>
+        <div class="drawer__body">
+          <p style="color:var(--color-content-muted);font-size:var(--font-size-sm);">Mobile sidebar contents aqui.</p>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Drawer Large -->
+    <div class="drawer-overlay" id="demo-drawer-lg" onclick="if(event.target===this) this.classList.remove('is-open')">
+      <aside class="drawer drawer--right drawer--lg" role="dialog" aria-modal="true" aria-labelledby="drawer-lg-title">
+        <header class="drawer__header">
+          <h2 class="drawer__title" id="drawer-lg-title">Configurações Avançadas</h2>
+          <button class="drawer__close" aria-label="Fechar" onclick="this.closest('.drawer-overlay').classList.remove('is-open')">×</button>
+        </header>
+        <div class="drawer__body">
+          <p>Drawer large pra forms complexos / settings panels.</p>
+          <div class="empty-state empty-state--sm" style="margin-top:var(--space-4);" role="status">
+            <div class="empty-state__icon" aria-hidden="true">⚙️</div>
+            <h3 class="empty-state__title">Settings em construção</h3>
+            <p class="empty-state__description">Volte em breve.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+
   <footer style="max-width:1280px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6) 0;border-top:1px solid var(--color-border-default);color:var(--color-content-muted);font-size:var(--font-size-sm);">
     <p>DS v1 preview · gerado pra QA visual antes adoção em telas live.</p>
     <p>Specs: <code>docs/design-system/v1/</code> · Source: <code>css/ds/</code></p>
-    <p>Primitives entregues: Button · Card · StatCard · Input · Badge · FormField · Modal · Toast · Sidebar · Breadcrumbs · EmptyState (11/30 v1 total)</p>
+    <p>Primitives entregues: Button · Card · StatCard · Input · Badge · FormField · Modal · Toast · Sidebar · Breadcrumbs · EmptyState · Select · Switch · DataTable · Drawer (15/30 v1 total)</p>
   </footer>
 
 </body>
