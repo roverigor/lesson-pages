@@ -101,15 +101,27 @@ BEGIN
     RETURN p_snapshot;
   END IF;
 
-  -- 2. cohort_sessions table
+  -- 2a. Match exato (session_date == planned_date)
   SELECT cs.session_number INTO v_result
   FROM public.cohort_sessions cs
   WHERE cs.cohort_id = p_cohort_id
     AND cs.class_id  = p_class_id
     AND cs.deleted_at IS NULL
-    AND (cs.planned_date IS NULL OR cs.planned_date <= p_session_date)
-  ORDER BY cs.planned_date DESC NULLS LAST
+    AND cs.planned_date = p_session_date
   LIMIT 1;
+
+  IF v_result IS NOT NULL THEN
+    RETURN v_result;
+  END IF;
+
+  -- 2b. Próxima sessão: MAX(session_number) + 1 (quando session_date > todas planned_dates)
+  SELECT MAX(cs.session_number) + 1 INTO v_result
+  FROM public.cohort_sessions cs
+  WHERE cs.cohort_id = p_cohort_id
+    AND cs.class_id  = p_class_id
+    AND cs.deleted_at IS NULL
+    AND cs.planned_date IS NOT NULL
+    AND cs.planned_date < p_session_date;
 
   IF v_result IS NOT NULL THEN
     RETURN v_result;

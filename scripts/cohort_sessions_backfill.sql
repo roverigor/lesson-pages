@@ -33,7 +33,7 @@ BEGIN
         SELECT
           zm.class_id,
           (zm.start_time AT TIME ZONE 'America/Sao_Paulo')::date AS session_date,
-          MIN(zm.id) AS zoom_meeting_id,  -- primeiro do dia (caso multi-meeting)
+          (array_agg(zm.id ORDER BY zm.start_time))[1] AS zoom_meeting_id,  -- primeiro do dia (caso multi-meeting)
           MAX(zm.participants_count) AS max_participants,
           SUM(zm.duration_minutes) AS total_duration
         FROM public.zoom_meetings zm
