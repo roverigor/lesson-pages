@@ -70,7 +70,7 @@
 
   <!-- Q1: vai participar? Sim / Não -->
   <div class="screen" id="screen-1">
-    <div class="brand">Academia Lendária — PS</div>
+    <div class="brand brand-dyn">Pré PS · <span class="brand-class">Academia Lendária</span></div>
     <div class="q-counter" id="q-counter-1">Pergunta 1</div>
     <div class="question" id="q1-text">Você vai participar do PS de hoje?</div>
     <div class="sub-context" id="sub-context"></div>
@@ -84,7 +84,7 @@
   <!-- YES path: Q2-name -->
   <div class="screen" id="screen-yes-name">
     <button class="btn-back" data-back="1">← Voltar</button>
-    <div class="brand">Academia Lendária — PS</div>
+    <div class="brand brand-dyn">Pré PS · <span class="brand-class">Academia Lendária</span></div>
     <div class="q-counter">Confirme seu nome</div>
     <div class="question">Qual seu nome?</div>
     <div class="sub-context">Pra mentor te chamar certo no PS.</div>
@@ -95,7 +95,7 @@
   <!-- YES path: Q3-doubts -->
   <div class="screen" id="screen-yes-doubts">
     <button class="btn-back" data-back="yes-name">← Voltar</button>
-    <div class="brand">Academia Lendária — PS</div>
+    <div class="brand brand-dyn">Pré PS · <span class="brand-class">Academia Lendária</span></div>
     <div class="q-counter">Pergunta</div>
     <div class="question">Quais dúvidas ou desafios precisa destravar hoje?</div>
     <textarea id="doubts-input" class="text-input" placeholder="Conta o que tá travando ou precisando trabalhar..."></textarea>
@@ -105,7 +105,7 @@
   <!-- YES path: Q4-phase (opcional) -->
   <div class="screen" id="screen-yes-phase">
     <button class="btn-back" data-back="yes-doubts">← Voltar</button>
-    <div class="brand">Academia Lendária — PS</div>
+    <div class="brand brand-dyn">Pré PS · <span class="brand-class">Academia Lendária</span></div>
     <div class="q-counter">Última pergunta (opcional)</div>
     <div class="question">Em que fase do seu projeto/AIOX você está?</div>
     <input id="phase-input" type="text" class="text-input" placeholder="ex: começando setup, integrando agents, lançamento próximo...">
@@ -115,7 +115,7 @@
   <!-- NO path: Q2-share-reason? Sim/Não -->
   <div class="screen" id="screen-no-share">
     <button class="btn-back" data-back="1">← Voltar</button>
-    <div class="brand">Academia Lendária — PS</div>
+    <div class="brand brand-dyn">Pré PS · <span class="brand-class">Academia Lendária</span></div>
     <div class="q-counter">Pergunta 2</div>
     <div class="question">Que pena! Algum motivo específico que queira compartilhar?</div>
     <div class="options-list">
@@ -128,7 +128,7 @@
   <!-- NO path: Q3a-reason text -->
   <div class="screen" id="screen-no-reason">
     <button class="btn-back" data-back="no-share">← Voltar</button>
-    <div class="brand">Academia Lendária — PS</div>
+    <div class="brand brand-dyn">Pré PS · <span class="brand-class">Academia Lendária</span></div>
     <div class="q-counter">Compartilhe o motivo</div>
     <div class="question">Conta o que aconteceu.</div>
     <div class="sub-context">Ajuda a gente entender e melhorar.</div>
@@ -139,7 +139,7 @@
   <!-- NO path: Q3b-team message (opcional) -->
   <div class="screen" id="screen-no-team-msg">
     <button class="btn-back" data-back="no-share">← Voltar</button>
-    <div class="brand">Academia Lendária — PS</div>
+    <div class="brand brand-dyn">Pré PS · <span class="brand-class">Academia Lendária</span></div>
     <div class="q-counter">Último passo (opcional)</div>
     <div class="question">Deseja mandar algum recado pra equipe?</div>
     <textarea id="team-msg-input" class="text-input" placeholder="Pode escrever aqui ou pular..."></textarea>
@@ -330,6 +330,8 @@
     const firstName = (meta.student_name || "").split(/\s+/)[0];
     if (firstName) $("q-counter-1").textContent = `Olá, ${firstName}! 👋`;
     $("sub-context").textContent = `${meta.class_name} hoje (${meta.session_date})`;
+    document.querySelectorAll(".brand-class").forEach((el) => { el.textContent = meta.class_name; });
+    document.title = `Pré PS · ${meta.class_name}`;
     // Pre-fill name input with full name from students table
     if (meta.student_name) $("name-input").value = meta.student_name;
     wire();
