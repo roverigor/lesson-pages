@@ -392,8 +392,14 @@
   function nextAfterTechOrUnblocked() { goto(3); }
 
   async function submit() {
-    $("btn-submit").disabled = true;
-    $("btn-submit").textContent = "Enviando...";
+    if (state.submitting) return;
+    state.submitting = true;
+    const btnSubmit = $("btn-submit");
+    const btnPassive = $("btn-submit-passive");
+    const btnNext4 = $("btn-next-4");
+    if (btnSubmit) { btnSubmit.disabled = true; btnSubmit.textContent = "Enviando..."; }
+    if (btnPassive) btnPassive.disabled = true;
+    if (btnNext4) btnNext4.disabled = true;
     setProgress(95);
 
     state.improvement = $("improvement-input").value.trim();
@@ -451,8 +457,16 @@
       else if (res.status === 429) msg = "Você já respondeu hoje. Obrigado!";
       else if (res.status === 404) msg = "Link inválido.";
       showError("Erro ao enviar", msg);
+      state.submitting = false;
+      if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = "Enviar feedback ✓"; }
+      if (btnPassive) btnPassive.disabled = false;
+      if (btnNext4) btnNext4.disabled = false;
     } catch (e) {
       showError("Erro de conexão", "Verifique sua internet e tente novamente.");
+      state.submitting = false;
+      if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = "Enviar feedback ✓"; }
+      if (btnPassive) btnPassive.disabled = false;
+      if (btnNext4) btnNext4.disabled = false;
     }
   }
 
