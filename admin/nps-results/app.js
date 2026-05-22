@@ -234,7 +234,7 @@ async function fetchPsRsvp() {
       .lte("session_date", dateTo)
       .in("send_status", ["sent", "failed"]),
     sb.from("ps_rsvp_responses")
-      .select("id, link_id, class_id, student_id, session_date, will_attend, doubts_text, project_phase, submitted_at")
+      .select("id, link_id, class_id, student_id, session_date, will_attend, doubts_text, project_phase, submitted_at, confirmed_name")
       .gte("session_date", dateFrom)
       .lte("session_date", dateTo)
       .order("submitted_at", { ascending: false }),
@@ -353,10 +353,15 @@ async function renderPsRsvp() {
         : '<span class="ps-resp-pending">—</span>';
       const when = r.submitted_at ? new Date(r.submitted_at).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
       const session = r.session_date ? new Date(r.session_date + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : "—";
+      const isGroupPlaceholder = (r.student?.phone || "").startsWith("group_placeholder_");
+      const displayName = isGroupPlaceholder
+        ? (r.confirmed_name || "Anônimo (grupo)")
+        : (r.student?.name || "—");
+      const displayPhone = isGroupPlaceholder ? "📢 grupo" : (r.student?.phone || "—");
       return `<tr>
         <td style="font-size:12px;color:#aaa">${escapeHtml(session)}</td>
-        <td>${escapeHtml(r.student?.name || "—")}</td>
-        <td style="font-size:11px;color:#888">${escapeHtml(r.student?.phone || "—")}</td>
+        <td>${escapeHtml(displayName)}</td>
+        <td style="font-size:11px;color:#888">${escapeHtml(displayPhone)}</td>
         <td style="color:#888">${escapeHtml(r.class?.name || "—")}</td>
         <td>${respLbl}</td>
         <td style="font-size:12px;color:#ccc;max-width:340px">${escapeHtml(r.doubts_text || "")}</td>
@@ -804,10 +809,11 @@ async function exportPsRsvpCsv() {
   if (!rows.length) { toast("Sem respostas PS RSVP no filtro.", "info"); return; }
   const header = ["session_date","student_name","student_phone","class_name","will_attend","doubts_text","project_phase","submitted_at"];
   const lines = rows.map((r) => header.map((h) => {
+    const isGroup = (r.student?.phone || "").startsWith("group_placeholder_");
     const val = {
       session_date: r.session_date,
-      student_name: r.student?.name,
-      student_phone: r.student?.phone,
+      student_name: isGroup ? (r.confirmed_name || "Anônimo (grupo)") : (r.student?.name),
+      student_phone: isGroup ? "grupo" : (r.student?.phone),
       class_name: r.class?.name,
       will_attend: fmtRespLabel(r.will_attend),
       doubts_text: r.doubts_text,
@@ -858,8 +864,9 @@ async function exportPsRsvpMd() {
     md += `| Aluno | Telefone | Aula | Resposta | Fase projeto | Dúvida/Comentário |\n`;
     md += `|---|---|---|---|---|---|\n`;
     for (const r of grouped[date]) {
-      const nome = (r.student?.name || "—").replace(/\|/g, "\\|");
-      const tel = (r.student?.phone || "—").replace(/\|/g, "\\|");
+      const isGroup = (r.student?.phone || "").startsWith("group_placeholder_");
+      const nome = (isGroup ? (r.confirmed_name || "Anônimo (grupo)") : (r.student?.name || "—")).replace(/\|/g, "\\|");
+      const tel = (isGroup ? "grupo" : (r.student?.phone || "—")).replace(/\|/g, "\\|");
       const aula = (r.class?.name || "—").replace(/\|/g, "\\|");
       const resp = fmtRespLabel(r.will_attend);
       const fase = (r.project_phase || "—").replace(/\|/g, "\\|").replace(/\n/g, " ");
