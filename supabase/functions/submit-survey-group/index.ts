@@ -122,17 +122,21 @@ Deno.serve(async (req: Request) => {
 
   const ip = clientIp(req);
   const ipHash = await sha256Hex(`${ip}|${IP_HASH_SALT}|${dailySaltSuffix()}`);
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-  const { count: recentCount, error: countErr } = await sb
-    .from("class_nps_responses")
-    .select("id", { count: "exact", head: true })
-    .eq("ip_hash", ipHash)
-    .gte("submitted_at", since);
-
-  if (countErr) return jsonResponse({ error: "internal_error" }, 500);
-  if ((recentCount ?? 0) >= MAX_SUBMITS_PER_IP_24H) {
-    return jsonResponse({ error: "rate_limited" }, 429);
+  // Rate limit aplica APENAS em DM mode (1 aluno = 1 submit, abuse alto).
+  // Group mode: vários alunos no mesmo wifi (casa, escola, sala compartilhada)
+  // legitimamente excedem 5/24h. name_provided required já mitiga spam.
+  if (link.mode === "dm") {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count: recentCount, error: countErr } = await sb
+      .from("class_nps_responses")
+      .select("id", { count: "exact", head: true })
+      .eq("ip_hash", ipHash)
+      .gte("submitted_at", since);
+    if (countErr) return jsonResponse({ error: "internal_error" }, 500);
+    if ((recentCount ?? 0) >= MAX_SUBMITS_PER_IP_24H) {
+      return jsonResponse({ error: "rate_limited" }, 429);
+    }
   }
 
   const userAgent = req.headers.get("user-agent")?.slice(0, 500) ?? null;
