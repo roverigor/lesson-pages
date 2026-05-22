@@ -63,13 +63,24 @@ Deno.serve(async (req: Request) => {
   if (!link) return json({ error: "token_not_found" }, 404);
   if (new Date(link.expires_at).getTime() < Date.now()) return json({ error: "token_expired" }, 410);
 
-  // Idempotent: if response exists, return success.
-  const { data: existing } = await sb
-    .from("ps_rsvp_responses")
-    .select("id")
-    .eq("link_id", link.id)
+  // Group placeholder bypass — links compartilhados aceitam N respostas.
+  // Detecção via students.phone LIKE 'group_placeholder_%'.
+  const { data: linkStudent } = await sb
+    .from("students")
+    .select("phone")
+    .eq("id", link.student_id)
     .maybeSingle();
-  if (existing) return json({ success: true, already: true });
+  const isGroupPlaceholder = (linkStudent?.phone ?? "").startsWith("group_placeholder_");
+
+  if (!isGroupPlaceholder) {
+    // Idempotent only for DM individual: if response exists, return success.
+    const { data: existing } = await sb
+      .from("ps_rsvp_responses")
+      .select("id")
+      .eq("link_id", link.id)
+      .maybeSingle();
+    if (existing) return json({ success: true, already: true });
+  }
 
   const ip = clientIp(req);
   const ipHash = await sha256Hex(`${ip}|${new Date().toISOString().slice(0, 10)}`);
