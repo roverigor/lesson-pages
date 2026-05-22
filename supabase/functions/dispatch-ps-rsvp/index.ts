@@ -181,9 +181,27 @@ Deno.serve(async (req: Request) => {
       .not("phone", "is", null)
       .order("name");
 
-    const eligible = students ?? [];
+    const allStudents = students ?? [];
+
+    // CSV-backed allowlist: só dispatcha pra phones que foram importados via student_imports.
+    // Evita enviar pra phones extraídos de bulk WA group sync (sem nome real validado).
+    const { data: imports } = await sb
+      .from("student_imports")
+      .select("phone");
+    const normalizedImportPhones = new Set(
+      (imports ?? [])
+        .map((i: { phone: string | null }) => (i.phone ?? "").replace(/\D/g, ""))
+        .filter((p: string) => p.length > 0),
+    );
+    const normalizePhone = (p: string | null) => (p ?? "").replace(/\D/g, "");
+    const eligible = allStudents.filter((s) => {
+      const p = normalizePhone(s.phone);
+      return p && normalizedImportPhones.has(p);
+    });
+    const blockedNonCsv = allStudents.length - eligible.length;
+
     if (eligible.length === 0) {
-      results.push({ class_id: cls.id, class_name: cls.name, eligible: 0, reason: "no_students" });
+      results.push({ class_id: cls.id, class_name: cls.name, eligible: 0, reason: "no_csv_backed_students", blocked_non_csv: blockedNonCsv });
       continue;
     }
 
