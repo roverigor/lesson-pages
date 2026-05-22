@@ -108,15 +108,25 @@ Deno.serve(async (req: Request) => {
 
   try {
 
-  // Find PS classes for today's weekday + active + reminder_enabled
-  // Cross-cohort: get class_cohorts → students (active=true, is_mentor=false)
-  // Ignores cohort.active per design B.
-  const { data: classes } = await sb
-    .from("classes")
-    .select("id, name, weekday, time_start, kind")
-    .eq("active", true)
-    .eq("kind", "ps")
-    .eq("weekday", today.weekday);
+  // Find PS classes for today's weekday via class_mentors (multi-day support).
+  // Schema: classes.weekday is single int, mas mentors são cadastrados por dia
+  // em class_mentors.weekday → fonte real do calendário ativo.
+  const { data: mentorRows } = await sb
+    .from("class_mentors")
+    .select("class_id")
+    .eq("weekday", today.weekday)
+    .lte("valid_from", today.isoDate)
+    .or(`valid_until.is.null,valid_until.gte.${today.isoDate}`);
+  const classIds = [...new Set((mentorRows ?? []).map((r: { class_id: string }) => r.class_id))];
+
+  const { data: classes } = classIds.length === 0
+    ? { data: [] as Array<{ id: string; name: string; weekday: number; time_start: string; kind: string }> }
+    : await sb
+        .from("classes")
+        .select("id, name, weekday, time_start, kind")
+        .eq("active", true)
+        .eq("kind", "ps")
+        .in("id", classIds);
 
   if (!classes || classes.length === 0) {
     await slackNotify(`✅ dispatch-ps-rsvp finished — no PS class today (${today.isoDate}, weekday ${today.weekday})`);
