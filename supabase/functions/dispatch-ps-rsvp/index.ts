@@ -140,17 +140,23 @@ Deno.serve(async (req: Request) => {
     return json({ success: true, message: "no PS class today", today });
   }
 
-  // Load active Meta template variants for rotation
+  // Rotação por DISPATCH (não por aluno): pega variant active com last_used_at
+  // mais antigo (NULLS FIRST). Mesma variant pra TODOS alunos da run. Final
+  // do dispatch atualiza last_used_at → próximo dispatch pega outra automaticamente.
+  // Re-triggers da mesma session_date continuam mesma variant (idempotente).
   const { data: variantRows } = await sb
     .from("ps_rsvp_variants")
-    .select("id, meta_template_name, weight")
-    .eq("active", true);
+    .select("id, meta_template_name, weight, last_used_at")
+    .eq("active", true)
+    .order("last_used_at", { ascending: true, nullsFirst: true })
+    .limit(1);
 
   const variants: PsVariant[] = (variantRows ?? []) as PsVariant[];
   if (variants.length === 0) {
     await slackNotify(`❌ dispatch-ps-rsvp aborted — no active ps_rsvp_variants. Approve Meta templates and flip active=true.`);
     return json({ success: false, error: "no_active_variants" }, 412);
   }
+  const dispatchVariant = variants[0];
 
   const results: Record<string, unknown>[] = [];
 
@@ -215,9 +221,8 @@ Deno.serve(async (req: Request) => {
         continue;
       }
       const firstName = (stu.name || "").trim().split(/\s+/)[0] || "Lendário";
-      const variant = pickWeighted(variants);
 
-      const r = await sendDmTemplate(stu.phone, variant.meta_template_name, firstName, cls.name, cls.time_start, lnk.token);
+      const r = await sendDmTemplate(stu.phone, dispatchVariant.meta_template_name, firstName, cls.name, cls.time_start, lnk.token);
       if (r.ok) {
         await sb.from("ps_rsvp_links").update({ send_status: "sent", sent_at: new Date().toISOString(), meta_message_id: r.messageId }).eq("id", lnk.id);
         sent++;
@@ -234,6 +239,15 @@ Deno.serve(async (req: Request) => {
     const groupSent = 0; const groupFailed = 0;
 
     results.push({ class_id: cls.id, class_name: cls.name, eligible: eligible.length, sent, failed, group_sent: groupSent, group_failed: groupFailed, group_disabled: true });
+  }
+
+  // Marca variant como usada (rotação por dispatch). Idempotente: re-trigger no
+  // mesmo dia pega mesma variant pq last_used_at já está no dia atual.
+  const totalSentInRun = results.reduce((s, r) => s + ((r.sent as number) ?? 0), 0);
+  if (totalSentInRun > 0) {
+    await sb.from("ps_rsvp_variants")
+      .update({ last_used_at: new Date().toISOString() })
+      .eq("id", dispatchVariant.id);
   }
 
   // Final summary Slack (always)

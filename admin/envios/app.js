@@ -428,10 +428,12 @@ function renderDispatchTable() {
       <td>${typeLabel(r.dispatch_type)}</td>
       <td>${classLabel(r)}</td>
       <td>${formCell(r)}</td>
+      <td class="row-link" data-source="${escapeHtml(r.source)}" data-id="${escapeHtml(r.dispatch_id)}"><span class="muted small">—</span></td>
       <td><span class="status-pill status-${escapeHtml(r.status)}">${statusLabel(r.status)}</span></td>
       <td class="right">${r.cost_usd > 0 ? fmtUSD(r.cost_usd) : "—"}</td>
     </tr>`;
   }).join("");
+  hydrateLinkColumn(state.rows);
   tbody.querySelectorAll("tr").forEach(tr => {
     tr.addEventListener("click", (e) => {
       // Copy on small-ID click; otherwise open modal
@@ -446,6 +448,29 @@ function renderDispatchTable() {
       }
       openDispatchModal(tr.dataset.source, tr.dataset.id);
     });
+  });
+}
+
+// JIT batch fetch tokens pra coluna "Link" (1 query por source)
+async function hydrateLinkColumn(rows) {
+  const psIds = rows.filter(r => r.source === "ps_rsvp_link").map(r => r.dispatch_id);
+  const npsIds = rows.filter(r => r.source === "nps_class_link").map(r => r.dispatch_id);
+
+  const tokenMap = new Map();
+  if (psIds.length > 0) {
+    const { data } = await sb.from("ps_rsvp_links").select("id, token").in("id", psIds);
+    (data ?? []).forEach(d => tokenMap.set("ps_rsvp_link:" + d.id, "https://painel.academialendaria.ai/ps-rsvp/?token=" + d.token));
+  }
+  if (npsIds.length > 0) {
+    const { data } = await sb.from("nps_class_links").select("id, token").in("id", npsIds);
+    (data ?? []).forEach(d => tokenMap.set("nps_class_link:" + d.id, "https://painel.academialendaria.ai/survey/?token=" + d.token));
+  }
+
+  document.querySelectorAll("td.row-link").forEach(td => {
+    const key = td.dataset.source + ":" + td.dataset.id;
+    const url = tokenMap.get(key);
+    if (!url) { td.innerHTML = '<span class="muted small">—</span>'; return; }
+    td.innerHTML = `<a href="${url}" target="_blank" rel="noopener" style="word-break:break-all;font-size:11px" title="${url}">🔗 ${url.slice(0, 50)}…</a>`;
   });
 }
 
