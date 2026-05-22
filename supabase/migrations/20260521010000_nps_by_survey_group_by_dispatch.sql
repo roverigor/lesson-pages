@@ -183,47 +183,32 @@ BEGIN
     LEFT JOIN public.cohorts co ON co.id = a.cohort_id
   )
 
-  SELECT
-    m.kind, m.group_key, m.label,
-    m.survey_id, m.dispatch_job_id, m.link_id,
-    m.class_id, m.class_name, m.class_kind,
-    m.cohort_id, m.cohort_name,
-    m.session_date, m.session_index,
-    m.total, m.dm_total, m.group_total,
-    m.nps, m.dm_nps, m.group_nps, m.avg_score,
-    m.first_at, m.last_at,
-    m.dispatch_sent_at
-  FROM manual m
-
-  UNION ALL
-
-  SELECT
-    'auto'::text                                                         AS kind,
-    CASE
-      WHEN a.dispatch_job_id IS NOT NULL THEN 'dispatch:' || a.dispatch_job_id::text
-      WHEN a.link_id        IS NOT NULL THEN 'link:'     || a.link_id::text
-      ELSE 'session:' || a.class_id::text || ':' || COALESCE(a.cohort_id::text, 'null')
-                       || ':' || to_char(a.session_date, 'YYYY-MM-DD')
-    END                                                                  AS group_key,
-    CASE
-      WHEN a.class_kind = 'ps' THEN COALESCE(a.class_name, 'PS') || ' — ' || to_char(a.session_date, 'DD/MM')
-      WHEN a.session_index IS NOT NULL THEN 'Aula ' || lpad(a.session_index::text, 2, '0')
-                                            || ' — ' || COALESCE(a.class_name, 'Aula')
-                                            || ' (' || to_char(a.session_date, 'DD/MM') || ')'
-      ELSE COALESCE(a.class_name, 'Aula') || ' — ' || to_char(a.session_date, 'DD/MM')
-    END                                                                  AS label,
-    NULL::uuid AS survey_id,
-    a.dispatch_job_id, a.link_id,
-    a.class_id, a.class_name, a.class_kind,
-    a.cohort_id, a.cohort_name,
-    a.session_date, a.session_index,
-    a.total, a.dm_total, a.group_total,
-    a.nps, a.dm_nps, a.group_nps, a.avg_score,
-    a.first_at, a.last_at,
-    a.dispatch_sent_at
-  FROM auto_with_index a
-
-  ORDER BY COALESCE(dispatch_sent_at, last_at) DESC NULLS LAST
+  combined AS (
+    SELECT m.kind, m.group_key, m.label, m.survey_id, m.dispatch_job_id, m.link_id,
+      m.class_id, m.class_name, m.class_kind, m.cohort_id, m.cohort_name,
+      m.session_date, m.session_index, m.total, m.dm_total, m.group_total,
+      m.nps, m.dm_nps, m.group_nps, m.avg_score, m.first_at, m.last_at, m.dispatch_sent_at
+    FROM manual m
+    UNION ALL
+    SELECT 'auto'::text AS kind,
+      CASE WHEN a.dispatch_job_id IS NOT NULL THEN 'dispatch:' || a.dispatch_job_id::text
+           WHEN a.link_id IS NOT NULL THEN 'link:' || a.link_id::text
+           ELSE 'session:' || a.class_id::text || ':' || COALESCE(a.cohort_id::text,'null') || ':' || to_char(a.session_date,'YYYY-MM-DD') END AS group_key,
+      CASE WHEN a.class_kind = 'ps' THEN COALESCE(a.class_name, 'PS') || ' — ' || to_char(a.session_date, 'DD/MM')
+           WHEN a.session_index IS NOT NULL THEN 'Aula ' || lpad(a.session_index::text, 2, '0') || ' — ' || COALESCE(a.class_name, 'Aula') || ' (' || to_char(a.session_date, 'DD/MM') || ')'
+           ELSE COALESCE(a.class_name, 'Aula') || ' — ' || to_char(a.session_date, 'DD/MM') END AS label,
+      NULL::uuid AS survey_id, a.dispatch_job_id, a.link_id,
+      a.class_id, a.class_name, a.class_kind, a.cohort_id, a.cohort_name,
+      a.session_date, a.session_index, a.total, a.dm_total, a.group_total,
+      a.nps, a.dm_nps, a.group_nps, a.avg_score, a.first_at, a.last_at, a.dispatch_sent_at
+    FROM auto_with_index a
+  )
+  SELECT c.kind, c.group_key, c.label, c.survey_id, c.dispatch_job_id, c.link_id,
+    c.class_id, c.class_name, c.class_kind, c.cohort_id, c.cohort_name,
+    c.session_date, c.session_index, c.total, c.dm_total, c.group_total,
+    c.nps, c.dm_nps, c.group_nps, c.avg_score, c.first_at, c.last_at, c.dispatch_sent_at
+  FROM combined c
+  ORDER BY COALESCE(c.dispatch_sent_at, c.last_at) DESC NULLS LAST
   LIMIT 200;
 END;
 $$;
