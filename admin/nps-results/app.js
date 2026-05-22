@@ -67,7 +67,7 @@ async function ensureAdmin() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return null;
   const role = session.user?.user_metadata?.role;
-  return role === "admin";
+  return role === "admin" || role === "professor";
 }
 
 async function login() {
