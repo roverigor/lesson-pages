@@ -243,7 +243,11 @@
     try {
       const res = await fetch(`${URL_BASE}/functions/v1/submit-ps-rsvp`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${KEY}`,
+          "apikey": KEY,
+        },
         body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
