@@ -15,7 +15,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const SLACK_CHANNEL = Deno.env.get("SLACK_CHANNEL_DEV_ALERTS") ?? Deno.env.get("SLACK_CHANNEL_DETRACTORS") ?? "";
 // Meta Cloud API — 500ms throttle (2 msg/s, comfortable under tier limits).
-const DELAY_MS = 500;
+const DELAY_MS = 100;
 
 const CORS: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
