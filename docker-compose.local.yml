@@ -1,0 +1,65 @@
+# ============================================================
+# docker-compose.local.yml — Stack local lesson-pages
+# ============================================================
+# Sobe Postgres 15 (match Supabase managed) + serviços mínimos
+# pra testar migrations + smoke local sem prod connection.
+#
+# Uso:
+#   docker-compose -f docker-compose.local.yml up -d
+#
+# Pré-requisito: Docker Desktop Windows (abrir antes)
+#
+# Conexão:
+#   PGHOST=localhost PGPORT=5433 PGUSER=postgres PGPASSWORD=postgres PGDATABASE=postgres
+#
+# Cleanup:
+#   docker-compose -f docker-compose.local.yml down -v  # remove volumes
+# ============================================================
+
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: lesson-pages-pg15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      # Locale BR pra match prod
+      LANG: pt_BR.UTF-8
+      LC_COLLATE: pt_BR.UTF-8
+    ports:
+      - "5433:5432"  # 5433 host pra evitar conflito com PG nativo se houver
+    volumes:
+      - lesson-pages-pgdata:/var/lib/postgresql/data
+      # Auto-load extensions + schema seed se quiser
+      - ./supabase/migrations:/docker-entrypoint-initdb.d/migrations:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    command: >
+      postgres
+        -c shared_preload_libraries=pg_cron,pg_stat_statements
+        -c cron.database_name=postgres
+        -c log_min_messages=warning
+
+  # Static frontend server (opcional, alternativa a python3 -m http.server)
+  frontend:
+    image: nginx:alpine
+    container_name: lesson-pages-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/usr/share/nginx/html:ro
+      - ./nginx-local.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - postgres
+
+volumes:
+  lesson-pages-pgdata:
+    name: lesson-pages-pgdata
