@@ -656,16 +656,19 @@
     }
 
     if (meta.mode === "group") {
-      $("name-field-top").style.display = "block";
       const psDoubtsScreen = $("screen-ps-doubts");
       if (state.isPS && psDoubtsScreen) {
-        // also show name field for PS group flow on first screen
+        // PS group: name field ONLY on first PS screen (ps-doubts). Skip CSAT top input
+        // pra evitar pedir nome 2x (pergunta 1 + pergunta 3).
         const wrap = document.createElement("div");
         wrap.id = "name-field-ps";
         wrap.style.cssText = "margin-bottom:18px";
         wrap.innerHTML = `<div class="label-sm">Seu nome <span style="color:#ef4444">*</span></div><input id="name-input-ps" type="text" class="text-input name-input" placeholder="Seu nome completo" minlength="2" required>`;
         const sub = psDoubtsScreen.querySelector("#sub-context-ps-doubts");
         if (sub) sub.insertAdjacentElement("afterend", wrap);
+      } else {
+        // Regular (non-PS) group: name field só no CSAT top
+        $("name-field-top").style.display = "block";
       }
     }
 
