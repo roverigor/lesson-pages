@@ -26,3 +26,8 @@
 @import url("./primitives/button.css") layer(primitives);
 @import url("./primitives/card.css") layer(primitives);
 @import url("./primitives/stat-card.css") layer(primitives);
+@import url("./primitives/input.css") layer(primitives);
+@import url("./primitives/badge.css") layer(primitives);
+@import url("./primitives/form-field.css") layer(primitives);
+@import url("./primitives/modal.css") layer(primitives);
+@import url("./primitives/toast.css") layer(primitives);

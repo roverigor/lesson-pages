@@ -1,0 +1,260 @@
+/* =============================================================================
+   Toast — Organism — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Toast
+   -----------------------------------------------------------------------------
+   Notification flutuante temporária (success/warning/danger/info).
+
+   Estrutura BEM:
+     .toast-region          — container fixed top-right (live region)
+     .toast                 — notification individual
+     .toast__icon           — leading icon (auto por tone)
+     .toast__content        — wrapper texto
+     .toast__title          — heading curto
+     .toast__description    — corpo opcional
+     .toast__action         — botão CTA opcional
+     .toast__close          — botão dismiss
+
+   Variants tone: default | success | warning | danger | info
+   States: .is-entering, .is-leaving (animation)
+
+   A11y obrigatório:
+     - region: aria-live="polite" (success/info) ou "assertive" (warning/danger)
+     - role="status" (polite) ou role="alert" (assertive)
+     - Auto-dismiss desabilitado em prefers-reduced-motion
+   -----------------------------------------------------------------------------
+   Uso:
+     <div class="toast-region" aria-live="polite" aria-atomic="false">
+       <div class="toast toast--success is-entering" role="status">
+         <span class="toast__icon" aria-hidden="true">✓</span>
+         <div class="toast__content">
+           <p class="toast__title">Salvo</p>
+           <p class="toast__description">Aluno cadastrado com sucesso</p>
+         </div>
+         <button class="toast__close" aria-label="Fechar">×</button>
+       </div>
+     </div>
+   ============================================================================= */
+
+@layer primitives {
+  /* ---------------------------------------------------------------------------
+     Region (fixed container)
+     --------------------------------------------------------------------------- */
+  .toast-region {
+    position: fixed;
+    top: var(--space-4);
+    right: var(--space-4);
+    z-index: var(--z-toast, 1100);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+
+    max-width: 24rem;
+    width: calc(100vw - var(--space-8));
+
+    pointer-events: none; /* permite click pass-through entre toasts */
+  }
+
+  .toast-region--top-left {
+    right: auto;
+    left: var(--space-4);
+  }
+
+  .toast-region--bottom-right {
+    top: auto;
+    bottom: var(--space-4);
+  }
+
+  .toast-region--bottom-left {
+    top: auto;
+    bottom: var(--space-4);
+    right: auto;
+    left: var(--space-4);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Toast item
+     --------------------------------------------------------------------------- */
+  .toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+
+    padding: var(--space-4);
+    background-color: var(--color-surface-2);
+    border: 1px solid var(--color-border-default);
+    border-left-width: 3px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--elevation-4, 0 10px 30px rgba(0, 0, 0, 0.4));
+
+    color: var(--color-content-default);
+    line-height: var(--line-height-normal);
+
+    /* Animation */
+    transform: translateX(calc(var(--space-8) + 100%));
+    opacity: 0;
+    transition:
+      transform var(--duration-normal) var(--ease-emphasized, cubic-bezier(0.34, 1.56, 0.64, 1)),
+      opacity var(--duration-normal) var(--ease-standard);
+  }
+
+  .toast.is-entering,
+  .toast.is-visible {
+    transform: translateX(0);
+    opacity: 1;
+  }
+
+  .toast.is-leaving {
+    transform: translateX(calc(var(--space-8) + 100%));
+    opacity: 0;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Variants — tone (border-left tinted)
+     --------------------------------------------------------------------------- */
+  .toast--default {
+    border-left-color: var(--color-content-muted);
+  }
+
+  .toast--success {
+    border-left-color: var(--color-success-emphasis);
+  }
+  .toast--success .toast__icon {
+    color: var(--color-success-fg);
+  }
+
+  .toast--warning {
+    border-left-color: var(--color-warning-emphasis);
+  }
+  .toast--warning .toast__icon {
+    color: var(--color-warning-fg);
+  }
+
+  .toast--danger {
+    border-left-color: var(--color-danger-emphasis, #DC2626);
+  }
+  .toast--danger .toast__icon {
+    color: var(--color-danger-fg, #EF4444);
+  }
+
+  .toast--info {
+    border-left-color: var(--color-info-emphasis, #3B82F6);
+  }
+  .toast--info .toast__icon {
+    color: var(--color-info-fg, #60A5FA);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Icon
+     --------------------------------------------------------------------------- */
+  .toast__icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--space-6);
+    height: var(--space-6);
+    font-size: var(--font-size-md);
+    line-height: 1;
+    color: var(--color-content-muted);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Content
+     --------------------------------------------------------------------------- */
+  .toast__content {
+    flex: 1;
+    min-width: 0; /* prevent overflow */
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .toast__title {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-content-strong);
+    line-height: var(--line-height-tight);
+  }
+
+  .toast__description {
+    margin: 0;
+    font-size: var(--font-size-xs);
+    color: var(--color-content-default);
+    line-height: var(--line-height-normal);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Action button (inline CTA opcional)
+     --------------------------------------------------------------------------- */
+  .toast__action {
+    margin-top: var(--space-2);
+    align-self: flex-start;
+    background: transparent;
+    border: none;
+    color: var(--color-accent-fg);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide, 0.05em);
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .toast__action:hover {
+    color: var(--color-accent-emphasis-hover);
+    text-decoration: underline;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Close button
+     --------------------------------------------------------------------------- */
+  .toast__close {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--space-6);
+    height: var(--space-6);
+
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+
+    color: var(--color-content-muted);
+    font-size: var(--font-size-md);
+    line-height: 1;
+
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard);
+  }
+
+  .toast__close:hover {
+    background-color: var(--color-surface-3);
+    color: var(--color-content-default);
+  }
+
+  .toast__close:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Reduced motion (a11y critical)
+     --------------------------------------------------------------------------- */
+  @media (prefers-reduced-motion: reduce) {
+    .toast {
+      transform: none;
+      transition: opacity var(--duration-fast) var(--ease-standard);
+    }
+    .toast.is-leaving {
+      transform: none;
+    }
+  }
+}

@@ -1,0 +1,200 @@
+/* =============================================================================
+   FormField — Molecule — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §FormField
+   -----------------------------------------------------------------------------
+   Wrapper: Label + Input/Select/Textarea + HelpText + ErrorMessage
+   Garante a11y WCAG 1.3.1 (label association) e WCAG 3.3.1 (error description)
+   -----------------------------------------------------------------------------
+   Estrutura:
+     .form-field                — container
+     .form-field__label         — <label for>
+     .form-field__required      — asterisk indicator
+     .form-field__optional      — "(opcional)" text
+     .form-field__control       — wrapper para input/select/textarea
+     .form-field__help          — texto auxiliar
+     .form-field__error         — mensagem de erro
+
+   Variants: --inline (label à esquerda em telas largas)
+   States: .is-error, .is-disabled
+   -----------------------------------------------------------------------------
+   Uso:
+     <div class="form-field">
+       <label class="form-field__label" for="email">
+         Email <span class="form-field__required" aria-hidden="true">*</span>
+       </label>
+       <div class="form-field__control">
+         <input type="email" class="input" id="email" aria-describedby="email-help">
+       </div>
+       <p class="form-field__help" id="email-help">Será usado para login</p>
+     </div>
+
+     <!-- Com erro -->
+     <div class="form-field is-error">
+       <label class="form-field__label" for="phone">Telefone</label>
+       <div class="form-field__control">
+         <input type="tel" class="input is-error" id="phone"
+                aria-invalid="true" aria-describedby="phone-error">
+       </div>
+       <p class="form-field__error" id="phone-error" role="alert">
+         Formato inválido. Use +55DDD9XXXXXXXX
+       </p>
+     </div>
+   ============================================================================= */
+
+@layer primitives {
+  /* ---------------------------------------------------------------------------
+     Base container
+     --------------------------------------------------------------------------- */
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Label
+     --------------------------------------------------------------------------- */
+  .form-field__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-wide, 0.05em);
+    text-transform: uppercase;
+
+    color: var(--color-content-default);
+  }
+
+  .form-field__required {
+    color: var(--color-danger-emphasis, #DC2626);
+    font-weight: var(--font-weight-bold);
+  }
+
+  .form-field__optional {
+    color: var(--color-content-subtle);
+    font-weight: var(--font-weight-normal);
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Control wrapper (input/select/textarea slot)
+     --------------------------------------------------------------------------- */
+  .form-field__control {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Help text (under input, before error)
+     --------------------------------------------------------------------------- */
+  .form-field__help {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xs);
+    color: var(--color-content-muted);
+    line-height: var(--line-height-normal);
+    margin: 0;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Error message
+     --------------------------------------------------------------------------- */
+  .form-field__error {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-1);
+
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-danger-fg, #EF4444);
+    line-height: var(--line-height-normal);
+    margin: 0;
+  }
+
+  .form-field__error::before {
+    content: "⚠";
+    flex-shrink: 0;
+    font-size: var(--font-size-sm);
+    line-height: 1;
+  }
+
+  /* ---------------------------------------------------------------------------
+     State: is-error (escopo container, propaga pro label)
+     --------------------------------------------------------------------------- */
+  .form-field.is-error .form-field__label {
+    color: var(--color-danger-fg, #EF4444);
+  }
+
+  .form-field.is-error .input {
+    border-color: var(--color-danger-emphasis, #DC2626);
+  }
+
+  /* ---------------------------------------------------------------------------
+     State: is-disabled
+     --------------------------------------------------------------------------- */
+  .form-field.is-disabled .form-field__label,
+  .form-field.is-disabled .form-field__help {
+    opacity: 0.6;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Variant: --inline (label à esquerda em desktop)
+     --------------------------------------------------------------------------- */
+  @media (min-width: 768px) {
+    .form-field--inline {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .form-field--inline .form-field__label {
+      flex-shrink: 0;
+      min-width: var(--space-12, 6rem);
+      text-align: right;
+    }
+
+    .form-field--inline .form-field__control {
+      flex: 1;
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+     FormGroup — fieldset semântico de múltiplos FormFields
+     --------------------------------------------------------------------------- */
+  .form-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  @media (min-width: 768px) {
+    .form-group--2col {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .form-group--3col {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .form-group__legend {
+    grid-column: 1 / -1;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-content-strong);
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+}

@@ -1,0 +1,198 @@
+/* =============================================================================
+   Input — Atom — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Input
+   -----------------------------------------------------------------------------
+   Cobre: <input type="text|email|number|password|search"> + <textarea>
+   Sizes: sm | md (default) | lg
+   States: default, hover, focus, filled, error, success, disabled, readonly
+   A11y: SEMPRE usar via FormField molecule (label + aria-describedby + aria-invalid)
+   -----------------------------------------------------------------------------
+   Uso:
+     <input type="text" class="input" placeholder="Nome">
+     <input type="email" class="input input--sm" required>
+     <input type="text" class="input input--lg" disabled>
+     <input type="text" class="input is-error" aria-invalid="true">
+     <textarea class="input" rows="4"></textarea>
+   ============================================================================= */
+
+@layer primitives {
+  /* ---------------------------------------------------------------------------
+     Base
+     --------------------------------------------------------------------------- */
+  .input {
+    display: block;
+    width: 100%;
+
+    padding-inline: var(--space-4);
+    padding-block: var(--space-3);
+
+    background-color: var(--color-surface-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+
+    color: var(--color-content-default);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-normal);
+
+    transition:
+      border-color var(--duration-fast) var(--ease-standard),
+      box-shadow var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard);
+  }
+
+  .input::placeholder {
+    color: var(--color-content-subtle);
+    opacity: 1;
+  }
+
+  /* Hover */
+  .input:hover:not(:disabled):not([readonly]) {
+    border-color: var(--color-content-muted);
+  }
+
+  /* Focus */
+  .input:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 1px;
+    border-color: var(--color-border-focus);
+  }
+
+  /* Filled (has value) — sutil */
+  .input:not(:placeholder-shown) {
+    background-color: var(--color-surface-2);
+  }
+
+  /* ---------------------------------------------------------------------------
+     States
+     --------------------------------------------------------------------------- */
+  .input:disabled,
+  .input.is-disabled {
+    background-color: var(--color-surface-1);
+    border-color: var(--color-border-subtle);
+    color: var(--color-content-subtle);
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  .input[readonly],
+  .input.is-readonly {
+    background-color: var(--color-surface-2);
+    cursor: default;
+  }
+
+  .input.is-error,
+  .input[aria-invalid="true"] {
+    border-color: var(--color-danger-emphasis, #DC2626);
+  }
+
+  .input.is-error:focus-visible,
+  .input[aria-invalid="true"]:focus-visible {
+    outline-color: var(--color-danger-emphasis, #DC2626);
+    border-color: var(--color-danger-emphasis, #DC2626);
+  }
+
+  .input.is-success {
+    border-color: var(--color-success-emphasis);
+  }
+
+  .input.is-success:focus-visible {
+    outline-color: var(--color-success-emphasis);
+    border-color: var(--color-success-emphasis);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Sizes
+     --------------------------------------------------------------------------- */
+  .input--sm {
+    padding-inline: var(--space-3);
+    padding-block: var(--space-2);
+    font-size: var(--font-size-sm);
+    border-radius: var(--radius-sm);
+  }
+
+  .input--lg {
+    padding-inline: var(--space-5);
+    padding-block: var(--space-4);
+    font-size: var(--font-size-lg);
+    border-radius: var(--radius-lg);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Type-specific
+     --------------------------------------------------------------------------- */
+  /* Textarea */
+  textarea.input {
+    resize: vertical;
+    min-height: calc(var(--space-3) * 4 + var(--line-height-normal) * 4 * 1em);
+    line-height: var(--line-height-relaxed);
+  }
+
+  /* Number input — hide spinners (browsers default ugly) */
+  input.input[type="number"]::-webkit-inner-spin-button,
+  input.input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input.input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  /* Search input — clear button hidden by default (use SearchBar molecule) */
+  input.input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+
+  /* ---------------------------------------------------------------------------
+     With prefix/suffix slots (wrapper pattern)
+     --------------------------------------------------------------------------- */
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .input-wrapper__prefix,
+  .input-wrapper__suffix {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: var(--space-3);
+    color: var(--color-content-muted);
+    pointer-events: none;
+    background-color: var(--color-surface-3);
+    border: 1px solid var(--color-border-strong);
+  }
+
+  .input-wrapper__prefix {
+    border-right: none;
+    border-top-left-radius: var(--radius-md);
+    border-bottom-left-radius: var(--radius-md);
+  }
+
+  .input-wrapper__suffix {
+    border-left: none;
+    border-top-right-radius: var(--radius-md);
+    border-bottom-right-radius: var(--radius-md);
+  }
+
+  .input-wrapper:has(.input-wrapper__prefix) .input {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  .input-wrapper:has(.input-wrapper__suffix) .input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .input {
+      transition: none;
+    }
+  }
+}

@@ -1,0 +1,130 @@
+/* =============================================================================
+   Badge — Atom — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Badge
+   -----------------------------------------------------------------------------
+   Variants tone: neutral (default) | accent | success | warning | danger | info
+   Sizes: sm | md (default)
+   Modifiers: --dot (apenas círculo), --outlined (border ao invés de fill)
+   -----------------------------------------------------------------------------
+   Uso:
+     <span class="badge">Default</span>
+     <span class="badge badge--success">Aprovado</span>
+     <span class="badge badge--danger badge--sm">3 erros</span>
+     <span class="badge badge--accent badge--dot" aria-label="Online"></span>
+     <span class="badge badge--warning badge--outlined">Pendente</span>
+   -----------------------------------------------------------------------------
+   Uso semântico:
+     - status dispatch (success/warning/danger)
+     - NPS category (promoter=success, passive=warning, detractor=danger)
+     - severity (danger=high, warning=medium, info=low)
+   ============================================================================= */
+
+@layer primitives {
+  /* ---------------------------------------------------------------------------
+     Base
+     --------------------------------------------------------------------------- */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+
+    padding-inline: var(--space-2);
+    padding-block: calc(var(--space-1) * 0.5);
+    border-radius: var(--radius-pill, 9999px);
+
+    background-color: var(--color-content-muted);
+    color: var(--color-surface-0);
+
+    font-family: var(--font-sans);
+    font-size: var(--font-size-2xs, 0.6875rem);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1;
+    letter-spacing: var(--letter-spacing-wide, 0.05em);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Variants — tone (filled by default — muted bg + fg text)
+     --------------------------------------------------------------------------- */
+  .badge--neutral {
+    background-color: var(--color-content-muted);
+    color: var(--color-surface-0);
+  }
+
+  .badge--accent {
+    background-color: var(--color-accent-muted);
+    color: var(--color-accent-fg);
+  }
+
+  .badge--success {
+    background-color: var(--color-success-muted);
+    color: var(--color-success-fg);
+  }
+
+  .badge--warning {
+    background-color: var(--color-warning-muted);
+    color: var(--color-warning-fg);
+  }
+
+  .badge--danger {
+    background-color: var(--color-danger-muted, rgba(220, 38, 38, 0.12));
+    color: var(--color-danger-fg, #EF4444);
+  }
+
+  .badge--info {
+    background-color: var(--color-info-muted, rgba(59, 130, 246, 0.12));
+    color: var(--color-info-fg, #60A5FA);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Sizes
+     --------------------------------------------------------------------------- */
+  .badge--sm {
+    padding-inline: calc(var(--space-2) * 0.75);
+    font-size: var(--font-size-3xs, 0.625rem);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Modifier: outlined (border ao invés de fill)
+     --------------------------------------------------------------------------- */
+  .badge--outlined {
+    background-color: transparent;
+    border: 1px solid currentColor;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Modifier: dot (apenas círculo, sem texto)
+     --------------------------------------------------------------------------- */
+  .badge--dot {
+    width: var(--space-2);
+    height: var(--space-2);
+    padding: 0;
+    border-radius: var(--radius-circle, 50%);
+    font-size: 0; /* esconde qualquer texto residual */
+  }
+
+  /* ---------------------------------------------------------------------------
+     Icon support (svg interno)
+     --------------------------------------------------------------------------- */
+  .badge svg,
+  .badge__icon {
+    width: 0.875em;
+    height: 0.875em;
+    flex-shrink: 0;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Count badge (numeric, círculo)
+     --------------------------------------------------------------------------- */
+  .badge--count {
+    min-width: calc(var(--space-4) + var(--space-1));
+    height: calc(var(--space-4) + var(--space-1));
+    padding: 0 var(--space-1);
+    border-radius: var(--radius-circle, 50%);
+    background-color: var(--color-danger-emphasis, #DC2626);
+    color: var(--color-content-on-danger, #FFF);
+  }
+}

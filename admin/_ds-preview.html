@@ -381,9 +381,361 @@
   </section>
 
 
+  <!-- =========================================================== -->
+  <!-- 5. INPUTS                                                    -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>5. Inputs</h2>
+    <p class="preview-caption">Atom input — text/email/number/password/search + textarea. Sizes sm/md/lg + states default/hover/focus/error/success/disabled.</p>
+
+    <h3>Sizes (text input)</h3>
+    <div class="preview-grid">
+      <input type="text" class="input input--sm" placeholder="Small (sm)">
+      <input type="text" class="input" placeholder="Medium (default)">
+      <input type="text" class="input input--lg" placeholder="Large (lg)">
+    </div>
+
+    <h3>States</h3>
+    <div class="preview-grid">
+      <input type="text" class="input" value="Default text" placeholder="Default">
+      <input type="text" class="input is-success" value="Validado" placeholder="Success">
+      <input type="text" class="input is-error" value="erro@email" aria-invalid="true" placeholder="Error">
+      <input type="text" class="input" disabled placeholder="Disabled">
+      <input type="text" class="input" readonly value="Readonly value">
+    </div>
+
+    <h3>Types</h3>
+    <div class="preview-grid">
+      <input type="email" class="input" placeholder="email@dominio.com">
+      <input type="password" class="input" placeholder="Senha">
+      <input type="number" class="input" placeholder="42" value="42">
+      <input type="search" class="input" placeholder="Buscar...">
+      <input type="tel" class="input" placeholder="+5511987654321">
+      <input type="date" class="input">
+    </div>
+
+    <h3>Textarea</h3>
+    <div class="preview-row">
+      <textarea class="input" rows="3" placeholder="Comentário NPS..."></textarea>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 6. BADGES                                                    -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>6. Badges</h2>
+    <p class="preview-caption">Atom badge — variantes neutral/accent/success/warning/danger/info + sizes + outlined + dot + count.</p>
+
+    <h3>Variants (filled)</h3>
+    <div class="preview-row">
+      <span class="badge badge--neutral">Neutral</span>
+      <span class="badge badge--accent">Accent</span>
+      <span class="badge badge--success">Promoter</span>
+      <span class="badge badge--warning">Passive</span>
+      <span class="badge badge--danger">Detractor</span>
+      <span class="badge badge--info">Info</span>
+    </div>
+
+    <h3>Sizes</h3>
+    <div class="preview-row">
+      <span class="badge badge--accent badge--sm">Small</span>
+      <span class="badge badge--accent">Medium</span>
+    </div>
+
+    <h3>Outlined</h3>
+    <div class="preview-row">
+      <span class="badge badge--success badge--outlined">Success</span>
+      <span class="badge badge--warning badge--outlined">Warning</span>
+      <span class="badge badge--danger badge--outlined">Danger</span>
+    </div>
+
+    <h3>Dot (status indicator)</h3>
+    <div class="preview-row" style="align-items: center;">
+      <span class="badge badge--success badge--dot" aria-label="Online"></span>
+      <span style="color:var(--color-content-muted);font-size:var(--font-size-sm);">Online</span>
+      <span class="badge badge--warning badge--dot" aria-label="Idle" style="margin-left:var(--space-4);"></span>
+      <span style="color:var(--color-content-muted);font-size:var(--font-size-sm);">Idle</span>
+      <span class="badge badge--danger badge--dot" aria-label="Offline" style="margin-left:var(--space-4);"></span>
+      <span style="color:var(--color-content-muted);font-size:var(--font-size-sm);">Offline</span>
+    </div>
+
+    <h3>Count (notifications)</h3>
+    <div class="preview-row">
+      <span class="badge badge--count">3</span>
+      <span class="badge badge--count">12</span>
+      <span class="badge badge--count">99+</span>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 7. FORM FIELDS                                               -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>7. Form Fields</h2>
+    <p class="preview-caption">Molecule form-field — label + input + help/error. A11y wired (htmlFor + aria-describedby + aria-invalid).</p>
+
+    <h3>Basic</h3>
+    <div class="preview-grid">
+      <div class="form-field">
+        <label class="form-field__label" for="demo-name">
+          Nome
+          <span class="form-field__required" aria-hidden="true">*</span>
+        </label>
+        <div class="form-field__control">
+          <input type="text" class="input" id="demo-name" required>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-field__label" for="demo-email">
+          Email
+          <span class="form-field__optional">(opcional)</span>
+        </label>
+        <div class="form-field__control">
+          <input type="email" class="input" id="demo-email" aria-describedby="demo-email-help">
+        </div>
+        <p class="form-field__help" id="demo-email-help">Será usado para enviar relatório NPS</p>
+      </div>
+    </div>
+
+    <h3>Error state</h3>
+    <div class="form-field is-error" style="max-width: 24rem;">
+      <label class="form-field__label" for="demo-phone">
+        Telefone
+        <span class="form-field__required" aria-hidden="true">*</span>
+      </label>
+      <div class="form-field__control">
+        <input type="tel" class="input" id="demo-phone" value="11abc"
+               aria-invalid="true" aria-describedby="demo-phone-error">
+      </div>
+      <p class="form-field__error" id="demo-phone-error" role="alert">
+        Formato inválido. Use +55DDD9XXXXXXXX
+      </p>
+    </div>
+
+    <h3>FormGroup (2col grid)</h3>
+    <fieldset class="form-group form-group--2col" style="margin-top: var(--space-4);">
+      <legend class="form-group__legend">Dados do aluno</legend>
+      <div class="form-field">
+        <label class="form-field__label" for="fg-first">Primeiro nome</label>
+        <div class="form-field__control">
+          <input type="text" class="input" id="fg-first">
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-field__label" for="fg-last">Sobrenome</label>
+        <div class="form-field__control">
+          <input type="text" class="input" id="fg-last">
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-field__label" for="fg-cohort">Turma</label>
+        <div class="form-field__control">
+          <input type="text" class="input" id="fg-cohort" value="T5">
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-field__label" for="fg-product">Produto</label>
+        <div class="form-field__control">
+          <input type="text" class="input" id="fg-product">
+        </div>
+      </div>
+    </fieldset>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 8. MODAL (interactive demo)                                  -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>8. Modal</h2>
+    <p class="preview-caption">Organism modal — <code>&lt;dialog&gt;</code> nativo + a11y completo (role dialog, aria-modal, focus trap, escape). Unifica 15+ modals legacy.</p>
+
+    <div class="preview-row">
+      <button class="btn btn--primary" onclick="document.getElementById('demo-modal-sm').showModal()">
+        Open Small
+      </button>
+      <button class="btn btn--secondary" onclick="document.getElementById('demo-modal-md').showModal()">
+        Open Medium
+      </button>
+      <button class="btn btn--ghost" onclick="document.getElementById('demo-modal-lg').showModal()">
+        Open Large
+      </button>
+      <button class="btn btn--danger" onclick="document.getElementById('demo-modal-danger').showModal()">
+        Open Danger (confirm)
+      </button>
+    </div>
+
+    <!-- Modal SM -->
+    <dialog class="modal modal--sm" id="demo-modal-sm" aria-labelledby="demo-modal-sm-title">
+      <header class="modal__header">
+        <h2 class="modal__title" id="demo-modal-sm-title">Modal Small</h2>
+        <button class="modal__close" aria-label="Fechar" onclick="this.closest('dialog').close()">×</button>
+      </header>
+      <div class="modal__body">
+        <p>Compact modal pra confirmações simples.</p>
+      </div>
+      <footer class="modal__footer">
+        <button class="btn btn--ghost btn--sm" onclick="this.closest('dialog').close()">Cancelar</button>
+        <button class="btn btn--primary btn--sm" onclick="this.closest('dialog').close()">OK</button>
+      </footer>
+    </dialog>
+
+    <!-- Modal MD -->
+    <dialog class="modal modal--md" id="demo-modal-md" aria-labelledby="demo-modal-md-title">
+      <header class="modal__header">
+        <div>
+          <h2 class="modal__title" id="demo-modal-md-title">Detalhes do envio</h2>
+          <span class="modal__subtitle">Job #1247 · Turma T5</span>
+        </div>
+        <button class="modal__close" aria-label="Fechar" onclick="this.closest('dialog').close()">×</button>
+      </header>
+      <div class="modal__body">
+        <p>Modal médio pra detalhes operacionais. Contém:</p>
+        <ul style="margin-top:var(--space-3);padding-left:var(--space-6);line-height:var(--line-height-relaxed);">
+          <li>Lista de destinatários</li>
+          <li>Status por entrega</li>
+          <li>Audit log</li>
+          <li>Ações reativas (re-enviar, cancelar)</li>
+        </ul>
+      </div>
+      <footer class="modal__footer">
+        <button class="btn btn--ghost" onclick="this.closest('dialog').close()">Fechar</button>
+        <button class="btn btn--secondary" onclick="this.closest('dialog').close()">Re-enviar</button>
+      </footer>
+    </dialog>
+
+    <!-- Modal LG -->
+    <dialog class="modal modal--lg" id="demo-modal-lg" aria-labelledby="demo-modal-lg-title">
+      <header class="modal__header">
+        <h2 class="modal__title" id="demo-modal-lg-title">Wizard fumaça pré-dispatch</h2>
+        <button class="modal__close" aria-label="Fechar" onclick="this.closest('dialog').close()">×</button>
+      </header>
+      <div class="modal__body">
+        <div class="form-field" style="margin-bottom:var(--space-4);">
+          <label class="form-field__label" for="wiz-cohort">Turma alvo</label>
+          <div class="form-field__control">
+            <input type="text" class="input" id="wiz-cohort" placeholder="T5">
+          </div>
+        </div>
+        <div class="form-field" style="margin-bottom:var(--space-4);">
+          <label class="form-field__label" for="wiz-template">Template</label>
+          <div class="form-field__control">
+            <input type="text" class="input" id="wiz-template" value="nps_v4">
+          </div>
+        </div>
+        <div class="form-field" style="margin-bottom:var(--space-4);">
+          <label class="form-field__label" for="wiz-comment">Comentário (opcional)</label>
+          <div class="form-field__control">
+            <textarea class="input" rows="3" id="wiz-comment"></textarea>
+          </div>
+        </div>
+        <div class="card card--warning">
+          <div class="card__body">
+            <strong>⚠ Atenção:</strong> Pré-dispatch envia 1 mensagem teste pra <code>+5511999999999</code>. Confirme número correto.
+          </div>
+        </div>
+      </div>
+      <footer class="modal__footer modal__footer--spread">
+        <label style="display:flex;align-items:center;gap:var(--space-2);font-size:var(--font-size-sm);color:var(--color-content-default);">
+          <input type="checkbox"> Dry-run (não envia mensagem real)
+        </label>
+        <div style="display:flex;gap:var(--space-2);">
+          <button class="btn btn--ghost" onclick="this.closest('dialog').close()">Cancelar</button>
+          <button class="btn btn--primary" onclick="this.closest('dialog').close()">Disparar fumaça</button>
+        </div>
+      </footer>
+    </dialog>
+
+    <!-- Modal Danger -->
+    <dialog class="modal modal--sm" id="demo-modal-danger" aria-labelledby="demo-modal-danger-title">
+      <header class="modal__header">
+        <h2 class="modal__title" id="demo-modal-danger-title">Excluir aula?</h2>
+        <button class="modal__close" aria-label="Fechar" onclick="this.closest('dialog').close()">×</button>
+      </header>
+      <div class="modal__body">
+        <p>Essa ação não pode ser desfeita. A aula <strong>T5 · 28/05 19:00</strong> e suas presenças serão removidas permanentemente.</p>
+      </div>
+      <footer class="modal__footer">
+        <button class="btn btn--ghost" onclick="this.closest('dialog').close()">Cancelar</button>
+        <button class="btn btn--danger" onclick="this.closest('dialog').close()">Excluir aula</button>
+      </footer>
+    </dialog>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 9. TOAST (interactive demo)                                  -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>9. Toast</h2>
+    <p class="preview-caption">Organism toast — notificação flutuante temporária. aria-live polite/assertive por tone. Auto-dismiss 5s (configurable).</p>
+
+    <div class="preview-row">
+      <button class="btn btn--secondary btn--sm" onclick="showToast('default','Atualizado','Configuração salva')">
+        Default
+      </button>
+      <button class="btn btn--success btn--sm" onclick="showToast('success','Salvo','Aluno cadastrado com sucesso')">
+        Success
+      </button>
+      <button class="btn btn--secondary btn--sm" onclick="showToast('warning','Atenção','3 alunos sem phone normalizado')" style="--color-accent-emphasis:var(--color-warning-emphasis);">
+        Warning
+      </button>
+      <button class="btn btn--danger btn--sm" onclick="showToast('danger','Erro','Falha ao conectar Supabase. Tente novamente.')">
+        Danger
+      </button>
+      <button class="btn btn--ghost btn--sm" onclick="showToast('info','Info','Próxima sync WA em 5 min')">
+        Info
+      </button>
+    </div>
+
+    <!-- Toast region -->
+    <div class="toast-region" id="demo-toast-region" aria-live="polite" aria-atomic="false"></div>
+
+    <script>
+      function showToast(tone, title, description) {
+        const region = document.getElementById('demo-toast-region');
+        const toast = document.createElement('div');
+        toast.className = `toast toast--${tone}`;
+        toast.setAttribute('role', tone === 'danger' || tone === 'warning' ? 'alert' : 'status');
+
+        const icons = { default: '•', success: '✓', warning: '⚠', danger: '✕', info: 'ℹ' };
+
+        toast.innerHTML = `
+          <span class="toast__icon" aria-hidden="true">${icons[tone] || '•'}</span>
+          <div class="toast__content">
+            <p class="toast__title">${title}</p>
+            ${description ? `<p class="toast__description">${description}</p>` : ''}
+          </div>
+          <button class="toast__close" aria-label="Fechar">×</button>
+        `;
+
+        toast.querySelector('.toast__close').addEventListener('click', () => dismiss(toast));
+        region.appendChild(toast);
+
+        // Trigger animation
+        requestAnimationFrame(() => toast.classList.add('is-entering'));
+
+        // Auto-dismiss 5s
+        setTimeout(() => dismiss(toast), 5000);
+      }
+
+      function dismiss(toast) {
+        toast.classList.remove('is-entering');
+        toast.classList.add('is-leaving');
+        setTimeout(() => toast.remove(), 400);
+      }
+    </script>
+  </section>
+
+
   <footer style="max-width:1280px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6) 0;border-top:1px solid var(--color-border-default);color:var(--color-content-muted);font-size:var(--font-size-sm);">
     <p>DS v1 preview · gerado pra QA visual antes adoção em telas live.</p>
     <p>Specs: <code>docs/design-system/v1/</code> · Source: <code>css/ds/</code></p>
+    <p>Primitives entregues: Button · Card · StatCard · Input · Badge · FormField · Modal · Toast (8/30 v1 total)</p>
   </footer>
 
 </body>
