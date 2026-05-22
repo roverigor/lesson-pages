@@ -435,6 +435,15 @@
 
       if (res.ok && data.success) {
         setProgress(100);
+        if (data.already) {
+          const iconEl = $("thanks-icon");
+          iconEl.className = "thanks-icon";
+          iconEl.textContent = "✓";
+          $("thanks-title").textContent = "Já respondido";
+          $("thanks-sub").textContent = "Obrigado! Seu retorno já foi computado.";
+          showOnly("screen-thanks");
+          return;
+        }
         const bucket = data.bucket ?? "promoter";
         const iconEl = $("thanks-icon");
         if (bucket === "detractor") {

@@ -150,7 +150,9 @@ Deno.serve(async (req: Request) => {
     nps_score,
     comment,
     name_provided: link.mode === "group" ? nameProvided : null,
-    ip_hash: ipHash,
+    // ip_hash em DM previne double-submit (unique idx link_id+ip_hash). Em group,
+    // ip_hash=NULL permite múltiplos alunos no mesmo wifi (unique idx WHERE NOT NULL).
+    ip_hash: link.mode === "dm" ? ipHash : null,
     user_agent: userAgent,
     csat_score: csatScore,
     too_technical: tooTechnical,
@@ -161,6 +163,11 @@ Deno.serve(async (req: Request) => {
     ps_unblocked: psUnblocked,
   });
 
+  // Postgres error code 23505 = unique_violation → aluno DM já respondeu.
+  // Retorna success amigável em vez de 500.
+  if (insertErr && (insertErr as { code?: string }).code === "23505") {
+    return jsonResponse({ success: true, already: true });
+  }
   if (insertErr) return jsonResponse({ error: "internal_error" }, 500);
 
   await sb.rpc("increment_nps_link_response_count", { p_link_id: link.id }).then(() => {});
