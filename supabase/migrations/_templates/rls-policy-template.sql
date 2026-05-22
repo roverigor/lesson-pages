@@ -1,0 +1,141 @@
+-- ============================================================
+-- RLS Policy Template — reutilizável por Tier
+-- ============================================================
+-- Created: 2026-05-22 (Story 22.4 — RLS Hardening EPIC-022 S.022.4)
+-- Author: @dev (Dex)
+-- Ref:
+--   - Story:   docs/stories/22.4.story.md
+--   - ADR:     docs/architecture/ADR-020-rls-policies.md
+--   - Pattern: supabase/migrations/20260522010000_ps_rsvp_rls_authenticated_select.sql
+--   - Helper:  supabase/migrations/20260516020300_helper_functions.sql (is_dashboard_admin)
+--
+-- Como usar:
+--   1. Identificar Tier da tabela (1, 2 ou 3 — ver ADR-020 critério)
+--   2. Copiar bloco correspondente abaixo
+--   3. Substituir `<TABLE>` pelo nome da tabela
+--   4. Adicionar DROP POLICY IF EXISTS pra TODA policy existente (consultar pg_policies)
+--   5. Wrapping BEGIN/COMMIT por tabela (isolamento de falha)
+--
+-- Padrão idempotente PG 15-compat:
+--   `CREATE POLICY IF NOT EXISTS` só existe em PG 16+.
+--   Em PG 15 (Supabase managed atual), usar OBRIGATORIAMENTE:
+--     DROP POLICY IF EXISTS "<name>" ON public.<table>;
+--     CREATE POLICY "<name>" ...;
+-- ============================================================
+
+
+-- ============================================================
+-- TIER 1 — PII / Financeiro / Tokens (admin only)
+-- ============================================================
+-- Tabelas: student_imports, wa_group_members, class_nps_responses,
+--          student_attendance, response_metadata, nps_class_links, staff
+-- Pattern: `is_dashboard_admin()` only (Opção B — sem link auth.users)
+-- service_role: bypass natural (sem POLICY explícita necessária)
+-- Future:  adicionar OR <ownership_clause> quando self-service NPS view ships
+--
+-- Exemplo concreto (`staff`):
+-- BEGIN;
+-- ALTER TABLE public.staff ENABLE ROW LEVEL SECURITY;
+-- DROP POLICY IF EXISTS "staff_select_admin" ON public.staff;
+-- DROP POLICY IF EXISTS "staff_write_admin"  ON public.staff;
+-- CREATE POLICY "staff_select_admin" ON public.staff
+--   FOR SELECT TO authenticated
+--   USING (public.is_dashboard_admin());
+--   -- Future: adicionar OR email = (auth.jwt()->>'email') if staff self-service ships
+-- CREATE POLICY "staff_write_admin" ON public.staff
+--   FOR ALL TO authenticated
+--   USING (public.is_dashboard_admin())
+--   WITH CHECK (public.is_dashboard_admin());
+-- COMMIT;
+-- ============================================================
+
+-- Template (substituir <TABLE>):
+-- BEGIN;
+-- ALTER TABLE public.<TABLE> ENABLE ROW LEVEL SECURITY;
+-- DROP POLICY IF EXISTS "<old_loose_policy_name_se_houver>" ON public.<TABLE>;
+-- DROP POLICY IF EXISTS "<TABLE>_select_admin" ON public.<TABLE>;
+-- DROP POLICY IF EXISTS "<TABLE>_write_admin"  ON public.<TABLE>;
+-- CREATE POLICY "<TABLE>_select_admin" ON public.<TABLE>
+--   FOR SELECT TO authenticated
+--   USING (public.is_dashboard_admin());
+--   -- Future: adicionar OR <ownership_clause> quando self-service NPS view ships
+-- CREATE POLICY "<TABLE>_write_admin" ON public.<TABLE>
+--   FOR ALL TO authenticated
+--   USING (public.is_dashboard_admin())
+--   WITH CHECK (public.is_dashboard_admin());
+-- COMMIT;
+
+
+-- ============================================================
+-- TIER 2 — Operacional (authenticated read + service_role write)
+-- ============================================================
+-- Tabelas: audit_log, class_reminder_batches, class_reminder_sends,
+--          notification_queue, schedule_overrides, zoom_absence_alerts,
+--          class_cohort_access, error_reports, whatsapp_group_messages,
+--          zoom_chat_messages, zoom_import_queue, automation_executions,
+--          automation_rules, automation_runs, alert_history,
+--          engagement_daily_ranking
+-- Pattern: authenticated lê tudo (UI admin), service_role full write
+-- ============================================================
+
+-- Template (substituir <TABLE>):
+-- BEGIN;
+-- ALTER TABLE public.<TABLE> ENABLE ROW LEVEL SECURITY;
+-- DROP POLICY IF EXISTS "<TABLE>_select_auth"  ON public.<TABLE>;
+-- DROP POLICY IF EXISTS "<TABLE>_service_all"  ON public.<TABLE>;
+-- CREATE POLICY "<TABLE>_select_auth" ON public.<TABLE>
+--   FOR SELECT TO authenticated USING (true);
+-- CREATE POLICY "<TABLE>_service_all" ON public.<TABLE>
+--   FOR ALL TO service_role USING (true) WITH CHECK (true);
+-- COMMIT;
+
+
+-- ============================================================
+-- TIER 3 — Referência / Config (authenticated read + admin write)
+-- ============================================================
+-- Tabelas: app_config (pós-T11), integration_sources, lesson_abstracts,
+--          survey_templates
+-- Pattern: authenticated read (feature flags, lookups), admin write
+-- service_role: bypass natural
+-- Caveat app_config: T11 refactor pg_cron pra service_role DEVE rodar antes
+-- ============================================================
+
+-- Template (substituir <TABLE>):
+-- BEGIN;
+-- ALTER TABLE public.<TABLE> ENABLE ROW LEVEL SECURITY;
+-- DROP POLICY IF EXISTS "<TABLE>_select_auth" ON public.<TABLE>;
+-- DROP POLICY IF EXISTS "<TABLE>_write_admin" ON public.<TABLE>;
+-- CREATE POLICY "<TABLE>_select_auth" ON public.<TABLE>
+--   FOR SELECT TO authenticated USING (true);
+-- CREATE POLICY "<TABLE>_write_admin" ON public.<TABLE>
+--   FOR ALL TO authenticated
+--   USING (public.is_dashboard_admin())
+--   WITH CHECK (public.is_dashboard_admin());
+-- COMMIT;
+
+
+-- ============================================================
+-- EXCEÇÕES — Sem POLICY, service_role only (documentar COMMENT)
+-- ============================================================
+-- Tabelas: ac_dispatch_callbacks, oauth_states, ac_purchase_events,
+--          ac_product_mappings
+-- Pattern: NÃO criar POLICY. Apenas COMMENT ON TABLE justificando.
+-- ============================================================
+
+-- Template (substituir <TABLE> e <REASON>):
+-- COMMENT ON TABLE public.<TABLE> IS
+--   'RLS_DISABLED_REASON: <razão técnica>. Ref: ADR-020';
+
+
+-- ============================================================
+-- Helper defensivo (incluir no header da migration RLS Hardening)
+-- ============================================================
+-- Garante is_dashboard_admin() exista em estado idempotente.
+-- Custo zero — STABLE function, não invalida planos.
+--
+-- CREATE OR REPLACE FUNCTION public.is_dashboard_admin()
+-- RETURNS boolean
+-- LANGUAGE sql STABLE AS $$
+--   SELECT COALESCE((auth.jwt()->'user_metadata'->>'role') = 'admin', false);
+-- $$;
+-- GRANT EXECUTE ON FUNCTION public.is_dashboard_admin() TO authenticated, anon, service_role;
