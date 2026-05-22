@@ -1,0 +1,163 @@
+/* =============================================================================
+   Checkbox / Radio — Atoms — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Checkbox/Radio
+   -----------------------------------------------------------------------------
+   Native input + label wrapper. Custom visual via ::before pseudo.
+   A11y gratuita via native input. Touch target mínimo 24x24.
+
+   Estrutura:
+     .checkbox / .radio              — wrapper <label>
+     .checkbox__input / .radio__input — native <input>
+     .checkbox__indicator / .radio__indicator — custom box/circle
+     .checkbox__label / .radio__label — texto
+   -----------------------------------------------------------------------------
+   Uso:
+     <label class="checkbox">
+       <input type="checkbox" class="checkbox__input" checked>
+       <span class="checkbox__indicator" aria-hidden="true"></span>
+       <span class="checkbox__label">Receber NPS reports</span>
+     </label>
+
+     <label class="radio">
+       <input type="radio" name="engine" value="legacy" class="radio__input">
+       <span class="radio__indicator" aria-hidden="true"></span>
+       <span class="radio__label">Legacy engine</span>
+     </label>
+   ============================================================================= */
+
+@layer primitives {
+  /* ---------------------------------------------------------------------------
+     Shared base
+     --------------------------------------------------------------------------- */
+  .checkbox,
+  .radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    color: var(--color-content-default);
+    user-select: none;
+  }
+
+  .checkbox:has(.checkbox__input:disabled),
+  .radio:has(.radio__input:disabled),
+  .checkbox.is-disabled,
+  .radio.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .checkbox__input,
+  .radio__input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Indicator base (shared)
+     --------------------------------------------------------------------------- */
+  .checkbox__indicator,
+  .radio__indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    background-color: var(--color-surface-3);
+    border: 1.5px solid var(--color-border-strong);
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      border-color var(--duration-fast) var(--ease-standard);
+  }
+
+  /* Checkbox: square */
+  .checkbox__indicator {
+    border-radius: var(--radius-sm);
+  }
+
+  /* Radio: circle */
+  .radio__indicator {
+    border-radius: var(--radius-circle, 50%);
+  }
+
+  /* Hover */
+  .checkbox:hover .checkbox__indicator,
+  .radio:hover .radio__indicator {
+    border-color: var(--color-content-muted);
+  }
+
+  /* Focus ring */
+  .checkbox__input:focus-visible + .checkbox__indicator,
+  .radio__input:focus-visible + .radio__indicator {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Checkbox: checked state
+     --------------------------------------------------------------------------- */
+  .checkbox__input:checked + .checkbox__indicator {
+    background-color: var(--color-accent-emphasis);
+    border-color: var(--color-accent-emphasis);
+  }
+
+  .checkbox__input:checked + .checkbox__indicator::before {
+    content: "";
+    width: 5px;
+    height: 9px;
+    border: solid var(--color-content-on-accent, #000);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) translate(-1px, -1px);
+  }
+
+  /* Indeterminate */
+  .checkbox__input:indeterminate + .checkbox__indicator {
+    background-color: var(--color-accent-emphasis);
+    border-color: var(--color-accent-emphasis);
+  }
+
+  .checkbox__input:indeterminate + .checkbox__indicator::before {
+    content: "";
+    width: 8px;
+    height: 2px;
+    background-color: var(--color-content-on-accent, #000);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Radio: checked state
+     --------------------------------------------------------------------------- */
+  .radio__input:checked + .radio__indicator {
+    border-color: var(--color-accent-emphasis);
+  }
+
+  .radio__input:checked + .radio__indicator::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-accent-emphasis);
+    border-radius: var(--radius-circle, 50%);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Error state
+     --------------------------------------------------------------------------- */
+  .checkbox.is-error .checkbox__indicator,
+  .radio.is-error .radio__indicator {
+    border-color: var(--color-danger-emphasis, #DC2626);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .checkbox__indicator,
+    .radio__indicator {
+      transition: none;
+    }
+  }
+}

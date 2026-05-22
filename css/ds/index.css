@@ -38,3 +38,8 @@
 @import url("./primitives/switch.css") layer(primitives);
 @import url("./primitives/data-table.css") layer(primitives);
 @import url("./primitives/drawer.css") layer(primitives);
+@import url("./primitives/checkbox.css") layer(primitives);
+@import url("./primitives/avatar.css") layer(primitives);
+@import url("./primitives/spinner.css") layer(primitives);
+@import url("./primitives/tag.css") layer(primitives);
+@import url("./primitives/topnav.css") layer(primitives);

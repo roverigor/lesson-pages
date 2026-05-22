@@ -1,0 +1,181 @@
+/* =============================================================================
+   TopNav — Organism — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §TopNav
+   -----------------------------------------------------------------------------
+   Header sticky pra pages admin. Glass effect + breadcrumbs + actions.
+
+   Estrutura BEM:
+     .topnav                    — <header role="banner">
+     .topnav__left              — logo + breadcrumbs zone
+     .topnav__title             — page title (opcional)
+     .topnav__breadcrumbs       — breadcrumbs slot
+     .topnav__center            — busca centralizada (opcional)
+     .topnav__right             — actions (search/notifications/menu)
+     .topnav__action            — botão ícone
+     .topnav__divider           — separador vertical
+   -----------------------------------------------------------------------------
+   Uso:
+     <header class="topnav" role="banner">
+       <div class="topnav__left">
+         <h1 class="topnav__title">Dispatch</h1>
+         <nav class="breadcrumbs" aria-label="Breadcrumbs">
+           ...
+         </nav>
+       </div>
+       <div class="topnav__right">
+         <button class="topnav__action" aria-label="Buscar">🔍</button>
+         <span class="badge badge--count">3</span>
+         <button class="topnav__action" aria-label="Notificações">🔔</button>
+         <div class="topnav__divider"></div>
+         <button class="avatar avatar--sm" data-color="3" aria-label="User menu">
+           IR
+         </button>
+       </div>
+     </header>
+   ============================================================================= */
+
+@layer primitives {
+  .topnav {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky, 100);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+
+    width: 100%;
+    height: 56px;
+    padding: 0 var(--space-5);
+
+    background-color: var(--color-surface-glass, rgba(20, 20, 20, 0.7));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-border-default);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Left zone (logo + breadcrumbs)
+     --------------------------------------------------------------------------- */
+  .topnav__left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    min-width: 0;
+    flex: 1;
+  }
+
+  .topnav__title {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-content-strong);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Center zone (search, opcional)
+     --------------------------------------------------------------------------- */
+  .topnav__center {
+    flex: 0 1 24rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Right zone (actions)
+     --------------------------------------------------------------------------- */
+  .topnav__right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Action button (icon button)
+     --------------------------------------------------------------------------- */
+  .topnav__action {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--space-8);
+    height: var(--space-8);
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--color-content-default);
+    font-size: var(--font-size-md);
+    line-height: 1;
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard);
+  }
+
+  .topnav__action:hover {
+    background-color: var(--color-surface-2);
+    color: var(--color-content-strong);
+  }
+
+  .topnav__action:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  /* Notification dot inside action button */
+  .topnav__action--has-badge::after {
+    content: "";
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-danger-emphasis, #DC2626);
+    border: 2px solid var(--color-surface-1);
+    border-radius: var(--radius-circle, 50%);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Divider (vertical line between groups)
+     --------------------------------------------------------------------------- */
+  .topnav__divider {
+    width: 1px;
+    height: var(--space-5);
+    background-color: var(--color-border-default);
+    margin: 0 var(--space-1);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Mobile (compact mode)
+     --------------------------------------------------------------------------- */
+  @media (max-width: 640px) {
+    .topnav {
+      padding: 0 var(--space-3);
+      gap: var(--space-2);
+    }
+
+    .topnav__center {
+      display: none;
+    }
+
+    .topnav__title {
+      font-size: var(--font-size-sm);
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .topnav__action {
+      transition: none;
+    }
+  }
+}

@@ -1,0 +1,155 @@
+/* =============================================================================
+   Tag / Chip — Molecule — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Tag/Chip
+   -----------------------------------------------------------------------------
+   Removable label, selected state, interactive. Diferente de Badge (que é
+   passivo display). Tag pode clicar, fechar, selecionar.
+
+   Variants tone: neutral | accent | success | warning | danger | info
+   States: default, selected (.is-selected), removable (.tag--removable)
+
+   Tag vs Badge:
+     Badge → display passive (NPS category label, count)
+     Tag/Chip → interactive (filter chip, removable selection)
+   -----------------------------------------------------------------------------
+   Uso:
+     <button class="tag" aria-pressed="false">Todos</button>
+     <button class="tag is-selected" aria-pressed="true">Promoter</button>
+
+     <span class="tag tag--removable tag--accent">
+       Turma T5
+       <button class="tag__close" aria-label="Remover filtro Turma T5">×</button>
+     </span>
+   ============================================================================= */
+
+@layer primitives {
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+
+    padding: var(--space-1) var(--space-3);
+    background-color: var(--color-surface-2);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-pill, 9999px);
+
+    color: var(--color-content-default);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.4;
+    white-space: nowrap;
+    cursor: pointer;
+
+    transition:
+      background-color var(--duration-fast) var(--ease-standard),
+      border-color var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard);
+  }
+
+  .tag:hover:not(:disabled) {
+    background-color: var(--color-surface-3);
+    border-color: var(--color-content-muted);
+  }
+
+  .tag:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  .tag:disabled,
+  .tag.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Selected state (filter chip pattern) */
+  .tag.is-selected,
+  .tag[aria-pressed="true"] {
+    background-color: var(--color-accent-muted);
+    border-color: var(--color-accent-emphasis);
+    color: var(--color-accent-fg);
+  }
+
+  /* Tone variants */
+  .tag--accent {
+    background-color: var(--color-accent-muted);
+    border-color: var(--color-accent-emphasis);
+    color: var(--color-accent-fg);
+  }
+
+  .tag--success {
+    background-color: var(--color-success-muted);
+    border-color: var(--color-success-emphasis);
+    color: var(--color-success-fg);
+  }
+
+  .tag--warning {
+    background-color: var(--color-warning-muted);
+    border-color: var(--color-warning-emphasis);
+    color: var(--color-warning-fg);
+  }
+
+  .tag--danger {
+    background-color: var(--color-danger-muted, rgba(220, 38, 38, 0.12));
+    border-color: var(--color-danger-emphasis, #DC2626);
+    color: var(--color-danger-fg, #EF4444);
+  }
+
+  .tag--info {
+    background-color: var(--color-info-muted, rgba(59, 130, 246, 0.12));
+    border-color: var(--color-info-emphasis, #3B82F6);
+    color: var(--color-info-fg, #60A5FA);
+  }
+
+  /* Removable variant */
+  .tag--removable {
+    padding-right: var(--space-1);
+  }
+
+  .tag__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: var(--space-1);
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-circle, 50%);
+    cursor: pointer;
+    color: currentColor;
+    font-size: var(--font-size-md);
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity var(--duration-fast) var(--ease-standard);
+  }
+
+  .tag__close:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .tag__close:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 1px;
+    opacity: 1;
+  }
+
+  /* Tag group (filter chips row) */
+  .tag-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .tag,
+    .tag__close {
+      transition: none;
+    }
+  }
+}

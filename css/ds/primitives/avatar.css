@@ -1,0 +1,89 @@
+/* =============================================================================
+   Avatar — Atom — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Avatar
+   -----------------------------------------------------------------------------
+   Pessoa indicator: iniciais OR foto. Cores via mentor-1..8 cycle.
+
+   Sizes: xs (24px) | sm (32px) | md (40px default) | lg (56px) | xl (80px)
+   Shape: circle (default) | square
+   -----------------------------------------------------------------------------
+   Uso:
+     <span class="avatar avatar--md" data-color="3">
+       <span aria-label="João Silva">JS</span>
+     </span>
+
+     <span class="avatar avatar--lg">
+       <img src="..." alt="Foto de Maria">
+     </span>
+
+     <span class="avatar avatar--sm avatar--square">MC</span>
+   ============================================================================= */
+
+@layer primitives {
+  .avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    background-color: var(--mentor-1, #6366f1);
+    color: var(--color-content-strong);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1;
+    text-transform: uppercase;
+    user-select: none;
+    overflow: hidden;
+    border-radius: var(--radius-circle, 50%);
+  }
+
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Sizes */
+  .avatar--xs { width: 24px; height: 24px; font-size: var(--font-size-3xs, 0.625rem); }
+  .avatar--sm { width: 32px; height: 32px; font-size: var(--font-size-xs); }
+  .avatar--md { width: 40px; height: 40px; font-size: var(--font-size-sm); }
+  .avatar--lg { width: 56px; height: 56px; font-size: var(--font-size-md); }
+  .avatar--xl { width: 80px; height: 80px; font-size: var(--font-size-xl); }
+
+  /* Shape variant */
+  .avatar--square {
+    border-radius: var(--radius-md);
+  }
+
+  /* Color variants (mentor palette) */
+  .avatar[data-color="1"] { background-color: var(--mentor-1, #6366f1); }
+  .avatar[data-color="2"] { background-color: var(--mentor-2, #8b5cf6); }
+  .avatar[data-color="3"] { background-color: var(--mentor-3, #ec4899); }
+  .avatar[data-color="4"] { background-color: var(--mentor-4, #f59e0b); }
+  .avatar[data-color="5"] { background-color: var(--mentor-5, #10b981); }
+  .avatar[data-color="6"] { background-color: var(--mentor-6, #06b6d4); }
+  .avatar[data-color="7"] { background-color: var(--mentor-7, #ef4444); }
+  .avatar[data-color="8"] { background-color: var(--mentor-8, #84cc16); }
+
+  /* Status dot (optional) */
+  .avatar-group {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .avatar-group .avatar {
+    border: 2px solid var(--color-surface-0);
+    margin-left: -8px;
+  }
+
+  .avatar-group .avatar:first-child {
+    margin-left: 0;
+  }
+
+  .avatar-group .avatar--sm {
+    margin-left: -6px;
+  }
+}

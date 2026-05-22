@@ -1236,10 +1236,221 @@
   </section>
 
 
+  <!-- =========================================================== -->
+  <!-- 17. CHECKBOX + RADIO                                         -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>17. Checkbox + Radio</h2>
+    <p class="preview-caption">Atoms checkbox/radio — native input + custom indicator via ::before. A11y gratuita.</p>
+
+    <h3>Checkbox</h3>
+    <div class="preview-row" style="flex-direction:column;align-items:flex-start;gap:var(--space-2);">
+      <label class="checkbox">
+        <input type="checkbox" class="checkbox__input">
+        <span class="checkbox__indicator" aria-hidden="true"></span>
+        <span class="checkbox__label">Receber NPS reports diários</span>
+      </label>
+      <label class="checkbox">
+        <input type="checkbox" class="checkbox__input" checked>
+        <span class="checkbox__indicator" aria-hidden="true"></span>
+        <span class="checkbox__label">Enviar via WhatsApp (checked)</span>
+      </label>
+      <label class="checkbox">
+        <input type="checkbox" class="checkbox__input" disabled>
+        <span class="checkbox__indicator" aria-hidden="true"></span>
+        <span class="checkbox__label">Disabled checkbox</span>
+      </label>
+      <label class="checkbox is-error">
+        <input type="checkbox" class="checkbox__input">
+        <span class="checkbox__indicator" aria-hidden="true"></span>
+        <span class="checkbox__label">Error state</span>
+      </label>
+    </div>
+
+    <h3>Radio (grupo)</h3>
+    <div class="preview-row" style="flex-direction:column;align-items:flex-start;gap:var(--space-2);">
+      <label class="radio">
+        <input type="radio" name="engine" value="legacy" class="radio__input" checked>
+        <span class="radio__indicator" aria-hidden="true"></span>
+        <span class="radio__label">Legacy engine (dispatch-class-nps)</span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="engine" value="unified" class="radio__input">
+        <span class="radio__indicator" aria-hidden="true"></span>
+        <span class="radio__label">Unified engine (dispatch-survey)</span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="engine" value="legacy-keep" class="radio__input" disabled>
+        <span class="radio__indicator" aria-hidden="true"></span>
+        <span class="radio__label">Future engine v2 (disabled)</span>
+      </label>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 18. AVATAR                                                   -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>18. Avatar</h2>
+    <p class="preview-caption">Atom avatar — iniciais ou foto. Cores mentor cycle 1-8.</p>
+
+    <h3>Sizes</h3>
+    <div class="preview-row" style="align-items:flex-end;">
+      <span class="avatar avatar--xs" data-color="1">IR</span>
+      <span class="avatar avatar--sm" data-color="2">MC</span>
+      <span class="avatar avatar--md" data-color="3">JP</span>
+      <span class="avatar avatar--lg" data-color="4">AS</span>
+      <span class="avatar avatar--xl" data-color="5">PA</span>
+    </div>
+
+    <h3>Color cycle (mentor palette)</h3>
+    <div class="preview-row">
+      <span class="avatar avatar--md" data-color="1">M1</span>
+      <span class="avatar avatar--md" data-color="2">M2</span>
+      <span class="avatar avatar--md" data-color="3">M3</span>
+      <span class="avatar avatar--md" data-color="4">M4</span>
+      <span class="avatar avatar--md" data-color="5">M5</span>
+      <span class="avatar avatar--md" data-color="6">M6</span>
+      <span class="avatar avatar--md" data-color="7">M7</span>
+      <span class="avatar avatar--md" data-color="8">M8</span>
+    </div>
+
+    <h3>Square shape</h3>
+    <div class="preview-row" style="align-items:flex-end;">
+      <span class="avatar avatar--sm avatar--square" data-color="3">JS</span>
+      <span class="avatar avatar--md avatar--square" data-color="5">MC</span>
+      <span class="avatar avatar--lg avatar--square" data-color="7">PA</span>
+    </div>
+
+    <h3>Avatar group (overlap)</h3>
+    <div class="avatar-group">
+      <span class="avatar avatar--md" data-color="1">A</span>
+      <span class="avatar avatar--md" data-color="3">B</span>
+      <span class="avatar avatar--md" data-color="5">C</span>
+      <span class="avatar avatar--md" data-color="7">+3</span>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 19. SPINNER                                                  -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>19. Spinner</h2>
+    <p class="preview-caption">Atom spinner — loading indicator. role="status" + aria-label="Carregando".</p>
+
+    <h3>Sizes</h3>
+    <div class="preview-row" style="align-items:center;">
+      <span class="spinner spinner--xs" role="status" aria-label="Carregando"></span>
+      <span class="spinner spinner--sm" role="status" aria-label="Carregando"></span>
+      <span class="spinner spinner--md" role="status" aria-label="Carregando"></span>
+      <span class="spinner spinner--lg" role="status" aria-label="Carregando"></span>
+    </div>
+
+    <h3>Tones</h3>
+    <div class="preview-row">
+      <span class="spinner spinner--md spinner--default" role="status" aria-label="Default"></span>
+      <span class="spinner spinner--md spinner--accent" role="status" aria-label="Accent"></span>
+    </div>
+
+    <h3>Inside loading button</h3>
+    <div class="preview-row">
+      <button class="btn btn--primary btn--loading" aria-busy="true">
+        <span class="spinner" aria-hidden="true"></span>
+        Salvando...
+      </button>
+      <button class="btn btn--secondary btn--loading" aria-busy="true">
+        <span class="spinner" aria-hidden="true"></span>
+        Processando
+      </button>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 20. TAG / CHIP                                               -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>20. Tag / Chip</h2>
+    <p class="preview-caption">Molecule tag — filter chips removable + selected. Diferente de Badge (passive display).</p>
+
+    <h3>Filter chips (selected toggle)</h3>
+    <div class="tag-group">
+      <button class="tag is-selected" aria-pressed="true" onclick="this.classList.toggle('is-selected'); this.setAttribute('aria-pressed', this.classList.contains('is-selected'))">Todos</button>
+      <button class="tag" aria-pressed="false" onclick="this.classList.toggle('is-selected'); this.setAttribute('aria-pressed', this.classList.contains('is-selected'))">Promoter</button>
+      <button class="tag" aria-pressed="false" onclick="this.classList.toggle('is-selected'); this.setAttribute('aria-pressed', this.classList.contains('is-selected'))">Passive</button>
+      <button class="tag" aria-pressed="false" onclick="this.classList.toggle('is-selected'); this.setAttribute('aria-pressed', this.classList.contains('is-selected'))">Detractor</button>
+    </div>
+
+    <h3 style="margin-top:var(--space-6);">Tones (active filters)</h3>
+    <div class="tag-group">
+      <span class="tag tag--accent">Accent</span>
+      <span class="tag tag--success">Success</span>
+      <span class="tag tag--warning">Warning</span>
+      <span class="tag tag--danger">Danger</span>
+      <span class="tag tag--info">Info</span>
+    </div>
+
+    <h3 style="margin-top:var(--space-6);">Removable (active filters chips)</h3>
+    <div class="tag-group">
+      <span class="tag tag--removable tag--accent">
+        Turma T5
+        <button class="tag__close" aria-label="Remover filtro Turma T5" onclick="this.parentElement.remove()">×</button>
+      </span>
+      <span class="tag tag--removable tag--success">
+        Promoter
+        <button class="tag__close" aria-label="Remover filtro Promoter" onclick="this.parentElement.remove()">×</button>
+      </span>
+      <span class="tag tag--removable">
+        Últimos 30d
+        <button class="tag__close" aria-label="Remover filtro 30d" onclick="this.parentElement.remove()">×</button>
+      </span>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 21. TOPNAV                                                   -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>21. TopNav</h2>
+    <p class="preview-caption">Organism topnav — header sticky com glass effect. Title + breadcrumbs + actions + avatar menu.</p>
+
+    <div style="border:1px solid var(--color-border-default);border-radius:var(--radius-lg);overflow:hidden;">
+      <header class="topnav" role="banner">
+        <div class="topnav__left">
+          <h1 class="topnav__title">Dispatch</h1>
+          <nav class="breadcrumbs breadcrumbs--compact" aria-label="Breadcrumbs">
+            <ol class="breadcrumbs__list">
+              <li class="breadcrumbs__item">
+                <a href="#" class="breadcrumbs__link" onclick="event.preventDefault()">Admin</a>
+                <span class="breadcrumbs__separator" aria-hidden="true">/</span>
+              </li>
+              <li class="breadcrumbs__item">
+                <span class="breadcrumbs__current" aria-current="page">Dispatch</span>
+              </li>
+            </ol>
+          </nav>
+        </div>
+        <div class="topnav__right">
+          <button class="topnav__action" aria-label="Buscar">🔍</button>
+          <button class="topnav__action topnav__action--has-badge" aria-label="Notificações (3 não lidas)">🔔</button>
+          <div class="topnav__divider"></div>
+          <button class="avatar avatar--sm" data-color="3" aria-label="Menu user Igor Rover" style="cursor:pointer;border:none;">IR</button>
+        </div>
+      </header>
+      <div style="padding:var(--space-6);color:var(--color-content-muted);min-height:6rem;">
+        Page content abaixo do topnav...
+      </div>
+    </div>
+  </section>
+
+
   <footer style="max-width:1280px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6) 0;border-top:1px solid var(--color-border-default);color:var(--color-content-muted);font-size:var(--font-size-sm);">
     <p>DS v1 preview · gerado pra QA visual antes adoção em telas live.</p>
     <p>Specs: <code>docs/design-system/v1/</code> · Source: <code>css/ds/</code></p>
-    <p>Primitives entregues: Button · Card · StatCard · Input · Badge · FormField · Modal · Toast · Sidebar · Breadcrumbs · EmptyState · Select · Switch · DataTable · Drawer (15/30 v1 total)</p>
+    <p>Primitives entregues: Button · Card · StatCard · Input · Badge · FormField · Modal · Toast · Sidebar · Breadcrumbs · EmptyState · Select · Switch · DataTable · Drawer · Checkbox/Radio · Avatar · Spinner · Tag · TopNav (21/30 v1 total)</p>
   </footer>
 
 </body>
