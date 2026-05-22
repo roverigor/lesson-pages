@@ -497,7 +497,30 @@ async function openDispatchModal(source, dispatchId) {
     <tr><td>Erro</td><td>${escapeHtml(row.error_detail ?? "—")}</td></tr>
     <tr><td>Aberturas</td><td>${row.open_count ?? 0}</td></tr>
     <tr><td>Respostas</td><td>${row.response_count ?? 0}</td></tr>
+    <tr id="dm-link-row"><td>Link</td><td class="muted small">carregando…</td></tr>
   `;
+
+  // JIT: buscar token via ps_rsvp_links/nps_class_links pra renderizar URL clicável
+  (async () => {
+    let url = null;
+    try {
+      if (row.source === "ps_rsvp_link") {
+        const { data } = await sb.from("ps_rsvp_links").select("token").eq("id", row.dispatch_id).maybeSingle();
+        if (data?.token) url = `https://painel.academialendaria.ai/ps-rsvp/?token=${data.token}`;
+      } else if (row.source === "nps_class_link") {
+        const { data } = await sb.from("nps_class_links").select("token").eq("id", row.dispatch_id).maybeSingle();
+        if (data?.token) url = `https://painel.academialendaria.ai/survey/?token=${data.token}`;
+      }
+    } catch (e) { /* ignora, mantém — */ }
+    const cell = document.querySelector("#dm-link-row td:last-child");
+    if (!cell) return;
+    if (url) {
+      cell.innerHTML = `<a href="${url}" target="_blank" style="word-break:break-all" data-copy="${url}">${escapeHtml(url)}</a> <button class="btn-icon" data-copy-btn="${url}" title="Copiar">📋</button>`;
+    } else {
+      cell.textContent = "—";
+      cell.className = "muted small";
+    }
+  })();
 
   // Render preview (JIT via RPC)
   const previewEl = $("dm-preview");

@@ -84,7 +84,11 @@ async function sendDmTemplate(
   return { ok: r.success, messageId: r.messageId, error: r.error };
 }
 
-async function slackNotify(text: string, blocks?: Array<Record<string, unknown>>) {
+async function slackNotify(_text: string, _blocks?: Array<Record<string, unknown>>) {
+  // DESATIVADO 2026-05-22 — user pediu remover avisos PS RSVP do canal Slack.
+  // Pra re-habilitar: descomentar bloco abaixo + restaurar params nomes.
+  return;
+  // eslint-disable-next-line no-unreachable
   if (!SLACK_CHANNEL) return;
   try {
     await sendBlockMessage(SLACK_CHANNEL, text, blocks ?? [{ type: "section", text: { type: "mrkdwn", text } }]);
