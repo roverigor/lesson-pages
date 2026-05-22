@@ -599,10 +599,13 @@ async function toggleSurveyDetail(key) {
         const respLbl = r.will_attend === "yes" ? '<span style="color:#4ade80;font-weight:700">✅ Vai</span>'
           : r.will_attend === "no" ? '<span style="color:#f87171;font-weight:700">❌ Não</span>'
           : r.will_attend === "maybe" ? '<span style="color:#fbbf24;font-weight:700">⚠️ Dúvida</span>' : "—";
+        const isGroup = (r.student?.phone || "").startsWith("group_placeholder_");
+        const dispName = isGroup ? (r.confirmed_name || "Anônimo (grupo)") : (r.student?.name || "—");
+        const dispPhone = isGroup ? "📢 grupo" : (r.student?.phone || "—");
         return `<tr>
           <td style="font-size:11px;color:#666">${escapeHtml(fmtDateTime(r.submitted_at))}</td>
-          <td>${escapeHtml(r.student?.name || "—")}</td>
-          <td style="font-size:11px;color:#888">${escapeHtml(r.student?.phone || "—")}</td>
+          <td>${escapeHtml(dispName)}</td>
+          <td style="font-size:11px;color:#888">${escapeHtml(dispPhone)}</td>
           <td>${respLbl}</td>
           <td style="font-size:12px;color:#ccc;max-width:380px">${escapeHtml(r.doubts_text || "")}</td>
           <td style="font-size:11px;color:#888">${escapeHtml(r.project_phase || "—")}</td>
