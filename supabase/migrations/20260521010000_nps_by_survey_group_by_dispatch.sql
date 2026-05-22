@@ -116,8 +116,8 @@ BEGIN
         r.class_id::text || ':' || COALESCE(r.cohort_id::text, 'null') || ':'
           || to_char((date_trunc('day', r.submitted_at AT TIME ZONE 'America/Sao_Paulo'))::date, 'YYYY-MM-DD')
       )                                                AS anchor_key,
-      MAX(lnk.dispatch_job_id)                         AS dispatch_job_id,
-      MAX(r.legacy_link_id)                            AS link_id,
+      (array_agg(lnk.dispatch_job_id) FILTER (WHERE lnk.dispatch_job_id IS NOT NULL))[1] AS dispatch_job_id,
+      (array_agg(r.legacy_link_id)    FILTER (WHERE r.legacy_link_id   IS NOT NULL))[1] AS link_id,
       r.class_id,
       r.cohort_id,
       -- Prefere a data real da aula (do link); fallback é a data da resposta.
