@@ -219,6 +219,14 @@
     const btn = submitBtnId ? $(submitBtnId) : null;
     if (btn) { btn.disabled = true; btn.textContent = "Enviando..."; }
 
+    if (state.preview) {
+      $("thanks-icon").textContent = "👀";
+      $("thanks-title").textContent = "Modo Preview";
+      $("thanks-sub").innerHTML = "<b>Nada foi enviado.</b><br>Este é o form que os alunos verão. Compartilhe a URL com a equipe pra revisar visual + UX.";
+      showOnly("screen-thanks");
+      return;
+    }
+
     const payload = {
       token: state.token,
       will_attend: state.willAttend,
@@ -312,6 +320,22 @@
 
   async function init() {
     showOnly("screen-loading");
+    const params = new URLSearchParams(location.search);
+    if (params.get("preview") === "1") {
+      state.preview = true;
+      state.token = "preview";
+      const className = params.get("class") || "PS Fundamentos";
+      const studentName = params.get("name") || "Professor";
+      const sessionDate = params.get("date") || new Date().toISOString().slice(0, 10);
+      $("q-counter-1").textContent = `Olá, ${studentName.split(/\s+/)[0]}! 👋 (preview)`;
+      $("sub-context").textContent = `${className} hoje (${sessionDate}) · MODO PREVIEW — nada será gravado`;
+      document.querySelectorAll(".brand-class").forEach((el) => { el.textContent = className + " · 👀 Preview"; });
+      document.title = `Preview · ${className}`;
+      $("name-input").value = studentName;
+      wire();
+      showOnly("screen-1");
+      return;
+    }
     const token = getToken();
     if (!token) { showError("Link inválido", "Token não encontrado na URL."); return; }
     state.token = token;
