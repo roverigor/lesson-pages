@@ -1447,10 +1447,226 @@
   </section>
 
 
+  <!-- =========================================================== -->
+  <!-- 22. LINK + DIVIDER + LABEL                                   -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>22. Link + Divider + Label</h2>
+    <p class="preview-caption">Atoms básicos pra forms + navegação inline.</p>
+
+    <h3>Links</h3>
+    <div class="preview-row" style="flex-direction:column;align-items:flex-start;">
+      <a href="#" class="link" onclick="event.preventDefault()">Default link (accent fg + underline)</a>
+      <a href="#" class="link link--subtle" onclick="event.preventDefault()">Subtle link (no underline)</a>
+      <a href="https://supabase.com" class="link link--external" target="_blank" rel="noopener noreferrer">External link (arrow icon)</a>
+    </div>
+
+    <h3 style="margin-top:var(--space-6);">Dividers</h3>
+    <hr class="divider divider--subtle">
+    <p style="color:var(--color-content-muted);font-size:var(--font-size-sm);">↑ Subtle (default)</p>
+    <hr class="divider divider--default">
+    <p style="color:var(--color-content-muted);font-size:var(--font-size-sm);">↑ Default</p>
+    <hr class="divider divider--strong">
+    <p style="color:var(--color-content-muted);font-size:var(--font-size-sm);">↑ Strong</p>
+
+    <div class="divider divider--with-label">
+      <span class="divider__label">OU</span>
+    </div>
+    <p style="color:var(--color-content-muted);font-size:var(--font-size-sm);">↑ With label "OU"</p>
+
+    <div class="preview-row" style="align-items:center;color:var(--color-content-default);">
+      <span>Login</span>
+      <span class="divider divider--vertical"></span>
+      <span>Cadastrar</span>
+      <span class="divider divider--vertical"></span>
+      <span>Esqueci senha</span>
+    </div>
+
+    <h3 style="margin-top:var(--space-6);">Labels (standalone)</h3>
+    <div class="preview-row" style="flex-direction:column;align-items:flex-start;gap:var(--space-3);">
+      <label class="label">
+        Email <span class="label__required" aria-hidden="true">*</span>
+      </label>
+      <label class="label">
+        Telefone <span class="label__optional">(opcional)</span>
+      </label>
+      <label class="label label--md">Label medium (no uppercase)</label>
+      <label class="label label--sm">LABEL SMALL</label>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 23. SEARCHBAR                                                -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>23. SearchBar</h2>
+    <p class="preview-caption">Molecule search — input + leading icon + clear button (aparece quando filled).</p>
+
+    <h3>Default (md)</h3>
+    <div class="search-bar" role="search">
+      <span class="search-bar__icon" aria-hidden="true">🔍</span>
+      <input type="search" class="search-bar__input" placeholder="Buscar alunos..." aria-label="Buscar alunos">
+      <button class="search-bar__clear" aria-label="Limpar busca" type="button" onclick="this.previousElementSibling.value=''; this.previousElementSibling.focus()">×</button>
+    </div>
+
+    <h3 style="margin-top:var(--space-4);">Sizes</h3>
+    <div class="preview-grid">
+      <div class="search-bar search-bar--sm" role="search">
+        <span class="search-bar__icon" aria-hidden="true">🔍</span>
+        <input type="search" class="search-bar__input" placeholder="Small search" aria-label="Buscar">
+      </div>
+      <div class="search-bar" role="search">
+        <span class="search-bar__icon" aria-hidden="true">🔍</span>
+        <input type="search" class="search-bar__input" placeholder="Medium (default)" aria-label="Buscar">
+      </div>
+      <div class="search-bar search-bar--lg" role="search">
+        <span class="search-bar__icon" aria-hidden="true">🔍</span>
+        <input type="search" class="search-bar__input" placeholder="Large search" aria-label="Buscar">
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 24. TOOLTIP                                                  -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>24. Tooltip</h2>
+    <p class="preview-caption">Molecule tooltip — texto informativo on hover/focus. CSS-only via data-tooltip OR wrapper a11y completo.</p>
+
+    <h3>CSS-only (data-tooltip)</h3>
+    <div class="preview-row">
+      <button class="btn btn--secondary tooltip-trigger" data-tooltip="Top placement (default)">
+        Hover top
+      </button>
+      <button class="btn btn--secondary tooltip-trigger" data-tooltip="Right side tooltip" data-tooltip-placement="right">
+        Hover right
+      </button>
+      <button class="btn btn--secondary tooltip-trigger" data-tooltip="Bottom placement" data-tooltip-placement="bottom">
+        Hover bottom
+      </button>
+      <button class="btn btn--secondary tooltip-trigger" data-tooltip="Left side tooltip" data-tooltip-placement="left">
+        Hover left
+      </button>
+    </div>
+
+    <h3 style="margin-top:var(--space-6);">Wrapper pattern (a11y complete)</h3>
+    <div class="preview-row">
+      <span class="tooltip-wrapper">
+        <button class="btn btn--primary" aria-describedby="tt-help-1">
+          Help 1
+        </button>
+        <span class="tooltip" id="tt-help-1" role="tooltip">
+          Aprovado via Slack
+        </span>
+      </span>
+
+      <span class="tooltip-wrapper">
+        <button class="btn btn--danger" aria-describedby="tt-help-2">
+          Delete
+        </button>
+        <span class="tooltip" id="tt-help-2" role="tooltip">
+          Ação irreversível
+        </span>
+      </span>
+    </div>
+
+    <h3 style="margin-top:var(--space-6);">Inline help icon</h3>
+    <p style="color:var(--color-content-default);">
+      Phone E.164 BR
+      <span class="tooltip-trigger" data-tooltip="Format: +55DDD9XXXXXXXX (13 dígitos incluindo +55)" style="display:inline-flex;cursor:help;color:var(--color-content-muted);margin-left:4px;">ⓘ</span>
+    </p>
+  </section>
+
+
+  <!-- =========================================================== -->
+  <!-- 25. MENU                                                     -->
+  <!-- =========================================================== -->
+  <section class="preview-section">
+    <h2>25. Menu (Dropdown)</h2>
+    <p class="preview-caption">Organism menu — dropdown items. role="menu" + menuitem. Arrow keys navigation (JS futuro).</p>
+
+    <h3>User menu (com avatar trigger)</h3>
+    <div style="display:flex;gap:var(--space-6);align-items:flex-start;flex-wrap:wrap;">
+
+      <div class="menu" role="menu" aria-label="User menu">
+        <ul class="menu__list">
+          <li class="menu__item">
+            <button class="menu__button" role="menuitem">
+              <span class="menu__button-icon" aria-hidden="true">👤</span>
+              <span class="menu__button-label">Perfil</span>
+            </button>
+          </li>
+          <li class="menu__item">
+            <button class="menu__button" role="menuitem">
+              <span class="menu__button-icon" aria-hidden="true">⚙️</span>
+              <span class="menu__button-label">Configurações</span>
+              <span class="menu__button-shortcut">⌘ ,</span>
+            </button>
+          </li>
+          <li class="menu__item">
+            <button class="menu__button" role="menuitem">
+              <span class="menu__button-icon" aria-hidden="true">📊</span>
+              <span class="menu__button-label">Insights</span>
+            </button>
+          </li>
+          <li class="menu__divider" role="separator"></li>
+          <li class="menu__item">
+            <button class="menu__button is-destructive" role="menuitem">
+              <span class="menu__button-icon" aria-hidden="true">🚪</span>
+              <span class="menu__button-label">Sair</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="menu" role="menu" aria-label="Action menu" style="min-width:14rem;">
+        <p class="menu__group-label">Ações</p>
+        <ul class="menu__list">
+          <li class="menu__item">
+            <button class="menu__button is-active" role="menuitem">
+              <span class="menu__button-icon" aria-hidden="true">📤</span>
+              <span class="menu__button-label">Disparar agora</span>
+            </button>
+          </li>
+          <li class="menu__item">
+            <button class="menu__button" role="menuitem">
+              <span class="menu__button-icon" aria-hidden="true">⏰</span>
+              <span class="menu__button-label">Agendar</span>
+            </button>
+          </li>
+          <li class="menu__item">
+            <button class="menu__button" role="menuitem" disabled>
+              <span class="menu__button-icon" aria-hidden="true">🔄</span>
+              <span class="menu__button-label">Repetir batch (disabled)</span>
+            </button>
+          </li>
+          <li class="menu__divider" role="separator"></li>
+          <p class="menu__group-label">Suporte</p>
+          <li class="menu__item">
+            <button class="menu__button" role="menuitem">
+              <span class="menu__button-icon" aria-hidden="true">📖</span>
+              <span class="menu__button-label">Runbook</span>
+            </button>
+          </li>
+          <li class="menu__item">
+            <button class="menu__button is-destructive" role="menuitem">
+              <span class="menu__button-icon" aria-hidden="true">🗑️</span>
+              <span class="menu__button-label">Cancelar job</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
   <footer style="max-width:1280px;margin:var(--space-12) auto var(--space-6);padding:var(--space-6) 0;border-top:1px solid var(--color-border-default);color:var(--color-content-muted);font-size:var(--font-size-sm);">
     <p>DS v1 preview · gerado pra QA visual antes adoção em telas live.</p>
     <p>Specs: <code>docs/design-system/v1/</code> · Source: <code>css/ds/</code></p>
-    <p>Primitives entregues: Button · Card · StatCard · Input · Badge · FormField · Modal · Toast · Sidebar · Breadcrumbs · EmptyState · Select · Switch · DataTable · Drawer · Checkbox/Radio · Avatar · Spinner · Tag · TopNav (21/30 v1 total)</p>
+    <p><strong>Primitives entregues (27/30 v1):</strong> Button · Card · StatCard · Input · Badge · FormField · Modal · Toast · Sidebar · Breadcrumbs · EmptyState · Select · Switch · DataTable · Drawer · Checkbox/Radio · Avatar · Spinner · Tag · TopNav · Link · Divider · Label · SearchBar · Tooltip · Menu</p>
+    <p><strong>Pendentes (3/30):</strong> Icon (lib heroicons — out-of-scope CSS), Textarea standalone (incluído em Input), FormGroup (incluído em FormField)</p>
   </footer>
 
 </body>

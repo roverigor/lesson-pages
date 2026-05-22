@@ -1,0 +1,134 @@
+/* =============================================================================
+   Tooltip — Molecule — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Tooltip
+   -----------------------------------------------------------------------------
+   Texto informativo on hover/focus. CSS-only via ::after pseudo-element OR
+   wrapper pattern com aria-describedby (preferido pra a11y completa).
+
+   Placements: top (default) | right | bottom | left
+   -----------------------------------------------------------------------------
+   Uso (CSS-only, simple):
+     <button class="tooltip-trigger" data-tooltip="Texto do tooltip">
+       Hover me
+     </button>
+
+   Uso (wrapper, a11y completa):
+     <span class="tooltip-wrapper">
+       <button aria-describedby="tt-1">Botão</button>
+       <span class="tooltip" id="tt-1" role="tooltip">Texto do tooltip</span>
+     </span>
+   ============================================================================= */
+
+@layer primitives {
+  /* ---------------------------------------------------------------------------
+     CSS-only tooltip via data-tooltip + ::after
+     --------------------------------------------------------------------------- */
+  .tooltip-trigger {
+    position: relative;
+  }
+
+  .tooltip-trigger[data-tooltip]:hover::after,
+  .tooltip-trigger[data-tooltip]:focus-visible::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + var(--space-2));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--z-tooltip, 1200);
+
+    padding: var(--space-2) var(--space-3);
+    background-color: var(--color-surface-3);
+    color: var(--color-content-strong);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-tight);
+    border-radius: var(--radius-md);
+    box-shadow: var(--elevation-2, 0 4px 12px rgba(0, 0, 0, 0.4));
+
+    white-space: nowrap;
+    pointer-events: none;
+    animation: tooltip-fade var(--duration-fast) var(--ease-standard);
+  }
+
+  @keyframes tooltip-fade {
+    from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* Placement variants via data attr */
+  .tooltip-trigger[data-tooltip-placement="right"]:hover::after,
+  .tooltip-trigger[data-tooltip-placement="right"]:focus-visible::after {
+    bottom: 50%;
+    left: calc(100% + var(--space-2));
+    transform: translateY(50%);
+  }
+
+  .tooltip-trigger[data-tooltip-placement="bottom"]:hover::after,
+  .tooltip-trigger[data-tooltip-placement="bottom"]:focus-visible::after {
+    top: calc(100% + var(--space-2));
+    bottom: auto;
+    transform: translateX(-50%);
+  }
+
+  .tooltip-trigger[data-tooltip-placement="left"]:hover::after,
+  .tooltip-trigger[data-tooltip-placement="left"]:focus-visible::after {
+    bottom: 50%;
+    right: calc(100% + var(--space-2));
+    left: auto;
+    transform: translateY(50%);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Wrapper pattern (a11y completa via aria-describedby)
+     --------------------------------------------------------------------------- */
+  .tooltip-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+
+  .tooltip {
+    position: absolute;
+    bottom: calc(100% + var(--space-2));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--z-tooltip, 1200);
+
+    padding: var(--space-2) var(--space-3);
+    background-color: var(--color-surface-3);
+    color: var(--color-content-strong);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-tight);
+    border-radius: var(--radius-md);
+    box-shadow: var(--elevation-2, 0 4px 12px rgba(0, 0, 0, 0.4));
+
+    white-space: nowrap;
+    pointer-events: none;
+
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity var(--duration-fast) var(--ease-standard),
+      visibility var(--duration-fast) var(--ease-standard),
+      transform var(--duration-fast) var(--ease-standard);
+  }
+
+  .tooltip-wrapper:hover .tooltip,
+  .tooltip-wrapper:focus-within .tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .tooltip-trigger[data-tooltip]:hover::after,
+    .tooltip-trigger[data-tooltip]:focus-visible::after,
+    .tooltip {
+      animation: none;
+      transition: none;
+    }
+  }
+}

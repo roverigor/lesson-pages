@@ -1,0 +1,77 @@
+/* =============================================================================
+   Link — Atom — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Link
+   -----------------------------------------------------------------------------
+   Variants: default | subtle | inverse | external (adiciona icon)
+   -----------------------------------------------------------------------------
+   Uso:
+     <a href="/admin" class="link">Voltar pra admin</a>
+     <a href="/docs" class="link link--subtle">Documentação</a>
+     <a href="https://example.com" class="link link--external" target="_blank" rel="noopener noreferrer">
+       External resource
+     </a>
+   ============================================================================= */
+
+@layer primitives {
+  .link {
+    color: var(--color-accent-fg);
+    text-decoration: underline;
+    text-decoration-color: var(--color-border-strong);
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    cursor: pointer;
+    transition:
+      color var(--duration-fast) var(--ease-standard),
+      text-decoration-color var(--duration-fast) var(--ease-standard);
+  }
+
+  .link:hover {
+    color: var(--color-accent-emphasis-hover);
+    text-decoration-color: currentColor;
+  }
+
+  .link:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Subtle: no underline, only on hover */
+  .link--subtle {
+    color: var(--color-content-default);
+    text-decoration: none;
+  }
+
+  .link--subtle:hover {
+    color: var(--color-accent-fg);
+    text-decoration: underline;
+    text-decoration-color: currentColor;
+    text-underline-offset: 3px;
+  }
+
+  /* Inverse: white text (sobre fundo escuro / cards accent) */
+  .link--inverse {
+    color: var(--color-content-strong);
+    text-decoration-color: var(--color-content-muted);
+  }
+
+  .link--inverse:hover {
+    color: var(--color-accent-fg);
+  }
+
+  /* External: adiciona arrow icon */
+  .link--external::after {
+    content: " ↗";
+    font-size: 0.85em;
+    opacity: 0.7;
+    margin-left: 2px;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .link {
+      transition: none;
+    }
+  }
+}

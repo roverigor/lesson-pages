@@ -1,0 +1,78 @@
+/* =============================================================================
+   Label — Atom — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Label
+   -----------------------------------------------------------------------------
+   Standalone label (também usado em FormField).
+
+   Props pattern:
+     - required (asterisk)
+     - optional ("(opcional)")
+     - htmlFor obrigatório
+   -----------------------------------------------------------------------------
+   Uso:
+     <label class="label" for="email">
+       Email
+       <span class="label__required" aria-hidden="true">*</span>
+     </label>
+
+     <label class="label" for="phone">
+       Telefone
+       <span class="label__optional">(opcional)</span>
+     </label>
+   ============================================================================= */
+
+@layer primitives {
+  .label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    letter-spacing: var(--letter-spacing-wide, 0.05em);
+    text-transform: uppercase;
+    color: var(--color-content-default);
+
+    cursor: pointer;
+  }
+
+  .label--block {
+    display: block;
+    margin-bottom: var(--space-2);
+  }
+
+  /* Required indicator */
+  .label__required {
+    color: var(--color-danger-emphasis, #DC2626);
+    font-weight: var(--font-weight-bold);
+  }
+
+  /* Optional text */
+  .label__optional {
+    color: var(--color-content-subtle);
+    font-weight: var(--font-weight-normal);
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  /* Sizes */
+  .label--sm {
+    font-size: var(--font-size-2xs, 0.6875rem);
+  }
+
+  .label--md {
+    font-size: var(--font-size-sm);
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  /* Disabled state */
+  .label.is-disabled,
+  .label:has(+ :disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

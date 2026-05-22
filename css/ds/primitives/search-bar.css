@@ -1,0 +1,140 @@
+/* =============================================================================
+   SearchBar — Molecule — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §SearchBar
+   -----------------------------------------------------------------------------
+   Composição: Input + leading search icon + trailing clear button.
+   A11y: role="search" no wrapper + aria-label.
+
+   Sizes: sm | md (default) | lg
+   States: default, focused, filled (clear button visível), disabled
+   -----------------------------------------------------------------------------
+   Uso:
+     <div class="search-bar" role="search">
+       <span class="search-bar__icon" aria-hidden="true">🔍</span>
+       <input type="search" class="search-bar__input" placeholder="Buscar alunos..." aria-label="Buscar">
+       <button class="search-bar__clear" aria-label="Limpar busca" type="button">×</button>
+     </div>
+   ============================================================================= */
+
+@layer primitives {
+  .search-bar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background-color: var(--color-surface-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    transition:
+      border-color var(--duration-fast) var(--ease-standard),
+      box-shadow var(--duration-fast) var(--ease-standard);
+  }
+
+  .search-bar:hover {
+    border-color: var(--color-content-muted);
+  }
+
+  .search-bar:focus-within {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 1px;
+    border-color: var(--color-border-focus);
+  }
+
+  /* Leading icon */
+  .search-bar__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: var(--space-3);
+    color: var(--color-content-muted);
+    font-size: var(--font-size-sm);
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  /* Input (sem border próprio — herda da search-bar) */
+  .search-bar__input {
+    flex: 1;
+    padding: var(--space-3);
+    padding-left: var(--space-2);
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--color-content-default);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-normal);
+    width: 100%;
+  }
+
+  .search-bar__input::placeholder {
+    color: var(--color-content-subtle);
+  }
+
+  /* Remove native browser search styling */
+  .search-bar__input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+
+  /* Trailing clear button */
+  .search-bar__clear {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--space-6);
+    height: var(--space-6);
+    margin-right: var(--space-2);
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--color-content-muted);
+    font-size: var(--font-size-md);
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+
+  /* Mostra clear quando input tem valor */
+  .search-bar:has(.search-bar__input:not(:placeholder-shown)) .search-bar__clear {
+    display: inline-flex;
+  }
+
+  .search-bar__clear:hover {
+    color: var(--color-content-default);
+    background-color: var(--color-surface-2);
+  }
+
+  .search-bar__clear:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  /* Sizes */
+  .search-bar--sm .search-bar__input {
+    padding: var(--space-2);
+    font-size: var(--font-size-sm);
+  }
+
+  .search-bar--lg .search-bar__input {
+    padding: var(--space-4);
+    font-size: var(--font-size-lg);
+  }
+
+  /* Disabled state */
+  .search-bar:has(.search-bar__input:disabled) {
+    background-color: var(--color-surface-1);
+    border-color: var(--color-border-subtle);
+    opacity: 0.7;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .search-bar,
+    .search-bar__clear {
+      transition: none;
+    }
+  }
+}

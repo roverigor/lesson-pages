@@ -43,3 +43,9 @@
 @import url("./primitives/spinner.css") layer(primitives);
 @import url("./primitives/tag.css") layer(primitives);
 @import url("./primitives/topnav.css") layer(primitives);
+@import url("./primitives/link.css") layer(primitives);
+@import url("./primitives/divider.css") layer(primitives);
+@import url("./primitives/label.css") layer(primitives);
+@import url("./primitives/search-bar.css") layer(primitives);
+@import url("./primitives/tooltip.css") layer(primitives);
+@import url("./primitives/menu.css") layer(primitives);

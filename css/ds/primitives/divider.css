@@ -1,0 +1,88 @@
+/* =============================================================================
+   Divider — Atom — DS v1
+   -----------------------------------------------------------------------------
+   Spec: docs/design-system/v1/02-primitives.md §Divider
+   -----------------------------------------------------------------------------
+   Linha horizontal ou vertical separadora.
+
+   Orientations: horizontal (default) | vertical
+   Tones: subtle (default) | default | strong
+   -----------------------------------------------------------------------------
+   Uso:
+     <hr class="divider">  <!-- horizontal default -->
+     <hr class="divider divider--strong">
+
+     <!-- Vertical (precisa height definida no parent) -->
+     <span class="divider divider--vertical"></span>
+
+     <!-- Com label -->
+     <div class="divider divider--with-label">
+       <span class="divider__label">OU</span>
+     </div>
+   ============================================================================= */
+
+@layer primitives {
+  .divider {
+    border: none;
+    background: var(--color-border-subtle);
+    margin: var(--space-4) 0;
+  }
+
+  /* Horizontal (default) */
+  hr.divider,
+  .divider:not(.divider--vertical):not(.divider--with-label) {
+    width: 100%;
+    height: 1px;
+    border: none;
+  }
+
+  /* Tones */
+  .divider--subtle {
+    background: var(--color-border-subtle);
+  }
+
+  .divider--default {
+    background: var(--color-border-default);
+  }
+
+  .divider--strong {
+    background: var(--color-border-strong);
+  }
+
+  /* Vertical */
+  .divider--vertical {
+    display: inline-block;
+    width: 1px;
+    height: 1em;
+    margin: 0 var(--space-2);
+    vertical-align: middle;
+  }
+
+  /* With label (OR separator) */
+  .divider--with-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    margin: var(--space-4) 0;
+    color: var(--color-content-muted);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide, 0.05em);
+    background: transparent;
+  }
+
+  .divider--with-label::before,
+  .divider--with-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--color-border-subtle);
+  }
+
+  .divider__label {
+    color: var(--color-content-muted);
+  }
+}
