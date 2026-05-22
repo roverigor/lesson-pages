@@ -77,9 +77,17 @@ SUBMIT_CODE=$(curl -sS -o /dev/null -w "%{http_code}" -X OPTIONS "$SUPA_URL/func
 TODAY_WD=$(date +%u); [ "$TODAY_WD" = "7" ] && TODAY_WD=0
 PS_CLASSES=$(curl -sS -X POST "$MGMT/database/query" \
   -H "Authorization: Bearer $SUPA_TOKEN" -H "Content-Type: application/json" \
-  --data-binary "{\"query\":\"SELECT c.name FROM classes c WHERE c.active=true AND c.kind='ps' AND EXISTS (SELECT 1 FROM class_mentors cm WHERE cm.class_id=c.id AND cm.weekday=$TODAY_WD AND cm.valid_from <= CURRENT_DATE AND (cm.valid_until IS NULL OR cm.valid_until >= CURRENT_DATE));\"}")
+  --data-binary "{\"query\":\"SELECT c.name, c.time_start, c.time_end FROM classes c WHERE c.active=true AND c.kind='ps' AND EXISTS (SELECT 1 FROM class_mentors cm WHERE cm.class_id=c.id AND cm.weekday=$TODAY_WD AND cm.valid_from <= CURRENT_DATE AND (cm.valid_until IS NULL OR cm.valid_until >= CURRENT_DATE));\"}")
 N_C=$(echo "$PS_CLASSES" | jq 'length')
-[ "$N_C" -gt 0 ] && log_pass "$N_C PS class(es) hoje (wd=$TODAY_WD)" || log_warn "Sem PS hoje (wd=$TODAY_WD)"
+if [ "$N_C" -gt 0 ]; then
+  log_pass "$N_C PS class(es) hoje (wd=$TODAY_WD)"
+  echo "$PS_CLASSES" | jq -r '.[] | "  • \(.name): \(.time_start) → \(.time_end // "—")"'
+  # Validar time_end definido (necessário pra zoom processed trigger calcular duração)
+  N_NULL=$(echo "$PS_CLASSES" | jq '[.[] | select(.time_end == null)] | length')
+  [ "$N_NULL" -gt 0 ] && log_warn "$N_NULL class(es) sem time_end — pode afetar duração min check (60min)" || log_pass "Todas classes hoje têm time_end definido"
+else
+  log_warn "Sem PS hoje (wd=$TODAY_WD)"
+fi
 
 # ───────────── Pós PS NPS ─────────────
 section "5. PÓS PS NPS — config + trigger"
@@ -135,7 +143,24 @@ echo "$PS_COH" | jq -r '.[] | "  \(.name): \(.n) cohort(s)"'
 TOTAL_PS=$(echo "$PS_COH" | jq '[.[] | .n] | add')
 [ "$TOTAL_PS" -ge 10 ] && log_pass "PS classes cobrem $TOTAL_PS cohorts no total" || log_warn "PS classes só $TOTAL_PS cohorts — review class_cohorts"
 
-section "9. Filtros segurança"
+section "9. Anti-spam grupos (idempotency + constraints)"
+PS_GROUP_DISABLED=$(grep -c "Group msgs DESATIVADAS\|group send disabled\|group.*= 0; const groupFailed = 0" /home/rover/lesson-pages/supabase/functions/dispatch-ps-rsvp/index.ts || echo 0)
+[ "$PS_GROUP_DISABLED" -ge 1 ] && log_pass "PS RSVP group msgs DESATIVADAS no edge fn" || log_fail "PS RSVP group msgs podem disparar — risco spam"
+
+NPS_GROUP_IDEMPOTENT=$(grep -c "Idempotency gate\|duplicate_session_already_sent\|DUP DETECTED" /home/rover/lesson-pages/supabase/functions/dispatch-class-nps/index.ts || echo 0)
+[ "$NPS_GROUP_IDEMPOTENT" -ge 1 ] && log_pass "NPS dispatch tem idempotency gate (anti dup group)" || log_fail "NPS dispatch SEM idempotency gate"
+
+NPS_GROUP_UNIQUE_IDX=$(curl -sS -X POST "$MGMT/database/query" \
+  -H "Authorization: Bearer $SUPA_TOKEN" -H "Content-Type: application/json" \
+  --data-binary '{"query":"SELECT indexname FROM pg_indexes WHERE indexname='"'"'idx_nps_class_links_group_unique'"'"';"}' | jq -r '.[0].indexname // ""')
+[ -n "$NPS_GROUP_UNIQUE_IDX" ] && log_pass "Unique idx idx_nps_class_links_group_unique ativo (1 group/cohort/sessão)" || log_fail "Unique idx group ausente — duplicação possível"
+
+COOLDOWN=$(curl -sS -X POST "$MGMT/database/query" \
+  -H "Authorization: Bearer $SUPA_TOKEN" -H "Content-Type: application/json" \
+  --data-binary '{"query":"SELECT public.nps_config_int('"'"'nps_cohort_cooldown_hours'"'"', 0) AS v;"}' | jq -r '.[0].v // 0')
+[ "$COOLDOWN" -ge 1 ] && log_pass "Cohort cooldown $COOLDOWN h (bloqueia re-enqueue)" || log_warn "Cooldown=$COOLDOWN h — recomendado >=12"
+
+section "10. Filtros segurança"
 COUNT_BAD=$(curl -sS -X POST "$MGMT/database/query" \
   -H "Authorization: Bearer $SUPA_TOKEN" -H "Content-Type: application/json" \
   --data-binary '{"query":"SELECT COUNT(*) FROM students WHERE active=true AND name ~ '"'"'^WA [0-9]+$'"'"';"}' | jq -r '.[0].count')
