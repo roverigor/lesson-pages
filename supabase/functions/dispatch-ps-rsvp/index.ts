@@ -110,6 +110,14 @@ Deno.serve(async (req: Request) => {
 
   const today = body.force_date ? { isoDate: body.force_date, weekday: new Date(body.force_date).getUTCDay() } : brtToday();
 
+  // Time budget: edge functions têm wall-time limit ~150s (Supabase Hosted).
+  // Abort gracefully em 130s pra deixar margem pra cleanup + Slack notify.
+  // Pending links ficam pending → próximo cron pega no retry.
+  const RUN_START_MS = Date.now();
+  const TIME_BUDGET_MS = 130_000;
+  const timeLeftMs = () => TIME_BUDGET_MS - (Date.now() - RUN_START_MS);
+  let timeBudgetHit = false;
+
   // STARTUP notify (always, regardless of outcome)
   await slackNotify(`🚀 dispatch-ps-rsvp fired — ${today.isoDate} (weekday ${today.weekday})${dryRun ? " [DRY RUN]" : ""}`);
 
@@ -161,6 +169,13 @@ Deno.serve(async (req: Request) => {
   const results: Record<string, unknown>[] = [];
 
   for (const cls of classes) {
+    // Time budget check ANTES de processar próxima class — evita criar links
+    // novos se já não dá tempo de enviar. Class fica pra próximo cron.
+    if (timeBudgetHit) {
+      await slackNotify(`⏭️ dispatch-ps-rsvp SKIP-NEXT — class=${cls.name} (timeout budget já exausto).`);
+      results.push({ class_id: cls.id, class_name: cls.name, eligible: 0, reason: "time_budget_exhausted_skipped" });
+      continue;
+    }
     // Find all student_ids bound via class_cohorts (cross-cohort, ignore cohort.active)
     const { data: bridges } = await sb
       .from("class_cohorts")
@@ -257,8 +272,15 @@ Deno.serve(async (req: Request) => {
     const studentMap = new Map<string, { name: string; phone: string }>();
     eligible.forEach((s) => studentMap.set(s.id, { name: s.name, phone: s.phone }));
 
-    let sent = 0; let failed = 0;
+    let sent = 0; let failed = 0; let stoppedAt = 0;
     for (let i = 0; i < pending.length; i++) {
+      // Time budget check: abort se ultrapassou 130s pra próximo cron pegar resto.
+      // Margem pra DB update + Slack notify + variant rotation pós-loop.
+      if (timeLeftMs() < 5_000) {
+        timeBudgetHit = true;
+        stoppedAt = i;
+        break;
+      }
       const lnk = pending[i];
       const stu = studentMap.get(lnk.student_id);
       if (!stu?.phone) {
@@ -277,6 +299,10 @@ Deno.serve(async (req: Request) => {
         failed++;
       }
       if (i < pending.length - 1) await sleep(DELAY_MS);
+    }
+    if (timeBudgetHit) {
+      const remaining = pending.length - stoppedAt;
+      await slackNotify(`⏱️ dispatch-ps-rsvp TIME-BUDGET HIT — class=${cls.name} sent=${sent} pending_left=${remaining}/${pending.length}. Próximo cron continua.`);
     }
 
     // Group msgs DESATIVADAS (2026-05-22) — re-triggers spamavam grupos.

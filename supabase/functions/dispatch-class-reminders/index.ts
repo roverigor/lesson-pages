@@ -84,11 +84,23 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Time budget: edge functions ~150s wall-time. Abort gracefully em 130s
+    // pra deixar margem. Pending sends ficam pending → próximo cron tick continua.
+    const RUN_START_MS = Date.now();
+    const TIME_BUDGET_MS = 130_000;
+    let timeBudgetHit = false;
+    let stoppedAt = 0;
+
     let dispatched = 0;
     let skipped = 0;
     const results: Record<string, unknown>[] = [];
 
     for (let i = 0; i < sends.length; i++) {
+      if (TIME_BUDGET_MS - (Date.now() - RUN_START_MS) < 5_000) {
+        timeBudgetHit = true;
+        stoppedAt = i;
+        break;
+      }
       const s = sends[i];
 
       if (!s.group_jid) {
@@ -133,6 +145,13 @@ Deno.serve(async (req) => {
       }
 
       if (i < sends.length - 1) await sleep(THROTTLE_MS);
+    }
+
+    if (timeBudgetHit) {
+      const remaining = sends.length - stoppedAt;
+      await slackNotify(
+        `⏱️ class-reminders TIME-BUDGET HIT — dispatched=${dispatched} pending_left=${remaining}/${sends.length}. Próximo cron tick continua.`,
+      );
     }
 
     // Mark batches as 'sent' if all their sends are terminal

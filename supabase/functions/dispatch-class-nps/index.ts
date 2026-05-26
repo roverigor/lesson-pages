@@ -524,7 +524,15 @@ async function processJob(
     const JITTER_MS = 30_000;
     if (dmVar?.meta_template_name) {
       const batch = dmLinks.slice(0, opts.maxDmPerRun);
+      // Time budget: edge ~150s wall-time. Abort em 130s pra próximo tick
+      // pegar os restantes via resume (existingByStudent path).
+      const JOB_TIME_BUDGET_MS = 130_000;
+      const JOB_START_MS = Date.now();
       for (let i = 0; i < batch.length; i++) {
+        if (JOB_TIME_BUDGET_MS - (Date.now() - JOB_START_MS) < 15_000) {
+          baseResult.dm.skipped += batch.length - i;
+          break;
+        }
         const link = batch[i];
         const rawName = (link.name || "").trim();
         if (!rawName) {
