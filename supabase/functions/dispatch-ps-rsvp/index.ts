@@ -208,11 +208,17 @@ Deno.serve(async (req: Request) => {
       continue;
     }
 
-    // Upsert links (idempotent per class+student+date)
+    // Upsert links (idempotent per class+student+date).
+    // expires_at MUST be in payload so ON CONFLICT DO UPDATE refreshes it —
+    // sem isso, links pré-criados (ex: testes com force_date) mantêm o default
+    // antigo `now()+24h` da criação original, e DMs disparadas dias depois
+    // chegam ao aluno já expiradas.
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     const linkInserts = eligible.map((s) => ({
       class_id: cls.id,
       student_id: s.id,
       session_date: today.isoDate,
+      expires_at: expiresAt,
     }));
     const { data: upserted } = await sb
       .from("ps_rsvp_links")
