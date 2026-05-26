@@ -105,7 +105,7 @@ Deno.serve(async (req: Request) => {
 
   const { data: link, error: linkErr } = await sb
     .from("nps_class_links")
-    .select("id, class_id, cohort_id, mode, student_id, expires_at")
+    .select("id, class_id, cohort_id, mode, student_id, expires_at, session_date")
     .eq("token", token)
     .maybeSingle();
 
@@ -113,6 +113,51 @@ Deno.serve(async (req: Request) => {
   if (!link) return jsonResponse({ error: "token_not_found" }, 404);
   if (new Date(link.expires_at).getTime() < Date.now()) {
     return jsonResponse({ error: "token_expired" }, 410);
+  }
+
+  // Cross-link phone dedup (DM mode only): aluno cadastrado em múltiplos
+  // cohorts gera N student rows → N links DM → sem isso, mesmo phone pode
+  // submit N respostas NPS distintas (uma por link). Group mode aceita N
+  // respostas por design.
+  if (link.mode === "dm" && link.student_id) {
+    const { data: linkStu } = await sb
+      .from("students")
+      .select("phone")
+      .eq("id", link.student_id)
+      .maybeSingle();
+    const phoneRaw = linkStu?.phone ?? "";
+    if (phoneRaw && !phoneRaw.startsWith("group_placeholder_")) {
+      const { data: twins } = await sb
+        .from("students")
+        .select("id")
+        .eq("phone", phoneRaw);
+      const twinIds = (twins ?? [])
+        .map((s: { id: string }) => s.id)
+        .filter((id: string) => id !== link.student_id);
+      if (twinIds.length > 0) {
+        const { data: sameSessionLinks } = await sb
+          .from("nps_class_links")
+          .select("id")
+          .eq("class_id", link.class_id)
+          .eq("session_date", link.session_date)
+          .eq("mode", "dm");
+        const lids = (sameSessionLinks ?? [])
+          .map((l: { id: string }) => l.id)
+          .filter((id: string) => id !== link.id);
+        if (lids.length > 0) {
+          const { data: twinResp } = await sb
+            .from("class_nps_responses")
+            .select("id")
+            .in("student_id", twinIds)
+            .in("link_id", lids)
+            .limit(1)
+            .maybeSingle();
+          if (twinResp) {
+            return jsonResponse({ success: true, already: true, dedup: "phone_twin" });
+          }
+        }
+      }
+    }
   }
 
   // Group mode: nome obrigatório (min 2 chars) — pra rastrear detractor

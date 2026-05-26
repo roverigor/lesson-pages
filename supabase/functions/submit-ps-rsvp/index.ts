@@ -70,16 +70,44 @@ Deno.serve(async (req: Request) => {
     .select("phone")
     .eq("id", link.student_id)
     .maybeSingle();
-  const isGroupPlaceholder = (linkStudent?.phone ?? "").startsWith("group_placeholder_");
+  const linkPhoneRaw = linkStudent?.phone ?? "";
+  const isGroupPlaceholder = linkPhoneRaw.startsWith("group_placeholder_");
 
   if (!isGroupPlaceholder) {
-    // Idempotent only for DM individual: if response exists, return success.
+    // Idempotência 1: mesmo link já respondido.
     const { data: existing } = await sb
       .from("ps_rsvp_responses")
       .select("id")
       .eq("link_id", link.id)
       .maybeSingle();
     if (existing) return json({ success: true, already: true });
+
+    // Idempotência 2 (cross-link): mesmo phone já respondeu nessa session_date
+    // via OUTRO student_id (aluno cadastrado em múltiplos cohorts gera N
+    // student rows → N links → sem isso, 3 DMs ao mesmo phone = 3 respostas).
+    const normalized = linkPhoneRaw.replace(/\D/g, "");
+    if (normalized) {
+      const { data: phoneTwins } = await sb
+        .from("students")
+        .select("id")
+        .eq("phone", linkPhoneRaw);
+      const twinIds = (phoneTwins ?? []).map((s: { id: string }) => s.id);
+      if (twinIds.length > 1) {
+        const { data: twinResp } = await sb
+          .from("ps_rsvp_responses")
+          .select("id")
+          .in("student_id", twinIds)
+          .eq("session_date", link.session_date)
+          .limit(1)
+          .maybeSingle();
+        if (twinResp) {
+          await sb.from("ps_rsvp_links")
+            .update({ responded_at: new Date().toISOString() })
+            .eq("id", link.id);
+          return json({ success: true, already: true, dedup: "phone_twin" });
+        }
+      }
+    }
   }
 
   const ip = clientIp(req);
