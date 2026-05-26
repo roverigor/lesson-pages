@@ -195,13 +195,32 @@ Deno.serve(async (req: Request) => {
     );
     const normalizePhone = (p: string | null) => (p ?? "").replace(/\D/g, "");
     const namePlaceholderRegex = /^(WA \d+|\d+)$/;
-    const eligible = allStudents.filter((s) => {
+    const filteredStudents = allStudents.filter((s) => {
       const p = normalizePhone(s.phone);
       if (!p || !normalizedImportPhones.has(p)) return false;
       if (!s.name || namePlaceholderRegex.test(s.name.trim())) return false;
       return true;
     });
-    const blockedNonCsv = allStudents.length - eligible.length;
+    const blockedNonCsv = allStudents.length - filteredStudents.length;
+
+    // Dedup por phone: mesmo aluno cadastrado em múltiplos cohorts gera N student rows
+    // com o mesmo phone. Sem isso, 1 aluno recebe N DMs idênticas (95 phones com 2-5
+    // students hoje). Pick winner = nome mais longo (mais completo) por tiebreak.
+    const byPhone = new Map<string, typeof filteredStudents[number]>();
+    let duplicatesSkipped = 0;
+    for (const s of filteredStudents) {
+      const p = normalizePhone(s.phone);
+      const existing = byPhone.get(p);
+      if (!existing) {
+        byPhone.set(p, s);
+      } else {
+        duplicatesSkipped++;
+        if ((s.name?.length ?? 0) > (existing.name?.length ?? 0)) {
+          byPhone.set(p, s);
+        }
+      }
+    }
+    const eligible = [...byPhone.values()];
 
     if (eligible.length === 0) {
       results.push({ class_id: cls.id, class_name: cls.name, eligible: 0, reason: "no_csv_backed_students", blocked_non_csv: blockedNonCsv });
@@ -226,7 +245,7 @@ Deno.serve(async (req: Request) => {
       .select("id, token, student_id, send_status");
 
     if (dryRun) {
-      results.push({ class_id: cls.id, class_name: cls.name, eligible: eligible.length, links_prepared: upserted?.length ?? 0, dry_run: true });
+      results.push({ class_id: cls.id, class_name: cls.name, eligible: eligible.length, duplicates_skipped: duplicatesSkipped, links_prepared: upserted?.length ?? 0, dry_run: true });
       continue;
     }
 
@@ -265,7 +284,7 @@ Deno.serve(async (req: Request) => {
     // antes de re-habilitar.
     const groupSent = 0; const groupFailed = 0;
 
-    results.push({ class_id: cls.id, class_name: cls.name, eligible: eligible.length, sent, failed, group_sent: groupSent, group_failed: groupFailed, group_disabled: true });
+    results.push({ class_id: cls.id, class_name: cls.name, eligible: eligible.length, duplicates_skipped: duplicatesSkipped, sent, failed, group_sent: groupSent, group_failed: groupFailed, group_disabled: true });
   }
 
   // Marca variant como usada (rotação por dispatch). Idempotente: re-trigger no

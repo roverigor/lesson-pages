@@ -315,7 +315,48 @@ async function processJob(
       p_cohort_id: job.cohort_id,
       p_session_date: job.session_date,
     });
-    const students: StudentRow[] = (studentsData ?? []) as StudentRow[];
+    let students: StudentRow[] = (studentsData ?? []) as StudentRow[];
+
+    // Cross-cohort phone dedup: mesmo aluno cadastrado em múltiplos cohorts gera
+    // N student rows e N jobs separados — sem dedup, 1 phone recebe N DMs idênticas.
+    // Strip students cujo phone já foi processado por outro job dessa (class, date).
+    const normalize = (p: string | null | undefined) => (p ?? "").replace(/\D/g, "");
+    if (job.class_id && students.length > 0) {
+      const { data: otherLinks } = await client
+        .from("nps_class_links")
+        .select("student_id")
+        .eq("class_id", job.class_id)
+        .eq("session_date", job.session_date)
+        .eq("mode", "dm")
+        .neq("dispatch_job_id", job.id);
+      const otherIds = [...new Set((otherLinks ?? []).map((l: { student_id: string }) => l.student_id))];
+      if (otherIds.length > 0) {
+        const { data: otherStus } = await client
+          .from("students")
+          .select("phone")
+          .in("id", otherIds);
+        const alreadyPhones = new Set(
+          (otherStus ?? []).map((s: { phone: string | null }) => normalize(s.phone)).filter((p: string) => p),
+        );
+        if (alreadyPhones.size > 0) {
+          const before = students.length;
+          students = students.filter((s) => !alreadyPhones.has(normalize(s.phone)));
+          const skipped = before - students.length;
+          if (skipped > 0) {
+            console.warn(`[dispatch-class-nps] CROSS-JOB DEDUP — skipped=${skipped} (phones já enviados em outro job dessa class+date)`);
+          }
+        }
+      }
+    }
+    // Intra-job dedup: caso 2 student rows com mesmo phone caiam na mesma cohort.
+    const phoneToStudent = new Map<string, StudentRow>();
+    for (const s of students) {
+      const p = normalize(s.phone);
+      if (!p) continue;
+      const ex = phoneToStudent.get(p);
+      if (!ex || (s.name?.length ?? 0) > (ex.name?.length ?? 0)) phoneToStudent.set(p, s);
+    }
+    students = [...phoneToStudent.values()];
 
     // 3. Variants
     const { data: groupVarRaw } = await client.rpc("nps_next_variant", { p_channel: "group" });
