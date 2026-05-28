@@ -187,10 +187,22 @@ Deno.serve(async (req) => {
   const dryRun = body.dry_run === true;
   const specificJobId: string | undefined = body.job_id;
 
+  // ─── Reaper inline: recupera jobs travados > 10min antes do lock.
+  // Story 22.10 Fix 2: auto-cura defesa em profundidade. Função fail-safe —
+  // se reaper falhar (auth, network), prossegue normal sem bloquear dispatcher.
+  try {
+    const { data: reaped } = await client.rpc("reclaim_stuck_dispatch_jobs", { p_minutes: 10 });
+    if (reaped && Array.isArray(reaped) && reaped.length > 0) {
+      console.warn(`[dispatch-class-nps] REAPER recovered ${reaped.length} stuck jobs`);
+    }
+  } catch (e) {
+    console.error(`[dispatch-class-nps] reaper failed (non-fatal): ${e instanceof Error ? e.message : e}`);
+  }
+
   // ─── Acquire jobs ───
   let jobsQ = client
     .from("nps_class_dispatch_jobs")
-    .update({ status: "in_progress", started_at: new Date().toISOString() })
+    .update({ status: "in_progress", started_at: new Date().toISOString(), last_progress_at: new Date().toISOString() })
     .eq("status", "pending")
     .lte("scheduled_at", new Date().toISOString())
     .select("id, class_id, cohort_id, session_date, zoom_meeting_id");
@@ -543,6 +555,7 @@ async function processJob(
             await client.from("nps_class_dispatch_jobs").update({
               status: "pending",
               started_at: null,
+              last_progress_at: new Date().toISOString(),
               dm_sent_count: baseResult.dm.sent,
               dm_failed_count: baseResult.dm.failed,
               error_detail: `time_budget_aborted_${i}/${batch.length}_resuming_next_tick`,
@@ -596,6 +609,12 @@ async function processJob(
             error_detail: r.error,
           }).eq("id", link.id);
         }
+
+        // Story 22.10 Fix 2: checkpoint last_progress_at — reaper detecta
+        // stuck por gap > 10min sem progresso (vs started_at antigo).
+        await client.from("nps_class_dispatch_jobs")
+          .update({ last_progress_at: new Date().toISOString() })
+          .eq("id", job.id);
 
         // V6: jitter the throttle to avoid robotic cadence
         if (i < batch.length - 1) await sleep(jitter(opts.throttleMs, JITTER_MS));
@@ -662,6 +681,7 @@ async function finishJob(
     .update({
       status,
       finished_at: new Date().toISOString(),
+      last_progress_at: new Date().toISOString(),
       ...extra,
     })
     .eq("id", jobId);

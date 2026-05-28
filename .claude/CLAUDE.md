@@ -389,6 +389,54 @@ Se em dúvida: **PARE e pergunte**.
 - Só interromper para confirmação se: (a) houver bloqueador técnico real, (b) decisão arquitetural irreversível, ou (c) a story explicitamente exigir input do usuário (`elicit: true`), ou **(d) qualquer ação que envie mensagem externa (ver regra acima — NON-NEGOTIABLE)**
 - Ao final do épico inteiro, apresentar resumo consolidado de tudo que foi feito
 
+## Invariantes de Dispatch (Story 22.10 — incidente 27-28/05/2026)
+
+🔒 **NON-NEGOTIABLE invariantes estruturais.** Não relaxar sem story de remoção formal.
+
+### Invariante 1: 1 turma ativa por zoom_meeting_id
+
+- Garantido por `uq_classes_active_zoom_meeting` UNIQUE index parcial
+  (`classes(zoom_meeting_id) WHERE active=true AND zoom_meeting_id IS NOT NULL`)
+- Migration: `supabase/migrations/20260528200000_classes_unique_active_zoom.sql`
+- Razão: incidente T5 27/05 — class DUP-DESATIVADA mesmo zoom_meeting_id que ativa fez trigger pegar errada → 0 enqueues
+- Se precisar ativar 2ª class no mesmo meeting: zerar `zoom_meeting_id` da anterior PRIMEIRO
+
+### Invariante 2: jobs de dispatch se auto-recuperam via reaper
+
+- Tabelas com job-level lock têm `last_progress_at TIMESTAMPTZ` column
+  - `nps_class_dispatch_jobs`
+  - `class_reminder_batches`
+- RPC `reclaim_stuck_dispatch_jobs(p_minutes)` recupera jobs cuja
+  `last_progress_at < now() - N minutes` voltando a `status='pending'`
+- Dispatchers chamam reaper inline antes do lock (defesa em profundidade)
+- Admin UI pode invocar manualmente via RPC pra unstick
+- Migration: `20260528200500_dispatch_jobs_reaper.sql`
+
+### Invariante 3: dispatcher checkpointa progresso por send
+
+- Cada DM enviada → UPDATE `last_progress_at = now()`
+- Time-budget abort → UPDATE `status='pending'` + `started_at=NULL` + `scheduled_at = now() + 60s`
+- finishJob → UPDATE `last_progress_at` final
+- Resultado: reaper detecta stuck por gap real (não started_at antigo)
+
+### Invariante 4: falhas silenciosas dispara Slack
+
+- Trigger `trg_enqueue_nps_after_zoom_processed` dispara alerta Slack quando:
+  - Zero classes ativas para `zoom_meeting_id` resolvido
+  - Class OK + cohorts existem mas 0 jobs criados (cooldown/dedup/flag silent)
+- Reaper RPC dispara alerta quando recupera N jobs stuck
+- Migration: `20260528201000_trigger_enqueue_zero_alert.sql`
+
+### Aplicação aos outros dispatchers
+
+| Dispatcher | Padrão lock | Reaper aplicável? |
+|---|---|---|
+| `dispatch-class-nps` | job-level `*_jobs.in_progress` | ✅ SIM — implementado |
+| `dispatch-class-reminders` | batch + link granular | ⚠️ defensivo — `last_progress_at` em batches |
+| `dispatch-survey` | link-level send_status | ❌ N/A — naturalmente self-healing |
+| `dispatch-ps-rsvp` | link-level send_status | ❌ N/A |
+| `dispatch-retry` | row-level notifications | ❌ N/A |
+
 ## VPS — lesson-pages (Contabo)
 
 - **IP:** `194.163.179.68`
