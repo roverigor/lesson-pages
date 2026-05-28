@@ -522,16 +522,38 @@ async function processJob(
     // Test mode: phone overridden to nps_test_mode_phone; first_name kept original
     //   for realism, but only ONE phone receives ALL DMs of this job.
     const JITTER_MS = 30_000;
+    let timeBudgetAborted = false;
     if (dmVar?.meta_template_name) {
       const batch = dmLinks.slice(0, opts.maxDmPerRun);
-      // Time budget: edge ~150s wall-time. Abort em 130s pra próximo tick
+      // Time budget: edge ~150s wall-time. Abort em 100s pra próximo tick
       // pegar os restantes via resume (existingByStudent path).
-      const JOB_TIME_BUDGET_MS = 130_000;
+      // Buffer 50s pra finalizar UPDATE job pending + return — protege
+      // contra wall clock kill deixando job in_progress órfão.
+      const JOB_TIME_BUDGET_MS = 100_000;
       const JOB_START_MS = Date.now();
       for (let i = 0; i < batch.length; i++) {
         if (JOB_TIME_BUDGET_MS - (Date.now() - JOB_START_MS) < 15_000) {
+          // Time budget abort: marca job pending novamente pra próximo cron
+          // tick retomar (linha 432 do dispatcher já resume via pending links).
+          // CRÍTICO: SEM ESTE UPDATE, job fica órfão in_progress permanente
+          // e cron */5min skip porque WHERE status='pending' não casa.
           baseResult.dm.skipped += batch.length - i;
-          break;
+          timeBudgetAborted = true;
+          try {
+            await client.from("nps_class_dispatch_jobs").update({
+              status: "pending",
+              started_at: null,
+              dm_sent_count: baseResult.dm.sent,
+              dm_failed_count: baseResult.dm.failed,
+              error_detail: `time_budget_aborted_${i}/${batch.length}_resuming_next_tick`,
+              scheduled_at: new Date(Date.now() + 60_000).toISOString(),
+            }).eq("id", job.id);
+            console.warn(`[dispatch-class-nps] TIME BUDGET ABORT job=${job.id.slice(0,8)} sent=${baseResult.dm.sent}/${batch.length} — job back to pending`);
+          } catch (e) {
+            console.error(`[dispatch-class-nps] FAILED to unlock job after time budget: ${e instanceof Error ? e.message : e}`);
+          }
+          baseResult.status = "partial";
+          return baseResult;
         }
         const link = batch[i];
         const rawName = (link.name || "").trim();
