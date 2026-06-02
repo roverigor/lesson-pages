@@ -161,7 +161,7 @@
     <!-- Step 1: CSAT (mentores in PS) -->
     <div class="screen" id="screen-1">
       <div class="brand">Academia Lendária</div>
-      <div class="q-counter" id="step-counter-1">Pergunta 1 de 4</div>
+      <div class="q-counter" id="step-counter-1">Pergunta 1 de 3</div>
       <div class="question" id="question-1">Como você avalia a aula de hoje?</div>
       <div class="sub-context" id="sub-context-1"></div>
       <div id="name-field-top" style="display:none; margin-bottom:18px">
@@ -187,40 +187,22 @@
       <button class="cta-btn" id="btn-next-ps-unblocked" disabled>Continuar →</button>
     </div>
 
-    <!-- Step 2: Choice -->
-    <div class="screen" id="screen-2">
-      <button class="btn-back" data-back="1">← Voltar</button>
-      <div class="brand">Academia Lendária</div>
-      <div class="q-counter">Pergunta 2 de 4</div>
-      <div class="question">Você achou a aula muito técnica?</div>
-      <div class="options-list">
-        <div class="option-item" data-tech="true">
-          <div class="option-dot"></div>
-          <span>Sim, achei muito técnica</span>
-        </div>
-        <div class="option-item" data-tech="false">
-          <div class="option-dot"></div>
-          <span>Não, achei no nível certo</span>
-        </div>
-      </div>
-      <button class="cta-btn" id="btn-next-2" disabled>Continuar →</button>
-    </div>
-
     <!-- Step 3: Improvement text -->
     <div class="screen" id="screen-3">
-      <button class="btn-back" data-back="2">← Voltar</button>
+      <button class="btn-back" data-back="1">← Voltar</button>
       <div class="brand">Academia Lendária</div>
-      <div class="q-counter">Pergunta 3 de 4</div>
+      <div class="q-counter">Pergunta 2 de 3</div>
       <div class="question">O que poderia melhorar?</div>
-      <textarea id="improvement-input" class="text-input" placeholder="Algo que poderia ter sido diferente?" minlength="2" required></textarea>
-      <button class="cta-btn" id="btn-next-3" disabled>Continuar →</button>
+      <textarea id="improvement-input" class="text-input" placeholder="Algo que poderia ter sido diferente?"></textarea>
+      <button class="cta-btn" id="btn-next-3" style="display:none">Continuar →</button>
+      <button id="btn-skip-3" type="button" style="display:block;margin:12px auto 0;padding:6px 14px;background:none;border:none;color:#9ca3af;font-size:13px;text-decoration:underline;cursor:pointer">Pular</button>
     </div>
 
     <!-- Step 4: NPS 0-10 -->
     <div class="screen" id="screen-4">
-      <button class="btn-back" data-back="3">← Voltar</button>
+      <button class="btn-back" data-back="2">← Voltar</button>
       <div class="brand">Academia Lendária</div>
-      <div class="q-counter" id="q-counter-4">Pergunta 4 de 4</div>
+      <div class="q-counter" id="q-counter-4">Pergunta 3 de 3</div>
       <div class="question">De 0 a 10, quais as chances de você indicar os treinamentos de AIOX Cohort para outra pessoa?</div>
       <div class="nps-grid" id="nps-grid"></div>
       <div class="nps-labels">
@@ -383,12 +365,12 @@
     showOnly("screen-" + step);
     const pcts = state.isPS
       ? { "ps-doubts": 14, "ps-resolved": 28, 1: 42, "ps-unblocked": 57, 3: 71, 4: 85, 5: 95 }
-      : { 1: 25, 2: 50, 3: 65, 4: 85, 5: 95 };
+      : { 1: 33, 3: 66, 4: 88, 5: 95 };
     setProgress(pcts[step] ?? 100);
   }
 
   function nextAfterPSResolved() { goto(1); }
-  function nextAfterCSAT() { return state.isPS ? goto("ps-unblocked") : goto(2); }
+  function nextAfterCSAT() { return state.isPS ? goto("ps-unblocked") : goto(3); }
   function nextAfterTechOrUnblocked() { goto(3); }
 
   async function submit() {
@@ -522,17 +504,8 @@
 
     $("btn-next-1").addEventListener("click", () => nextAfterCSAT());
 
-    document.querySelectorAll(".option-item[data-tech]").forEach((el) => {
-      el.addEventListener("click", () => {
-        document.querySelectorAll(".option-item[data-tech]").forEach((x) => x.classList.remove("selected"));
-        el.classList.add("selected");
-        state.tooTechnical = el.dataset.tech === "true";
-        $("btn-next-2").disabled = false;
-      });
-    });
-    $("btn-next-2").addEventListener("click", () => goto(3));
-
     $("btn-next-3").addEventListener("click", () => goto(4));
+    $("btn-skip-3").addEventListener("click", () => { state.improvement = ""; goto(4); });
 
     $("btn-next-4").addEventListener("click", () => {
       if (state.nps == null) return;
@@ -575,7 +548,10 @@
       $("btn-next-ps-doubts").disabled = !(sel && nameOk());
     }
     function updateBtn3() {
-      $("btn-next-3").disabled = trimLen("improvement-input") < MIN;
+      // Melhoria é opcional: vazio mostra "Pular" (discreto); ao digitar entra "Continuar".
+      const has = trimLen("improvement-input") > 0;
+      $("btn-next-3").style.display = has ? "block" : "none";
+      $("btn-skip-3").style.display = has ? "none" : "block";
     }
     function updateBtnSubmit() {
       $("btn-submit").disabled = trimLen("detractor-input") < MIN;
@@ -634,7 +610,7 @@
     state.isPS = meta.class_kind === "ps";
     recordOpen(state.token);
 
-    const totalQ = state.isPS ? 6 : 4;
+    const totalQ = state.isPS ? 6 : 3;
     if (meta.mode === "dm" && meta.student_name) {
       const first = meta.student_name.split(/\s+/)[0];
       if (state.isPS) {
@@ -662,6 +638,24 @@
       if (improvementQ) improvementQ.textContent = "Algo que poderia melhorar nos PSs?";
       const improvementInput = $("improvement-input");
       if (improvementInput) improvementInput.placeholder = "Opcional — sugestões, ajustes…";
+    }
+
+    // Course-end NPS (encerramento de curso): reformula perguntas de "aula" -> "curso".
+    // Scoped via survey_kind do link — não afeta o NPS pós-aula das outras turmas.
+    if (!state.isPS && meta.survey_kind === "course_end") {
+      $("question-1").textContent = "Como você avalia o curso?";
+      const techQ = document.querySelector("#screen-2 .question");
+      if (techQ) techQ.textContent = "Você achou o curso muito técnico?";
+      const passiveSub = document.querySelector("#screen-passive .sub-context");
+      if (passiveSub) passiveSub.textContent = "Opcional — sua resposta nos ajuda a refinar os próximos cursos.";
+    }
+
+    // Pós-aula regular: inclui a data da sessão na 1ª pergunta.
+    // Scoped: não afeta PS (pergunta própria) nem encerramento de curso.
+    if (!state.isPS && meta.survey_kind !== "course_end" && meta.session_date) {
+      const shortDate = new Date(meta.session_date + "T12:00:00")
+        .toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      $("question-1").textContent = `Como você avalia a aula do dia ${shortDate}?`;
     }
 
     if (meta.mode === "group") {
