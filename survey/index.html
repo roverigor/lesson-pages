@@ -173,6 +173,41 @@
       <button class="cta-btn" id="btn-next-1" disabled>Continuar →</button>
     </div>
 
+    <!-- Step name: identificação opcional (grupo) -->
+    <div class="screen" id="screen-name">
+      <button class="btn-back" data-back="1">← Voltar</button>
+      <div class="brand">Academia Lendária</div>
+      <div class="q-counter">Quer se identificar?</div>
+      <div class="question" id="question-name">Quer deixar seu nome?</div>
+      <div class="sub-context">Opcional — ajuda a gente a dar retorno pra você.</div>
+      <input id="name-input-optional" type="text" class="text-input name-input" placeholder="Seu nome completo" minlength="2" style="margin-top:14px">
+      <button class="cta-btn" id="btn-next-name" style="display:none">Continuar →</button>
+      <button id="btn-skip-name" type="button" style="display:block;margin:12px auto 0;padding:6px 14px;background:none;border:none;color:#9ca3af;font-size:13px;text-decoration:underline;cursor:pointer">Pular</button>
+    </div>
+
+    <!-- Step evolution: o quanto evoluiu (course_end) -->
+    <div class="screen" id="screen-evolution">
+      <button class="btn-back" data-back="1">← Voltar</button>
+      <div class="brand">Academia Lendária</div>
+      <div class="q-counter">Sua evolução</div>
+      <div class="question">Você conseguiu evoluir com o curso?</div>
+      <div class="sub-context">1 = evoluí pouco · 5 = evoluí muito</div>
+      <div class="stars-row" id="evo-row" style="margin-top:18px"></div>
+      <div class="stars-label" id="evo-label">Toque numa nota</div>
+      <button class="cta-btn" id="btn-next-evo" disabled>Continuar →</button>
+    </div>
+
+    <!-- Step evolution-why: motivo da nota de evolução (opcional) -->
+    <div class="screen" id="screen-evolution-why">
+      <button class="btn-back" data-back="evolution">← Voltar</button>
+      <div class="brand">Academia Lendária</div>
+      <div class="q-counter">Sua evolução</div>
+      <div class="question">Por que você escolheu essa nota pra sua evolução?</div>
+      <textarea id="evo-reason-input" class="text-input" placeholder="Opcional — conta um pouco do seu antes e depois..." style="min-height:120px"></textarea>
+      <button class="cta-btn" id="btn-next-evo-why" style="display:none">Continuar →</button>
+      <button id="btn-skip-evo-why" type="button" style="display:block;margin:12px auto 0;padding:6px 14px;background:none;border:none;color:#9ca3af;font-size:13px;text-decoration:underline;cursor:pointer">Pular</button>
+    </div>
+
     <!-- PS Step D: destravou? -->
     <div class="screen" id="screen-ps-unblocked">
       <button class="btn-back" data-back="1">← Voltar</button>
@@ -259,6 +294,8 @@
     improvement: "",
     nps: null,
     name: "",
+    evolution: null,
+    evolutionReason: "",
     detractorFollowup: "",
     psBroughtDoubts: null,
     psDoubtsResolved: null,
@@ -343,6 +380,25 @@
     }
   }
 
+  function renderEvo() {
+    const row = $("evo-row");
+    if (!row) return;
+    row.innerHTML = "";
+    const labels = ["", "Evoluí pouco", "Evoluí um pouco", "Evolução média", "Evoluí bastante", "Evoluí muito"];
+    for (let i = 1; i <= 5; i++) {
+      const btn = document.createElement("button");
+      btn.className = "star-btn";
+      btn.textContent = "★";
+      btn.addEventListener("click", () => {
+        state.evolution = i;
+        Array.from(row.children).forEach((b, idx) => b.classList.toggle("filled", idx < i));
+        $("evo-label").textContent = labels[i];
+        $("btn-next-evo").disabled = false;
+      });
+      row.appendChild(btn);
+    }
+  }
+
   function renderNps() {
     const grid = $("nps-grid");
     grid.innerHTML = "";
@@ -365,12 +421,20 @@
     showOnly("screen-" + step);
     const pcts = state.isPS
       ? { "ps-doubts": 14, "ps-resolved": 28, 1: 42, "ps-unblocked": 57, 3: 71, 4: 85, 5: 95 }
-      : { 1: 33, 3: 66, 4: 88, 5: 95 };
+      : { 1: 20, name: 33, evolution: 50, "evolution-why": 63, 3: 75, 4: 90, 5: 95 };
     setProgress(pcts[step] ?? 100);
   }
 
   function nextAfterPSResolved() { goto(1); }
-  function nextAfterCSAT() { return state.isPS ? goto("ps-unblocked") : goto(3); }
+  // Após identificar (ou pular nome): course_end pergunta evolução; senão vai pra melhoria.
+  function afterIdentity() {
+    return (state.meta?.survey_kind === "course_end") ? goto("evolution") : goto(3);
+  }
+  function nextAfterCSAT() {
+    if (state.isPS) return goto("ps-unblocked");
+    if (state.mode === "group") return goto("name"); // grupo: pergunta nome (opcional) antes de seguir
+    return afterIdentity();                           // DM: pula tela de nome (já conhecido)
+  }
   function nextAfterTechOrUnblocked() { goto(3); }
 
   async function submit() {
@@ -388,7 +452,8 @@
     // Nome coletado na 1ª tela (top ou ps-doubts no flow PS)
     const topName = $("name-input-top")?.value?.trim();
     const psName = $("name-input-ps")?.value?.trim();
-    state.name = topName || psName || "";
+    const optName = $("name-input-optional")?.value?.trim();
+    state.name = topName || psName || optName || "";
     state.detractorFollowup = $("detractor-input").value.trim();
 
     try {
@@ -407,6 +472,8 @@
           improvement_text: state.improvement || undefined,
           comment: state.passiveFeedback || undefined,
           name_provided: state.name || undefined,
+          evolution_score: state.evolution ?? undefined,
+          evolution_reason: state.evolutionReason || undefined,
           detractor_followup_text: state.detractorFollowup || undefined,
           ps_brought_doubts: state.psBroughtDoubts,
           ps_doubts_resolved: state.psDoubtsResolved,
@@ -442,6 +509,13 @@
           $("thanks-title").textContent = "Obrigado!";
         }
         $("thanks-sub").innerHTML = (data.thank_you ?? "Sua avaliação foi registrada.").replace(/\n/g, "<br>");
+        // Encerramento de curso: mensagem de parabéns + 30 dias de acompanhamento nos PS.
+        if (state.meta?.survey_kind === "course_end") {
+          iconEl.className = "thanks-icon";
+          iconEl.textContent = "🎓";
+          $("thanks-title").textContent = "Parabéns por concluir o curso!";
+          $("thanks-sub").innerHTML = "Você tem <b>30 dias de acompanhamento nos PS</b> pra tirar dúvidas e seguir aplicando o que aprendeu.<br><br>Qualquer dúvida, é só falar com a gente. 🚀";
+        }
         showOnly("screen-thanks");
         return;
       }
@@ -467,6 +541,7 @@
 
   function wire() {
     renderStars();
+    renderEvo();
     renderNps();
 
     // PS-only: Q1 trouxe dúvidas?
@@ -503,6 +578,31 @@
     $("btn-next-ps-unblocked")?.addEventListener("click", () => nextAfterTechOrUnblocked());
 
     $("btn-next-1").addEventListener("click", () => nextAfterCSAT());
+
+    // Identificação opcional (grupo): "Continuar" se digitou nome, senão "Pular".
+    $("btn-next-name")?.addEventListener("click", () => {
+      state.name = $("name-input-optional")?.value?.trim() || "";
+      afterIdentity();
+    });
+    $("btn-skip-name")?.addEventListener("click", () => { state.name = ""; afterIdentity(); });
+    $("name-input-optional")?.addEventListener("input", () => {
+      const has = (($("name-input-optional").value || "").trim()).length >= 2;
+      $("btn-next-name").style.display = has ? "block" : "none";
+      $("btn-skip-name").style.display = has ? "none" : "block";
+    });
+
+    // Evolução (course_end): nota 1-5 → motivo opcional.
+    $("btn-next-evo")?.addEventListener("click", () => { if (state.evolution != null) goto("evolution-why"); });
+    $("btn-next-evo-why")?.addEventListener("click", () => {
+      state.evolutionReason = $("evo-reason-input")?.value?.trim() || "";
+      goto(3);
+    });
+    $("btn-skip-evo-why")?.addEventListener("click", () => { state.evolutionReason = ""; goto(3); });
+    $("evo-reason-input")?.addEventListener("input", () => {
+      const has = (($("evo-reason-input").value || "").trim()).length >= 1;
+      $("btn-next-evo-why").style.display = has ? "block" : "none";
+      $("btn-skip-evo-why").style.display = has ? "none" : "block";
+    });
 
     $("btn-next-3").addEventListener("click", () => goto(4));
     $("btn-skip-3").addEventListener("click", () => { state.improvement = ""; goto(4); });
@@ -669,10 +769,8 @@
         wrap.innerHTML = `<div class="label-sm">Seu nome <span style="color:#ef4444">*</span></div><input id="name-input-ps" type="text" class="text-input name-input" placeholder="Seu nome completo" minlength="2" required>`;
         const sub = psDoubtsScreen.querySelector("#sub-context-ps-doubts");
         if (sub) sub.insertAdjacentElement("afterend", wrap);
-      } else {
-        // Regular (non-PS) group: name field só no CSAT top
-        $("name-field-top").style.display = "block";
       }
+      // Regular (non-PS) group: nome agora é tela própria opcional (screen-name) — não mostra no topo.
     }
 
     wire();
